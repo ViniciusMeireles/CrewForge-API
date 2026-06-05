@@ -81,7 +81,7 @@ class StoredFileCreateUpdateModelSerializer(
         )
         fields = update_fields + read_only_fields
         extra_kwargs = {
-            'file': {'write_only': True, 'required': False},
+            'file': {'write_only': True, 'required': True},
         }
 
     def validate_organization(self, value) -> int | None:
