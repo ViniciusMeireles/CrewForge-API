@@ -872,6 +872,7 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+        required: true
       security:
       - jwtAuth: []
       responses:
@@ -925,6 +926,7 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+        required: true
       security:
       - jwtAuth: []
       responses:
@@ -2351,23 +2353,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         download_name:
           type: string
           description: Return the name to download the file.
@@ -2376,6 +2361,23 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         uuid:
           type: string
           format: uuid
@@ -2539,23 +2541,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         download_name:
           type: string
           description: Return the name to download the file.
@@ -2564,6 +2549,23 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         uuid:
           type: string
           format: uuid
@@ -2572,6 +2574,7 @@ components:
       required:
       - content_type
       - download_name
+      - file
       - file_url
       - original_name
       - size
