@@ -18,7 +18,7 @@ router.register(r'signup', SignupViewSet, basename='signup')
 router.register(r'organizations', OrganizationViewSet, basename='organizations')
 router.register(r'members', MemberViewSet, basename='members')
 router.register(r'invitations', InvitationViewSet, basename='invitations')
-router.register(r'stored_files', StoredFileViewSet, basename='stored_files')
+router.register(r'stored-files', StoredFileViewSet, basename='stored_files')
 
 
 authentication_urlpatterns = [

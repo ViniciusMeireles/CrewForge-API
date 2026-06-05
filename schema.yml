@@ -731,7 +731,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Signup'
           description: ''
-  /api/accounts/stored_files/:
+  /api/accounts/stored-files/:
     get:
       operationId: accounts_stored_files_list
       description: List all Stored Files.
@@ -881,7 +881,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoredFileDetailModel'
           description: ''
-  /api/accounts/stored_files/{uuid}/:
+  /api/accounts/stored-files/{uuid}/:
     get:
       operationId: accounts_stored_files_retrieve
       description: Retrieve a specific Stored File.
@@ -982,7 +982,7 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/accounts/stored_files/{uuid}/file/:
+  /api/accounts/stored-files/{uuid}/file/:
     get:
       operationId: accounts_stored_files_file_retrieve
       description: Download a file.
@@ -1013,7 +1013,7 @@ paths:
           description: The file content.
         '404':
           description: File not found.
-  /api/accounts/stored_files/choices/:
+  /api/accounts/stored-files/choices/:
     get:
       operationId: accounts_stored_files_choices_retrieve
       description: List stored files for choices (value/label format).
@@ -2351,23 +2351,15 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         file_url:
           type: string
           nullable: true
           readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         content_type:
           type: string
           readOnly: true
@@ -2376,11 +2368,19 @@ components:
           type: integer
           readOnly: true
           description: Size of the file
-        updated_at:
+        download_name:
           type: string
-          format: date-time
+          description: Return the name to download the file.
           readOnly: true
-          description: When the record was last updated
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
     RoleEnum:
       enum:
       - owner
@@ -2539,23 +2539,15 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         file_url:
           type: string
           nullable: true
           readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         content_type:
           type: string
           readOnly: true
@@ -2564,11 +2556,19 @@ components:
           type: integer
           readOnly: true
           description: Size of the file
-        updated_at:
+        download_name:
           type: string
-          format: date-time
+          description: Return the name to download the file.
           readOnly: true
-          description: When the record was last updated
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
       required:
       - content_type
       - download_name

@@ -19,7 +19,7 @@ class MemberAPITestCase(APITestCaseMixin, APITestCase):
         cls.detail_url_name = 'accounts:members-detail'
         cls.list_url_name = 'accounts:members-list'
         cls.list_url = reverse(cls.list_url_name)
-        cls.choices_url = reverse('accounts:members-choices')
+        cls.choices_url = reverse(viewname='accounts:members-choices')
         cls.create_with_invite_url_name = 'accounts:members-create-with-invite'
         cls.update_role_url_name = 'accounts:members-update-role'
 

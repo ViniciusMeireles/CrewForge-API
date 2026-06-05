@@ -15,13 +15,15 @@ username_field = get_user_model().USERNAME_FIELD
 class AuthAPITestCase(APITestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.token_url = reverse('accounts:token_obtain_pair')
-        cls.refresh_url = reverse('accounts:token_refresh')
-        cls.verify_url = reverse('accounts:token_verify')
-        cls.password_reset_url = reverse('accounts:password_reset')
-        cls.password_reset_confirm_url = reverse('accounts:password_reset_confirm')
+        cls.token_url = reverse(viewname='accounts:token_obtain_pair')
+        cls.refresh_url = reverse(viewname='accounts:token_refresh')
+        cls.verify_url = reverse(viewname='accounts:token_verify')
+        cls.password_reset_url = reverse(viewname='accounts:password_reset')
+        cls.password_reset_confirm_url = reverse(
+            viewname='accounts:password_reset_confirm'
+        )
         cls.email_preview_url_list = [
-            reverse('accounts:password_reset_email_preview'),
+            reverse(viewname='accounts:password_reset_email_preview'),
         ]
 
     def setUp(self):

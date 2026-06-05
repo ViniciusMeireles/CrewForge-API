@@ -8,10 +8,12 @@ from apps.accounts.utils.requests import get_member
 
 class StoredFilePermission(BasePermission):
     def has_permission(self, request, view) -> bool:
-        if (
-            isinstance(view, GenericViewSet) and view.action.lower() == 'create'
-        ) or request.method.upper() == 'POST':
-            return IsAuthenticated().has_permission(request=request, view=view)
+        if request.method.upper() == 'POST':
+            if not IsAuthenticated().has_permission(request=request, view=view):
+                return False
+            member = get_member(request=request)
+            if not (member and member.is_active):
+                return False
         return True
 
     def has_object_permission(self, request, view, obj: StoredFile) -> bool:

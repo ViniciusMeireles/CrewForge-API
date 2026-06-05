@@ -81,8 +81,8 @@ Additional authentication-related actions:
 ### Endpoint Structure :satellite:
 #### Accounts Module :busts_in_silhouette:
 - :incoming_envelope: `/api/accounts/invitations/` - Invitation management.
-- :file_folder: `/api/accounts/stored_files/` - File management (upload, list, retrieve, update, delete).
-- :file_folder: `/api/accounts/stored_files/{uuid}/file/` - Download a stored file (supports `?download=true` for attachment).
+- :file_folder: `/api/accounts/stored-files/` - File management (upload, list, retrieve, update, delete).
+- :file_folder: `/api/accounts/stored-files/{uuid}/file/` - Download a stored file (supports `?download=true` for attachment).
 - :bust_in_silhouette: `/api/accounts/members/` - Organization member management.
 - :office: `/api/accounts/organizations/` - Organization CRUD operations.
 - :closed_lock_with_key: `/api/accounts/organizations/{id}/login/` - Organization login to define session context.

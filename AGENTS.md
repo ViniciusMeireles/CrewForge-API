@@ -323,6 +323,14 @@ test_not_authenticated_{action}  # auth: test_not_authenticated_list_members
 test_not_active_member_{action}  # inactive: test_not_active_member_retrieve_member
 ```
 
+### Test Development Rules
+
+- During test development, write **only test code**. Do not implement the
+  functionality under test.
+- The only exception: if running a test raises an unexpected exception in
+  production code (indicating a bug, not a test issue), the agent may fix
+  the production code to make the test pass.
+
 
 ## Security Considerations
 

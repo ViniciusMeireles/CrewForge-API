@@ -41,36 +41,87 @@ class StoredFileAccess(models.TextChoices):
         return [StoredFileAccess.OWNER] + cls.permissions_for_public
 
     @classproperty
-    def permissions_for_owner_organization(cls) -> list[StoredFileAccess]:
+    def permissions_for_owner_organization_updating(cls) -> list[StoredFileAccess]:
         return [StoredFileAccess.OWNERS_ORGANIZATION] + cls.permissions_for_owner
 
     @classproperty
-    def permissions_for_admin_organization(cls) -> list[StoredFileAccess]:
+    def permissions_for_admin_organization_updating(cls) -> list[StoredFileAccess]:
         return [
             StoredFileAccess.ADMINS_ORGANIZATION
-        ] + cls.permissions_for_owner_organization
+        ] + cls.permissions_for_owner_organization_updating
 
     @classproperty
-    def permissions_for_manager_organization(cls) -> list[StoredFileAccess]:
+    def permissions_for_manager_organization_updating(cls) -> list[StoredFileAccess]:
         return [
             StoredFileAccess.MANAGERS_ORGANIZATION
-        ] + cls.permissions_for_admin_organization
+        ] + cls.permissions_for_admin_organization_updating
 
     @classproperty
-    def permissions_for_member_organization(cls) -> list[StoredFileAccess]:
+    def permissions_for_member_organization_updating(cls) -> list[StoredFileAccess]:
         return [
             StoredFileAccess.MEMBERS_ORGANIZATION
-        ] + cls.permissions_for_manager_organization
+        ] + cls.permissions_for_manager_organization_updating
 
     @classproperty
-    def permissions_levels(cls) -> dict[StoredFileAccess, list[StoredFileAccess]]:
+    def permissions_levels_updating(
+        cls,
+    ) -> dict[StoredFileAccess, list[StoredFileAccess]]:
+        public = cls.permissions_for_public
+        owner = cls.permissions_for_owner
+        owner_organization = cls.permissions_for_owner_organization_updating
+        admin_organization = cls.permissions_for_admin_organization_updating
+        manager_organization = cls.permissions_for_manager_organization_updating
+        member_organization = cls.permissions_for_member_organization_updating
         return {
-            cls.PUBLIC: cls.permissions_for_public,
-            cls.OWNER: cls.permissions_for_owner,
-            cls.OWNERS_ORGANIZATION: cls.permissions_for_owner_organization,
-            cls.ADMINS_ORGANIZATION: cls.permissions_for_admin_organization,
-            cls.MANAGERS_ORGANIZATION: cls.permissions_for_manager_organization,
-            cls.MEMBERS_ORGANIZATION: cls.permissions_for_member_organization,
+            cls.PUBLIC: public,
+            cls.OWNER: owner,
+            cls.OWNERS_ORGANIZATION: owner_organization,
+            cls.ADMINS_ORGANIZATION: admin_organization,
+            cls.MANAGERS_ORGANIZATION: manager_organization,
+            cls.MEMBERS_ORGANIZATION: member_organization,
+        }
+
+    @classproperty
+    def permissions_for_member_organization_viewing(cls) -> list[StoredFileAccess]:
+        return [
+            StoredFileAccess.MEMBERS_ORGANIZATION,
+        ] + cls.permissions_for_owner
+
+    @classproperty
+    def permissions_for_manager_organization_viewing(cls) -> list[StoredFileAccess]:
+        return [
+            StoredFileAccess.MANAGERS_ORGANIZATION,
+        ] + cls.permissions_for_member_organization_viewing
+
+    @classproperty
+    def permissions_for_admin_organization_viewing(cls) -> list[StoredFileAccess]:
+        return [
+            StoredFileAccess.ADMINS_ORGANIZATION,
+        ] + cls.permissions_for_manager_organization_viewing
+
+    @classproperty
+    def permissions_for_owner_organization_viewing(cls) -> list[StoredFileAccess]:
+        return [
+            StoredFileAccess.OWNERS_ORGANIZATION,
+        ] + cls.permissions_for_admin_organization_viewing
+
+    @classproperty
+    def permissions_levels_viewing(
+        cls,
+    ) -> dict[StoredFileAccess, list[StoredFileAccess]]:
+        public = cls.permissions_for_public
+        owner = cls.permissions_for_owner
+        owner_organization = cls.permissions_for_owner_organization_viewing
+        admin_organization = cls.permissions_for_admin_organization_viewing
+        manager_organization = cls.permissions_for_manager_organization_viewing
+        member_organization = cls.permissions_for_member_organization_viewing
+        return {
+            cls.PUBLIC: public,
+            cls.OWNER: owner,
+            cls.OWNERS_ORGANIZATION: owner_organization,
+            cls.ADMINS_ORGANIZATION: admin_organization,
+            cls.MANAGERS_ORGANIZATION: manager_organization,
+            cls.MEMBERS_ORGANIZATION: member_organization,
         }
 
     @classmethod
@@ -85,5 +136,4 @@ class StoredFileAccess(models.TextChoices):
             return StoredFileAccess.MANAGERS_ORGANIZATION
         elif member.has_member_permission:
             return StoredFileAccess.MEMBERS_ORGANIZATION
-        else:
-            return None
+        return None

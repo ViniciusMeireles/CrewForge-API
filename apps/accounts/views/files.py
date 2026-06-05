@@ -80,9 +80,8 @@ class StoredFileViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        auth_user = self.auth_user
         conditions = Q(viewing_permission=StoredFileAccess.PUBLIC)
-        if auth_user:
+        if auth_user := self.auth_user:
             if auth_user.is_superuser:
                 return queryset
             conditions |= Q(
@@ -94,9 +93,12 @@ class StoredFileViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
         if auth_member and auth_member.is_active and auth_member.organization_id:
             allowed_permissions = []
             if max_org_level := StoredFileAccess.max_org_level(member=auth_member):
-                allowed_permissions = StoredFileAccess.permissions_levels.get(
+                allowed_permissions = StoredFileAccess.permissions_levels_viewing.get(
                     max_org_level, []
                 )
+            allowed_permissions = set(allowed_permissions) & set(
+                StoredFileAccess.organization_accesses
+            )
             conditions |= Q(
                 viewing_permission__in=allowed_permissions,
                 organization_id=auth_member.organization_id,

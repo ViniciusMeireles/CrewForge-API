@@ -90,16 +90,32 @@ class StoredFileCreateUpdateModelSerializer(
             return auth_member.organization_id
         return value
 
-    @classmethod
     def _validate_updating_permission(
-        cls,
+        self,
         attrs: dict[str, Any],
         errors: defaultdict[str, set],
     ):
         updating_permission = attrs.get('updating_permission')
         viewing_permission = attrs.get('viewing_permission')
+
+        if (
+            viewing_permission is None
+            and 'viewing_permission' not in attrs.keys()
+            and self.instance
+        ):
+            viewing_permission = self.instance.viewing_permission
+        if (
+            updating_permission is None
+            and 'updating_permission' not in attrs.keys()
+            and self.instance
+        ):
+            updating_permission = self.instance.updating_permission
+
+        if updating_permission is None or viewing_permission is None:
+            return None
+
         invalid_choice_msg = ChoiceField.default_error_messages.get('invalid_choice')
-        for permission, levels in StoredFileAccess.permissions_levels.items():
+        for permission, levels in StoredFileAccess.permissions_levels_updating.items():
             if (
                 permission == StoredFileAccess.PUBLIC
                 and updating_permission == StoredFileAccess.PUBLIC
@@ -119,6 +135,8 @@ class StoredFileCreateUpdateModelSerializer(
         errors: defaultdict[str, set],
     ):
         viewing_permission = attrs.get('viewing_permission')
+        if viewing_permission is None:
+            return None
         auth_user = self.auth_user
 
         invalid_choice_msg = ChoiceField.default_error_messages.get(
@@ -135,7 +153,7 @@ class StoredFileCreateUpdateModelSerializer(
             return None
 
         if max_org_level := StoredFileAccess.max_org_level(member=auth_member):
-            allowed_permissions = StoredFileAccess.permissions_levels.get(
+            allowed_permissions = StoredFileAccess.permissions_levels_viewing.get(
                 max_org_level, []
             )
             if viewing_permission in allowed_permissions:
@@ -148,9 +166,17 @@ class StoredFileCreateUpdateModelSerializer(
         attrs = super().validate(attrs=attrs)
         required_message = serializers.Field.default_error_messages.get('required')
         owner = attrs.get('owner')
+        if owner is None and 'owner' not in attrs and self.instance:
+            owner = self.instance.owner
         organization = attrs.get('organization') or self.auth_organization
-        updating_permission = attrs.get('updating_permission')
-        viewing_permission = attrs.get('viewing_permission')
+        updating_permission = attrs.get(
+            'updating_permission',
+            getattr(self.instance, 'updating_permission', None),
+        )
+        viewing_permission = attrs.get(
+            'viewing_permission',
+            getattr(self.instance, 'viewing_permission', None),
+        )
         access_types = [viewing_permission, updating_permission]
 
         errors = defaultdict(set)
