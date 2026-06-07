@@ -79,6 +79,8 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
         """
         queryset = super().get_queryset()
         if self.action == 'login':
+            if not self.auth_user:
+                return queryset.none()
             return queryset.filter(
                 members__user_id=self.auth_user.id,
                 members__is_active=True,
