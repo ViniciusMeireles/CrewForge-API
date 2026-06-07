@@ -16,5 +16,4 @@ class OrganizationImageFilter(FilterSetMixin, filterset.FilterSet):
         model = OrganizationImage
         fields = {
             'image_type': ['exact'],
-            'is_active': ['exact'],
         }

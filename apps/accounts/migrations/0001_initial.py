@@ -953,6 +953,7 @@ class Migration(migrations.Migration):
                 'ordering': ['-id'],
                 'constraints': [
                     models.UniqueConstraint(
+                        condition=models.Q(('is_active', True)),
                         fields=('profile', 'image_type'),
                         name='unique_profile_image_type',
                         violation_error_message='An image of this type already exists for this profile.',

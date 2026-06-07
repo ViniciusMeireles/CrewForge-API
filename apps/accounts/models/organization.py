@@ -116,6 +116,7 @@ class OrganizationImage(BaseModel):
             models.UniqueConstraint(
                 fields=['profile', 'image_type'],
                 name='unique_profile_image_type',
+                condition=models.Q(is_active=True),
                 violation_error_message=_(
                     'An image of this type already exists for this profile.'
                 ),

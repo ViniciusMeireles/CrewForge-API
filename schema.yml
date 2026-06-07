@@ -528,10 +528,6 @@ paths:
           * `logo_dark` - Logo Dark
           * `logo_light` - Logo Light
       - in: query
-        name: is_active
-        schema:
-          type: boolean
-      - in: query
         name: organization
         schema:
           type: integer
@@ -2683,32 +2679,32 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         file_url:
           type: string
           nullable: true
           readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        size:
-          type: integer
+        updated_at:
+          type: string
+          format: date-time
           readOnly: true
-          description: Size of the file
+          description: When the record was last updated
         content_type:
           type: string
           readOnly: true
@@ -2871,32 +2867,32 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         file_url:
           type: string
           nullable: true
           readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        size:
-          type: integer
+        updated_at:
+          type: string
+          format: date-time
           readOnly: true
-          description: Size of the file
+          description: When the record was last updated
         content_type:
           type: string
           readOnly: true
