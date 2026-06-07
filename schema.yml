@@ -498,6 +498,209 @@ paths:
               schema:
                 $ref: '#/components/schemas/MemberWithInviteCreate'
           description: ''
+  /api/accounts/organization-images/:
+    get:
+      operationId: accounts_organization_images_list
+      description: List all Organization Images.
+      parameters:
+      - in: query
+        name: image_type
+        schema:
+          type: string
+          enum:
+          - cover
+          - favicon
+          - logo
+          - logo_dark
+          - logo_horizontal
+          - logo_light
+          - logo_vertical
+          - og_image
+        description: |-
+          Type of organization image
+
+          * `logo` - Logo
+          * `cover` - Cover
+          * `favicon` - Favicon
+          * `og_image` - Open Graph Image
+          * `logo_horizontal` - Logo Horizontal
+          * `logo_vertical` - Logo Vertical
+          * `logo_dark` - Logo Dark
+          * `logo_light` - Logo Light
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: organization
+        schema:
+          type: integer
+        description: Filter by organization
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationImageList'
+          description: ''
+    post:
+      operationId: accounts_organization_images_create
+      description: Create a new Organization Image.
+      tags:
+      - Organization images
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+  /api/accounts/organization-images/{id}/:
+    get:
+      operationId: accounts_organization_images_retrieve
+      description: Retrieve a specific Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+    put:
+      operationId: accounts_organization_images_update
+      description: Update a Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+    patch:
+      operationId: accounts_organization_images_partial_update
+      description: Partially update a Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationImage'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+    delete:
+      operationId: accounts_organization_images_destroy
+      description: Delete a Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/accounts/organization-images/choices/:
+    get:
+      operationId: accounts_organization_images_choices_retrieve
+      description: List organization images for choices (value/label format).
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationImageChoicesResponseList'
+              examples:
+                ExampleResponse:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - - value: 1
+                        label: Organization image 1
+                      - value: 2
+                        label: Organization image 2
+                  summary: Example response
+          description: List organization images for choices (value/label format).
   /api/accounts/organizations/:
     get:
       operationId: accounts_organizations_list
@@ -1558,6 +1761,26 @@ paths:
           description: List teams for choices (value/label format).
 components:
   schemas:
+    ImageTypeEnum:
+      enum:
+      - logo
+      - cover
+      - favicon
+      - og_image
+      - logo_horizontal
+      - logo_vertical
+      - logo_dark
+      - logo_light
+      type: string
+      description: |-
+        * `logo` - Logo
+        * `cover` - Cover
+        * `favicon` - Favicon
+        * `og_image` - Open Graph Image
+        * `logo_horizontal` - Logo Horizontal
+        * `logo_vertical` - Logo Vertical
+        * `logo_dark` - Logo Dark
+        * `logo_light` - Logo Light
     Invitation:
       type: object
       description: Mixin to validate the role of a user.
@@ -1907,6 +2130,43 @@ components:
       required:
       - label
       - value
+    OrganizationImage:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image_type:
+          allOf:
+          - $ref: '#/components/schemas/ImageTypeEnum'
+          description: |-
+            Type of organization image
+
+            * `logo` - Logo
+            * `cover` - Cover
+            * `favicon` - Favicon
+            * `og_image` - Open Graph Image
+            * `logo_horizontal` - Logo Horizontal
+            * `logo_vertical` - Logo Vertical
+            * `logo_dark` - Logo Dark
+            * `logo_light` - Logo Light
+        image:
+          $ref: '#/components/schemas/StoredFileOrgImage'
+      required:
+      - id
+      - image
+    OrganizationImageChoicesResponse:
+      type: object
+      properties:
+        value:
+          type: integer
+        label:
+          type: string
+      required:
+      - label
+      - value
     OrganizationReady:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2043,6 +2303,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationChoicesResponse'
+    PaginatedOrganizationImageChoicesResponseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationImageChoicesResponse'
+    PaginatedOrganizationImageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationImage'
     PaginatedOrganizationList:
       type: object
       required:
@@ -2306,6 +2612,30 @@ components:
           type: integer
           readOnly: true
           description: Organization to which the user belongs
+    PatchedOrganizationImage:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image_type:
+          allOf:
+          - $ref: '#/components/schemas/ImageTypeEnum'
+          description: |-
+            Type of organization image
+
+            * `logo` - Logo
+            * `cover` - Cover
+            * `favicon` - Favicon
+            * `og_image` - Open Graph Image
+            * `logo_horizontal` - Logo Horizontal
+            * `logo_vertical` - Logo Vertical
+            * `logo_dark` - Logo Dark
+            * `logo_light` - Logo Light
+        image:
+          $ref: '#/components/schemas/StoredFileOrgImage'
     PatchedStoredFileCreateUpdateModel:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2357,32 +2687,32 @@ components:
           type: string
           description: Return the name to download the file.
           readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
     RoleEnum:
       enum:
       - owner
@@ -2545,32 +2875,32 @@ components:
           type: string
           description: Return the name to download the file.
           readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
       required:
       - content_type
       - download_name
@@ -2713,6 +3043,54 @@ components:
       - original_name
       - size
       - updated_at
+      - uuid
+    StoredFileOrgImage:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        file:
+          type: string
+          format: uri
+          writeOnly: true
+          description: File to be stored
+        name:
+          type: string
+          nullable: true
+          description: Name of the file
+          maxLength: 255
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+      required:
+      - content_type
+      - download_name
+      - file
+      - file_url
+      - original_name
+      - size
       - uuid
     Team:
       type: object

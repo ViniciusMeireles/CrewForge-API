@@ -7,6 +7,7 @@ from apps.accounts.views import auth
 from apps.accounts.views.files import StoredFileViewSet
 from apps.accounts.views.invitations import InvitationViewSet
 from apps.accounts.views.members import MemberViewSet
+from apps.accounts.views.organization_images import OrganizationImageViewSet
 from apps.accounts.views.organizations import OrganizationViewSet
 from apps.accounts.views.signup import SignupViewSet
 
@@ -19,6 +20,9 @@ router.register(r'organizations', OrganizationViewSet, basename='organizations')
 router.register(r'members', MemberViewSet, basename='members')
 router.register(r'invitations', InvitationViewSet, basename='invitations')
 router.register(r'stored-files', StoredFileViewSet, basename='stored_files')
+router.register(
+    r'organization-images', OrganizationImageViewSet, basename='organization_images'
+)
 
 
 authentication_urlpatterns = [

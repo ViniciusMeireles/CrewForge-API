@@ -15,6 +15,17 @@ class MemberRoleChoices(models.TextChoices):
     MEMBER = 'member', _('Member')
 
 
+class OrganizationImageTypeChoices(models.TextChoices):
+    LOGO = 'logo', _('Logo')
+    COVER = 'cover', _('Cover')
+    FAVICON = 'favicon', _('Favicon')
+    OG_IMAGE = 'og_image', _('Open Graph Image')
+    LOGO_HORIZONTAL = 'logo_horizontal', _('Logo Horizontal')
+    LOGO_VERTICAL = 'logo_vertical', _('Logo Vertical')
+    LOGO_DARK = 'logo_dark', _('Logo Dark')
+    LOGO_LIGHT = 'logo_light', _('Logo Light')
+
+
 class StoredFileAccess(models.TextChoices):
     OWNERS_ORGANIZATION = 'owners_organization', _('Owners of Organization')
     ADMINS_ORGANIZATION = 'admins_organization', _('Admins of Organization')
