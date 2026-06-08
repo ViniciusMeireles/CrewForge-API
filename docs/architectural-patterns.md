@@ -28,7 +28,11 @@ CrewForge follows a strict layered architecture with clear separation of concern
 ├─────────────────────────────────┤
 │  Filters                        │  ← Query filtering
 ├─────────────────────────────────┤
+│  Mixins (accounts)              │  ← Reusable view/serializer/filter behaviors
+├─────────────────────────────────┤
 │  Models / Managers / QuerySets  │  ← Data layer
+├─────────────────────────────────┤
+│  Generics (cross-app)           │  ← BaseModel, BaseManager, fields, utils
 ├─────────────────────────────────┤
 │  Database (PostgreSQL)          │  ← Persistence
 └─────────────────────────────────┘
@@ -42,8 +46,16 @@ CrewForge follows a strict layered architecture with clear separation of concern
 | Permissions | `apps/*/permissions/` | Access control, role-based authorization |
 | Serializers | `apps/*/serializers/` | Input validation, output serialization |
 | Filters | `apps/*/filters/` | Query parameter filtering via django-filter |
+| Mixins | `apps/*/mixins/` | Reusable view/serializer/filter/field behaviors |
 | Managers | `apps/*/managers/` | Custom query methods, bulk operations |
 | Models | `apps/*/models/` | Domain entities, field definitions, relationships |
+| Generics | `apps/generics/` | BaseModel, BaseManager, fields, utils, mails |
+| Factories | `apps/*/factories/` | Test data factories (factory-boy) |
+| Choices | `apps/*/choices.py` | Enum definitions for roles, permissions, types |
+| Fields | `apps/*/fields/` | Custom DRF field classes |
+| Emails | `apps/generics/mails/` | EmailBase, CTAEmail, EmailView |
+| Settings | `apps/*/settings.py` | App-specific API settings |
+| Utils | `apps/generics/utils/` | Schema helpers, serializers, shortcuts, models |
 
 ### Data Flow
 
@@ -56,9 +68,25 @@ A typical request flows through:
 5. **Serializer** → validates input or serializes output
 6. **Model/Manager** → executes database operations
 
+All layers depend on the **generics foundation** (`BaseModel`, `BaseManager`,
+`BaseQuerySet`, `RequestUserMixin`, `AuthUserFieldMixin`, schema utils, etc.).
+
 ### ViewSet Composition
 
-Standard viewset MRO follows a fixed order:
+#### Standard MRO
+
+The most common viewset MRO follows a fixed order with an inherited mixin chain:
+
+```
+RequestUserMixin                            (apps/generics/mixins/mixins.py)
+  └── OrganizationScopedRequestMixin        (apps/accounts/mixins/requests.py)
+        ├── ModelViewSetMixin               (apps/accounts/mixins/views.py)
+        └── OrganizationScopedViewSetMixin  (apps/accounts/mixins/views.py)
+              │
+              └── concrete ViewSet
+```
+
+Standard declaration:
 
 ```python
 class MyViewSet(
@@ -71,6 +99,54 @@ class MyViewSet(
     permission_classes = [MyPermission]
     filterset_class = MyFilter
     label_expression = 'name'
+```
+
+Additional attributes commonly used:
+
+| Attribute | Purpose | Example |
+|-----------|---------|---------|
+| `filter_backends` | DRF filter backends | `[backends.DjangoFilterBackend]` (set in all viewsets) |
+| `http_method_names` | Restrict allowed verbs | `['get', 'post']` |
+| `base_filters` | Additional fixed filters | `{'is_active': True}` |
+| `organization_filter` | FK traversal override | `'team__organization_id'` |
+| `lookup_field` | Non-default PK field | `'uuid'` for StoredFile, `'key'` for Invitation |
+| `parser_classes` | Request parsing | `[MultiPartParser, FormParser]` for file uploads |
+
+#### MRO Variations
+
+Not all viewsets follow the standard pattern. The following variations exist:
+
+**Viewsets without `OrganizationScopedViewSetMixin`:**
+
+These resources are not scoped to a single organization for list operations:
+
+- `OrganizationViewSet` — uses `ModelViewSetMixin` only (the model IS the org)
+- `StoredFileViewSet` — uses `ModelViewSetMixin` only (per-file permission model)
+- `OrganizationImageViewSet` — uses `ModelViewSetMixin` only (images are globally visible)
+
+**Viewsets with completely different patterns:**
+
+- `SignupViewSet` — extends `viewsets.ModelViewSet` directly, no mixins, uses
+  `AllowAny` permission, only allows `POST`, uses `@extend_schema_view` directly
+- `TokenObtainPairView` — extends SimpleJWT's `TokenObtainPairView` (not a ModelViewSet)
+- `PasswordResetRequestView` / `PasswordResetConfirmView` — extend `APIView`
+
+#### ViewSet Base Inheritance Chain
+
+The full resolved MRO for a compliant viewset at runtime is:
+
+```
+MyViewSet
+  → OrganizationScopedViewSetMixin
+      → OrganizationScopedRequestMixin
+          → RequestUserMixin              (generics)
+  → ModelViewSetMixin
+      → OrganizationScopedRequestMixin   (via C3 linearization)
+  → viewsets.ModelViewSet
+      → GenericViewSet
+          → ViewSetMixin
+      → CreateModelMixin, ListModelMixin, RetrieveModelMixin,
+        UpdateModelMixin, DestroyModelMixin
 ```
 
 ---
@@ -111,6 +187,9 @@ class TeamViewSet(OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.Mo
 ```
 
 This replaces 8 individual `@extend_schema` decorators with a single annotation.
+Viewsets that add custom actions (e.g., `login`, `create_with_invite`,
+`update_role`, `file`) override the relevant operation with a more specific
+`@extend_schema` decorator on top of the facade.
 
 ### Request Helper Facade
 
@@ -271,6 +350,78 @@ class TestMembersAPITestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, 401)
 ```
 
+> For detailed test structure, naming, coverage matrix, and conventions, see
+> [Test Patterns](./test-patterns.md).
+
+---
+
+## Additional Architectural Patterns
+
+### URL Routing Organization
+
+`config/urls.py` groups URL patterns into categories:
+
+```python
+django_urlpatterns = [...]       # Admin
+third_party_urlpatterns = [...]  # Swagger, ReDoc, Schema, Root redirect
+local_urlpatterns = [...]        # App routers
+```
+
+`apps/accounts/urls.py` further splits into authentication and account routes:
+
+```python
+authentication_urlpatterns = [...]  # Token obtain/refresh/verify, password reset
+accounts_urlpatterns = [...]        # Organizations, members, invitations, files, images
+```
+
+### Serializer Composition
+
+Model serializers compose behaviors through mixin inheritance:
+
+```python
+class MySerializer(
+    ModelSerializerMixin,              # Auto-populates created_by, updated_by, organization
+    serializers.ModelSerializer,
+):
+    ...
+```
+
+Additional mixins for specific needs:
+
+- `ValidateRoleSerializerMixin` — validates role field changes with hierarchy checks
+- `UserTokenSerializerMixin` — injects JWT `refresh`/`access` fields via metaclass
+- `ChoiceSerializer` (`apps/generics/serializers/choices.py`) — value/label output format
+
+### App-Specific Settings
+
+`apps/accounts/settings.py` defines a `api_settings` object (following SimpleJWT's
+pattern) that exposes app-level configuration:
+
+```python
+from apps.accounts.settings import api_settings
+api_settings.UPDATE_LAST_LOGIN
+```
+
+### Custom Serializer Selection
+
+Some viewsets use `get_serializer_class()` instead of a static `serializer_class`
+attribute, returning different serializers based on the current action:
+
+- `MemberViewSet` — different serializers for create, update, and update_role
+- `StoredFileViewSet` — different serializers for create vs. update
+- `TeamMemberViewSet` — different serializers for create vs. update
+
+### Email Subsystem
+
+A complete email composition and preview subsystem lives in `apps/generics/mails/bases.py`:
+
+- `EmailBase` — template method for building and sending HTML emails
+- `CTAEmail` — builder for call-to-action buttons
+- `EmailView` — Django `TemplateView` for previewing emails in development
+- `as_view()` classmethod — converts any `EmailBase` subclass into a Django view
+
+Concrete email classes live in `apps/accounts/emails.py`.
+
 ---
 
 ## Related Patterns
@@ -278,3 +429,4 @@ class TestMembersAPITestCase(APITestCaseMixin, APITestCase):
 - [Structural Patterns](./structural-patterns.md) (Mixin, Abstract Model, Module)
 - [Behavioral Patterns](./behavioral-patterns.md) (Template Method, Strategy, Validation)
 - [Creational Patterns](./creational-patterns.md) (Factory Method, Builder)
+- [Test Patterns](./test-patterns.md) (Modular test structure, coverage matrix)

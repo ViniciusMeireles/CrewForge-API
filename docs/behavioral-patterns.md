@@ -32,14 +32,24 @@ Location: `apps/generics/mails/bases.py`
 
 | Override | Purpose |
 |----------|---------|
+| `template_name` | Django template path |
 | `subject` | Email subject line |
 | `recipient_list` | Default recipients |
-| `template_name` | Django template path |
 | `preheader` | Preview text for email clients |
+| `theme_color` | Brand color for email styling (default `'#002180'`) |
 | `title` | Main heading |
 | `content` | Body content |
+| `logo` | URL or path to logo image |
 | `cta` | `CTAEmail` button instance |
-| `file_path` | Attachment path |
+| `footer_text` | Footer text content |
+| `system_company_address` | Company address in footer |
+| `unsubscribe_url` | Unsubscribe link URL |
+| `file_path` | Path to attachment file |
+| `file_name` | Attachment display name |
+| `file_mimetype` | Attachment MIME type |
+| `from_email` | Sender email (default `settings.FROM_MAIL`) |
+| `language` | Email language (default `settings.LANGUAGE_CODE`) |
+| `system_title` | System title (default `settings.SYSTEM_TITLE`) |
 | `get_preview_kwargs()` | Provide test data for preview mode |
 
 **Usage example:**
@@ -122,8 +132,14 @@ IsAuthenticated (DRF)
   └── IsActiveMember
         └── OrganizationScopedPermission
               ├── MemberPermission
+              ├── InvitationPermission
               ├── TeamPermission
               └── TeamMemberPermission
+
+BasePermission (DRF)
+  ├── StoredFilePermission          # Independent access-level strategy
+  │     └── OrganizationImagePermission  # Delegates to StoredFilePermission
+  └── OrganizationPermission        # Owner-only, not org-scoped (it IS the org)
 ```
 
 ### IsActiveMember
@@ -156,6 +172,14 @@ class OrganizationScopedPermission(IsActiveMember):
     organization_lookup = 'organization_id'
 
     @classmethod
+    def get_request_member(cls, request):
+        return get_member(request)
+
+    @classmethod
+    def get_session_organization_id(cls, request):
+        return get_organization_id(request)
+
+    @classmethod
     def has_organization_scope(cls, request, obj) -> bool:
         organization_id = cls.get_session_organization_id(request)
         return is_same_organization_scope(
@@ -180,21 +204,56 @@ class TeamMemberPermission(OrganizationScopedPermission):
 
 ### Concrete Strategies
 
-Each resource defines its own permission strategy by extending `OrganizationScopedPermission`:
+Each resource defines its own permission strategy by extending `OrganizationScopedPermission` or `BasePermission`:
 
 **MemberPermission** (`apps/accounts/permissions/member.py`):
 - Allows `create_with_invite` without prior auth
 - SAFE methods always allowed for active members
 - Admins can delete members
 - Owners can modify any member; admins can modify non-owners
+- Active members can update their own record (`request.user.id == obj.user_id`)
+
+**InvitationPermission** (`apps/accounts/permissions/invitation.py`):
+- Extends `OrganizationScopedPermission`
+- Write access requires `has_admin_permission` at the permission level
+- Object-level checks match invitation role against auth member's role:
+  - OWNER invitations require owner permission
+  - ADMIN invitations require admin permission
+  - MANAGER invitations require manager permission
+  - MEMBER invitations require member permission
 
 **TeamPermission** (`apps/teams/permissions/team.py`):
+- SAFE methods allowed for all active members
+- Write operations require `has_manager_permission` or team-level admin role
+
+**TeamMemberPermission** (`apps/teams/permissions/team_member.py`):
+- Extends `OrganizationScopedPermission` with `organization_lookup = 'team.organization_id'`
 - SAFE methods allowed for all active members
 - Write operations require `has_manager_permission` or team-level admin role
 
 **OrganizationPermission** (`apps/accounts/permissions/organization.py`):
 - Extends `BasePermission` directly (not org-scoped, since it IS the org)
 - Owner-only modifications, with SAFE methods and login action as exceptions
+- Login action additionally checks that the user is an active member (`is_member`)
+
+**StoredFilePermission** (`apps/accounts/permissions/files.py`):
+- Extends `BasePermission` directly (uses its own access-level strategy)
+- Uses `StoredFileAccess` enum for granular permission levels:
+  - `PUBLIC` — anyone (including anonymous)
+  - `OWNER` — file owner only (by user ID)
+  - `MEMBERS_ORGANIZATION` — any active member in the org
+  - `MANAGERS_ORGANIZATION` — manager role and above
+  - `ADMINS_ORGANIZATION` — admin role and above
+  - `OWNERS_ORGANIZATION` — owner role only
+- Separate `viewing_permission` and `updating_permission` fields
+- Superuser bypasses all checks
+- Cross-org returns 404 (not 403)
+
+**OrganizationImagePermission** (`apps/accounts/permissions/organization_image.py`):
+- Extends `BasePermission` directly
+- Delegates `has_permission` to `StoredFilePermission`
+- Object-level access combines `StoredFilePermission` with admin-level write gate
+- SAFE methods always allowed for reading; writes require admin role in the same org
 
 ---
 
@@ -250,10 +309,25 @@ class UserTokenSerializerMetaclass(SerializerMetaclass):
 
 
 class UserTokenMixin:
+    username_field = get_user_model().USERNAME_FIELD
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._refresh_token = None
+        self._access_token = None
+
+    def get_refresh(self, obj) -> str | None:
+        return self._refresh_token
+
+    def get_access(self, obj) -> str | None:
+        return self._access_token
+
     def set_tokens_for_user(self, user):
         refresh = RefreshToken.for_user(user)
         self._refresh_token = str(refresh)
         self._access_token = str(refresh.access_token)
+        if api_settings.UPDATE_LAST_LOGIN:
+            update_last_login(None, user)
 
 
 class UserTokenSerializerMixin(UserTokenMixin, metaclass=UserTokenSerializerMetaclass):
@@ -271,3 +345,4 @@ class UserTokenSerializerMixin(UserTokenMixin, metaclass=UserTokenSerializerMeta
 - [Structural Patterns](./structural-patterns.md) (Mixin, Abstract Model, Module)
 - [Creational Patterns](./creational-patterns.md) (Factory Method, Builder)
 - [Architectural Patterns](./architectural-patterns.md) (Layered, Facade, Test Infrastructure)
+- [Test Patterns](./test-patterns.md) (Modular test structure, coverage matrix)

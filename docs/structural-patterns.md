@@ -318,9 +318,9 @@ Filters related field querysets to only include active records.
 class PrimaryKeyActiveRelatedFieldMixin:
     def get_queryset(self):
         queryset = super().get_queryset()
-        if hasattr(queryset.model, 'is_active'):
-            return queryset.filter(is_active=True)
-        return queryset
+        model = queryset.model
+        filters = {'is_active': True} if hasattr(model, 'is_active') else {}
+        return queryset.filter(**filters)
 ```
 
 ---
@@ -479,6 +479,7 @@ apps/
 │   ├── forms/               # Django admin forms
 │   ├── management/          # Management commands
 │   ├── templates/           # Email templates
+│   ├── migrations/          # Database migrations
 │   ├── choices.py           # Choice enums
 │   ├── emails.py            # Email classes
 │   ├── settings.py          # App-specific settings
@@ -495,6 +496,7 @@ apps/
 │   ├── managers/
 │   ├── factories/
 │   ├── tests/
+│   ├── migrations/
 │   ├── choices.py
 │   ├── admin.py
 │   ├── apps.py
@@ -506,6 +508,8 @@ apps/
 │   ├── mixins/              # Generic mixins (app-agnostic)
 │   ├── managers/            # Base managers/querysets
 │   ├── factories/           # Factory mixins
+│   ├── tests/               # Test suite
+│   ├── migrations/          # Database migrations
 │   ├── utils/               # Utility functions
 │   └── mails/               # Email base classes
 ```

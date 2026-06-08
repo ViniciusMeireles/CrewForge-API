@@ -122,11 +122,17 @@ should be treated as high impact and accompanied by tests.
 
 ### Tests
 
-- Test files are prefixed with `test_`: `test_organizations.py`,
-  `test_team_members.py`.
-- Test classes are `{Resource}APITestCase`.
-- Test methods are `test_{action}_{scenario}`: `test_create_invitation`,
-  `test_not_permission_member_update`.
+- Follow the **modular test pattern** documented in
+  [`docs/test-patterns.md`](./docs/test-patterns.md).
+- Test files live in a dedicated directory per resource:
+  `tests/test_{resource}/`.
+- One file per concern: `test_model.py`, `test_serializer.py`,
+  `test_crud.py`, `test_permission.py`, `test_filter.py`,
+  `test_choices.py`, `test_integration.py`.
+- Test classes are `{Resource}{Category}TestCase`:
+  `OrganizationImageModelTestCase`.
+- Test methods are `test_{scenario}` (no docstrings):
+  `test_create_duplicate_type_returns_400`.
 
 
 ## Code Organization Rules
@@ -154,6 +160,21 @@ When adding a new API resource, follow this checklist:
 - [ ] tests covering CRUD, permissions, auth, and inactive member scenarios
 - [ ] migration (run `make makemigrations` or `make l_makemigrations`)
 
+When adding tests for a new resource, create the following files inside
+`apps/{app}/tests/test_{resource}/`:
+
+- [ ] `__init__.py`
+- [ ] `test_model.py`
+- [ ] `test_serializer.py`
+- [ ] `test_crud.py`
+- [ ] `test_permission.py`
+- [ ] `test_filter.py`
+- [ ] `test_choices.py`
+- [ ] `test_integration.py`
+
+See [`docs/test-patterns.md`](./docs/test-patterns.md) for the detailed
+conventions.
+
 
 ## Design Patterns Documentation
 
@@ -166,6 +187,8 @@ Detailed pattern documentation is available in `docs/`:
 - `docs/creational-patterns.md` - Creational patterns (Factory Method, Builder)
 - `docs/architectural-patterns.md` - Architectural patterns (Layered, Facade,
   Test Infrastructure)
+- `docs/test-patterns.md` - Test patterns (modular directory structure, naming,
+  coverage matrix, assertions)
 
 
 ## Feature Specifications
@@ -268,6 +291,8 @@ configured paths. Even so, keep those files clean and minimal.
 - API tests currently use DRF `APITestCase` heavily
 - Prefer `factory-boy` factories over manual object creation
 - Test files live under `apps/*/tests/`
+- Follow the **modular test pattern** documented in
+  [`docs/test-patterns.md`](./docs/test-patterns.md) for all new resources
 
 ### Test Infrastructure
 
