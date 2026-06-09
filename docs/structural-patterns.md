@@ -456,6 +456,25 @@ class BaseManager(manager.BaseManager.from_queryset(BaseQuerySet)):
 - `get_or_none()` — returns `None` instead of raising `DoesNotExist`
 - `activate()` / `deactivate()` — bulk operations on active status
 
+**Cascading active filters:**
+When a model has a `ForeignKey` or `OneToOneField` to another active-aware model
+(e.g., `OrganizationProfile.organization`), the queryset should cascade the
+active check. Instead of `Q(is_active=True)`, use
+`Q(organization__is_active=True)`:
+
+```python
+class OrganizationProfileQuerySet(BaseQuerySet):
+    def filter_actives(self):
+        return self.filter(organization__is_active=True)
+
+    def filter_inactives(self):
+        return self.filter(organization__is_active=False)
+```
+
+This ensures that deactivating an organization cascades soft-delete behavior to
+its related resources at the query level. See
+`apps/accounts/managers/organization.py` for the implementation.
+
 ---
 
 ## Module Pattern

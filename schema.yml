@@ -697,6 +697,174 @@ paths:
                         label: Organization image 2
                   summary: Example response
           description: List organization images for choices (value/label format).
+  /api/accounts/organization-profiles/:
+    get:
+      operationId: accounts_organization_profiles_list
+      description: List all Organization Profiles.
+      parameters:
+      - in: query
+        name: description
+        schema:
+          type: string
+      - in: query
+        name: description__icontains
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: website
+        schema:
+          type: string
+      - in: query
+        name: website__icontains
+        schema:
+          type: string
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationProfileList'
+          description: ''
+  /api/accounts/organization-profiles/{id}/:
+    get:
+      operationId: accounts_organization_profiles_retrieve
+      description: Retrieve a specific Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationProfile'
+          description: ''
+    put:
+      operationId: accounts_organization_profiles_update
+      description: Update a Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrganizationProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrganizationProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationProfile'
+          description: ''
+    patch:
+      operationId: accounts_organization_profiles_partial_update
+      description: Partially update a Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationProfile'
+          description: ''
+    delete:
+      operationId: accounts_organization_profiles_destroy
+      description: Delete a Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/accounts/organization-profiles/choices/:
+    get:
+      operationId: accounts_organization_profiles_choices_retrieve
+      description: List organization profiles for choices (value/label format).
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationProfileChoicesResponseList'
+              examples:
+                ExampleResponse:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - - value: 1
+                        label: Organization profile 1
+                      - value: 2
+                        label: Organization profile 2
+                  summary: Example response
+          description: List organization profiles for choices (value/label format).
   /api/accounts/organizations/:
     get:
       operationId: accounts_organizations_list
@@ -2163,6 +2331,41 @@ components:
       required:
       - label
       - value
+    OrganizationProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+          description: Organization website
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+        organization:
+          type: integer
+          readOnly: true
+          description: Organization to which this profile belongs
+      required:
+      - id
+      - organization
+    OrganizationProfileChoicesResponse:
+      type: object
+      properties:
+        value:
+          type: integer
+        label:
+          type: string
+      required:
+      - label
+      - value
     OrganizationReady:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2368,6 +2571,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    PaginatedOrganizationProfileChoicesResponseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationProfileChoicesResponse'
+    PaginatedOrganizationProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationProfile'
     PaginatedStoredFileChoicesResponseList:
       type: object
       required:
@@ -2632,6 +2881,28 @@ components:
             * `logo_light` - Logo Light
         image:
           $ref: '#/components/schemas/StoredFileOrgImage'
+    PatchedOrganizationProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+          description: Organization website
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+        organization:
+          type: integer
+          readOnly: true
+          description: Organization to which this profile belongs
     PatchedStoredFileCreateUpdateModel:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2679,6 +2950,11 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
         file_url:
           type: string
           nullable: true
@@ -2691,24 +2967,19 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
         size:
           type: integer
           readOnly: true
           description: Size of the file
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
     RoleEnum:
       enum:
       - owner
@@ -2867,6 +3138,11 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
         file_url:
           type: string
           nullable: true
@@ -2879,24 +3155,19 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
         size:
           type: integer
           readOnly: true
           description: Size of the file
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
       required:
       - content_type
       - download_name

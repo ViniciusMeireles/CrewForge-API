@@ -134,12 +134,16 @@ IsAuthenticated (DRF)
               ├── MemberPermission
               ├── InvitationPermission
               ├── TeamPermission
-              └── TeamMemberPermission
+              ├── TeamMemberPermission
+              └── OrganizationProfilePermission
 
 BasePermission (DRF)
-  ├── StoredFilePermission          # Independent access-level strategy
-  │     └── OrganizationImagePermission  # Delegates to StoredFilePermission
-  └── OrganizationPermission        # Owner-only, not org-scoped (it IS the org)
+  ├── StoredFilePermission              # Independent access-level strategy
+  │     └── OrganizationImagePermission # Delegates to StoredFilePermission
+  ├── OrganizationAdminObjPermission    # Composable; read-free, write=admin+
+  │     ├── OrganizationProfilePermission
+  │     └── OrganizationImagePermission # uses admin check via composition
+  └── OrganizationPermission            # Owner-only, not org-scoped (it IS the org)
 ```
 
 ### IsActiveMember
@@ -202,6 +206,39 @@ class TeamMemberPermission(OrganizationScopedPermission):
     organization_lookup = 'team.organization_id'
 ```
 
+### OrganizationAdminObjPermission
+
+Location: `apps/accounts/permissions/generics.py`
+
+A reusable composable base for resources where any active member can read but
+admin+ role is required for write. Uses `IsActiveMember` by composition rather
+than inheritance:
+
+```python
+class OrganizationAdminObjPermission(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        member = get_member(request)
+        if not member or not member.is_active:
+            return False
+        if request.method in SAFE_METHODS:
+            return True
+        return member.role >= RoleChoices.ADMIN
+```
+
+**Key design decisions:**
+- Extends `BasePermission`, not `OrganizationScopedPermission` — separates
+  view-level auth from object-level permission logic.
+- Uses `IsActiveMember` by composition (calls `IsActiveMember().has_permission()`
+  or relies on viewsets adding `IsActiveMember` to `permission_classes`).
+- Does **not** override `has_permission` — viewsets must add `IsActiveMember`
+  separately to handle 401/403 at the view level.
+- Subclasses can override `has_object_permission` to add org scoping or other
+  checks after calling `super()`.
+
+**Used by:**
+- `OrganizationProfilePermission` — extends with org scoping
+- `OrganizationImagePermission` — composes it for write admin check
+
 ### Concrete Strategies
 
 Each resource defines its own permission strategy by extending `OrganizationScopedPermission` or `BasePermission`:
@@ -249,10 +286,17 @@ Each resource defines its own permission strategy by extending `OrganizationScop
 - Superuser bypasses all checks
 - Cross-org returns 404 (not 403)
 
+**OrganizationProfilePermission** (`apps/accounts/permissions/organization_profile.py`):
+- Extends `OrganizationAdminObjPermission`
+- Adds organization scoping via `organization_lookup = 'organization_id'`
+- SAFE methods allowed for all active members; writes require admin+ role
+- ViewSet adds `IsActiveMember` to `permission_classes` for view-level auth
+
 **OrganizationImagePermission** (`apps/accounts/permissions/organization_image.py`):
 - Extends `BasePermission` directly
 - Delegates `has_permission` to `StoredFilePermission`
 - Object-level access combines `StoredFilePermission` with admin-level write gate
+- Admin write check refactored to reuse `OrganizationAdminObjPermission` by composition
 - SAFE methods always allowed for reading; writes require admin role in the same org
 
 ---

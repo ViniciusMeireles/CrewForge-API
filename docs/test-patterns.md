@@ -600,3 +600,6 @@ These test directories embody the pattern described here:
 - `apps/accounts/tests/test_stored_files/` — Extended example with 9 files
   (adds `test_download.py` for resource-specific behavior), covering model,
   serializer, CRUD, permission, filter, choices, download, and integration.
+- `apps/accounts/tests/test_organization_profiles/` — Clean example with 8 files,
+  68 tests covering model, serializer, CRUD, permission, filter, choices, and
+  integration.

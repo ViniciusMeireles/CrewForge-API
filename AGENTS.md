@@ -10,6 +10,8 @@ This repository contains **CrewForge**, a Django REST API for managing:
 - teams
 - team memberships
 - stored files
+- organization images
+- organization profiles
 - authentication and password reset
 
 The project centers on **organization-aware access control**. Beyond JWT auth,
@@ -245,6 +247,12 @@ class MyViewSet(
   member but not necessarily object-level org scoping.
 - `organization_lookup` can be overridden for FK traversal
   (e.g., `'team.organization_id'`).
+- `OrganizationAdminObjPermission` (in `apps/accounts/permissions/generics.py`)
+  is a reusable base for resources where any active member can read but admin+
+  role is required for write. It uses `IsActiveMember` by composition and
+  checks `role >= Role.ADMIN` on write. It does **not** override
+  `has_permission` — viewsets must add `IsActiveMember` separately in
+  `permission_classes`.
 - Object-level permissions should always allow SAFE methods (GET, HEAD, OPTIONS)
   before checking write access.
 

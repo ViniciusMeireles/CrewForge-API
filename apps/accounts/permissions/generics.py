@@ -1,4 +1,5 @@
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from apps.accounts.utils.requests import (
     get_member,
@@ -51,3 +52,15 @@ class OrganizationScopedPermission(IsActiveMember):
         return super().has_object_permission(
             request, view, obj
         ) and self.has_organization_scope(request, obj)
+
+
+class OrganizationAdminObjPermission(BasePermission):
+    """Free read for any authenticated active member; write requires admin+ role."""
+
+    def has_object_permission(self, request, view, obj):
+        if not IsActiveMember().has_object_permission(request, view, obj):
+            return False
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        auth_member = get_member(request)
+        return bool(auth_member and auth_member.has_admin_permission)

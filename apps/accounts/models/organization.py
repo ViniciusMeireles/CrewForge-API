@@ -76,6 +76,7 @@ class OrganizationProfile(BaseModel):
     objects = OrganizationProfileManager()
 
     class Meta:
+        ordering = ['-id']
         verbose_name = _('Organization Profile')
         verbose_name_plural = _('Organization Profiles')
 

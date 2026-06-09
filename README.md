@@ -56,6 +56,7 @@ and secure authentication mechanisms.
 - :link: **Team Members**: Represents the association between members and teams, including their roles within the team.
 - :file_folder: **StoredFile**: Represents a file stored in the system with access permissions based on ownership and organization roles.
 - :framed_picture: **OrganizationImage**: Represents a typed image (logo, cover, favicon, etc.) associated with an organization profile, with unique type enforcement per profile.
+- :page_with_curl: **OrganizationProfile**: Extended metadata (website, description, images) linked one-to-one with an organization.
 
 ### Authentication Flow :closed_lock_with_key:
 User login must be performed in **3 steps**:
@@ -89,6 +90,7 @@ Additional authentication-related actions:
 - :office: `/api/accounts/organizations/` - Organization CRUD operations.
 - :closed_lock_with_key: `/api/accounts/organizations/{id}/login/` - Organization login to define session context.
 - :framed_picture: `/api/accounts/organization-images/` - Organization profile image management (typed images per profile).
+- :page_with_curl: `/api/accounts/organization-profiles/` - Organization extended profile (website, description) with admin-level write access.
 - :memo: `/api/accounts/signup/` - User registration with organization creation.
 
 #### Teams Module :jigsaw:
@@ -207,6 +209,7 @@ CrewForge follows established design patterns for maintainability and extensibil
 - :alarm_clock: Invitation expiration controls.
 - :file_folder: File-based access control with role-based permissions (Owner, Owners Organization, Admins Organization, Managers Organization, Members Organization, Public).
 - :framed_picture: Organization image management with admin-level write restrictions and public read access.
+- :page_with_curl: Organization profile management with admin-level write restrictions.
 - :e-mail: Secure password reset workflow.
 - :globe_with_meridians: CORS protection configured for production environments.
 
