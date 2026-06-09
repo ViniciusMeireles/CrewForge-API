@@ -1,6 +1,7 @@
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
-from apps.generics.utils.requests import (
+from apps.accounts.utils.requests import (
     get_member,
     get_organization_id,
     is_same_organization_scope,
@@ -38,15 +39,28 @@ class OrganizationScopedPermission(IsActiveMember):
     def get_session_organization_id(cls, request):
         return get_organization_id(request)
 
-    def has_organization_scope(self, request, obj) -> bool:
-        organization_id = self.get_session_organization_id(request)
+    @classmethod
+    def has_organization_scope(cls, request, obj) -> bool:
+        organization_id = cls.get_session_organization_id(request)
         return is_same_organization_scope(
             obj=obj,
             organization_id=organization_id,
-            lookup=self.organization_lookup,
+            lookup=cls.organization_lookup,
         )
 
     def has_object_permission(self, request, view, obj):
         return super().has_object_permission(
             request, view, obj
         ) and self.has_organization_scope(request, obj)
+
+
+class OrganizationAdminObjPermission(BasePermission):
+    """Free read for any authenticated active member; write requires admin+ role."""
+
+    def has_object_permission(self, request, view, obj):
+        if not IsActiveMember().has_object_permission(request, view, obj):
+            return False
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        auth_member = get_member(request)
+        return bool(auth_member and auth_member.has_admin_permission)

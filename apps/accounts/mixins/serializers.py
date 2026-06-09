@@ -1,8 +1,10 @@
-from apps.generics.fields.fields import FieldMixin
-from apps.generics.fields.relations import PrimaryKeyRelatedField
+from apps.accounts.mixins.fields import (
+    OrganizationScopedFieldMixin,
+    PrimaryKeyRelatedField,
+)
 
 
-class ModelSerializerMixin(FieldMixin):
+class ModelSerializerMixin(OrganizationScopedFieldMixin):
     """
     Mixin for ModelSerializer to add user, member, and organization properties.
     """

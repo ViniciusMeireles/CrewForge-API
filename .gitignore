@@ -1,10 +1,13 @@
 /**/.idea
 /**/.vscode
+/**/.cache
 /**/__pycache__
 /**/.pytest_cache
 /**/.envs
 /**/.env
 /**/staticfiles
+/**/media
+/**/.specs
 .coverage
 htmlcov/
 # Python-generated files

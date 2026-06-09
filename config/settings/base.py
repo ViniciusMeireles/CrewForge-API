@@ -95,6 +95,9 @@ TEMPLATES = [
 ]
 
 STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
@@ -163,8 +166,8 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-MEDIA_URL = os.environ.get('MEDIA_URL')
-MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
+MEDIA_URL = os.environ.get('MEDIA_URL', '/media/')
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', '/media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -180,11 +183,14 @@ EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend'
 )
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 FROM_MAIL = os.environ.get('FROM_MAIL', DEFAULT_FROM_EMAIL)
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+try:
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '25'))
+except ValueError:
+    EMAIL_PORT = None
 
 # Frontend URLs
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
@@ -237,6 +243,9 @@ SPECTACULAR_SETTINGS = {
         'apps.accounts.urls',
         'apps.teams.urls',
     ],
+    'ENUM_NAME_OVERRIDES': {
+        'StoredFileAccess': 'apps.accounts.choices.StoredFileAccess',
+    },
 }
 
 CORS_ALLOWED_ORIGINS = []

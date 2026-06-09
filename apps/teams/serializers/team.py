@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from apps.generics.serializers.mixins import ModelSerializerMixin
+from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.models.team import Team
 from apps.teams.models.team_member import TeamMember

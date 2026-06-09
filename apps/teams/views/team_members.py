@@ -5,9 +5,9 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status as http_status
 from rest_framework import viewsets
 
+from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.generics.utils.models import get_verbose_name
 from apps.generics.utils.schema import extend_schema_model_view_set
-from apps.generics.views.mixins import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.teams.filters.team_member import TeamMemberFilter
 from apps.teams.models.team_member import TeamMember
 from apps.teams.permissions.team_member import TeamMemberPermission

@@ -6,27 +6,29 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "dj-database-url>=3.1.2",
+    "django>=5.2,<5.3",
     "django-cors-headers>=4.9.0",
     "django-filter>=25.2",
-    "djangorestframework>=3.16.1",
+    "djangorestframework>=3.17.1",
     "djangorestframework-simplejwt>=5.5.1",
     "drf-spectacular>=0.29.0",
-    "drf-spectacular-sidecar>=2026.3.1",
-    "gunicorn>=25.1.0",
-    "pillow>=12.1.1",
-    "psycopg>=3.3.3",
+    "drf-spectacular-sidecar>=2026.6.1",
+    "gunicorn>=26.0.0",
+    "pillow>=12.2.0",
+    "psycopg>=3.3.4",
     "python-dotenv>=1.2.2",
+    "uuid6>=2025.0.1",
     "whitenoise>=6.12.0",
 ]
 
 [dependency-groups]
 dev = [
     "django-extensions>=4.1",
-    "djangorestframework-stubs>=3.16.8",
+    "djangorestframework-stubs>=3.17.0",
     "factory-boy>=3.3.3",
-    "pytest-cov>=7.0.0",
+    "pytest-cov>=7.1.0",
     "pytest-django>=4.12.0",
-    "ruff>=0.15.6",
+    "ruff>=0.15.16",
 ]
 
 [tool.ruff]

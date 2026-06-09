@@ -3,7 +3,7 @@ from django.utils.text import slugify
 from factory.django import DjangoModelFactory
 
 from apps.accounts.choices import MemberRoleChoices
-from apps.accounts.models.organization import Organization
+from apps.accounts.models.organization import Organization, OrganizationProfile
 from apps.generics.factories.mixins import ModelFactoryMixin
 
 
@@ -29,3 +29,12 @@ class OrganizationFactory(ModelFactoryMixin, DjangoModelFactory):
             user=owner_user, organization=self, role=MemberRoleChoices.OWNER.value
         )
         self.save()
+
+
+class OrganizationProfileFactory(ModelFactoryMixin, DjangoModelFactory):
+    organization = factory.SubFactory(OrganizationFactory)
+    website = factory.Faker('url')
+    description = factory.Faker('text')
+
+    class Meta:
+        model = OrganizationProfile

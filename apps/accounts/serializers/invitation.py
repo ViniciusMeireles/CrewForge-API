@@ -2,9 +2,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.serializers.mixins import ValidateRoleSerializerMixin
-from apps.generics.serializers.mixins import ModelSerializerMixin
 
 
 class InvitationSerializer(

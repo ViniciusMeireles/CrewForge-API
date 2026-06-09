@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.accounts.filters.members import MemberFilter
+from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.member import Member
 from apps.accounts.permissions.member import MemberPermission
@@ -19,7 +20,6 @@ from apps.accounts.serializers.member import (
 )
 from apps.generics.utils.models import get_verbose_name
 from apps.generics.utils.schema import extend_schema_model_view_set
-from apps.generics.views.mixins import ModelViewSetMixin, OrganizationScopedViewSetMixin
 
 
 @extend_schema_model_view_set(

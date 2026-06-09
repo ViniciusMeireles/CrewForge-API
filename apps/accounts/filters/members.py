@@ -1,7 +1,7 @@
 from django_filters.rest_framework import filters, filterset
 
+from apps.accounts.mixins.filters import FilterSetMixin
 from apps.accounts.models.member import Member
-from apps.generics.filters.mixins import FilterSetMixin
 
 
 class MemberFilter(FilterSetMixin, filterset.FilterSet):

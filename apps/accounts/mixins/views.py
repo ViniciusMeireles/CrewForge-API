@@ -2,11 +2,11 @@ from django.db.models.expressions import Combinable, F
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.generics.mixins.mixins import RequestUserMixin
+from apps.accounts.mixins.requests import OrganizationScopedRequestMixin
 from apps.generics.serializers.choices import ChoiceSerializer
 
 
-class ModelViewSetMixin(RequestUserMixin):
+class ModelViewSetMixin(OrganizationScopedRequestMixin):
     """Mixin for views to add user, member, and organization properties."""
 
     def perform_destroy(self, instance):
@@ -54,7 +54,7 @@ class ModelViewSetMixin(RequestUserMixin):
         return Response(serializer.data)
 
 
-class OrganizationScopedViewSetMixin(RequestUserMixin):
+class OrganizationScopedViewSetMixin(OrganizationScopedRequestMixin):
     organization_filter = 'organization_id'
     base_filters = {}
 

@@ -17,7 +17,7 @@ class TeamMemberAPITestCase(APITestCaseMixin, APITestCase):
         cls.detail_url_name = 'teams:team_members-detail'
         cls.list_url_name = 'teams:team_members-list'
         cls.list_url = reverse(cls.list_url_name)
-        cls.choices_url = reverse('teams:team_members-choices')
+        cls.choices_url = reverse(viewname='teams:team_members-choices')
 
     def setUp(self):
         self.organization = self.new_account()

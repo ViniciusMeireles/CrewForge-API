@@ -52,22 +52,24 @@ class Member(BaseModel):
 
     @property
     def is_owner(self) -> bool:
-        return self.role == MemberRoleChoices.OWNER
+        return self.role == MemberRoleChoices.OWNER and self.is_active
 
     @property
     def is_admin(self) -> bool:
-        return self.role == MemberRoleChoices.ADMIN
+        return self.role == MemberRoleChoices.ADMIN and self.is_active
 
     @property
     def is_manager(self) -> bool:
-        return self.role == MemberRoleChoices.MANAGER
+        return self.role == MemberRoleChoices.MANAGER and self.is_active
 
     @property
     def is_member(self) -> bool:
-        return self.role == MemberRoleChoices.MEMBER
+        return self.role == MemberRoleChoices.MEMBER and self.is_active
 
     @property
     def has_owner_permission(self) -> bool:
+        if not self.is_active:
+            return False
         return self.is_owner or self.user.is_superuser
 
     @property

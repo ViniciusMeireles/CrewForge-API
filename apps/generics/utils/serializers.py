@@ -14,4 +14,6 @@ def get_user_of_context(context: dict) -> User | None:
         return None
     elif not user.is_authenticated:
         return None
+    if not user.is_active:
+        return None
     return user

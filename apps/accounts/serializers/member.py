@@ -2,13 +2,13 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 
+from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
 from apps.accounts.serializers.mixins import (
     UserTokenSerializerMixin,
     ValidateRoleSerializerMixin,
 )
 from apps.accounts.serializers.user import UserGetOrCreateSerializer, UserSerializer
-from apps.generics.serializers.mixins import ModelSerializerMixin
 
 
 class MemberModelSerializer(

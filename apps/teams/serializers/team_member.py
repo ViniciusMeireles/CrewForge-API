@@ -2,7 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.fields import empty
 
-from apps.generics.serializers.mixins import ModelSerializerMixin
+from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.teams.models.team_member import TeamMember
 
 

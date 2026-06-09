@@ -19,7 +19,7 @@ class InvitationAPITestCase(APITestCaseMixin, APITestCase):
         cls.detail_url_name = 'accounts:invitations-detail'
         cls.list_url_name = 'accounts:invitations-list'
         cls.list_url = reverse(cls.list_url_name)
-        cls.choices_url = reverse('accounts:invitations-choices')
+        cls.choices_url = reverse(viewname='accounts:invitations-choices')
 
     def setUp(self):
         self.organization = self.new_account()

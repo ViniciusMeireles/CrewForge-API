@@ -1,8 +1,8 @@
 from rest_framework import permissions
 
 from apps.accounts.choices import MemberRoleChoices
-from apps.generics.permissions import OrganizationScopedPermission
-from apps.generics.utils.requests import get_member
+from apps.accounts.permissions.generics import OrganizationScopedPermission
+from apps.accounts.utils.requests import get_member
 
 
 class InvitationPermission(OrganizationScopedPermission):

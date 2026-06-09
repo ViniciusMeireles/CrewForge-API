@@ -23,7 +23,7 @@ class BaseModel(models.Model):
     )
     created_by = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='+',
         verbose_name=_('Created By'),
         help_text=_('User who created the record'),
@@ -32,7 +32,7 @@ class BaseModel(models.Model):
     )
     updated_by = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='+',
         verbose_name=_('Updated By'),
         help_text=_('User who last updated the record'),

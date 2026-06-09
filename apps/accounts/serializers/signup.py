@@ -3,12 +3,12 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.accounts.choices import MemberRoleChoices
+from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.organization import OrganizationSerializer
 from apps.accounts.serializers.user import UserSerializer
-from apps.generics.serializers.mixins import ModelSerializerMixin
 
 User = get_user_model()
 

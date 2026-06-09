@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 from apps.accounts.models.organization import Organization
-from apps.generics.utils.requests import get_member
+from apps.accounts.utils.requests import get_member
 
 
 class OrganizationPermission(permissions.BasePermission):

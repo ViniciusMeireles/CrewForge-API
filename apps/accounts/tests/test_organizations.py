@@ -16,7 +16,7 @@ class OrganizationAPITestCase(APITestCaseMixin, APITestCase):
         cls.list_url_name = 'accounts:organizations-list'
         cls.login_url_name = 'accounts:organizations-login'
         cls.list_url = reverse(cls.list_url_name)
-        cls.choices_url = reverse('accounts:organizations-choices')
+        cls.choices_url = reverse(viewname='accounts:organizations-choices')
 
     def test_list_and_coices_organizations(self):
         """Test the list and choices views of the organization."""

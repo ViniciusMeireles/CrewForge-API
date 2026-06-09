@@ -1,6 +1,6 @@
 from django_filters.rest_framework import filters, filterset
 
-from apps.generics.filters.mixins import FilterSetMixin
+from apps.accounts.mixins.filters import FilterSetMixin
 from apps.teams.models.team_member import TeamMember
 
 

@@ -2,9 +2,20 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.accounts.choices import MemberRoleChoices
+from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
-from apps.accounts.models.organization import Organization
-from apps.generics.serializers.mixins import ModelSerializerMixin
+from apps.accounts.models.organization import Organization, OrganizationProfile
+
+
+class OrganizationReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = [
+            'id',
+            'name',
+            'slug',
+        ]
+        read_only_fields = fields
 
 
 class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
@@ -30,4 +41,7 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
             )
             instance.owner = member
             instance.save(update_fields=['owner'])
+            OrganizationProfile.objects.create(
+                organization=instance,
+            )
         return instance

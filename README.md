@@ -41,6 +41,8 @@ and secure authentication mechanisms.
 - :closed_lock_with_key: **Authentication**: JWT-based authentication with refresh token support and password reset functionality.
 - :crown: **Role-Based Access Control**: Four-tier role system (Owner, Admin, Manager, Member) with hierarchical permissions.
 - :mag: **Comprehensive Filtering**: Advanced query parameter support for searching and filtering across all resources.
+- :file_folder: **File Storage**: Secure file upload and download with role-based access control (Owner, Owners Org, Admins Org, Managers Org, Members Org, Public).
+- :framed_picture: **Organization Images**: Profile images with typed variants (logo, cover, favicon, og_image, logo_horizontal, logo_vertical, logo_dark, logo_light) per organization.
 - :books: **Comprehensive API Documentation**: Auto-generated Swagger documentation for easy API exploration and testing.
 
 
@@ -52,6 +54,9 @@ and secure authentication mechanisms.
 - :jigsaw: **Team**: Represents a group within an organization, supporting nested structures and custom roles.
 - :incoming_envelope: **Invitation**: Represents an invitation sent to a user to join an organization or team with specific roles.
 - :link: **Team Members**: Represents the association between members and teams, including their roles within the team.
+- :file_folder: **StoredFile**: Represents a file stored in the system with access permissions based on ownership and organization roles.
+- :framed_picture: **OrganizationImage**: Represents a typed image (logo, cover, favicon, etc.) associated with an organization profile, with unique type enforcement per profile.
+- :page_with_curl: **OrganizationProfile**: Extended metadata (website, description, images) linked one-to-one with an organization.
 
 ### Authentication Flow :closed_lock_with_key:
 User login must be performed in **3 steps**:
@@ -79,9 +84,13 @@ Additional authentication-related actions:
 ### Endpoint Structure :satellite:
 #### Accounts Module :busts_in_silhouette:
 - :incoming_envelope: `/api/accounts/invitations/` - Invitation management.
+- :file_folder: `/api/accounts/stored-files/` - File management (upload, list, retrieve, update, delete).
+- :file_folder: `/api/accounts/stored-files/{uuid}/file/` - Download a stored file (supports `?download=true` for attachment).
 - :bust_in_silhouette: `/api/accounts/members/` - Organization member management.
 - :office: `/api/accounts/organizations/` - Organization CRUD operations.
 - :closed_lock_with_key: `/api/accounts/organizations/{id}/login/` - Organization login to define session context.
+- :framed_picture: `/api/accounts/organization-images/` - Organization profile image management (typed images per profile).
+- :page_with_curl: `/api/accounts/organization-profiles/` - Organization extended profile (website, description) with admin-level write access.
 - :memo: `/api/accounts/signup/` - User registration with organization creation.
 
 #### Teams Module :jigsaw:
@@ -183,11 +192,24 @@ Interactive API documentation is available at `http://localhost:8000/api/schema/
 - Authentication support for testing secured endpoints.
 
 
+## Design Patterns :blue_book:
+CrewForge follows established design patterns for maintainability and extensibility. Documentation is available in the `docs/` directory:
+
+- [Structural Patterns](./docs/structural-patterns.md) - Mixin, Abstract Model, and Module patterns
+- [Behavioral Patterns](./docs/behavioral-patterns.md) - Template Method, Strategy, and Validation patterns
+- [Creational Patterns](./docs/creational-patterns.md) - Factory Method and Builder patterns
+- [Architectural Patterns](./docs/architectural-patterns.md) - Layered Architecture, Facade, and Test Infrastructure
+- [Test Patterns](./docs/test-patterns.md) - Modular test structure, naming conventions, and coverage matrix
+
+
 ## Security Features :shield:
 - :closed_lock_with_key: JWT-based authentication with access and refresh tokens.
 - :lock: Password reset functionality with secure token handling.
 - :crown: Role-based access control with hierarchical permissions.
 - :alarm_clock: Invitation expiration controls.
+- :file_folder: File-based access control with role-based permissions (Owner, Owners Organization, Admins Organization, Managers Organization, Members Organization, Public).
+- :framed_picture: Organization image management with admin-level write restrictions and public read access.
+- :page_with_curl: Organization profile management with admin-level write restrictions.
 - :e-mail: Secure password reset workflow.
 - :globe_with_meridians: CORS protection configured for production environments.
 

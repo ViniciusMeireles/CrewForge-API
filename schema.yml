@@ -498,6 +498,373 @@ paths:
               schema:
                 $ref: '#/components/schemas/MemberWithInviteCreate'
           description: ''
+  /api/accounts/organization-images/:
+    get:
+      operationId: accounts_organization_images_list
+      description: List all Organization Images.
+      parameters:
+      - in: query
+        name: image_type
+        schema:
+          type: string
+          enum:
+          - cover
+          - favicon
+          - logo
+          - logo_dark
+          - logo_horizontal
+          - logo_light
+          - logo_vertical
+          - og_image
+        description: |-
+          Type of organization image
+
+          * `logo` - Logo
+          * `cover` - Cover
+          * `favicon` - Favicon
+          * `og_image` - Open Graph Image
+          * `logo_horizontal` - Logo Horizontal
+          * `logo_vertical` - Logo Vertical
+          * `logo_dark` - Logo Dark
+          * `logo_light` - Logo Light
+      - in: query
+        name: organization
+        schema:
+          type: integer
+        description: Filter by organization
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationImageList'
+          description: ''
+    post:
+      operationId: accounts_organization_images_create
+      description: Create a new Organization Image.
+      tags:
+      - Organization images
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+  /api/accounts/organization-images/{id}/:
+    get:
+      operationId: accounts_organization_images_retrieve
+      description: Retrieve a specific Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+    put:
+      operationId: accounts_organization_images_update
+      description: Update a Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrganizationImage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+    patch:
+      operationId: accounts_organization_images_partial_update
+      description: Partially update a Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationImage'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationImage'
+          description: ''
+    delete:
+      operationId: accounts_organization_images_destroy
+      description: Delete a Organization Image.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Image.
+        required: true
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/accounts/organization-images/choices/:
+    get:
+      operationId: accounts_organization_images_choices_retrieve
+      description: List organization images for choices (value/label format).
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationImageChoicesResponseList'
+              examples:
+                ExampleResponse:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - - value: 1
+                        label: Organization image 1
+                      - value: 2
+                        label: Organization image 2
+                  summary: Example response
+          description: List organization images for choices (value/label format).
+  /api/accounts/organization-profiles/:
+    get:
+      operationId: accounts_organization_profiles_list
+      description: List all Organization Profiles.
+      parameters:
+      - in: query
+        name: description
+        schema:
+          type: string
+      - in: query
+        name: description__icontains
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: website
+        schema:
+          type: string
+      - in: query
+        name: website__icontains
+        schema:
+          type: string
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationProfileList'
+          description: ''
+  /api/accounts/organization-profiles/{id}/:
+    get:
+      operationId: accounts_organization_profiles_retrieve
+      description: Retrieve a specific Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationProfile'
+          description: ''
+    put:
+      operationId: accounts_organization_profiles_update
+      description: Update a Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrganizationProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrganizationProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationProfile'
+          description: ''
+    patch:
+      operationId: accounts_organization_profiles_partial_update
+      description: Partially update a Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationProfile'
+          description: ''
+    delete:
+      operationId: accounts_organization_profiles_destroy
+      description: Delete a Organization Profile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization Profile.
+        required: true
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/accounts/organization-profiles/choices/:
+    get:
+      operationId: accounts_organization_profiles_choices_retrieve
+      description: List organization profiles for choices (value/label format).
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationProfileChoicesResponseList'
+              examples:
+                ExampleResponse:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - - value: 1
+                        label: Organization profile 1
+                      - value: 2
+                        label: Organization profile 2
+                  summary: Example response
+          description: List organization profiles for choices (value/label format).
   /api/accounts/organizations/:
     get:
       operationId: accounts_organizations_list
@@ -731,6 +1098,317 @@ paths:
               schema:
                 $ref: '#/components/schemas/Signup'
           description: ''
+  /api/accounts/stored-files/:
+    get:
+      operationId: accounts_stored_files_list
+      description: List all Stored Files.
+      parameters:
+      - in: query
+        name: content_type
+        schema:
+          type: string
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - in: query
+        name: organization
+        schema:
+          type: integer
+      - in: query
+        name: original_name
+        schema:
+          type: string
+      - in: query
+        name: original_name__icontains
+        schema:
+          type: string
+      - in: query
+        name: owner
+        schema:
+          type: integer
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: size
+        schema:
+          type: integer
+      - in: query
+        name: size__gt
+        schema:
+          type: integer
+      - in: query
+        name: size__gte
+        schema:
+          type: integer
+      - in: query
+        name: size__lt
+        schema:
+          type: integer
+      - in: query
+        name: size__lte
+        schema:
+          type: integer
+      - in: query
+        name: updating_permission
+        schema:
+          type: string
+          enum:
+          - admins_organization
+          - managers_organization
+          - members_organization
+          - owner
+          - owners_organization
+          - public
+        description: |-
+          Access level for updating the file
+
+          * `owners_organization` - Owners of Organization
+          * `admins_organization` - Admins of Organization
+          * `managers_organization` - Managers of Organization
+          * `members_organization` - Members of Organization
+          * `owner` - Owner
+          * `public` - Public
+      - in: query
+        name: updating_permission__in
+        schema:
+          type: array
+          items:
+            type: string
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: viewing_permission
+        schema:
+          type: string
+          enum:
+          - admins_organization
+          - managers_organization
+          - members_organization
+          - owner
+          - owners_organization
+          - public
+        description: |-
+          Access level for viewing the file
+
+          * `owners_organization` - Owners of Organization
+          * `admins_organization` - Admins of Organization
+          * `managers_organization` - Managers of Organization
+          * `members_organization` - Members of Organization
+          * `owner` - Owner
+          * `public` - Public
+      - in: query
+        name: viewing_permission__in
+        schema:
+          type: array
+          items:
+            type: string
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      tags:
+      - Stored files
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStoredFileListModelList'
+          description: ''
+    post:
+      operationId: accounts_stored_files_create
+      description: Create a new Stored File.
+      tags:
+      - Stored files
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredFileDetailModel'
+          description: ''
+  /api/accounts/stored-files/{uuid}/:
+    get:
+      operationId: accounts_stored_files_retrieve
+      description: Retrieve a specific Stored File.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Unique identifier for the file
+        required: true
+      tags:
+      - Stored files
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredFileDetailModel'
+          description: ''
+    put:
+      operationId: accounts_stored_files_update
+      description: Update a Stored File.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Unique identifier for the file
+        required: true
+      tags:
+      - Stored files
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredFileDetailModel'
+          description: ''
+    patch:
+      operationId: accounts_stored_files_partial_update
+      description: Partially update a Stored File.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Unique identifier for the file
+        required: true
+      tags:
+      - Stored files
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStoredFileCreateUpdateModel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStoredFileCreateUpdateModel'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredFileDetailModel'
+          description: ''
+    delete:
+      operationId: accounts_stored_files_destroy
+      description: Delete a Stored File.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Unique identifier for the file
+        required: true
+      tags:
+      - Stored files
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/accounts/stored-files/{uuid}/file/:
+    get:
+      operationId: accounts_stored_files_file_retrieve
+      description: Download a file.
+      parameters:
+      - in: query
+        name: download
+        schema:
+          type: boolean
+        description: Whether to download the file as an attachment or not.
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+          description: Unique identifier for the file
+        required: true
+      tags:
+      - Stored files
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                format: byte
+          description: The file content.
+        '404':
+          description: File not found.
+  /api/accounts/stored-files/choices/:
+    get:
+      operationId: accounts_stored_files_choices_retrieve
+      description: List stored files for choices (value/label format).
+      tags:
+      - Stored files
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStoredFileChoicesResponseList'
+              examples:
+                ExampleResponse:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - - value: 1
+                        label: Stored file 1
+                      - value: 2
+                        label: Stored file 2
+                  summary: Example response
+          description: List stored files for choices (value/label format).
   /api/auth/password/reset/:
     post:
       operationId: auth_password_reset_create
@@ -1247,6 +1925,26 @@ paths:
           description: List teams for choices (value/label format).
 components:
   schemas:
+    ImageTypeEnum:
+      enum:
+      - logo
+      - cover
+      - favicon
+      - og_image
+      - logo_horizontal
+      - logo_vertical
+      - logo_dark
+      - logo_light
+      type: string
+      description: |-
+        * `logo` - Logo
+        * `cover` - Cover
+        * `favicon` - Favicon
+        * `og_image` - Open Graph Image
+        * `logo_horizontal` - Logo Horizontal
+        * `logo_vertical` - Logo Vertical
+        * `logo_dark` - Logo Dark
+        * `logo_light` - Logo Light
     Invitation:
       type: object
       description: Mixin to validate the role of a user.
@@ -1596,6 +2294,99 @@ components:
       required:
       - label
       - value
+    OrganizationImage:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image_type:
+          allOf:
+          - $ref: '#/components/schemas/ImageTypeEnum'
+          description: |-
+            Type of organization image
+
+            * `logo` - Logo
+            * `cover` - Cover
+            * `favicon` - Favicon
+            * `og_image` - Open Graph Image
+            * `logo_horizontal` - Logo Horizontal
+            * `logo_vertical` - Logo Vertical
+            * `logo_dark` - Logo Dark
+            * `logo_light` - Logo Light
+        image:
+          $ref: '#/components/schemas/StoredFileOrgImage'
+      required:
+      - id
+      - image
+    OrganizationImageChoicesResponse:
+      type: object
+      properties:
+        value:
+          type: integer
+        label:
+          type: string
+      required:
+      - label
+      - value
+    OrganizationProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+          description: Organization website
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+        organization:
+          type: integer
+          readOnly: true
+          description: Organization to which this profile belongs
+      required:
+      - id
+      - organization
+    OrganizationProfileChoicesResponse:
+      type: object
+      properties:
+        value:
+          type: integer
+        label:
+          type: string
+      required:
+      - label
+      - value
+    OrganizationReady:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Organization name
+        slug:
+          type: string
+          readOnly: true
+          description: Organization slug
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
     PaginatedInvitationChoicesResponseList:
       type: object
       required:
@@ -1711,6 +2502,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationChoicesResponse'
+    PaginatedOrganizationImageChoicesResponseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationImageChoicesResponse'
+    PaginatedOrganizationImageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationImage'
     PaginatedOrganizationList:
       type: object
       required:
@@ -1734,6 +2571,98 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    PaginatedOrganizationProfileChoicesResponseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationProfileChoicesResponse'
+    PaginatedOrganizationProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationProfile'
+    PaginatedStoredFileChoicesResponseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoredFileChoicesResponse'
+    PaginatedStoredFileListModelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoredFileListModel'
     PaginatedTeamChoicesResponseList:
       type: object
       required:
@@ -1928,6 +2857,129 @@ components:
           type: integer
           readOnly: true
           description: Organization to which the user belongs
+    PatchedOrganizationImage:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image_type:
+          allOf:
+          - $ref: '#/components/schemas/ImageTypeEnum'
+          description: |-
+            Type of organization image
+
+            * `logo` - Logo
+            * `cover` - Cover
+            * `favicon` - Favicon
+            * `og_image` - Open Graph Image
+            * `logo_horizontal` - Logo Horizontal
+            * `logo_vertical` - Logo Vertical
+            * `logo_dark` - Logo Dark
+            * `logo_light` - Logo Light
+        image:
+          $ref: '#/components/schemas/StoredFileOrgImage'
+    PatchedOrganizationProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+          description: Organization website
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+        organization:
+          type: integer
+          readOnly: true
+          description: Organization to which this profile belongs
+    PatchedStoredFileCreateUpdateModel:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        file:
+          type: string
+          format: uri
+          writeOnly: true
+          description: File to be stored
+        name:
+          type: string
+          nullable: true
+          description: Name of the file
+          maxLength: 255
+        viewing_permission:
+          allOf:
+          - $ref: '#/components/schemas/StoredFileAccess'
+          description: |-
+            Access level for viewing the file
+
+            * `owners_organization` - Owners of Organization
+            * `admins_organization` - Admins of Organization
+            * `managers_organization` - Managers of Organization
+            * `members_organization` - Members of Organization
+            * `owner` - Owner
+            * `public` - Public
+        updating_permission:
+          allOf:
+          - $ref: '#/components/schemas/StoredFileAccess'
+          description: |-
+            Access level for updating the file
+
+            * `owners_organization` - Owners of Organization
+            * `admins_organization` - Admins of Organization
+            * `managers_organization` - Managers of Organization
+            * `members_organization` - Members of Organization
+            * `owner` - Owner
+            * `public` - Public
+        owner:
+          type: integer
+          nullable: true
+          description: Owner of the file
+        organization:
+          type: integer
+          nullable: true
+          description: Organization to which the file belongs
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
     RoleEnum:
       enum:
       - owner
@@ -2013,6 +3065,300 @@ components:
       - updated_at
       - updated_by
       - user
+    StoredFileAccess:
+      enum:
+      - owners_organization
+      - admins_organization
+      - managers_organization
+      - members_organization
+      - owner
+      - public
+      type: string
+      description: |-
+        * `owners_organization` - Owners of Organization
+        * `admins_organization` - Admins of Organization
+        * `managers_organization` - Managers of Organization
+        * `members_organization` - Members of Organization
+        * `owner` - Owner
+        * `public` - Public
+    StoredFileChoicesResponse:
+      type: object
+      properties:
+        value:
+          type: integer
+        label:
+          type: string
+      required:
+      - label
+      - value
+    StoredFileCreateUpdateModel:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        file:
+          type: string
+          format: uri
+          writeOnly: true
+          description: File to be stored
+        name:
+          type: string
+          nullable: true
+          description: Name of the file
+          maxLength: 255
+        viewing_permission:
+          allOf:
+          - $ref: '#/components/schemas/StoredFileAccess'
+          description: |-
+            Access level for viewing the file
+
+            * `owners_organization` - Owners of Organization
+            * `admins_organization` - Admins of Organization
+            * `managers_organization` - Managers of Organization
+            * `members_organization` - Members of Organization
+            * `owner` - Owner
+            * `public` - Public
+        updating_permission:
+          allOf:
+          - $ref: '#/components/schemas/StoredFileAccess'
+          description: |-
+            Access level for updating the file
+
+            * `owners_organization` - Owners of Organization
+            * `admins_organization` - Admins of Organization
+            * `managers_organization` - Managers of Organization
+            * `members_organization` - Members of Organization
+            * `owner` - Owner
+            * `public` - Public
+        owner:
+          type: integer
+          nullable: true
+          description: Owner of the file
+        organization:
+          type: integer
+          nullable: true
+          description: Organization to which the file belongs
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+      required:
+      - content_type
+      - download_name
+      - file
+      - file_url
+      - original_name
+      - size
+      - updated_at
+      - uuid
+    StoredFileDetailModel:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        name:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Name of the file
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        viewing_permission:
+          allOf:
+          - $ref: '#/components/schemas/StoredFileAccess'
+          readOnly: true
+          description: |-
+            Access level for viewing the file
+
+            * `owners_organization` - Owners of Organization
+            * `admins_organization` - Admins of Organization
+            * `managers_organization` - Managers of Organization
+            * `members_organization` - Members of Organization
+            * `owner` - Owner
+            * `public` - Public
+        updating_permission:
+          allOf:
+          - $ref: '#/components/schemas/StoredFileAccess'
+          readOnly: true
+          description: |-
+            Access level for updating the file
+
+            * `owners_organization` - Owners of Organization
+            * `admins_organization` - Admins of Organization
+            * `managers_organization` - Managers of Organization
+            * `members_organization` - Members of Organization
+            * `owner` - Owner
+            * `public` - Public
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/UserReady'
+          nullable: true
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/OrganizationReady'
+          nullable: true
+      required:
+      - content_type
+      - download_name
+      - file_url
+      - name
+      - original_name
+      - size
+      - updated_at
+      - updating_permission
+      - uuid
+      - viewing_permission
+    StoredFileListModel:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        name:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Name of the file
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+      required:
+      - content_type
+      - download_name
+      - file_url
+      - name
+      - original_name
+      - size
+      - updated_at
+      - uuid
+    StoredFileOrgImage:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        file:
+          type: string
+          format: uri
+          writeOnly: true
+          description: File to be stored
+        name:
+          type: string
+          nullable: true
+          description: Name of the file
+          maxLength: 255
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+      required:
+      - content_type
+      - download_name
+      - file
+      - file_url
+      - original_name
+      - size
+      - uuid
     Team:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2327,23 +3673,25 @@ components:
           readOnly: true
         username:
           type: string
+          readOnly: true
           description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
             only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
         email:
           type: string
           format: email
+          readOnly: true
           title: Email address
-          maxLength: 254
         first_name:
           type: string
-          maxLength: 150
+          readOnly: true
         last_name:
           type: string
-          maxLength: 150
+          readOnly: true
       required:
+      - email
+      - first_name
       - id
+      - last_name
       - username
   securitySchemes:
     jwtAuth:
