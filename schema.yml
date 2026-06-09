@@ -905,7 +905,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedOrganizationList'
+                $ref: '#/components/schemas/PaginatedOrganizationListList'
           description: ''
     post:
       operationId: accounts_organizations_create
@@ -2236,6 +2236,8 @@ components:
         id:
           type: integer
           readOnly: true
+        profile:
+          $ref: '#/components/schemas/OrganizationProfileRelated'
         is_active:
           type: boolean
           readOnly: true
@@ -2331,6 +2333,29 @@ components:
       required:
       - label
       - value
+    OrganizationList:
+      type: object
+      description: Serializer for the Organization model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Organization name
+          maxLength: 255
+        slug:
+          type: string
+          description: Organization slug
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        profile:
+          type: integer
+      required:
+      - id
+      - name
+      - profile
+      - slug
     OrganizationProfile:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2366,6 +2391,26 @@ components:
       required:
       - label
       - value
+    OrganizationProfileRelated:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+          description: Organization website
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+      required:
+      - id
     OrganizationReady:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2548,7 +2593,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationImage'
-    PaginatedOrganizationList:
+    PaginatedOrganizationListList:
       type: object
       required:
       - count
@@ -2570,7 +2615,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/Organization'
+            $ref: '#/components/schemas/OrganizationList'
     PaginatedOrganizationProfileChoicesResponseList:
       type: object
       required:
@@ -2950,28 +2995,14 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
         file_url:
           type: string
           nullable: true
@@ -2980,6 +3011,20 @@ components:
           type: integer
           readOnly: true
           description: Size of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
     RoleEnum:
       enum:
       - owner
@@ -3138,28 +3183,14 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
         file_url:
           type: string
           nullable: true
@@ -3168,6 +3199,20 @@ components:
           type: integer
           readOnly: true
           description: Size of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
       required:
       - content_type
       - download_name

@@ -15,8 +15,11 @@ from apps.accounts.filters.organization import OrganizationFilter
 from apps.accounts.mixins.views import ModelViewSetMixin
 from apps.accounts.models.organization import Organization
 from apps.accounts.permissions.organization import OrganizationPermission
-from apps.accounts.serializers.organization import OrganizationSerializer
-from apps.generics.utils.schema import extend_schema_model_view_set
+from apps.accounts.serializers.organization import (
+    OrganizationListSerializer,
+    OrganizationSerializer,
+)
+from apps.generics.utils.schema import extend_schema_list, extend_schema_model_view_set
 
 
 @extend_schema_model_view_set(
@@ -60,6 +63,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             ),
         },
     ),
+    list=extend_schema_list(model=Organization, responses=OrganizationListSerializer),
 )
 class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     """View for handling organization CRUD operations."""
@@ -87,6 +91,11 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
                 is_active=True,
             )
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return OrganizationListSerializer
+        return super().get_serializer_class()
 
     @action(detail=True, methods=['post'])
     def login(self, request, *args, **kwargs):
