@@ -86,7 +86,11 @@ class StoredFileCreateUpdateModelSerializer(
 
     def validate_organization(self, value) -> int | None:
         auth_member = self.auth_member
-        if not value and auth_member:
+        if value and (not auth_member or (value != auth_member.organization_id)):
+            raise serializers.ValidationError(
+                _('You are not authorized to change the organization.')
+            )
+        elif not value and auth_member:
             return auth_member.organization_id
         return value
 

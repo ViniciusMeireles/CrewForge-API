@@ -2955,10 +2955,15 @@ components:
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        file_url:
+        content_type:
           type: string
-          nullable: true
           readOnly: true
+          description: Content type of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         download_name:
           type: string
           description: Return the name to download the file.
@@ -2967,19 +2972,14 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
-        content_type:
+        file_url:
           type: string
+          nullable: true
           readOnly: true
-          description: Content type of the file
         size:
           type: integer
           readOnly: true
           description: Size of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
     RoleEnum:
       enum:
       - owner
@@ -3143,10 +3143,15 @@ components:
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        file_url:
+        content_type:
           type: string
-          nullable: true
           readOnly: true
+          description: Content type of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         download_name:
           type: string
           description: Return the name to download the file.
@@ -3155,19 +3160,14 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
-        content_type:
+        file_url:
           type: string
+          nullable: true
           readOnly: true
-          description: Content type of the file
         size:
           type: integer
           readOnly: true
           description: Size of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
       required:
       - content_type
       - download_name

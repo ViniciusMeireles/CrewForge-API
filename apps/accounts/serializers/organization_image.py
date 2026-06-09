@@ -63,7 +63,12 @@ class OrganizationImageSerializer(ModelSerializerMixin, serializers.ModelSeriali
         if not value:
             return value
         if org_profile := self._get_org_profile():
-            if org_profile.images.filter(image_type=value).exists():
+            org_images_query = org_profile.images.filter(
+                image_type=value,
+            ).filter_actives()
+            if self.instance:
+                org_images_query = org_images_query.exclude(pk=self.instance.pk)
+            if org_images_query.exists():
                 raise serializers.ValidationError(
                     detail=_('An image of this type already exists for this profile.'),
                     code='invalid_image_type',
