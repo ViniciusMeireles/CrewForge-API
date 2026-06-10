@@ -62,26 +62,30 @@ class OrganizationAPITestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(user=user)
 
         url = reverse(self.login_url_name, args=[member1.organization_id])
-        response = self.client.post(
-            path=url,
-            format='json',
-        )
+        response = self.client.post(path=url, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        organization_id1 = self.client.session.get('organization_id')
-        self.assertEqual(organization_id1, member1.organization_id)
+
+        self.assertEqual(
+            self.client.session.get('organization_id'), member1.organization_id
+        )
+        self.assertIn('user', response.data)
+        self.assertIn('organizations', response.data)
+        self.assertIn('organization', response.data)
+        self.assertIn('member', response.data)
+        self.assertEqual(response.data['organization']['id'], member1.organization_id)
+        self.assertEqual(response.data['member']['id'], member1.id)
 
         member2 = MemberFactory.create(user=user)
         url = reverse(self.login_url_name, args=[member2.organization_id])
-        response = self.client.post(
-            path=url,
-            format='json',
-        )
+        response = self.client.post(path=url, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        organization_id2 = self.client.session.get('organization_id')
-        self.assertEqual(organization_id2, member2.organization_id)
+        self.assertEqual(
+            self.client.session.get('organization_id'), member2.organization_id
+        )
+        self.assertEqual(response.data['organization']['id'], member2.organization_id)
+        self.assertEqual(response.data['member']['id'], member2.id)
 
         self.assertNotEqual(member1.organization_id, member2.organization_id)
-        self.assertNotEqual(organization_id1, organization_id2)
 
     def test_login_organization_not_exists(self):
         """Test the login view of the organization that does not exist."""

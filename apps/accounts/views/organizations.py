@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.utils import (
@@ -19,6 +20,8 @@ from apps.accounts.serializers.organization import (
     OrganizationListSerializer,
     OrganizationSerializer,
 )
+from apps.accounts.serializers.session import SessionSerializer
+from apps.accounts.utils.requests import get_member
 from apps.generics.utils.schema import extend_schema_list, extend_schema_model_view_set
 
 
@@ -29,22 +32,7 @@ from apps.generics.utils.schema import extend_schema_list, extend_schema_model_v
         description=_('Login to the organization.'),
         request=None,
         responses={
-            http_status.HTTP_200_OK: OpenApiResponse(
-                response=inline_serializer(
-                    name='LoginResponse',
-                    fields={
-                        'detail': serializers.CharField(),
-                    },
-                ),
-                examples=[
-                    OpenApiExample(
-                        name=str(_('Login to organization')),
-                        value={'detail': _('Logged in to organization.')},
-                        response_only=True,
-                    )
-                ],
-                description=_('Logged in to organization.'),
-            ),
+            http_status.HTTP_200_OK: SessionSerializer,
             http_status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=inline_serializer(
                     name='LoginNotFoundResponse',
@@ -60,6 +48,22 @@ from apps.generics.utils.schema import extend_schema_list, extend_schema_model_v
                     )
                 ],
                 description=_('Organization not found.'),
+            ),
+            http_status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=inline_serializer(
+                    name='LoginUnauthorizedResponse',
+                    fields={
+                        'detail': serializers.CharField(),
+                    },
+                ),
+                examples=[
+                    OpenApiExample(
+                        name=str(_('User not authenticated')),
+                        value={'detail': _('User not authenticated.')},
+                        response_only=True,
+                    )
+                ],
+                description=_('User not authenticated.'),
             ),
         },
     ),
@@ -100,6 +104,11 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def login(self, request, *args, **kwargs):
         """Login to the organization."""
+        if not (user := self.auth_user):
+            return Response(
+                data={'detail': _('User not authenticated.')},
+                status=http_status.HTTP_401_UNAUTHORIZED,
+            )
         if not (organization := self.get_object()):
             return Response(
                 data={'detail': _('Organization not found.')},
@@ -108,7 +117,16 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
 
         # Set the organization in the session
         request.session['organization_id'] = organization.id
-        return Response(
-            data={'detail': _('Logged in to organization.')},
-            status=http_status.HTTP_200_OK,
-        )
+
+        if member := get_member(request):
+            member.last_login_at = timezone.now()
+            member.save(update_fields=['last_login_at'])
+
+        data = {
+            'user': user,
+            'organizations': user.active_organizations,
+            'organization': organization,
+            'member': member,
+        }
+        serializer = SessionSerializer(instance=data, context={'request': request})
+        return Response(data=serializer.data, status=http_status.HTTP_200_OK)

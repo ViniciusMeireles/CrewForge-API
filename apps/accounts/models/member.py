@@ -39,6 +39,13 @@ class Member(BaseModel):
         help_text=_('User role in the organization'),
     )
 
+    last_login_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Last login at'),
+        help_text=_('Last time the member logged into the organization'),
+    )
+
     objects = MemberManager()
 
     class Meta:

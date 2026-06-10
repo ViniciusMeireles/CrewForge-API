@@ -14,6 +14,7 @@ class OrganizationPermission(permissions.BasePermission):
         is_member = (
             request.user
             and request.user.is_authenticated
+            and request.user.is_active
             and request.user.members.filter(
                 organization_id=obj.id,
                 is_active=True,

@@ -10,6 +10,6 @@ class RequestUserMixin:
     @cached_property
     def auth_user(self) -> User | None:
         """Get the user from the context."""
-        if (user := self.request.user) and user.is_authenticated:
+        if (user := self.request.user) and user.is_authenticated and user.is_active:
             return user
         return None

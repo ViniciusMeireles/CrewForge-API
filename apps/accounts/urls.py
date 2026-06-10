@@ -10,6 +10,7 @@ from apps.accounts.views.members import MemberViewSet
 from apps.accounts.views.organization_images import OrganizationImageViewSet
 from apps.accounts.views.organization_profiles import OrganizationProfileViewSet
 from apps.accounts.views.organizations import OrganizationViewSet
+from apps.accounts.views.session import SessionView
 from apps.accounts.views.signup import SignupViewSet
 
 app_name = 'accounts'
@@ -53,6 +54,7 @@ authentication_urlpatterns = [
 
 accounts_urlpatterns = [
     path('api/accounts/', include(router.urls)),
+    path('api/accounts/session/', SessionView.as_view(), name='session'),
 ]
 
 urlpatterns = authentication_urlpatterns + accounts_urlpatterns
