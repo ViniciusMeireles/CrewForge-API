@@ -1025,13 +1025,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
-              examples:
-                LoginToOrganization:
-                  value:
-                    detail: Logged in to organization.
-                  summary: Login to organization
-          description: Logged in to organization.
+                $ref: '#/components/schemas/Session'
+          description: ''
         '404':
           content:
             application/json:
@@ -1043,6 +1038,17 @@ paths:
                     detail: Organization not found.
                   summary: Organization not found
           description: Organization not found.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginUnauthorizedResponse'
+              examples:
+                UserNotAuthenticated:
+                  value:
+                    detail: User not authenticated.
+                  summary: User not authenticated
+          description: User not authenticated.
   /api/accounts/organizations/choices/:
     get:
       operationId: accounts_organizations_choices_retrieve
@@ -1070,6 +1076,21 @@ paths:
                         label: Organization 2
                   summary: Example response
           description: List organizations for choices (value/label format).
+  /api/accounts/session/:
+    get:
+      operationId: accounts_session_retrieve
+      description: Get current session data.
+      tags:
+      - Sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
   /api/accounts/signup/:
     post:
       operationId: accounts_signup_create
@@ -2001,7 +2022,7 @@ components:
           type: string
       required:
       - detail
-    LoginResponse:
+    LoginUnauthorizedResponse:
       type: object
       properties:
         detail:
@@ -2056,6 +2077,11 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2079,6 +2105,42 @@ components:
       - updated_at
       - updated_by
       - user
+    MemberPermissions:
+      type: object
+      properties:
+        is_owner:
+          type: boolean
+          readOnly: true
+        is_admin:
+          type: boolean
+          readOnly: true
+        is_manager:
+          type: boolean
+          readOnly: true
+        is_member:
+          type: boolean
+          readOnly: true
+        has_owner_permission:
+          type: boolean
+          readOnly: true
+        has_admin_permission:
+          type: boolean
+          readOnly: true
+        has_manager_permission:
+          type: boolean
+          readOnly: true
+        has_member_permission:
+          type: boolean
+          readOnly: true
+      required:
+      - has_admin_permission
+      - has_manager_permission
+      - has_member_permission
+      - has_owner_permission
+      - is_admin
+      - is_manager
+      - is_member
+      - is_owner
     MemberRoleUpdate:
       type: object
       description: Serializer for updating the role of a member.
@@ -2093,6 +2155,39 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+    MemberSession:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        nickname:
+          type: string
+          nullable: true
+          description: Nickname of the user in the organization
+          maxLength: 100
+        permissions:
+          allOf:
+          - $ref: '#/components/schemas/MemberPermissions'
+          readOnly: true
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
+      required:
+      - id
+      - permissions
     MemberUpdate:
       type: object
       description: Serializer for updating the Member model.
@@ -2132,6 +2227,11 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2204,6 +2304,11 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2888,6 +2993,11 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2995,22 +3105,18 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
         file_url:
           type: string
           nullable: true
           readOnly: true
-        size:
-          type: integer
+        original_name:
+          type: string
           readOnly: true
-          description: Size of the file
+          description: Original name of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         updated_at:
           type: string
           format: date-time
@@ -3021,10 +3127,14 @@ components:
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
+        size:
+          type: integer
           readOnly: true
+          description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
     RoleEnum:
       enum:
       - owner
@@ -3037,6 +3147,27 @@ components:
         * `admin` - Admin
         * `manager` - Manager
         * `member` - Member
+    Session:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserReady'
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationList'
+          readOnly: true
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/OrganizationList'
+          nullable: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/MemberSession'
+          nullable: true
+      required:
+      - organizations
+      - user
     Signup:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.
@@ -3088,6 +3219,11 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -3183,22 +3319,18 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
         file_url:
           type: string
           nullable: true
           readOnly: true
-        size:
-          type: integer
+        original_name:
+          type: string
           readOnly: true
-          description: Size of the file
+          description: Original name of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         updated_at:
           type: string
           format: date-time
@@ -3209,10 +3341,14 @@ components:
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
+        size:
+          type: integer
           readOnly: true
+          description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
       required:
       - content_type
       - download_name
