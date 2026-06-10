@@ -3105,36 +3105,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
-        download_name:
+        file_url:
           type: string
-          description: Return the name to download the file.
+          nullable: true
           readOnly: true
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
     RoleEnum:
       enum:
       - owner
@@ -3319,36 +3319,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
-        download_name:
+        file_url:
           type: string
-          description: Return the name to download the file.
+          nullable: true
           readOnly: true
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
       required:
       - content_type
       - download_name
@@ -3737,10 +3737,6 @@ components:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.
       properties:
-        user:
-          allOf:
-          - $ref: '#/components/schemas/UserReady'
-          readOnly: true
         refresh:
           type: string
           nullable: true
@@ -3750,6 +3746,10 @@ components:
           type: string
           nullable: true
           description: Return the access token.
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/UserReady'
           readOnly: true
         username:
           type: string

@@ -6,10 +6,11 @@ from rest_framework.serializers import SerializerMetaclass
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.choices import MemberRoleChoices
+from apps.accounts.mixins.fields import OrganizationScopedFieldMixin
 from apps.accounts.settings import api_settings
 
 
-class ValidateRoleSerializerMixin:
+class ValidateRoleSerializerMixin(OrganizationScopedFieldMixin):
     """
     Mixin to validate the role of a user.
     """
@@ -31,22 +32,13 @@ class ValidateRoleSerializerMixin:
         return value
 
 
-class UserTokenSerializerMetaclass(SerializerMetaclass):
-    """
-    Metaclass that automatically injects 'refresh' and 'access' token
-    fields into any serializer using this metaclass.
-    """
-
-    def __new__(cls, name, bases, attrs):
-        attrs['refresh'] = serializers.SerializerMethodField()
-        attrs['access'] = serializers.SerializerMethodField()
-        return super().__new__(cls, name, bases, attrs)
-
-
-class UserTokenMixin:
+class UserTokenSerializerMixin(metaclass=SerializerMetaclass):
     """
     Mixin to add access and refresh token fields to a serializer.
     """
+
+    refresh = serializers.SerializerMethodField()
+    access = serializers.SerializerMethodField()
 
     username_field = get_user_model().USERNAME_FIELD
 
@@ -70,7 +62,3 @@ class UserTokenMixin:
         self._access_token = str(refresh.access_token)
         if api_settings.UPDATE_LAST_LOGIN:
             update_last_login(None, user)
-
-
-class UserTokenSerializerMixin(UserTokenMixin, metaclass=UserTokenSerializerMetaclass):
-    pass

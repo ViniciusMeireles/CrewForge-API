@@ -8,22 +8,15 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 
-from apps.accounts.serializers.mixins import (
-    UserTokenMixin,
-    UserTokenSerializerMetaclass,
-)
+from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.user import UserReadySerializer
 
 User = get_user_model()
 
 
-class UserSerializerMetaclass(serializers.SerializerMetaclass):
-    def __new__(cls, name, bases, attrs):
-        attrs['user'] = serializers.SerializerMethodField()
-        return super().__new__(cls, name, bases, attrs)
+class UserSerializerMixin(metaclass=serializers.SerializerMetaclass):
+    user = serializers.SerializerMethodField()
 
-
-class UserMixin:
     def get_user(self, obj=None) -> UserReadySerializer:
         """Return the user associated with the token."""
         return UserReadySerializer(
@@ -32,21 +25,10 @@ class UserMixin:
         ).data
 
 
-class UserSerializerMixin(UserMixin, metaclass=UserSerializerMetaclass):
-    pass
-
-
-class TokenWithUserSerializerMetaclass(
-    UserSerializerMetaclass, UserTokenSerializerMetaclass
-):
-    pass
-
-
 class TokenObtainPairSerializer(
-    UserTokenMixin,
-    UserMixin,
+    UserTokenSerializerMixin,
+    UserSerializerMixin,
     TokenObtainSerializer,
-    metaclass=TokenWithUserSerializerMetaclass,
 ):
     def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
         attrs = super().validate(attrs)
