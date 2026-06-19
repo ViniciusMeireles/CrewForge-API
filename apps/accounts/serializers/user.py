@@ -4,13 +4,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
-from apps.generics.utils.models import get_verbose_name_field
 from apps.generics.utils.shortcuts import get_object_or_none
+
+User = get_user_model()
 
 
 class UserReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
         read_only_fields = fields
 
@@ -19,7 +20,7 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     """Serializer for creating a user."""
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password']
         read_only_fields = ['id']
         extra_kwargs = {
@@ -34,16 +35,6 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
             raise serializers.ValidationError(_('Not allowed to change the password.'))
         return value
 
-    @staticmethod
-    def _user_already_message():
-        """Return a message indicating that the user already exists."""
-        user_model = get_user_model()
-        username_field = user_model.USERNAME_FIELD
-        return _(
-            'User with this %(username)s already exists.'
-            % {'username': get_verbose_name_field(user_model, username_field)}
-        )
-
     def is_valid(self, *, raise_exception=False):
         """
         Override the is_valid method to skip validation if the user already exists.
@@ -51,15 +42,12 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         super().is_valid(raise_exception=False)
         errors = {}
 
-        user_model = get_user_model()
-        username_field = user_model.USERNAME_FIELD
+        username_field = User.USERNAME_FIELD
         username_value = self.validated_data.get(username_field)
         if (
             username_value
             and (
-                instance := get_object_or_none(
-                    user_model, **{username_field: username_value}
-                )
+                instance := get_object_or_none(User, **{username_field: username_value})
             )
             and not (self.auth_user and self.auth_user == instance)
         ):
@@ -104,13 +92,10 @@ class UserGetOrCreateSerializer(UserSerializer):
         super().is_valid(raise_exception=False)
         errors = {}
 
-        user_model = get_user_model()
-        username_field = user_model.USERNAME_FIELD
+        username_field = User.USERNAME_FIELD
         username_value = self.validated_data.get(username_field)
         if username_value and (
-            instance := get_object_or_none(
-                user_model, **{username_field: username_value}
-            )
+            instance := get_object_or_none(User, **{username_field: username_value})
         ):
             if self.auth_user:
                 self.instance = instance

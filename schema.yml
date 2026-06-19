@@ -3105,36 +3105,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
     RoleEnum:
       enum:
       - owner
@@ -3319,36 +3319,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
       required:
       - content_type
       - download_name

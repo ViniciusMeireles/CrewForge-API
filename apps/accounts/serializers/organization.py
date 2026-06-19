@@ -59,7 +59,7 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
             instance=profile_instance,
         )
 
-    @transaction.atomic()
+    @transaction.atomic
     def save(self, **kwargs):
         profile_data = self._validated_data.pop('profile', {}) or {}
         creating = not bool(self.instance)

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 
@@ -41,6 +42,7 @@ class MemberModelSerializer(
             )
         return value
 
+    @transaction.atomic
     def save(self, **kwargs):
         user_data = self.validated_data.pop('user', {})
         user_serializer = self.fields['user']
