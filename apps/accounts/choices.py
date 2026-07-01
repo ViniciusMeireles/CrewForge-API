@@ -148,3 +148,9 @@ class StoredFileAccess(models.TextChoices):
         elif member.has_member_permission:
             return StoredFileAccess.MEMBERS_ORGANIZATION
         return None
+
+
+class InvitationErrorMessages(models.TextChoices):
+    INVITATION_EXPIRED = 'invitation_expired', _('Invitation is expired')
+    INVITATION_NOT_FOUND = 'invitation_not_found', _('Invitation not found or expired')
+    USER_ALREADY_MEMBER = 'user_already_member', _('User is already a member')

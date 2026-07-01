@@ -6,6 +6,7 @@ from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
+from apps.accounts.serializers.auth import UserTokenSerializer
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.organization import OrganizationSerializer
 from apps.accounts.serializers.user import UserSerializer
@@ -13,11 +14,20 @@ from apps.accounts.serializers.user import UserSerializer
 User = get_user_model()
 
 
+class UserCreateSignupSerializer(UserSerializer):
+    auth_token = UserTokenSerializer(source='*', read_only=True)
+
+    class Meta(UserSerializer.Meta):
+        model = User
+        fields = ['auth_token'] + UserSerializer.Meta.fields
+        read_only_fields = ['auth_token'] + UserSerializer.Meta.read_only_fields
+
+
 class SignupSerializer(
     UserTokenSerializerMixin, ModelSerializerMixin, serializers.ModelSerializer
 ):
     # Serialized fields
-    user = UserSerializer()
+    user = UserCreateSignupSerializer()
     organization = OrganizationSerializer()
 
     class Meta:
@@ -42,28 +52,28 @@ class SignupSerializer(
         user.save(update_fields=['created_by', 'updated_by'])
         return user
 
+    @transaction.atomic
     def create(self, validated_data):
-        with transaction.atomic():
-            user_data = validated_data.pop('user')
-            organization_data = validated_data.pop('organization')
+        user_data = validated_data.pop('user')
+        organization_data = validated_data.pop('organization')
 
-            user = self._create_user(user_data)
-            self.set_tokens_for_user(user)
+        user = self._create_user(user_data)
+        self.set_tokens_for_user(user)
 
-            organization = Organization.objects.create(
-                created_by=user,
-                updated_by=user,
-                **organization_data,
-            )
-            validated_data.update(
-                {
-                    'user': user,
-                    'organization': organization,
-                    'created_by': user,
-                    'updated_by': user,
-                }
-            )
-            instance = super().create(validated_data)
-            organization.owner = instance
-            organization.save(update_fields=['owner'])
+        organization = Organization.objects.create(
+            created_by=user,
+            updated_by=user,
+            **organization_data,
+        )
+        validated_data.update(
+            {
+                'user': user,
+                'organization': organization,
+                'created_by': user,
+                'updated_by': user,
+            }
+        )
+        instance = super().create(validated_data)
+        organization.owner = instance
+        organization.save(update_fields=['owner'])
         return instance

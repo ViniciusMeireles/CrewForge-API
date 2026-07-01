@@ -498,6 +498,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/MemberWithInviteCreate'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateWithInviteBadRequest'
+              examples:
+                InvitationIsExpired:
+                  value:
+                    detail: Invitation is expired
+                  summary: Invitation is expired
+                UserIsAlreadyAMember:
+                  value:
+                    detail: User is already a member
+                  summary: User is already a member
+          description: The invitation is expired or the user is already a member.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateWithInviteNotFound'
+              examples:
+                InvitationNotFoundOrExpired:
+                  value:
+                    detail: Invitation not found or expired
+                  summary: Invitation not found or expired
+          description: Invitation not found or already accepted/expired.
   /api/accounts/organization-images/:
     get:
       operationId: accounts_organization_images_list
@@ -1946,6 +1972,20 @@ paths:
           description: List teams for choices (value/label format).
 components:
   schemas:
+    CreateWithInviteBadRequest:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    CreateWithInviteNotFound:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
     ImageTypeEnum:
       enum:
       - logo
@@ -2080,6 +2120,7 @@ components:
         last_login_at:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
           description: Last time the member logged into the organization
         created_by:
@@ -2101,6 +2142,7 @@ components:
       - created_by
       - id
       - is_active
+      - last_login_at
       - organization
       - updated_at
       - updated_by
@@ -2230,6 +2272,7 @@ components:
         last_login_at:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
           description: Last time the member logged into the organization
         created_by:
@@ -2251,6 +2294,7 @@ components:
       - created_by
       - id
       - is_active
+      - last_login_at
       - organization
       - role
       - updated_at
@@ -2263,18 +2307,8 @@ components:
         id:
           type: integer
           readOnly: true
-        refresh:
-          type: string
-          nullable: true
-          description: Return the refresh token.
-          readOnly: true
-        access:
-          type: string
-          nullable: true
-          description: Return the access token.
-          readOnly: true
         user:
-          $ref: '#/components/schemas/UserGetOrCreate'
+          $ref: '#/components/schemas/UserCreateWithInvite'
         is_active:
           type: boolean
           readOnly: true
@@ -2297,6 +2331,7 @@ components:
         role:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
           description: |-
             User role in the organization
 
@@ -2307,6 +2342,7 @@ components:
         last_login_at:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
           description: Last time the member logged into the organization
         created_by:
@@ -2324,13 +2360,13 @@ components:
           readOnly: true
           description: Organization to which the user belongs
       required:
-      - access
       - created_at
       - created_by
       - id
       - is_active
+      - last_login_at
       - organization
-      - refresh
+      - role
       - updated_at
       - updated_by
       - user
@@ -2996,6 +3032,7 @@ components:
         last_login_at:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
           description: Last time the member logged into the organization
         created_by:
@@ -3105,32 +3142,32 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         file_url:
           type: string
           nullable: true
           readOnly: true
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         content_type:
           type: string
           readOnly: true
           description: Content type of the file
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
         size:
           type: integer
           readOnly: true
@@ -3186,7 +3223,7 @@ components:
           description: Return the access token.
           readOnly: true
         user:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/UserCreateSignup'
         organization:
           $ref: '#/components/schemas/Organization'
         is_active:
@@ -3319,32 +3356,32 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         file_url:
           type: string
           nullable: true
           readOnly: true
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         content_type:
           type: string
           readOnly: true
           description: Content type of the file
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
         size:
           type: integer
           readOnly: true
@@ -3747,7 +3784,7 @@ components:
           nullable: true
           description: Return the access token.
           readOnly: true
-        user:
+        auth_user:
           allOf:
           - $ref: '#/components/schemas/UserReady'
           readOnly: true
@@ -3759,9 +3796,9 @@ components:
           writeOnly: true
       required:
       - access
+      - auth_user
       - password
       - refresh
-      - user
       - username
     TokenRefresh:
       type: object
@@ -3812,6 +3849,80 @@ components:
           maxLength: 128
       required:
       - id
+      - username
+    UserCreateSignup:
+      type: object
+      description: Serializer for creating a user.
+      properties:
+        auth_token:
+          allOf:
+          - $ref: '#/components/schemas/UserToken'
+          readOnly: true
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - auth_token
+      - id
+      - username
+    UserCreateWithInvite:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          maxLength: 128
+        auth_token:
+          allOf:
+          - $ref: '#/components/schemas/UserToken'
+          readOnly: true
+      required:
+      - auth_token
+      - email
+      - id
+      - password
       - username
     UserGetOrCreate:
       type: object
@@ -3874,6 +3985,23 @@ components:
       - id
       - last_name
       - username
+    UserToken:
+      type: object
+      description: Mixin to add access and refresh token fields to a serializer.
+      properties:
+        refresh:
+          type: string
+          nullable: true
+          description: Return the refresh token.
+          readOnly: true
+        access:
+          type: string
+          nullable: true
+          description: Return the access token.
+          readOnly: true
+      required:
+      - access
+      - refresh
   securitySchemes:
     jwtAuth:
       type: http

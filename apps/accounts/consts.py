@@ -1,0 +1,1 @@
+INVITATION_LOOKUP_URL_KWARG = 'invitation_key'

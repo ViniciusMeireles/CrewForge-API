@@ -3,13 +3,60 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 
+from apps.accounts.consts import INVITATION_LOOKUP_URL_KWARG
 from apps.accounts.mixins.serializers import ModelSerializerMixin
+from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.member import Member
+from apps.accounts.serializers.auth import UserTokenSerializer
 from apps.accounts.serializers.mixins import (
-    UserTokenSerializerMixin,
     ValidateRoleSerializerMixin,
 )
 from apps.accounts.serializers.user import UserGetOrCreateSerializer, UserSerializer
+
+User = get_user_model()
+
+
+class UserCreateWithInviteSerializer(
+    ModelSerializerMixin,
+    serializers.ModelSerializer,
+):
+    auth_token = UserTokenSerializer(source='*', read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'password',
+            'auth_token',
+        ]
+        read_only_fields = ['email']
+
+    def _get_invitation(self) -> Invitation:
+        invitation_key = (
+            self.context.get('request')
+            .parser_context.get('kwargs')
+            .get(INVITATION_LOOKUP_URL_KWARG)
+        )
+        return Invitation.objects.get(key=invitation_key)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs=attrs)
+        invitation = self._get_invitation()
+        is_acceptable, message = invitation.is_acceptable()
+        if not is_acceptable:
+            raise serializers.ValidationError(detail=message)
+        return attrs
+
+    @transaction.atomic
+    def save(self, **kwargs):
+        invitation = self._get_invitation()
+        kwargs.update({'email': invitation.email})
+        instance = super().save(**kwargs)
+        return instance
 
 
 class MemberModelSerializer(
@@ -23,7 +70,8 @@ class MemberModelSerializer(
         model = Member
         fields = '__all__'
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
-            'organization'
+            'organization',
+            'last_login_at',
         ]
 
     def validate_user(self, value):
@@ -44,23 +92,41 @@ class MemberModelSerializer(
 
     @transaction.atomic
     def save(self, **kwargs):
-        user_data = self.validated_data.pop('user', {})
         user_serializer = self.fields['user']
-        if self.instance:
-            kwargs['user'] = user_serializer.update(self.instance.user, user_data)
-        else:
-            kwargs['user'] = user_serializer.create(user_data)
+        user_serializer.initial_data = self.initial_data.get('user', {})
+        user_serializer.partial = self.partial
+        user_serializer._context = self.context
+        if self.instance and self.instance.user_id:
+            user_serializer.instance = self.instance.user
+        user_serializer.is_valid(raise_exception=True)
 
+        kwargs['user'] = user_serializer.save()
         instance = super().save(**kwargs)
         return instance
 
 
-class MemberWithInviteCreateSerializer(UserTokenSerializerMixin, MemberModelSerializer):
+class MemberWithInviteCreateSerializer(MemberModelSerializer):
     """Serializer for creating the Member model."""
 
+    user = UserCreateWithInviteSerializer()
+
+    class Meta(MemberModelSerializer.Meta):
+        read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
+
+    def _get_invitation(self) -> Invitation:
+        invitation_key = (
+            self.context.get('request')
+            .parser_context.get('kwargs')
+            .get(INVITATION_LOOKUP_URL_KWARG)
+        )
+        return Invitation.objects.get(key=invitation_key)
+
+    @transaction.atomic
     def save(self, **kwargs):
+        invitation = self._get_invitation()
+        kwargs.update({'role': invitation.role})
         instance = super().save(**kwargs)
-        self.set_tokens_for_user(instance.user)
+        invitation.accept(member=instance, check=False)
         return instance
 
 
