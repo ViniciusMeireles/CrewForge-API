@@ -256,6 +256,17 @@ CORS_ALLOWED_ORIGINS = []
 if cors_origins := os.environ.get('CORS_ALLOWED_ORIGINS'):
     CORS_ALLOWED_ORIGINS = cors_origins.split(',')
 
+CORS_ALLOW_CREDENTIALS = True
+
+SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'None')
+CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'None')
+
+if session_domain := os.environ.get('SESSION_COOKIE_DOMAIN'):
+    SESSION_COOKIE_DOMAIN = session_domain
+
+if csrf_origins := os.environ.get('CSRF_TRUSTED_ORIGINS'):
+    CSRF_TRUSTED_ORIGINS = csrf_origins.split(',')
+
 
 # System settings
 SYSTEM_TITLE = os.environ.get('SYSTEM_TITLE', gettext_lazy('CrewForge'))

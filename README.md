@@ -211,7 +211,8 @@ CrewForge follows established design patterns for maintainability and extensibil
 - :framed_picture: Organization image management with admin-level write restrictions and public read access.
 - :page_with_curl: Organization profile management with admin-level write restrictions.
 - :e-mail: Secure password reset workflow.
-- :globe_with_meridians: CORS protection configured for production environments.
+- :globe_with_meridians: CORS with credentialed support (`withCredentials`) and
+  configurable `SameSite` cookies for SPAs on different domains or subdomains.
 
 
 ## Contributing :handshake:

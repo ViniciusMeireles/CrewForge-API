@@ -75,6 +75,9 @@ setup, prefer the Docker workflow.
   - HSTS enabled
   - SSL redirect enabled
 - `config.settings.local` explicitly relaxes those settings for development.
+- CORS and cookie SameSite are configured cross-origin by default (`SameSite=None`)
+  and overridden to `Lax` in local dev to support HTTP. See `CORS_ALLOW_CREDENTIALS`,
+  `SESSION_COOKIE_SAMESITE`, and `CSRF_COOKIE_SAMESITE` in `base.py`.
 - `run.sh` runs migrations and `collectstatic` before starting the app.
 - In production mode the app runs with Gunicorn on port `8000`.
 - In local/dev mode the container runs Django `runserver` on port `8000`.
