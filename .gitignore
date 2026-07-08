@@ -8,6 +8,7 @@
 /**/staticfiles
 /**/media
 /**/.specs
+/**/.mailpit-data
 .coverage
 htmlcov/
 # Python-generated files

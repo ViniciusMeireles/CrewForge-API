@@ -85,7 +85,7 @@ l_createsuperuser:  ## Create a superuser for the Django project
 	POSTGRES_HOST=localhost uv run python manage.py createsuperuser
 
 l_shell_plus:  ## Open Django shell with all models imported
-	POSTGRES_HOST=localhost uv run python manage.py shell_plus
+	POSTGRES_HOST=localhost EMAIL_HOST=localhost uv run python manage.py shell_plus
 
 l_spectacular:  ## Generate OpenAPI schema for the Django project
 	uv run python manage.py spectacular --color --file schema.yml
