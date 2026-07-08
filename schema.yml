@@ -112,17 +112,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Invitation'
           description: ''
-  /api/accounts/invitations/{key}/:
+  /api/accounts/invitations/{id}/:
     get:
       operationId: accounts_invitations_retrieve
       description: Retrieve a specific Invitation.
       parameters:
       - in: path
-        name: key
+        name: id
         schema:
-          type: string
-          format: uuid
-          description: Key for the invitation
+          type: integer
+        description: A unique integer value identifying this Invitation.
         required: true
       tags:
       - Invitations
@@ -140,11 +139,10 @@ paths:
       description: Update a Invitation.
       parameters:
       - in: path
-        name: key
+        name: id
         schema:
-          type: string
-          format: uuid
-          description: Key for the invitation
+          type: integer
+        description: A unique integer value identifying this Invitation.
         required: true
       tags:
       - Invitations
@@ -174,11 +172,10 @@ paths:
       description: Delete a Invitation.
       parameters:
       - in: path
-        name: key
+        name: id
         schema:
-          type: string
-          format: uuid
-          description: Key for the invitation
+          type: integer
+        description: A unique integer value identifying this Invitation.
         required: true
       tags:
       - Invitations
@@ -187,6 +184,63 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/accounts/invitations/{id}/send-email/:
+    post:
+      operationId: accounts_invitations_send_email_create
+      description: Send an invitation email.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invitation.
+        required: true
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendInviteEmailSuccess'
+              examples:
+                InvitationEmailSentSuccessfully.:
+                  value:
+                    detail: Invitation email sent successfully.
+                  summary: Invitation email sent successfully.
+          description: The invitation email has been sent successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendInviteEmailBadRequest'
+              examples:
+                InvitationIsExpired:
+                  value:
+                    detail: Invitation is expired
+                  summary: Invitation is expired
+                UserIsAlreadyAMember:
+                  value:
+                    detail: User is already a member
+                  summary: User is already a member
+          description: The invitation is expired or the user is already a member.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendInviteEmailTooManyRequests'
+              examples:
+                AnInvitationEmailWasRecentlySent.PleaseWaitBeforeResending.:
+                  value:
+                    detail: An invitation email was recently sent. Please wait before
+                      resending.
+                    code: cooldown_active
+                    retry_after_seconds: 60
+                  summary: An invitation email was recently sent. Please wait before
+                    resending.
+          description: The invitation email cooldown is active.
   /api/accounts/invitations/choices/:
     get:
       operationId: accounts_invitations_choices_retrieve
@@ -2010,6 +2064,9 @@ components:
       type: object
       description: Mixin to validate the role of a user.
       properties:
+        id:
+          type: integer
+          readOnly: true
         email:
           type: string
           format: email
@@ -2041,9 +2098,21 @@ components:
           type: integer
           readOnly: true
           description: Organization to which the user is invited
+        last_email_sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Date and time when the last invitation email was sent
+        send_email:
+          type: boolean
+          writeOnly: true
+          default: false
       required:
       - email
+      - id
       - is_accepted
+      - last_email_sent_at
       - organization
     InvitationChoicesResponse:
       type: object
@@ -3142,18 +3211,11 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        file_url:
+        uuid:
           type: string
-          nullable: true
+          format: uuid
           readOnly: true
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
+          description: Unique identifier for the file
         download_name:
           type: string
           description: Return the name to download the file.
@@ -3163,15 +3225,22 @@ components:
           format: date-time
           readOnly: true
           description: When the record was last updated
-        uuid:
+        original_name:
           type: string
-          format: uuid
           readOnly: true
-          description: Unique identifier for the file
+          description: Original name of the file
         size:
           type: integer
           readOnly: true
           description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
     RoleEnum:
       enum:
       - owner
@@ -3184,6 +3253,33 @@ components:
         * `admin` - Admin
         * `manager` - Manager
         * `member` - Member
+    SendInviteEmailBadRequest:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    SendInviteEmailSuccess:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    SendInviteEmailTooManyRequests:
+      type: object
+      properties:
+        detail:
+          type: string
+        code:
+          type: string
+        retry_after_seconds:
+          type: integer
+      required:
+      - code
+      - detail
+      - retry_after_seconds
     Session:
       type: object
       properties:
@@ -3356,18 +3452,11 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        file_url:
+        uuid:
           type: string
-          nullable: true
+          format: uuid
           readOnly: true
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
+          description: Unique identifier for the file
         download_name:
           type: string
           description: Return the name to download the file.
@@ -3377,15 +3466,22 @@ components:
           format: date-time
           readOnly: true
           description: When the record was last updated
-        uuid:
+        original_name:
           type: string
-          format: uuid
           readOnly: true
-          description: Unique identifier for the file
+          description: Original name of the file
         size:
           type: integer
           readOnly: true
           description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
       required:
       - content_type
       - download_name

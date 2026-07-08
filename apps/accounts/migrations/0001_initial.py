@@ -497,6 +497,15 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
+                    'last_email_sent_at',
+                    models.DateTimeField(
+                        blank=True,
+                        help_text='Date and time when the last invitation email was sent',
+                        null=True,
+                        verbose_name='Last Email Sent At',
+                    ),
+                ),
+                (
                     'role',
                     models.CharField(
                         choices=[

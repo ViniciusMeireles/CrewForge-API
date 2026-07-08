@@ -66,6 +66,8 @@ setup, prefer the Docker workflow.
 ## Environment Notes
 
 - Copy `example.env` to `.env` for local Docker development.
+- `SELF_URL` is required for building absolute file download URLs (`StoredFile.file_url`).
+- `FRONTEND_URL` is required for generating invitation accept links (`Invitation.get_invitation_link()`).
 - The example development setup uses `DJANGO_SETTINGS_MODULE=config.settings.local`.
 - Base settings are production-leaning:
   - `DEBUG = False`
@@ -93,6 +95,13 @@ setup, prefer the Docker workflow.
   - Admin
   - Manager
   - Member
+- `POST /api/accounts/invitations/{id}/send-email/` sends (or resends) an
+  invitation email with 60s cooldown; returns 429 if within cooldown, 400 if
+  expired/accepted, 200 on success
+- Invitations are looked up by PK (`id`), not by `key` (UUID)
+- Invitations list is role-scoped cumulatively: managers see MANAGER+MEMBER,
+  admins see ADMIN+MANAGER+MEMBER, owners see all roles
+- `StoredFile.file_url` provides absolute download URLs using `SELF_URL`
 
 Preserve this domain model when adding or changing behavior. Permission changes
 should be treated as high impact and accompanied by tests.
@@ -236,7 +245,9 @@ class MyViewSet(
 - Default read-only fields: `id`, `is_active`, `created_at`, `updated_at`,
   `created_by`, `updated_by`.
 - Use `ValidateRoleSerializerMixin` for any serializer that modifies a `role`
-  field.
+  field. The mixin enforces hierarchical role assignment: setting OWNER/ADMIN
+  requires `has_owner_permission`, MANAGER requires `has_admin_permission`,
+  MEMBER requires `has_manager_permission`.
 - Use `UserTokenSerializerMixin` for serializers that return JWT tokens
   (signup, member creation via invitation).
 
@@ -254,7 +265,9 @@ class MyViewSet(
   `has_permission` — viewsets must add `IsActiveMember` separately in
   `permission_classes`.
 - Object-level permissions should always allow SAFE methods (GET, HEAD, OPTIONS)
-  before checking write access.
+  before checking write access, unless the resource explicitly requires role
+  scoping on reads (e.g., `InvitationPermission` — all actions require
+  matching role level).
 
 ### Schema
 

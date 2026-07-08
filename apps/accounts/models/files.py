@@ -1,5 +1,6 @@
 import mimetypes
 import os
+from urllib.parse import urljoin
 
 import uuid6
 from django.conf import settings
@@ -126,6 +127,14 @@ class StoredFile(BaseModel):
     def file_path(self) -> str:
         """Return the path to download the file."""
         return str(reverse(viewname='accounts:stored_files-file', args=[self.uuid]))
+
+    @property
+    def file_url(self) -> str | None:
+        """Return the absolute URL to download the file."""
+        if not settings.SELF_URL:
+            return None
+        base = settings.SELF_URL.rstrip('/') + '/'
+        return urljoin(base, self.file_path.lstrip('/'))
 
     @classmethod
     def label_expression(

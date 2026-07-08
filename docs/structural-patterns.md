@@ -193,21 +193,29 @@ class ModelSerializerMixin(OrganizationScopedFieldMixin):
 
 Location: `apps/accounts/serializers/mixins.py`
 
-Validates role field changes, preventing users from assigning roles above their own permission level.
+Validates role field changes with hierarchical permission checks. The authenticated
+member can only assign roles at or below their own level in the hierarchy.
 
 ```python
-class ValidateRoleSerializerMixin:
+class ValidateRoleSerializerMixin(OrganizationScopedFieldMixin):
     def validate_role(self, value):
         if self.instance == self.auth_member:
             raise serializers.ValidationError(
                 _('Not allowed to change your own role.')
             )
         if (
-            value == MemberRoleChoices.OWNER
-            and not self.auth_member.has_owner_permission
-        ) or (
-            value == MemberRoleChoices.ADMIN
-            and not self.auth_member.has_admin_permission
+            (
+                value in [MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN]
+                and not self.auth_member.has_owner_permission
+            )
+            or (
+                value == MemberRoleChoices.MANAGER
+                and not self.auth_member.has_admin_permission
+            )
+            or (
+                value == MemberRoleChoices.MEMBER
+                and not self.auth_member.has_manager_permission
+            )
         ):
             raise serializers.ValidationError(
                 _('Not allowed to set the %(role)s role.') % {'role': value}
@@ -215,7 +223,21 @@ class ValidateRoleSerializerMixin:
         return value
 ```
 
+**Validation rules:**
+
+| Target role | Required permission |
+|---|---|
+| `OWNER` or `ADMIN` | `has_owner_permission` |
+| `MANAGER` | `has_admin_permission` |
+| `MEMBER` | `has_manager_permission` |
+
+1. Users cannot change their own role
+2. Setting `OWNER` or `ADMIN` requires owner-level permission
+3. Setting `MANAGER` requires admin-level permission
+4. Setting `MEMBER` requires manager-level permission
+
 **Used by:**
+- `InvitationSerializer`
 - Member serializers that modify the `role` field
 
 ---

@@ -587,6 +587,40 @@ Every new resource's test suite must cover:
 | 14 | Choices endpoint | Value/label format | `test_crud.py` + `test_choices.py` |
 | 15 | Enum values and labels | Correct strings | `test_choices.py` |
 | 16 | Multi-step integration flow | End-to-end | `test_integration.py` |
+| 17 | Send email cooldown (429 within window, 200 after) | 429/200 | `test_permission.py` |
+| 18 | Send email on expired / already accepted invitation | 400 | `test_permission.py` |
+| 19 | Create invitation with `send_email=true/false/default` | Email sent / not sent | `test_crud.py` |
+
+---
+
+## Custom Action Patterns
+
+### Send Email Action (with cooldown)
+
+For resources that expose a `send-email` action with rate limiting, follow
+these test scenarios:
+
+| Test | What it verifies |
+|------|------------------|
+| `test_send_email_success` | Email is sent, `last_email_sent_at` is updated, `mail.outbox` has 1 message |
+| `test_send_email_cooldown` | 429 returned with `code`, `detail`, and `retry_after_seconds` |
+| `test_send_email_after_cooldown` | After cooldown passes, 200 is returned and email is sent |
+| `test_send_email_expired_invitation` | Expired invitation returns 400 |
+| `test_send_email_accepted_invitation` | Already accepted invitation returns 400 |
+| `test_not_authenticated_send_email` | 401 for unauthenticated requests |
+| `test_not_active_member_send_email` | 403 for inactive members |
+| `test_not_permission_send_email` | 403 for members with insufficient role |
+| `test_cross_org_send_email` | 404 when accessing from another organization |
+
+### Create with Send Email Flag
+
+When a serializer exposes a write-only `send_email` boolean:
+
+| Test | What it verifies |
+|------|------------------|
+| `test_create_invitation_with_send_email_true` | 201 + email sent + `last_email_sent_at` set |
+| `test_create_invitation_with_send_email_false` | 201 + no email sent + `last_email_sent_at` is None |
+| `test_create_invitation_with_send_email_default` | 201 + no email sent (default is False) |
 
 ---
 

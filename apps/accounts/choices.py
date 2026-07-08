@@ -153,4 +153,17 @@ class StoredFileAccess(models.TextChoices):
 class InvitationErrorMessages(models.TextChoices):
     INVITATION_EXPIRED = 'invitation_expired', _('Invitation is expired')
     INVITATION_NOT_FOUND = 'invitation_not_found', _('Invitation not found or expired')
+    INVITATION_ACCEPTED = 'invitation_accepted', _('Invitation already accepted')
     USER_ALREADY_MEMBER = 'user_already_member', _('User is already a member')
+
+
+class InvitationEmailErrorMessages(models.TextChoices):
+    COOLDOWN_ACTIVE = (
+        'cooldown_active',
+        _('An invitation email was recently sent. Please wait before resending.'),
+    )
+    SENT_SUCCESS = 'sent_success', _('Invitation email sent successfully.')
+    INVITATION_NOT_ACCEPTABLE = (
+        'invitation_not_acceptable',
+        _('The invitation is no longer valid.'),
+    )

@@ -60,12 +60,17 @@ accounts_urlpatterns = [
 urlpatterns = authentication_urlpatterns + accounts_urlpatterns
 
 if settings.ENVIRONMENT in ['local_development', 'test']:
-    from apps.accounts.emails import PasswordResetRequestEmail
+    from apps.accounts.emails import InvitationEmail, PasswordResetRequestEmail
 
     urlpatterns += [
         path(
             route='email-preview/auth/password/reset/',
             view=PasswordResetRequestEmail.as_view(),
             name='password_reset_email_preview',
-        )
+        ),
+        path(
+            route='email-preview/accounts/invitation/',
+            view=InvitationEmail.as_view(),
+            name='invitation_email_preview',
+        ),
     ]

@@ -22,11 +22,18 @@ class ValidateRoleSerializerMixin(OrganizationScopedFieldMixin):
         if self.instance == self.auth_member:
             raise serializers.ValidationError(_('Not allowed to change your own role.'))
         if (
-            value == MemberRoleChoices.OWNER
-            and not self.auth_member.has_owner_permission
-        ) or (
-            value == MemberRoleChoices.ADMIN
-            and not self.auth_member.has_admin_permission
+            (
+                value in [MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN]
+                and not self.auth_member.has_owner_permission
+            )
+            or (
+                value == MemberRoleChoices.MANAGER
+                and not self.auth_member.has_admin_permission
+            )
+            or (
+                value == MemberRoleChoices.MEMBER
+                and not self.auth_member.has_manager_permission
+            )
         ):
             raise serializers.ValidationError(
                 _('Not allowed to set the %(role)s role.') % {'role': value}

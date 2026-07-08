@@ -189,14 +189,20 @@ class MemberRoleUpdateSerializerTestCase(APITestCaseMixin, APITestCase):
         self.organization = self.new_account()
         self.update_role_url_name = 'accounts:members-update-role'
 
+    def _update_role_url(self, member):
+        return reverse(self.update_role_url_name, args=[member.id])
+
+    def _create_target(self, role=MemberRoleChoices.MEMBER):
+        return MemberFactory.create(
+            organization=self.organization,
+            role=role,
+        )
+
     def test_update_role(self):
         self.client.force_authenticate(member=self.organization.owner)
-        member_to_update = MemberFactory.create(
-            organization=self.organization,
-            role=MemberRoleChoices.MEMBER,
-        )
+        member_to_update = self._create_target()
         payload = {'role': MemberRoleChoices.MANAGER}
-        url = reverse(self.update_role_url_name, args=[member_to_update.id])
+        url = self._update_role_url(member_to_update)
         response = self.client.patch(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['role'], MemberRoleChoices.MANAGER)
@@ -207,11 +213,109 @@ class MemberRoleUpdateSerializerTestCase(APITestCaseMixin, APITestCase):
             role=MemberRoleChoices.ADMIN,
         )
         self.client.force_authenticate(member=admin)
-        member_to_update = MemberFactory.create(
+        member_to_update = self._create_target()
+        payload = {'role': MemberRoleChoices.OWNER}
+        url = self._update_role_url(member_to_update)
+        response = self.client.patch(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    # --- Owner can set any role ---
+
+    def test_owner_can_set_owner_role(self):
+        target = self._create_target()
+        payload = {'role': MemberRoleChoices.OWNER}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_owner_can_set_admin_role(self):
+        target = self._create_target()
+        payload = {'role': MemberRoleChoices.ADMIN}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_owner_can_set_manager_role(self):
+        target = self._create_target()
+        payload = {'role': MemberRoleChoices.MANAGER}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_owner_can_set_member_role(self):
+        target = self._create_target(role=MemberRoleChoices.MANAGER)
+        payload = {'role': MemberRoleChoices.MEMBER}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    # --- Admin role validation ---
+
+    def test_admin_can_set_manager_role(self):
+        admin = MemberFactory.create(
+            organization=self.organization,
+            role=MemberRoleChoices.ADMIN,
+        )
+        self.client.force_authenticate(member=admin)
+        target = self._create_target()
+        payload = {'role': MemberRoleChoices.MANAGER}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_admin_can_set_member_role(self):
+        admin = MemberFactory.create(
+            organization=self.organization,
+            role=MemberRoleChoices.ADMIN,
+        )
+        self.client.force_authenticate(member=admin)
+        target = self._create_target(role=MemberRoleChoices.MANAGER)
+        payload = {'role': MemberRoleChoices.MEMBER}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_admin_cannot_set_admin_role(self):
+        admin = MemberFactory.create(
+            organization=self.organization,
+            role=MemberRoleChoices.ADMIN,
+        )
+        self.client.force_authenticate(member=admin)
+        target = self._create_target()
+        payload = {'role': MemberRoleChoices.ADMIN}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    # --- Member cannot set any role ---
+
+    def test_member_cannot_set_any_role(self):
+        member_role = MemberFactory.create(
             organization=self.organization,
             role=MemberRoleChoices.MEMBER,
         )
-        payload = {'role': MemberRoleChoices.OWNER}
-        url = reverse(self.update_role_url_name, args=[member_to_update.id])
-        response = self.client.patch(url, data=payload, format='json')
+        self.client.force_authenticate(member=member_role)
+        target = self._create_target()
+        payload = {'role': MemberRoleChoices.MANAGER}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    # --- Cannot change own role ---
+
+    def test_cannot_change_own_role(self):
+        target = self._create_target()
+        self.client.force_authenticate(member=target)
+        payload = {'role': MemberRoleChoices.ADMIN}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)

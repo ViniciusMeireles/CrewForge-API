@@ -196,6 +196,9 @@ except ValueError:
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
 FRONTEND_RESET_URL = os.environ.get('FRONTEND_RESET_URL')
 
+# API URLs
+SELF_URL = os.environ.get('SELF_URL')
+
 # Rest Framework
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
