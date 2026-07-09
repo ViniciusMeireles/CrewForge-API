@@ -2575,11 +2575,14 @@ components:
           type: integer
           readOnly: true
         website:
-          type: string
-          format: uri
           nullable: true
           description: Organization website
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         description:
           type: string
           nullable: true
@@ -2610,11 +2613,14 @@ components:
           type: integer
           readOnly: true
         website:
-          type: string
-          format: uri
           nullable: true
           description: Organization website
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         description:
           type: string
           nullable: true
@@ -3151,11 +3157,14 @@ components:
           type: integer
           readOnly: true
         website:
-          type: string
-          format: uri
           nullable: true
           description: Organization website
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         description:
           type: string
           nullable: true
@@ -3211,36 +3220,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        content_type:
-          type: string
+        size:
+          type: integer
           readOnly: true
-          description: Content type of the file
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
+          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        download_name:
+        updated_at:
           type: string
-          description: Return the name to download the file.
+          format: date-time
           readOnly: true
+          description: When the record was last updated
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
         file_url:
           type: string
           nullable: true
           readOnly: true
-        size:
-          type: integer
+        content_type:
+          type: string
           readOnly: true
-          description: Size of the file
+          description: Content type of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
     RoleEnum:
       enum:
       - owner
@@ -3452,36 +3461,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        content_type:
-          type: string
+        size:
+          type: integer
           readOnly: true
-          description: Content type of the file
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
+          description: Size of the file
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        download_name:
+        updated_at:
           type: string
-          description: Return the name to download the file.
+          format: date-time
           readOnly: true
+          description: When the record was last updated
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
         file_url:
           type: string
           nullable: true
           readOnly: true
-        size:
-          type: integer
+        content_type:
+          type: string
           readOnly: true
-          description: Size of the file
+          description: Content type of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
       required:
       - content_type
       - download_name
@@ -3929,10 +3938,13 @@ components:
           pattern: ^[\w.@+-]+$
           maxLength: 150
         email:
-          type: string
-          format: email
           title: Email address
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         first_name:
           type: string
           maxLength: 150
@@ -3964,10 +3976,13 @@ components:
           pattern: ^[\w.@+-]+$
           maxLength: 150
         email:
-          type: string
-          format: email
           title: Email address
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         first_name:
           type: string
           maxLength: 150
@@ -4034,10 +4049,13 @@ components:
           pattern: ^[\w.@+-]+$
           maxLength: 150
         email:
-          type: string
-          format: email
           title: Email address
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         first_name:
           type: string
           maxLength: 150

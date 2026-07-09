@@ -1,3 +1,4 @@
+import base64
 import mimetypes
 import os
 from urllib.parse import urljoin
@@ -127,6 +128,15 @@ class StoredFile(BaseModel):
     def file_path(self) -> str:
         """Return the path to download the file."""
         return str(reverse(viewname='accounts:stored_files-file', args=[self.uuid]))
+
+    def to_base64(self) -> str | None:
+        """Return the file as a base64 string."""
+        try:
+            with self.file.open('rb') as f:
+                encoded = base64.b64encode(f.read()).decode('utf-8')
+            return f'data:{self.content_type};base64,{encoded}'
+        except Exception:
+            return None
 
     @property
     def file_url(self) -> str | None:

@@ -94,7 +94,7 @@ class InvitationEmail(EmailBase):
             .first()
         )
         if logo_image and logo_image.image:
-            return logo_image.image.file_url or ''
+            return logo_image.image.to_base64() or ''
         return ''
 
     @classmethod
