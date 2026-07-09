@@ -161,7 +161,7 @@ class InvitationViewSet(
         invitation.send_email()
 
         invitation.last_email_sent_at = timezone.now()
-        invitation.save(update_fields=['last_email_sent_at'])
+        invitation.save(update_fields=['last_email_sent_at', 'updated_at'])
 
         return Response(
             data={'detail': InvitationEmailErrorMessages.SENT_SUCCESS.label},

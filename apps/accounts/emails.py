@@ -48,8 +48,12 @@ class InvitationEmail(EmailBase):
         'Click the button below to accept the invitation and get started.'
     )
 
-    def __init__(self, *, invitation: Invitation, **kwargs):
+    def __init__(self, *, invitation: Invitation | int, **kwargs):
         super().__init__(**kwargs)
+        if isinstance(invitation, int):
+            from apps.accounts.models.invitation import Invitation
+
+            invitation = Invitation.objects.get(id=invitation)
         self._obj = invitation
 
     def get_object(self) -> Invitation:

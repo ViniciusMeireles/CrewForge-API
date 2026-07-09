@@ -5,18 +5,21 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "celery>=5.6.3",
     "dj-database-url>=3.1.2",
     "django>=5.2,<5.3",
     "django-cors-headers>=4.9.0",
     "django-filter>=25.2",
     "djangorestframework>=3.17.1",
     "djangorestframework-simplejwt>=5.5.1",
-    "drf-spectacular>=0.29.0",
-    "drf-spectacular-sidecar>=2026.6.1",
+    "drf-spectacular>=0.30.0",
+    "drf-spectacular-sidecar>=2026.7.1",
+    "flower>=2.0.1",
     "gunicorn>=26.0.0",
-    "pillow>=12.2.0",
+    "pillow>=12.3.0",
     "psycopg>=3.3.4",
     "python-dotenv>=1.2.2",
+    "redis>=8.0.1",
     "uuid6>=2025.0.1",
     "whitenoise>=6.12.0",
 ]
@@ -28,7 +31,7 @@ dev = [
     "factory-boy>=3.3.3",
     "pytest-cov>=7.1.0",
     "pytest-django>=4.12.0",
-    "ruff>=0.15.16",
+    "ruff>=0.15.20",
 ]
 
 [tool.ruff]

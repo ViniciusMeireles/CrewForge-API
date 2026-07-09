@@ -42,6 +42,25 @@ uv_upgrade:  ## Upgrade all libraries in the uv project
 	docker compose exec django_api uv sync --upgrade
 
 
+##@ Celery
+
+up_celery:  ## Start celery worker in foreground (manual)
+	docker compose exec celery_worker uv run celery -A config worker -l INFO
+
+restart_celery:  ## Restart celery worker
+	docker compose restart celery_worker
+
+up_flower:  ## Start flower monitoring in foreground
+	docker compose exec flower uv run celery -A config flower --port=5555
+
+up_beat:  ## Start celery beat in foreground
+	docker compose exec celery_beat uv run celery -A config beat -l INFO
+
+##@ Services
+
+up_partial:  ## Start all services except django_api
+	docker compose up postgres_db redis mailpit celery_worker celery_beat flower -d
+
 ##@ Development
 
 makemigrations:  ## Make migrations for the Django project
@@ -64,7 +83,7 @@ format_code:  ## Format code with ruff
 	docker compose exec django_api uv run ruff format .
 
 test:  ## Run tests for the Django project
-	docker compose exec django_api uv run pytest
+	docker compose exec django_api env DJANGO_SETTINGS_MODULE=config.settings.testing uv run pytest
 
 precommit: format_code spectacular test  ## Run code formatting and tests
 	@echo "Pre-commit checks passed."

@@ -140,15 +140,20 @@ class InvitationModelTestCase(TestCase):
         invitation = InvitationFactory(email='nonexistent@example.com')
         self.assertIsNone(invitation.get_user())
 
-    def test_send_email_returns_sent_count(self):
+    def test_send_email_dispatches_task(self):
         invitation = InvitationFactory(
             is_accepted=False,
             is_expired=False,
             expired_at=timezone.now() + timedelta(days=7),
         )
-        with override_settings(FRONTEND_URL='http://example.com'):
-            sent = invitation.send_email()
-        self.assertEqual(sent, 1)
+        with (
+            override_settings(FRONTEND_URL='http://example.com'),
+            self.assertLogs('celery', level='DEBUG') as logs,
+        ):
+            invitation.send_email()
+        self.assertTrue(
+            any('Task apps.generics.tasks.send_email' in line for line in logs.output),
+        )
 
     def test_filter_actives_excludes_inactive(self):
         InvitationFactory(is_active=False)

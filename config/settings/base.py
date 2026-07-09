@@ -268,5 +268,16 @@ if csrf_origins := os.environ.get('CSRF_TRUSTED_ORIGINS'):
     CSRF_TRUSTED_ORIGINS = csrf_origins.split(',')
 
 
+# Celery
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_IGNORE_RESULT = (
+    os.environ.get('CELERY_TASK_IGNORE_RESULT', 'False').lower() == 'true'
+)
+
 # System settings
 SYSTEM_TITLE = os.environ.get('SYSTEM_TITLE', gettext_lazy('CrewForge'))

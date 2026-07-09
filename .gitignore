@@ -10,6 +10,9 @@
 /**/.specs
 /**/.mailpit-data
 .coverage
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 htmlcov/
 # Python-generated files
 __pycache__/

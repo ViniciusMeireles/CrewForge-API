@@ -58,5 +58,5 @@ class InvitationSerializer(
         if send_email:
             instance.send_email()
             instance.last_email_sent_at = timezone.now()
-            instance.save(update_fields=['last_email_sent_at'])
+            instance.save(update_fields=['last_email_sent_at', 'updated_at'])
         return instance

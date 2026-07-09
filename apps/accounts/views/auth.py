@@ -9,7 +9,6 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView as TokenObtainPairViewBase,
 )
 
-from apps.accounts.emails import PasswordResetRequestEmail
 from apps.accounts.serializers.auth import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
@@ -46,8 +45,10 @@ class PasswordResetRequestView(APIView):
         uid = serializer.data.get('uid')
         token = serializer.data.get('token')
 
+        from apps.accounts.tasks import send_password_reset_email
+
         reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
-        PasswordResetRequestEmail(reset_url=reset_link, recipient_list=[email]).send()
+        send_password_reset_email(reset_link, [email])
 
         return Response(
             data={

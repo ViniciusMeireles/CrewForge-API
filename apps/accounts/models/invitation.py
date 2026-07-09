@@ -134,10 +134,10 @@ class Invitation(BaseModel):
         if self.expired_at and self.expired_at <= timezone.now():
             raise ValueError(_('Expired date must be greater than now'))
 
-    def send_email(self) -> int:
-        from apps.accounts.emails import InvitationEmail
+    def send_email(self) -> None:
+        from apps.accounts.tasks import send_invitation_email
 
-        return InvitationEmail(invitation=self).send(fail_silently=False)
+        send_invitation_email(self.id, [self.email])
 
     def save(self, *args, **kwargs):
         if not self.key:
