@@ -3220,10 +3220,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         uuid:
           type: string
           format: uuid
@@ -3234,14 +3230,6 @@ components:
           format: date-time
           readOnly: true
           description: When the record was last updated
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
         content_type:
           type: string
           readOnly: true
@@ -3250,6 +3238,18 @@ components:
           type: string
           description: Return the name to download the file.
           readOnly: true
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
     RoleEnum:
       enum:
       - owner
@@ -3461,10 +3461,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
         uuid:
           type: string
           format: uuid
@@ -3475,14 +3471,6 @@ components:
           format: date-time
           readOnly: true
           description: When the record was last updated
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
         content_type:
           type: string
           readOnly: true
@@ -3491,6 +3479,18 @@ components:
           type: string
           description: Return the name to download the file.
           readOnly: true
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
       required:
       - content_type
       - download_name
@@ -3999,8 +3999,7 @@ components:
       - username
     UserCreateWithInvite:
       type: object
-      description: Mixin for ModelSerializer to add user, member, and organization
-        properties.
+      description: Serializer for creating a user.
       properties:
         id:
           type: integer
@@ -4024,6 +4023,7 @@ components:
           maxLength: 150
         password:
           type: string
+          writeOnly: true
           maxLength: 128
         auth_token:
           allOf:
@@ -4033,7 +4033,6 @@ components:
       - auth_token
       - email
       - id
-      - password
       - username
     UserGetOrCreate:
       type: object

@@ -16,10 +16,7 @@ from apps.accounts.serializers.user import UserGetOrCreateSerializer, UserSerial
 User = get_user_model()
 
 
-class UserCreateWithInviteSerializer(
-    ModelSerializerMixin,
-    serializers.ModelSerializer,
-):
+class UserCreateWithInviteSerializer(UserSerializer):
     auth_token = UserTokenSerializer(source='*', read_only=True)
 
     class Meta:
@@ -33,7 +30,11 @@ class UserCreateWithInviteSerializer(
             'password',
             'auth_token',
         ]
-        read_only_fields = ['email']
+        extra_kwargs = {
+            'email': {'read_only': True},
+            'password': {'write_only': True, 'required': False},
+            'auth_token': {'read_only': True},
+        }
 
     def _get_invitation(self) -> Invitation:
         invitation_key = (

@@ -19,6 +19,10 @@ class UserReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
 class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     """Serializer for creating a user."""
 
+    default_error_messages = {
+        'user_already_exists': _('A user with that username already exists.'),
+    }
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password']
@@ -51,7 +55,13 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
             )
             and not (self.auth_user and self.auth_user == instance)
         ):
-            errors.update({username_field: self._user_already_message()})
+            errors.update(
+                {
+                    username_field: self.default_error_messages.get(
+                        'user_already_exists'
+                    ),
+                }
+            )
             if isinstance(self._errors, dict):
                 self._errors.update(errors)
             elif isinstance(self._errors, list):
@@ -100,7 +110,13 @@ class UserGetOrCreateSerializer(UserSerializer):
             if self.auth_user:
                 self.instance = instance
                 return True
-            errors.update({username_field: self._user_already_message()})
+            errors.update(
+                {
+                    username_field: self.default_error_messages.get(
+                        'user_already_exists'
+                    ),
+                }
+            )
             if isinstance(self._errors, dict):
                 self._errors.update(errors)
             elif isinstance(self._errors, list):

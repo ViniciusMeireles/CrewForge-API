@@ -63,7 +63,7 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     def save(self, **kwargs):
         profile_data = self._validated_data.pop('profile', {}) or {}
         creating = not bool(self.instance)
-        instance = super().save(**kwargs)
+        instance: Organization = super().save(**kwargs)
         if creating:
             member = Member.objects.create(
                 user=self.auth_user,
@@ -74,6 +74,7 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
             )
             instance.owner = member
             instance.save(update_fields=['owner'])
+        instance.get_profile()
         if profile_data:
             profile_serializer = self._get_profile_serializer(profile_data)
             if not profile_serializer.is_valid():

@@ -124,7 +124,7 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
 
         data = {
             'user': user,
-            'organizations': user.active_organizations,
+            'organizations': user.active_organizations.select_related('profile'),
             'organization': organization,
             'member': member,
         }

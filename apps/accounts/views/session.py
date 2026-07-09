@@ -22,7 +22,7 @@ class SessionView(OrganizationScopedRequestMixin, APIView):
         organization = member.organization if (member := self.auth_member) else None
         data = {
             'user': user,
-            'organizations': user.active_organizations,
+            'organizations': user.active_organizations.select_related('profile'),
             'organization': organization,
             'member': member,
         }
