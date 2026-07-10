@@ -33,3 +33,18 @@ class SessionSerializer(serializers.Serializer):
     organizations = OrganizationListSerializer(many=True, read_only=True)
     organization = OrganizationListSerializer(allow_null=True, default=None)
     member = MemberSessionSerializer(allow_null=True, default=None)
+
+
+class CookieSettingsSerializer(serializers.Serializer):
+    session_cookie_samesite = serializers.CharField()
+    session_cookie_secure = serializers.BooleanField()
+    csrf_cookie_samesite = serializers.CharField()
+    csrf_cookie_secure = serializers.BooleanField()
+
+
+class SessionConfigSerializer(serializers.Serializer):
+    cookie_settings = CookieSettingsSerializer()
+    cors_allowed_origins = serializers.ListField(child=serializers.CharField())
+    cors_allow_credentials = serializers.BooleanField()
+    session_configured = serializers.BooleanField()
+    debug = serializers.BooleanField()

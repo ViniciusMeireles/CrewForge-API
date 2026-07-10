@@ -81,6 +81,12 @@ setup, prefer the Docker workflow.
 - `run.sh` runs migrations and `collectstatic` before starting the app.
 - In production mode the app runs with Gunicorn on port `8000`.
 - In local/dev mode the container runs Django `runserver` on port `8000`.
+- `GET /api/accounts/session/config/` is a public diagnostic endpoint that
+  returns current cookie and CORS settings. Useful for frontend teams to
+  verify connectivity before authentication.
+- Cookie rules: `SameSite=None` requires `Secure=True` (HTTPS). Local dev
+  (HTTP) must use `SameSite=Lax` + `Secure=False` or the browser will
+  silently drop the session cookie.
 
 
 ## API And Domain Conventions

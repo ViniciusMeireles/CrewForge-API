@@ -1201,6 +1201,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Session'
           description: ''
+  /api/accounts/session/config/:
+    get:
+      operationId: accounts_session_config_retrieve
+      description: Return current cookie and CORS configuration for frontend debugging.
+        This endpoint is intentionally public so the frontend can verify connectivity
+        before authentication is established.
+      tags:
+      - Session
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionConfig'
+          description: ''
   /api/accounts/signup/:
     post:
       operationId: accounts_signup_create
@@ -2113,6 +2131,22 @@ paths:
           description: List teams for choices (value/label format).
 components:
   schemas:
+    CookieSettings:
+      type: object
+      properties:
+        session_cookie_samesite:
+          type: string
+        session_cookie_secure:
+          type: boolean
+        csrf_cookie_samesite:
+          type: string
+        csrf_cookie_secure:
+          type: boolean
+      required:
+      - csrf_cookie_samesite
+      - csrf_cookie_secure
+      - session_cookie_samesite
+      - session_cookie_secure
     CreateWithInviteBadRequest:
       type: object
       properties:
@@ -3321,15 +3355,28 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
         size:
           type: integer
           readOnly: true
           description: Size of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         original_name:
           type: string
           readOnly: true
@@ -3338,19 +3385,6 @@ components:
           type: string
           readOnly: true
           description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
     RoleEnum:
       enum:
       - owner
@@ -3411,6 +3445,27 @@ components:
       required:
       - organizations
       - user
+    SessionConfig:
+      type: object
+      properties:
+        cookie_settings:
+          $ref: '#/components/schemas/CookieSettings'
+        cors_allowed_origins:
+          type: array
+          items:
+            type: string
+        cors_allow_credentials:
+          type: boolean
+        session_configured:
+          type: boolean
+        debug:
+          type: boolean
+      required:
+      - cookie_settings
+      - cors_allow_credentials
+      - cors_allowed_origins
+      - debug
+      - session_configured
     Signup:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.
@@ -3562,15 +3617,28 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
         size:
           type: integer
           readOnly: true
           description: Size of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         original_name:
           type: string
           readOnly: true
@@ -3579,19 +3647,6 @@ components:
           type: string
           readOnly: true
           description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
       required:
       - content_type
       - download_name

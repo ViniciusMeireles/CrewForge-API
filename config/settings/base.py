@@ -1,9 +1,11 @@
 import os
 import sys
+import warnings
 from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy
 from dotenv import load_dotenv
 
@@ -268,6 +270,26 @@ if session_domain := os.environ.get('SESSION_COOKIE_DOMAIN'):
 if csrf_origins := os.environ.get('CSRF_TRUSTED_ORIGINS'):
     CSRF_TRUSTED_ORIGINS = csrf_origins.split(',')
 
+# ─── Cookie / SameSite Validation ──────────────────────────────────────
+
+if ENVIRONMENT == 'production' and (
+    SESSION_COOKIE_SAMESITE == 'None' and not SESSION_COOKIE_SECURE
+):
+    raise ImproperlyConfigured(
+        'SESSION_COOKIE_SAMESITE=None requires SESSION_COOKIE_SECURE=True. '
+        'Cookies will be rejected by the browser.'
+    )
+elif (
+    not DEBUG
+    and not TESTING
+    and (SESSION_COOKIE_SAMESITE == 'None' and not SESSION_COOKIE_SECURE)
+):
+    warnings.warn(
+        'SECURITY WARNING: SESSION_COOKIE_SAMESITE=None requires '
+        'SESSION_COOKIE_SECURE=True. Cookies will be rejected by the browser.',
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
 # Celery
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
