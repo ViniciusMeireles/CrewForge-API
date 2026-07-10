@@ -50,6 +50,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: role
         schema:
@@ -301,6 +307,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -618,6 +630,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       tags:
       - Organization images
       security:
@@ -796,6 +814,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: website
         schema:
@@ -966,6 +990,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -1236,6 +1266,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -1707,6 +1743,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: role
         schema:
@@ -1917,6 +1959,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -3273,36 +3321,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        content_type:
-          type: string
+        size:
+          type: integer
           readOnly: true
-          description: Content type of the file
+          description: Size of the file
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
-        file_url:
+        content_type:
           type: string
-          nullable: true
           readOnly: true
+          description: Content type of the file
         download_name:
           type: string
           description: Return the name to download the file.
           readOnly: true
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
     RoleEnum:
       enum:
       - owner
@@ -3514,36 +3562,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        content_type:
-          type: string
+        size:
+          type: integer
           readOnly: true
-          description: Content type of the file
+          description: Size of the file
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
-        file_url:
+        content_type:
           type: string
-          nullable: true
           readOnly: true
+          description: Content type of the file
         download_name:
           type: string
           description: Return the name to download the file.
           readOnly: true
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
       required:
       - content_type
       - download_name
