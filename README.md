@@ -190,6 +190,9 @@ Interactive API documentation is available at `http://localhost:8000/api/schema/
 - Interactive testing capabilities.
 - Request/response examples.
 - Authentication support for testing secured endpoints.
+- [Frontend Integration Guide](./docs/frontend-integration-guide.md) — Practical guide for consuming the API from
+  Angular, React, or other frontend applications, including authentication flow, error handling, pagination, and
+  troubleshooting.
 
 
 ## Design Patterns :blue_book:

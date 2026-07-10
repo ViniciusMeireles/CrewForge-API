@@ -36,6 +36,13 @@ must not assume that obtaining a JWT alone is enough to represent a fully logged
 in user in CrewForge.
 
 
+## Frontend Integration
+
+For a comprehensive guide to consuming the CrewForge API from a frontend
+application (Angular, React, etc.), see
+[`docs/frontend-integration-guide.md`](./docs/frontend-integration-guide.md).
+
+
 ## Stack And Runtime
 
 - Python `>=3.14`
@@ -577,3 +584,4 @@ A change is usually ready when:
 - OpenAPI schema is regenerated when API contracts changed
   (`make l_spectacular`)
 - migrations are created and reviewed if models changed
+- `docs/frontend-integration-guide.md` is updated when adding new endpoints or changing request/response contracts
