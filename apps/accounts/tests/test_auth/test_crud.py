@@ -108,7 +108,7 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
             self.password_reset_url, data=payload, format='json'
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('non_field_errors', response.data)
+        self.assertIn('non_field_errors', response.data['error']['details'])
 
     def test_password_reset_confirm_success(self):
         member = self.organization.owner
@@ -156,7 +156,10 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(
             reset_confirm_response.status_code, http_status.HTTP_400_BAD_REQUEST
         )
-        self.assertIn('non_field_errors', reset_confirm_response.data)
+        self.assertIn(
+            'non_field_errors',
+            reset_confirm_response.data['error']['details'],
+        )
 
     def test_password_reset_confirm_invalid_uid(self):
         member = self.organization.owner
@@ -175,7 +178,10 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(
             reset_confirm_response.status_code, http_status.HTTP_400_BAD_REQUEST
         )
-        self.assertIn('non_field_errors', reset_confirm_response.data)
+        self.assertIn(
+            'non_field_errors',
+            reset_confirm_response.data['error']['details'],
+        )
 
     def test_password_reset_confirm_empty_password(self):
         member = self.organization.owner
@@ -195,7 +201,7 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(
             reset_confirm_response.status_code, http_status.HTTP_400_BAD_REQUEST
         )
-        self.assertIn('new_password', reset_confirm_response.data)
+        self.assertIn('new_password', reset_confirm_response.data['error']['details'])
 
     def test_email_preview(self):
         for url in self.email_preview_url_list:
@@ -305,7 +311,7 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
             format='json',
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('new_password', response.data)
+        self.assertIn('new_password', response.data['error']['details'])
 
     def test_logout_with_expired_refresh_token(self):
         member = self.organization.owner

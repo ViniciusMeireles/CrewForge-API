@@ -111,4 +111,4 @@ class SignupCRUDTestCase(APITestCase):
         response = self.client.post(path=self.url, data=payload, format='json')
 
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('user', response.data)
+        self.assertIn('user', response.data['error']['details'])

@@ -474,7 +474,8 @@ When implementing Sentry error tracking, follow these patterns:
 
 ### Error Response Format
 
-Use standardized JSON error responses:
+All API errors now use a standardized JSON envelope implemented by
+`apps/generics/exceptions.crewforge_exception_handler`:
 
 ```json
 {
@@ -486,8 +487,17 @@ Use standardized JSON error responses:
 }
 ```
 
-- Error codes: `VALIDATION_ERROR`, `PERMISSION_DENIED`, `NOT_FOUND`,
-  `AUTHENTICATION_ERROR`, `INTERNAL_ERROR`
+| Error code | HTTP status | `details` |
+|---|---|---|
+| `VALIDATION_ERROR` | 400 | Per-field dict |
+| `AUTHENTICATION_ERROR` | 401 | `null` |
+| `PERMISSION_DENIED` | 403 | `null` |
+| `NOT_FOUND` | 404 | `null` |
+| `METHOD_NOT_ALLOWED` | 405 | `null` |
+| `NOT_ACCEPTABLE` | 406 | `null` |
+| `THROTTLED` | 429 | `null` |
+| `INTERNAL_ERROR` | 500 | `null` |
+
 - Never expose stack traces in production (DEBUG=False)
 - For permission denied, return 403
 - For resources not found, return 404 (not 403) to avoid resource enumeration

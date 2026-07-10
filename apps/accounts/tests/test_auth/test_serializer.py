@@ -124,7 +124,7 @@ class AuthSerializerTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(
             reset_confirm_response.status_code, http_status.HTTP_400_BAD_REQUEST
         )
-        self.assertIn('new_password', reset_confirm_response.data)
+        self.assertIn('new_password', reset_confirm_response.data['error']['details'])
 
     def test_validate_invalid_token_password_reset(self):
         member = self.organization.owner
@@ -143,7 +143,10 @@ class AuthSerializerTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(
             reset_confirm_response.status_code, http_status.HTTP_400_BAD_REQUEST
         )
-        self.assertIn('non_field_errors', reset_confirm_response.data)
+        self.assertIn(
+            'non_field_errors',
+            reset_confirm_response.data['error']['details'],
+        )
 
     def test_validate_invalid_uid_password_reset(self):
         user = self.organization.owner.user
@@ -161,7 +164,10 @@ class AuthSerializerTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(
             reset_confirm_response.status_code, http_status.HTTP_400_BAD_REQUEST
         )
-        self.assertIn('non_field_errors', reset_confirm_response.data)
+        self.assertIn(
+            'non_field_errors',
+            reset_confirm_response.data['error']['details'],
+        )
 
     def test_validate_nonexistent_email_password_reset(self):
         payload = {'email': 'nonexistent@example.com'}
@@ -169,7 +175,7 @@ class AuthSerializerTestCase(APITestCaseMixin, APITestCase):
             self.password_reset_url, data=payload, format='json'
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('non_field_errors', response.data)
+        self.assertIn('non_field_errors', response.data['error']['details'])
 
     def test_token_obtain_pair_serializer_fields(self):
         member = self.organization.owner
@@ -221,7 +227,7 @@ class AuthSerializerTestCase(APITestCaseMixin, APITestCase):
             self.password_reset_url, data=payload, format='json'
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('email', response.data)
+        self.assertIn('email', response.data['error']['details'])
 
     def test_validate_nonexistent_user_password_reset(self):
         existing_user = self.organization.owner.user
@@ -237,4 +243,4 @@ class AuthSerializerTestCase(APITestCaseMixin, APITestCase):
             self.password_reset_confirm_url, data=payload, format='json'
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('non_field_errors', response.data)
+        self.assertIn('non_field_errors', response.data['error']['details'])

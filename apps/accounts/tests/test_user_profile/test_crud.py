@@ -78,7 +78,7 @@ class UserProfileCRUDTestCase(APITestCase):
             format='json',
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('current_password', response.data)
+        self.assertIn('current_password', response.data['error']['details'])
 
     def test_change_password_same_password(self):
         response = self.client.post(
@@ -101,7 +101,7 @@ class UserProfileCRUDTestCase(APITestCase):
             format='json',
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('new_password', response.data)
+        self.assertIn('new_password', response.data['error']['details'])
 
     def test_change_password_wrong_method(self):
         response = self.client.get(self.change_password_url)
