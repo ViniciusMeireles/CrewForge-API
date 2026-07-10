@@ -277,3 +277,87 @@ class AuthAPITestCase(APITestCaseMixin, APITestCase):
         for url in self.email_preview_url_list:
             response = self.client.get(url)
             self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+
+class LogoutAPITestCase(APITestCaseMixin, APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.token_url = reverse(viewname='accounts:token_obtain_pair')
+        cls.refresh_url = reverse(viewname='accounts:token_refresh')
+        cls.logout_url = reverse(viewname='accounts:logout')
+
+    def setUp(self):
+        self.organization = self.new_account()
+
+    def _get_tokens(self):
+        member = self.organization.owner
+        payload = {
+            username_field: getattr(member.user, username_field),
+            'password': DEFAULT_PASSWORD,
+        }
+        response = self.client.post(self.token_url, data=payload, format='json')
+        return response.data
+
+    def test_logout_success(self):
+        tokens = self._get_tokens()
+        response = self.client.post(
+            self.logout_url, data={'refresh': tokens['refresh']}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
+
+    def test_logout_invalid_token(self):
+        response = self.client.post(
+            self.logout_url, data={'refresh': 'invalid_token'}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('detail', response.data)
+
+    def test_logout_already_blacklisted(self):
+        tokens = self._get_tokens()
+        self.client.post(
+            self.logout_url, data={'refresh': tokens['refresh']}, format='json'
+        )
+        response = self.client.post(
+            self.logout_url, data={'refresh': tokens['refresh']}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('detail', response.data)
+
+    def test_logout_no_refresh_token(self):
+        response = self.client.post(self.logout_url, data={}, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('detail', response.data)
+
+    def test_logout_clears_session(self):
+        tokens = self._get_tokens()
+        session = self.client.session
+        self.assertIsNotNone(session.get('organization_id'))
+        self.client.post(
+            self.logout_url, data={'refresh': tokens['refresh']}, format='json'
+        )
+        session = self.client.session
+        self.assertIsNone(session.get('organization_id'))
+
+    def test_logout_token_cannot_refresh_after(self):
+        tokens = self._get_tokens()
+        self.client.post(
+            self.logout_url, data={'refresh': tokens['refresh']}, format='json'
+        )
+        response = self.client.post(
+            self.refresh_url, data={'refresh': tokens['refresh']}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_unauthenticated_user(self):
+        self.client.force_authenticate(user=None)
+        member = self.organization.owner
+        payload = {
+            username_field: getattr(member.user, username_field),
+            'password': DEFAULT_PASSWORD,
+        }
+        token_response = self.client.post(self.token_url, data=payload, format='json')
+        refresh_token = token_response.data.get('refresh')
+        response = self.client.post(
+            self.logout_url, data={'refresh': refresh_token}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)

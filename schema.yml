@@ -1510,6 +1510,45 @@ paths:
                         label: Stored file 2
                   summary: Example response
           description: List stored files for choices (value/label format).
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Blacklist the refresh token and clear the organization session.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '204':
+          description: Logout successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutErrorResponse'
+              examples:
+                MissingRefreshToken:
+                  value:
+                    detail: Refresh token is required.
+                  summary: Missing refresh token
+                InvalidOrExpiredToken:
+                  value:
+                    detail: Token is invalid or expired.
+                  summary: Invalid or expired token
+          description: Invalid request.
   /api/auth/password/reset/:
     post:
       operationId: auth_password_reset_create
@@ -2138,6 +2177,20 @@ components:
           type: string
       required:
       - detail
+    LogoutErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
     MemberChoicesResponse:
       type: object
       properties:
@@ -3220,16 +3273,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
         content_type:
           type: string
           readOnly: true
@@ -3238,18 +3281,28 @@ components:
           type: string
           description: Return the name to download the file.
           readOnly: true
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         size:
           type: integer
           readOnly: true
           description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
     RoleEnum:
       enum:
       - owner
@@ -3461,16 +3514,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
         content_type:
           type: string
           readOnly: true
@@ -3479,18 +3522,28 @@ components:
           type: string
           description: Return the name to download the file.
           readOnly: true
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         size:
           type: integer
           readOnly: true
           description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
       required:
       - content_type
       - download_name

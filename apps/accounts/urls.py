@@ -39,6 +39,8 @@ authentication_urlpatterns = [
     ),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # Logout
+    path('api/auth/logout/', auth.LogoutView.as_view(), name='logout'),
     # Password reset
     path(
         'api/auth/password/reset/',

@@ -225,6 +225,7 @@ SIMPLE_JWT = {
         minutes=int(os.environ.get('REFRESH_TOKEN_LIFETIME', 10080)),
     ),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 # Drf Spectacular
