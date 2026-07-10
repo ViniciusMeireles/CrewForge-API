@@ -83,6 +83,95 @@ class MemberModelSerializerTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(url, data=payload, format='json')
         self.assertNotEqual(response.status_code, http_status.HTTP_201_CREATED)
 
+    def test_validate_duplicate_email_in_org(self):
+        existing = MemberFactory(organization=self.organization)
+        existing.user.email = 'dupe@example.com'
+        existing.user.save()
+        user_data = UserFactory.build(email='dupe@example.com')
+        invite = InvitationFactory.create(
+            organization=self.organization,
+            email=user_data.email,
+            expired_at=None,
+        )
+        payload = {
+            'user': {
+                'username': user_data.username,
+                'email': user_data.email,
+                'first_name': user_data.first_name,
+                'last_name': user_data.last_name,
+                'password': user_data.password,
+            },
+            'nickname': 'dupe_member',
+        }
+        url = reverse('accounts:members-create-with-invite', args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_read_only_fields_on_create(self):
+        user_data = UserFactory.build()
+        invite = InvitationFactory.create(
+            organization=self.organization,
+            email=user_data.email,
+            expired_at=None,
+        )
+        payload = {
+            'user': {
+                'username': user_data.username,
+                'email': user_data.email,
+                'first_name': user_data.first_name,
+                'last_name': user_data.last_name,
+                'password': user_data.password,
+            },
+            'nickname': 'readonly_test',
+            'role': MemberRoleChoices.OWNER,
+        }
+        url = reverse('accounts:members-create-with-invite', args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertNotEqual(response.data['role'], MemberRoleChoices.OWNER)
+        self.assertEqual(response.data['role'], MemberRoleChoices.MEMBER)
+
+    def test_create_read_only_fields_ignored(self):
+        user_data = UserFactory.build()
+        invite = InvitationFactory.create(
+            organization=self.organization,
+            email=user_data.email,
+            expired_at=None,
+        )
+        payload = {
+            'id': 99999,
+            'is_active': False,
+            'user': {
+                'username': user_data.username,
+                'email': user_data.email,
+                'first_name': user_data.first_name,
+                'last_name': user_data.last_name,
+                'password': user_data.password,
+            },
+            'nickname': 'ignore_test',
+        }
+        url = reverse('accounts:members-create-with-invite', args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertNotEqual(response.data['id'], 99999)
+        self.assertTrue(response.data['is_active'])
+
+    def test_update_read_only_fields_ignored(self):
+        member = MemberFactory(organization=self.organization)
+        original_created_by = member.created_by_id
+        self.client.force_authenticate(member=self.organization.owner)
+        url = reverse('accounts:members-detail', args=[member.id])
+        payload = {
+            'nickname': 'ignore_ro',
+            'created_by': None,
+            'updated_by': None,
+        }
+        response = self.client.patch(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        member.refresh_from_db()
+        self.assertEqual(member.created_by_id, original_created_by)
+        self.assertEqual(member.nickname, 'ignore_ro')
+
 
 class MemberWithInviteCreateSerializerTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
@@ -308,6 +397,31 @@ class MemberRoleUpdateSerializerTestCase(APITestCaseMixin, APITestCase):
             self._update_role_url(target), data=payload, format='json'
         )
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    # --- Manager cannot set admin ---
+
+    def test_validate_role_hierarchy_manager_cannot_set_admin(self):
+        manager = MemberFactory.create(
+            organization=self.organization,
+            role=MemberRoleChoices.MANAGER,
+        )
+        self.client.force_authenticate(member=manager)
+        target = self._create_target()
+        payload = {'role': MemberRoleChoices.ADMIN}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    # --- Invalid role value ---
+
+    def test_validate_invalid_role_update(self):
+        target = self._create_target()
+        payload = {'role': 'invalid_role'}
+        response = self.client.patch(
+            self._update_role_url(target), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
     # --- Cannot change own role ---
 

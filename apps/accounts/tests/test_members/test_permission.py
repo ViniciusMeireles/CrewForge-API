@@ -18,6 +18,9 @@ class MemberPermissionTestCase(APITestCaseMixin, APITestCase):
     def _detail_url(self, member):
         return reverse('accounts:members-detail', args=[member.id])
 
+    def _update_role_url(self, member):
+        return reverse(self.update_role_url_name, args=[member.id])
+
     def _create_target_member(self, role=MemberRoleChoices.MEMBER):
         return MemberFactory(
             organization=self.organization,
@@ -208,6 +211,66 @@ class MemberPermissionTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
+    # --- Choices ---
+
+    def test_not_authenticated_choices(self):
+        self.client.logout()
+        response = self.client.get(self.choices_url)
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
+
+    def test_not_active_member_choices(self):
+        member = MemberFactory(organization=self.organization, is_active=False)
+        self.client.force_authenticate(member=member)
+        response = self.client.get(self.choices_url)
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    # --- Owner list ---
+
+    def test_owner_can_list(self):
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    # --- Admin list ---
+
+    def test_admin_can_list(self):
+        admin = MemberFactory(
+            organization=self.organization, role=MemberRoleChoices.ADMIN
+        )
+        self.client.force_authenticate(member=admin)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    # --- Role update permissions ---
+
+    def test_owner_can_update_role_self(self):
+        self.client.force_authenticate(member=self.organization.owner)
+        url = reverse(self.update_role_url_name, args=[self.organization.owner.id])
+        payload = {'role': MemberRoleChoices.ADMIN}
+        response = self.client.patch(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_admin_can_update_role_lower(self):
+        admin = MemberFactory(
+            organization=self.organization, role=MemberRoleChoices.ADMIN
+        )
+        self.client.force_authenticate(member=admin)
+        target = self._create_target_member()
+        payload = {'role': MemberRoleChoices.MANAGER}
+        url = self._update_role_url(target)
+        response = self.client.patch(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_admin_cannot_update_role_to_owner(self):
+        admin = MemberFactory(
+            organization=self.organization, role=MemberRoleChoices.ADMIN
+        )
+        self.client.force_authenticate(member=admin)
+        target = self._create_target_member()
+        payload = {'role': MemberRoleChoices.OWNER}
+        url = self._update_role_url(target)
+        response = self.client.patch(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
     # --- All roles can read ---
 
     def test_owner_can_retrieve(self):
@@ -247,6 +310,24 @@ class MemberPermissionTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     # --- Cross-org ---
+
+    def test_cross_org_member_list_returns_empty(self):
+        member = self._create_target_member()
+        other_member = MemberFactory()
+        self.client.force_authenticate(member=other_member)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        for result in response.data['results']:
+            self.assertNotEqual(result['id'], member.id)
+
+    def test_cross_org_member_choices_returns_empty(self):
+        member = self._create_target_member()
+        other_member = MemberFactory()
+        self.client.force_authenticate(member=other_member)
+        response = self.client.get(self.choices_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        for result in response.data['results']:
+            self.assertNotEqual(int(result['value']), member.id)
 
     def test_cross_org_member_retrieve_returns_404(self):
         other_org = OrganizationFactory()

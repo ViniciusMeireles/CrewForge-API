@@ -128,3 +128,14 @@ class MemberModelTestCase(TestCase):
     def test_default_role(self):
         member = MemberFactory(role=MemberRoleChoices.MEMBER)
         self.assertEqual(member.role, MemberRoleChoices.MEMBER)
+
+    def test_default_is_active(self):
+        member = MemberFactory()
+        self.assertTrue(member.is_active)
+
+    def test_filter_actives(self):
+        MemberFactory(is_active=True)
+        MemberFactory(is_active=True)
+        MemberFactory(is_active=False)
+        active_ids = Member.objects.filter_actives().values_list('id', flat=True)
+        self.assertEqual(len(active_ids), Member.objects.filter(is_active=True).count())

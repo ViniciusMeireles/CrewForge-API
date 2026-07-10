@@ -187,6 +187,42 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
+    def test_update_member_with_nonexistent_id(self):
+        self.client.force_authenticate(member=self.organization.owner)
+        url = self._detail_url(MemberFactory.build(id=99999))
+        response = self.client.patch(url, data={'nickname': 'ghost'}, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_update_member_role_invalid_value(self):
+        self.client.force_authenticate(member=self.organization.owner)
+        member = MemberFactory.create(
+            organization=self.organization,
+            role=MemberRoleChoices.MEMBER,
+        )
+        url = reverse(self.update_role_url_name, args=[member.id])
+        response = self.client.patch(url, data={'role': 'invalid_role'}, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_create_with_invite_accepted(self):
+        user_data = UserFactory.build()
+        invite = InvitationFactory.create(
+            organization=self.organization,
+            email=user_data.email,
+            expired_at=None,
+            is_accepted=True,
+        )
+        payload = self._member_payload(
+            user__username=user_data.username,
+            user__email=user_data.email,
+        )
+        url = reverse(self.create_with_invite_url_name, args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            response.data['detail'],
+            InvitationErrorMessages.INVITATION_NOT_FOUND.label,
+        )
+
     def test_choices_endpoint(self):
         MemberFactory.create_batch(size=3, organization=self.organization)
         response = self.client.get(self.choices_url)
