@@ -13,6 +13,7 @@ from apps.accounts.views.organizations import OrganizationViewSet
 from apps.accounts.views.session import SessionView
 from apps.accounts.views.session_config import session_config
 from apps.accounts.views.signup import SignupViewSet
+from apps.accounts.views.user_profile import UserProfileViewSet
 
 app_name = 'accounts'
 
@@ -55,6 +56,13 @@ authentication_urlpatterns = [
     ),
 ]
 
+user_profile = UserProfileViewSet.as_view(
+    {
+        'get': 'retrieve',
+        'patch': 'partial_update',
+    }
+)
+
 accounts_urlpatterns = [
     path('api/accounts/', include(router.urls)),
     path('api/accounts/session/', SessionView.as_view(), name='session'),
@@ -62,6 +70,12 @@ accounts_urlpatterns = [
         'api/accounts/session/config/',
         session_config,
         name='session-config',
+    ),
+    path('api/accounts/users/me/', user_profile, name='users-me'),
+    path(
+        'api/accounts/users/me/change-password/',
+        UserProfileViewSet.as_view({'post': 'change_password'}),
+        name='users-me-change-password',
     ),
 ]
 

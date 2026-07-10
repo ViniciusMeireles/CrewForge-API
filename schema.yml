@@ -1564,6 +1564,69 @@ paths:
                         label: Stored file 2
                   summary: Example response
           description: List stored files for choices (value/label format).
+  /api/accounts/users/me/:
+    get:
+      operationId: accounts_users_me_retrieve
+      description: Retrieve the authenticated user profile.
+      tags:
+      - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    patch:
+      operationId: accounts_users_me_partial_update
+      description: Partially update the authenticated user profile.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+  /api/accounts/users/me/change-password/:
+    post:
+      operationId: accounts_users_me_change_password_create
+      description: Change the authenticated user password.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Password changed successfully.
   /api/auth/logout/:
     post:
       operationId: auth_logout_create
@@ -2131,6 +2194,19 @@ paths:
           description: List teams for choices (value/label format).
 components:
   schemas:
+    ChangePassword:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - current_password
+      - new_password
     CookieSettings:
       type: object
       properties:
@@ -3355,11 +3431,14 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        updated_at:
+        original_name:
           type: string
-          format: date-time
           readOnly: true
-          description: When the record was last updated
+          description: Original name of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         uuid:
           type: string
           format: uuid
@@ -3369,22 +3448,46 @@ components:
           type: string
           nullable: true
           readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         size:
           type: integer
           readOnly: true
           description: Size of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         content_type:
           type: string
           readOnly: true
           description: Content type of the file
+    PatchedUserProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
     RoleEnum:
       enum:
       - owner
@@ -3617,11 +3720,14 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        updated_at:
+        original_name:
           type: string
-          format: date-time
           readOnly: true
-          description: When the record was last updated
+          description: Original name of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
         uuid:
           type: string
           format: uuid
@@ -3631,18 +3737,15 @@ components:
           type: string
           nullable: true
           readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         size:
           type: integer
           readOnly: true
           description: Size of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         content_type:
           type: string
           readOnly: true
@@ -4221,6 +4324,36 @@ components:
           type: string
           writeOnly: true
           maxLength: 128
+      required:
+      - id
+      - username
+    UserProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
       required:
       - id
       - username
