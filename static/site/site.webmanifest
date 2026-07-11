@@ -1,6 +1,6 @@
 {
-  "name": "CrewForge",
-  "short_name": "CrewForge",
+  "name": "CrewForge-API",
+  "short_name": "CrewForge-API",
   "icons": [
     {
       "src": "/static/images/favicon/web-app-manifest-192x192.png",

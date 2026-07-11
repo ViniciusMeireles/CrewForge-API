@@ -120,12 +120,12 @@ Additional authentication-related actions:
 ## Installation :inbox_tray:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ViniciusMeireles/CrewForge.git
+   git clone https://github.com/ViniciusMeireles/CrewForge-API.git
     ```
    
 2. Navigate to the project directory:
    ```bash
-   cd CrewForge
+   cd CrewForge-API
     ```
 
 3. Copy the example environment file and configure it:
