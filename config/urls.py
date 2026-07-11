@@ -11,6 +11,7 @@ from drf_spectacular.views import (
 
 django_urlpatterns = [
     path('admin/', admin.site.urls),
+    path('_nested_admin/', include('nested_admin.urls')),
 ]
 
 third_party_urlpatterns = [

@@ -3431,6 +3431,14 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
         size:
           type: integer
           readOnly: true
@@ -3439,28 +3447,20 @@ components:
           type: string
           readOnly: true
           description: Content type of the file
-        file_url:
+        download_name:
           type: string
-          nullable: true
+          description: Return the name to download the file.
           readOnly: true
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
     PatchedUserProfile:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -3720,6 +3720,14 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
         size:
           type: integer
           readOnly: true
@@ -3728,28 +3736,20 @@ components:
           type: string
           readOnly: true
           description: Content type of the file
-        file_url:
+        download_name:
           type: string
-          nullable: true
+          description: Return the name to download the file.
           readOnly: true
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
       required:
       - content_type
       - download_name
