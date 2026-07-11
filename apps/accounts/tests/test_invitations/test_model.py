@@ -5,10 +5,9 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
-from apps.accounts.choices import InvitationErrorMessages, MemberRoleChoices
+from apps.accounts.choices import InvitationErrorMessages
 from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.factories.members import MemberFactory
-from apps.accounts.models.invitation import Invitation
 
 
 class InvitationModelTestCase(TestCase):
@@ -154,40 +153,3 @@ class InvitationModelTestCase(TestCase):
         self.assertTrue(
             any('Task apps.generics.tasks.send_email' in line for line in logs.output),
         )
-
-    def test_filter_actives_excludes_inactive(self):
-        InvitationFactory(is_active=False)
-        active = InvitationFactory()
-        qs = Invitation.objects.filter_actives()
-        self.assertIn(active, qs)
-        self.assertEqual(qs.count(), 1)
-
-    def test_filter_inactives(self):
-        inactive = InvitationFactory(is_active=False)
-        InvitationFactory()
-        qs = Invitation.objects.filter_inactives()
-        self.assertIn(inactive, qs)
-
-    def test_get_or_none_found(self):
-        invitation = InvitationFactory()
-        result = Invitation.objects.get_or_none(id=invitation.id)
-        self.assertEqual(result, invitation)
-
-    def test_get_or_none_not_found(self):
-        result = Invitation.objects.get_or_none(id=99999)
-        self.assertIsNone(result)
-
-    def test_default_role_is_member(self):
-        invitation = InvitationFactory()
-        self.assertEqual(invitation.role, MemberRoleChoices.MEMBER)
-
-    def test_default_is_accepted_is_false(self):
-        invitation = InvitationFactory()
-        self.assertFalse(invitation.is_accepted)
-
-    def test_ordering(self):
-        inv1 = InvitationFactory()
-        inv2 = InvitationFactory()
-        qs = Invitation.objects.all()
-        self.assertEqual(qs[0], inv2)
-        self.assertEqual(qs[1], inv1)

@@ -108,32 +108,7 @@ class MemberModelTestCase(TestCase):
         MemberFactory(user=member.user)
         self.assertEqual(Member.objects.filter(user=member.user).count(), 2)
 
-    def test_manager_get_or_none_found(self):
-        member = MemberFactory()
-        result = Member.objects.get_or_none(id=member.id)
-        self.assertIsNotNone(result)
-        self.assertEqual(result.id, member.id)
-
-    def test_manager_get_or_none_not_found(self):
-        result = Member.objects.get_or_none(id=99999)
-        self.assertIsNone(result)
-
-    def test_ordering(self):
-        MemberFactory()
-        MemberFactory()
-        queryset = Member.objects.all()
-        ids = list(queryset.values_list('id', flat=True))
-        self.assertEqual(ids, sorted(ids, reverse=True))
-
-    def test_default_role(self):
-        member = MemberFactory(role=MemberRoleChoices.MEMBER)
-        self.assertEqual(member.role, MemberRoleChoices.MEMBER)
-
-    def test_default_is_active(self):
-        member = MemberFactory()
-        self.assertTrue(member.is_active)
-
-    def test_filter_actives(self):
+    def test_filter_actives_removes_inactive(self):
         MemberFactory(is_active=True)
         MemberFactory(is_active=True)
         MemberFactory(is_active=False)

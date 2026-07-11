@@ -56,4 +56,4 @@ jobs:
         DJANGO_SETTINGS_MODULE: config.settings.testing
         ENVIRONMENT: test
       run: |
-        uv run pytest
+        uv run pytest --reuse-db

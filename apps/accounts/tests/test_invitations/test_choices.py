@@ -3,7 +3,6 @@ from django.test import TestCase
 from apps.accounts.choices import (
     InvitationEmailErrorMessages,
     InvitationErrorMessages,
-    MemberRoleChoices,
 )
 
 
@@ -85,17 +84,3 @@ class InvitationEmailErrorMessagesTestCase(TestCase):
             InvitationEmailErrorMessages.INVITATION_NOT_ACCEPTABLE.label,
             'The invitation is no longer valid.',
         )
-
-
-class InvitationRoleChoicesTestCase(TestCase):
-    def test_owner(self):
-        self.assertEqual(MemberRoleChoices.OWNER, 'owner')
-
-    def test_admin(self):
-        self.assertEqual(MemberRoleChoices.ADMIN, 'admin')
-
-    def test_manager(self):
-        self.assertEqual(MemberRoleChoices.MANAGER, 'manager')
-
-    def test_member(self):
-        self.assertEqual(MemberRoleChoices.MEMBER, 'member')

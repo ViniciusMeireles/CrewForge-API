@@ -83,7 +83,7 @@ format_code:  ## Format code with ruff
 	docker compose exec django_api uv run ruff format .
 
 test:  ## Run tests for the Django project
-	docker compose exec django_api env DJANGO_SETTINGS_MODULE=config.settings.testing uv run pytest
+	docker compose exec django_api env DJANGO_SETTINGS_MODULE=config.settings.testing uv run pytest --reuse-db
 
 precommit: format_code spectacular test  ## Run code formatting and tests
 	@echo "Pre-commit checks passed."
@@ -113,8 +113,17 @@ l_format_code:  ## Format code with ruff
 	uv run ruff check . --fix
 	uv run ruff format .
 
-l_test:  ## Run tests for the Django project
-	POSTGRES_HOST=localhost uv run --env-file test.env pytest
+l_test:  ## Run tests with coverage (sequential, for CI)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db
 
-l_precommit: l_format_code l_spectacular l_test  ## Run code formatting and tests
+l_test_fast:  ## Run tests without coverage (faster for local iteration)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db --no-cov -x
+
+l_test_parallel:  ## Run tests in parallel (fastest)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto
+
+l_test_parallel_nocov:  ## Run tests in parallel without coverage (fastest)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto --no-cov -x
+
+l_precommit: l_format_code l_spectacular l_test  ## Run code formatting and tests (sequential with coverage)
 	@echo "Pre-commit checks passed."

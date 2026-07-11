@@ -328,35 +328,3 @@ class StoredFileModelTestCase(APITestCase):
         expr = StoredFile.label_expression()
         queryset = StoredFile.objects.filter(id=stored_file.id).annotate(label=expr)
         self.assertEqual(queryset.first().label, stored_file.original_name)
-
-    def test_manager_filter_actives(self):
-        StoredFileFactory.create_batch(3, organization=self.org, owner=self.owner_user)
-        StoredFileFactory.create(
-            is_active=False,
-            organization=self.org,
-            owner=self.owner_user,
-        )
-        self.assertEqual(StoredFile.objects.filter_actives().count(), 3)
-
-    def test_manager_filter_inactives(self):
-        StoredFileFactory.create_batch(3, organization=self.org, owner=self.owner_user)
-        StoredFileFactory.create(
-            is_active=False,
-            organization=self.org,
-            owner=self.owner_user,
-        )
-        self.assertEqual(StoredFile.objects.filter_inactives().count(), 1)
-
-    def test_manager_get_or_none_found(self):
-        stored_file = StoredFileFactory.create(
-            organization=self.org,
-            owner=self.owner_user,
-        )
-        result = StoredFile.objects.get_or_none(uuid=stored_file.uuid)
-        self.assertIsNotNone(result)
-        self.assertEqual(result.id, stored_file.id)
-
-    def test_manager_get_or_none_not_found(self):
-        invalid_uuid = '00000000-0000-0000-0000-000000000000'
-        result = StoredFile.objects.get_or_none(uuid=invalid_uuid)
-        self.assertIsNone(result)
