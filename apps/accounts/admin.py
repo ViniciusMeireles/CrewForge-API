@@ -111,8 +111,8 @@ class StoredFileAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     form = StoredFileModelForm
 
-    def get_form(self, request, obj=None, **kwargs):
-        form_class = super().get_form(request, obj, **kwargs)
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form_class = super().get_form(request, obj, change=change, **kwargs)
 
         class _StoredFileModelForm(form_class):
             def __init__(self, *args, **kwargs):
