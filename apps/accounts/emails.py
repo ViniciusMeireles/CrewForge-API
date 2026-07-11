@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from django.conf import settings
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.accounts.choices import OrganizationImageTypeChoices
@@ -96,6 +97,13 @@ class InvitationEmail(EmailBase):
         if logo_image and logo_image.image:
             return logo_image.image.to_base64() or ''
         return ''
+
+    def send(self, fail_silently: bool = False) -> int:
+        if send := super().send(fail_silently=fail_silently):
+            instance = self.get_object()
+            instance.last_email_sent_at = timezone.now()
+            instance.save(update_fields=['last_email_sent_at', 'updated_at'])
+        return send
 
     @classmethod
     def get_preview_kwargs(cls, **kwargs) -> dict:
