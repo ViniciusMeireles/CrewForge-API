@@ -52,7 +52,7 @@ Location: `apps/generics/mails/bases.py`
 | `system_title` | System title (default `settings.SYSTEM_TITLE`) |
 | `get_preview_kwargs()` | Provide test data for preview mode |
 
-**Usage example:**
+**Subclass example — PasswordResetRequestEmail:**
 
 ```python
 from apps.generics.mails.bases import CTAEmail, EmailBase
@@ -74,6 +74,51 @@ class PasswordResetRequestEmail(EmailBase):
         self.cta = CTAEmail(url=reset_url, text=_('Reset Password'))
 ```
 
+**Subclass example — InvitationEmail** (`apps/accounts/emails.py`):
+
+Sends an invitation email with a CTA button that links to the frontend accept
+page. Fetches the organization logo for the email header.
+
+```python
+class InvitationEmail(EmailBase):
+    template_name = 'accounts/emails/base.html'
+
+    subject = _('You have been invited to join {organization_name}')
+
+    def __init__(self, *, invitation: Invitation, **kwargs):
+        super().__init__(**kwargs)
+        self._obj = invitation
+
+    def get_recipient_list(self) -> list[str]:
+        return [self.get_object().email]
+
+    def get_subject(self) -> str:
+        return self.subject.format(
+            organization_name=self.get_organization_name()
+        )
+
+    def get_cta(self) -> CTAEmail:
+        return CTAEmail(
+            url=self.get_object().get_invitation_link()
+            if not self.is_preview
+            else '',
+            text=_('Accept Invitation'),
+        )
+
+    def get_logo(self) -> str:
+        profile = self.get_organization().get_profile()
+        if not profile:
+            return ''
+        logo_image = (
+            profile.images.filter(
+                image_type=OrganizationImageTypeChoices.LOGO, is_active=True
+            )
+            .select_related('image')
+            .first()
+        )
+        return logo_image.image.file_url if logo_image and logo_image.image else ''
+```
+
 **Preview support:**
 
 Each email class can generate a Django view for preview in development:
@@ -85,7 +130,39 @@ path(
     view=PasswordResetRequestEmail.as_view(),
     name='password_reset_email_preview',
 )
+path(
+    route='email-preview/accounts/invitation/',
+    view=InvitationEmail.as_view(),
+    name='invitation_email_preview',
+)
 ```
+
+**EmailBase internals:**
+
+The base class provides two structural mechanisms:
+
+1. **`TemplateNotDefinedException`** (`apps/generics/mails/bases.py`):
+   A custom exception raised when `template_name` is not set, instead of a bare
+   `ValueError`.
+
+2. **`_get_context_data_methods_map()`** — a classmethod that returns a mapping
+   of context key names to their getter methods. `get_context_data()` iterates
+   this map and calls each method. During preview mode, exceptions are silently
+   caught and replaced with the class's default attribute value, allowing email
+   previews even when the object is `None`:
+
+   ```python
+   def get_context_data(self) -> dict:
+       context_data = {}
+       for key, method in self._get_context_data_methods_map().items():
+           try:
+               context_data[key] = method(self)
+           except Exception as e:
+               if not self.is_preview:
+                   raise e
+               context_data[key] = getattr(self, key)
+       return context_data
+   ```
 
 ---
 
@@ -253,11 +330,16 @@ Each resource defines its own permission strategy by extending `OrganizationScop
 **InvitationPermission** (`apps/accounts/permissions/invitation.py`):
 - Extends `OrganizationScopedPermission`
 - Write access requires `has_admin_permission` at the permission level
-- Object-level checks match invitation role against auth member's role:
-  - OWNER invitations require owner permission
-  - ADMIN invitations require admin permission
-  - MANAGER invitations require manager permission
-  - MEMBER invitations require member permission
+- No SAFE_METHODS shortcut — all actions (read, write, delete) are subject to
+  object-level role checks
+- `has_object_permission` checks the invitation's role against the auth member's
+  permission level:
+  - OWNER role → requires `has_owner_permission`
+  - ADMIN role → requires `has_admin_permission`
+  - MANAGER or MEMBER role → requires `has_manager_permission`
+- `InvitationViewSet.get_queryset()` applies cumulative role-based filtering:
+  managers see MANAGER+MEMBER, admins see ADMIN+MANAGER+MEMBER, owners see all
+  roles (OWNER+ADMIN+MANAGER+MEMBER)
 
 **TeamPermission** (`apps/teams/permissions/team.py`):
 - SAFE methods allowed for all active members
@@ -309,21 +391,30 @@ Serializer mixins form a validation chain that runs during `is_valid()`, adding 
 
 Location: `apps/accounts/serializers/mixins.py`
 
-Validates role field changes with hierarchical permission checks:
+Validates role field changes with hierarchical permission checks. The validation
+chains through all role levels — a user can only assign roles at or below their
+own permission level.
 
 ```python
-class ValidateRoleSerializerMixin:
+class ValidateRoleSerializerMixin(OrganizationScopedFieldMixin):
     def validate_role(self, value):
         if self.instance == self.auth_member:
             raise serializers.ValidationError(
                 _('Not allowed to change your own role.')
             )
         if (
-            value == MemberRoleChoices.OWNER
-            and not self.auth_member.has_owner_permission
-        ) or (
-            value == MemberRoleChoices.ADMIN
-            and not self.auth_member.has_admin_permission
+            (
+                value in [MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN]
+                and not self.auth_member.has_owner_permission
+            )
+            or (
+                value == MemberRoleChoices.MANAGER
+                and not self.auth_member.has_admin_permission
+            )
+            or (
+                value == MemberRoleChoices.MEMBER
+                and not self.auth_member.has_manager_permission
+            )
         ):
             raise serializers.ValidationError(
                 _('Not allowed to set the %(role)s role.') % {'role': value}
@@ -332,11 +423,21 @@ class ValidateRoleSerializerMixin:
 ```
 
 **Validation rules:**
-1. Users cannot change their own role
-2. Only owners can assign the `OWNER` role
-3. Only owners or admins can assign the `ADMIN` role
 
-**Used by:** Serializers that modify the `role` field on `Member` instances.
+| Target role | Required permission |
+|---|---|
+| `OWNER` or `ADMIN` | `has_owner_permission` |
+| `MANAGER` | `has_admin_permission` |
+| `MEMBER` | `has_manager_permission` |
+
+1. Users cannot change their own role
+2. Setting `OWNER` or `ADMIN` requires owner-level permission
+3. Setting `MANAGER` requires admin-level permission
+4. Setting `MEMBER` requires manager-level permission
+
+**Used by:**
+- `InvitationSerializer`
+- Member serializers that modify the `role` field (e.g., `MemberSerializer`)
 
 ### UserTokenSerializerMixin
 

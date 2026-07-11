@@ -1,11 +1,13 @@
 import uuid
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.accounts.choices import MemberRoleChoices
+from apps.accounts.choices import InvitationErrorMessages, MemberRoleChoices
+from apps.accounts.consts import INVITATION_ACCEPT_URL_PATH
 from apps.accounts.managers.invitation import InvitationManager
 from apps.generics.models.abstracts import BaseModel
 from apps.generics.utils.shortcuts import get_object_or_none
@@ -62,6 +64,12 @@ class Invitation(BaseModel):
         null=True,
         blank=True,
     )
+    last_email_sent_at = models.DateTimeField(
+        verbose_name=_('Last Email Sent At'),
+        help_text=_('Date and time when the last invitation email was sent'),
+        null=True,
+        blank=True,
+    )
 
     objects = InvitationManager()
 
@@ -77,26 +85,35 @@ class Invitation(BaseModel):
         """Get the user associated with the invitation email."""
         return get_object_or_none(get_user_model(), email=self.email, is_active=True)
 
+    def get_invitation_link(self) -> str:
+        """Return the absolute URL for accepting the invitation."""
+        return (
+            f'{settings.FRONTEND_URL}/{INVITATION_ACCEPT_URL_PATH.format(key=self.key)}'
+        )
+
     def is_acceptable(self) -> tuple[bool, str]:
         """
         Check if the invitation is acceptable or not.
         :return: Tuple of boolean and message.
         """
+        if self.is_accepted:
+            return False, str(InvitationErrorMessages.INVITATION_ACCEPTED.label)
         if self.is_expired:
-            return False, str(_('Invitation is expired'))
+            return False, str(InvitationErrorMessages.INVITATION_EXPIRED.label)
         elif self.expired_at and self.expired_at <= timezone.now():
             self.is_expired = True
             self.save()
-            return False, str(_('Invitation is expired'))
+            return False, str(InvitationErrorMessages.INVITATION_EXPIRED.label)
         elif (user := self.get_user()) and self.organization.members.filter(
             user=user
         ).exists():
-            return False, str(_('User is already a member of the organization'))
+            return False, str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
         return True, ''
 
     def accept(self, member, check: bool = True):
         """
         Accept the invitation.
+        :param member: Member created with this invite.
         :param check: Whether to check if the invitation is acceptable or not.
         :return: Member object if the invitation is accepted, None otherwise.
         """
@@ -116,6 +133,11 @@ class Invitation(BaseModel):
         """
         if self.expired_at and self.expired_at <= timezone.now():
             raise ValueError(_('Expired date must be greater than now'))
+
+    def send_email(self) -> None:
+        from apps.accounts.tasks import send_invitation_email
+
+        send_invitation_email(self.id, [self.email])
 
     def save(self, *args, **kwargs):
         if not self.key:

@@ -10,7 +10,10 @@ from apps.accounts.views.members import MemberViewSet
 from apps.accounts.views.organization_images import OrganizationImageViewSet
 from apps.accounts.views.organization_profiles import OrganizationProfileViewSet
 from apps.accounts.views.organizations import OrganizationViewSet
+from apps.accounts.views.session import SessionView
+from apps.accounts.views.session_config import session_config
 from apps.accounts.views.signup import SignupViewSet
+from apps.accounts.views.user_profile import UserProfileViewSet
 
 app_name = 'accounts'
 
@@ -38,6 +41,8 @@ authentication_urlpatterns = [
     ),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # Logout
+    path('api/auth/logout/', auth.LogoutView.as_view(), name='logout'),
     # Password reset
     path(
         'api/auth/password/reset/',
@@ -51,19 +56,43 @@ authentication_urlpatterns = [
     ),
 ]
 
+user_profile = UserProfileViewSet.as_view(
+    {
+        'get': 'retrieve',
+        'patch': 'partial_update',
+    }
+)
+
 accounts_urlpatterns = [
     path('api/accounts/', include(router.urls)),
+    path('api/accounts/session/', SessionView.as_view(), name='session'),
+    path(
+        'api/accounts/session/config/',
+        session_config,
+        name='session-config',
+    ),
+    path('api/accounts/users/me/', user_profile, name='users-me'),
+    path(
+        'api/accounts/users/me/change-password/',
+        UserProfileViewSet.as_view({'post': 'change_password'}),
+        name='users-me-change-password',
+    ),
 ]
 
 urlpatterns = authentication_urlpatterns + accounts_urlpatterns
 
 if settings.ENVIRONMENT in ['local_development', 'test']:
-    from apps.accounts.emails import PasswordResetRequestEmail
+    from apps.accounts.emails import InvitationEmail, PasswordResetRequestEmail
 
     urlpatterns += [
         path(
             route='email-preview/auth/password/reset/',
             view=PasswordResetRequestEmail.as_view(),
             name='password_reset_email_preview',
-        )
+        ),
+        path(
+            route='email-preview/accounts/invitation/',
+            view=InvitationEmail.as_view(),
+            name='invitation_email_preview',
+        ),
     ]

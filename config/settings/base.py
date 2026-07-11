@@ -1,9 +1,11 @@
 import os
 import sys
+import warnings
 from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy
 from dotenv import load_dotenv
 
@@ -44,6 +46,7 @@ THIRD_PARTY_APPS = [
     'django_filters',
     'drf_spectacular',
     'drf_spectacular_sidecar',
+    'nested_admin',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
@@ -183,10 +186,11 @@ EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend'
 )
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 FROM_MAIL = os.environ.get('FROM_MAIL', DEFAULT_FROM_EMAIL)
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 try:
     EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '25'))
 except ValueError:
@@ -196,11 +200,14 @@ except ValueError:
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
 FRONTEND_RESET_URL = os.environ.get('FRONTEND_RESET_URL')
 
+# API URLs
+SELF_URL = os.environ.get('SELF_URL')
+
 # Rest Framework
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'apps.generics.pagination.CustomPageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
@@ -210,6 +217,15 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour',
+    },
+    'EXCEPTION_HANDLER': 'apps.generics.exceptions.custom_exception_handler',
 }
 
 # JWT Authentication settings
@@ -221,6 +237,7 @@ SIMPLE_JWT = {
         minutes=int(os.environ.get('REFRESH_TOKEN_LIFETIME', 10080)),
     ),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 # Drf Spectacular
@@ -252,6 +269,48 @@ CORS_ALLOWED_ORIGINS = []
 if cors_origins := os.environ.get('CORS_ALLOWED_ORIGINS'):
     CORS_ALLOWED_ORIGINS = cors_origins.split(',')
 
+CORS_ALLOW_CREDENTIALS = True
+
+SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'None')
+CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'None')
+
+if session_domain := os.environ.get('SESSION_COOKIE_DOMAIN'):
+    SESSION_COOKIE_DOMAIN = session_domain
+
+if csrf_origins := os.environ.get('CSRF_TRUSTED_ORIGINS'):
+    CSRF_TRUSTED_ORIGINS = csrf_origins.split(',')
+
+# ─── Cookie / SameSite Validation ──────────────────────────────────────
+
+if ENVIRONMENT == 'production' and (
+    SESSION_COOKIE_SAMESITE == 'None' and not SESSION_COOKIE_SECURE
+):
+    raise ImproperlyConfigured(
+        'SESSION_COOKIE_SAMESITE=None requires SESSION_COOKIE_SECURE=True. '
+        'Cookies will be rejected by the browser.'
+    )
+elif (
+    not DEBUG
+    and not TESTING
+    and (SESSION_COOKIE_SAMESITE == 'None' and not SESSION_COOKIE_SECURE)
+):
+    warnings.warn(
+        'SECURITY WARNING: SESSION_COOKIE_SAMESITE=None requires '
+        'SESSION_COOKIE_SECURE=True. Cookies will be rejected by the browser.',
+        RuntimeWarning,
+        stacklevel=2,
+    )
+
+# Celery
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_IGNORE_RESULT = (
+    os.environ.get('CELERY_TASK_IGNORE_RESULT', 'False').lower() == 'true'
+)
 
 # System settings
 SYSTEM_TITLE = os.environ.get('SYSTEM_TITLE', gettext_lazy('CrewForge'))

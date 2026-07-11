@@ -17,6 +17,18 @@ services:
     networks:
       - crew_forge_network
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crew_forge_network
+
   django_api:
     build:
       context: .
@@ -28,10 +40,91 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
     env_file:
       - .env
     restart: unless-stopped
     working_dir: /app
+    networks:
+      - crew_forge_network
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "uv run celery -A config worker -l INFO"
+    networks:
+      - crew_forge_network
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "uv run celery -A config beat -l INFO"
+    networks:
+      - crew_forge_network
+
+  flower:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started
+    env_file:
+      - .env
+    ports:
+      - "5555:5555"
+    working_dir: /app
+    command: sh -c "uv run celery -A config flower --port=5555"
+    networks:
+      - crew_forge_network
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+      - ./.mailpit-data:/.mailpit-data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /.mailpit-data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
     networks:
       - crew_forge_network
 

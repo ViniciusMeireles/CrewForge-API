@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Callable
 
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -9,6 +10,10 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
+
+
+class TemplateNotDefinedException(ValueError):
+    pass
 
 
 class EmailView(TemplateView):
@@ -188,28 +193,40 @@ class EmailBase:
 
     def get_template_name(self) -> str:
         if not self.template_name:
-            raise ValueError('Template name is not defined')
+            raise TemplateNotDefinedException('Template name is not defined')
         return self.template_name
 
-    def get_context_data(self) -> dict:
+    @classmethod
+    def _get_context_data_methods_map(cls) -> dict[str, Callable]:
         return {
-            'subject': self.get_subject(),
-            'recipient_list': self.get_recipient_list(),
-            'preheader': self.get_preheader(),
-            'theme_color': self.get_theme_color(),
-            'title': self.get_title(),
-            'content': self.get_content(),
-            'logo': self.get_logo(),
-            'cta': self.get_cta(),
-            'footer_text': self.get_footer_text(),
-            'system_company_address': self.get_system_company_address(),
-            'unsubscribe_url': self.get_unsubscribe_url(),
-            'file_path': self.get_file_path(),
-            'file_name': self.get_file_name(),
-            'file_mimetype': self.get_file_mimetype(),
-            'from_email': self.get_from_email(),
-            'system_title': self.get_system_title(),
+            'subject': cls.get_subject,
+            'recipient_list': cls.get_recipient_list,
+            'preheader': cls.get_preheader,
+            'theme_color': cls.get_theme_color,
+            'title': cls.get_title,
+            'content': cls.get_content,
+            'logo': cls.get_logo,
+            'cta': cls.get_cta,
+            'footer_text': cls.get_footer_text,
+            'system_company_address': cls.get_system_company_address,
+            'unsubscribe_url': cls.get_unsubscribe_url,
+            'file_path': cls.get_file_path,
+            'file_name': cls.get_file_name,
+            'file_mimetype': cls.get_file_mimetype,
+            'from_email': cls.get_from_email,
+            'system_title': cls.get_system_title,
         }
+
+    def get_context_data(self) -> dict:
+        context_data = {}
+        for key, method in self._get_context_data_methods_map().items():
+            try:
+                context_data[key] = method(self)
+            except Exception as e:
+                if not self.is_preview:
+                    raise e
+                context_data[key] = getattr(self, key)
+        return context_data
 
     def get_message(self) -> EmailMultiAlternatives:
         """Renders the email template and returns an EmailMultiAlternatives object."""

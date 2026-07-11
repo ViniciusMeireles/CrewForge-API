@@ -1,5 +1,3 @@
-from rest_framework import permissions
-
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.permissions.generics import OrganizationScopedPermission
 from apps.accounts.utils.requests import get_member
@@ -17,21 +15,15 @@ class InvitationPermission(OrganizationScopedPermission):
         if not super().has_object_permission(request, view, obj):
             return False
 
-        auth_member = get_member(request)
+        if not (auth_member := get_member(request)):
+            return False
         return (
-            request.method in permissions.SAFE_METHODS
+            obj.role == MemberRoleChoices.OWNER
+            and auth_member.has_owner_permission
+            or obj.role == MemberRoleChoices.ADMIN
+            and auth_member.has_admin_permission
             or (
-                obj.role == MemberRoleChoices.OWNER and auth_member.has_owner_permission
-            )
-            or (
-                obj.role == MemberRoleChoices.ADMIN and auth_member.has_admin_permission
-            )
-            or (
-                obj.role == MemberRoleChoices.MANAGER
+                obj.role in [MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER]
                 and auth_member.has_manager_permission
-            )
-            or (
-                obj.role == MemberRoleChoices.MEMBER
-                and auth_member.has_member_permission
             )
         )

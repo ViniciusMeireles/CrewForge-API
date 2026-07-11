@@ -50,6 +50,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: role
         schema:
@@ -112,17 +118,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Invitation'
           description: ''
-  /api/accounts/invitations/{key}/:
+  /api/accounts/invitations/{id}/:
     get:
       operationId: accounts_invitations_retrieve
       description: Retrieve a specific Invitation.
       parameters:
       - in: path
-        name: key
+        name: id
         schema:
-          type: string
-          format: uuid
-          description: Key for the invitation
+          type: integer
+        description: A unique integer value identifying this Invitation.
         required: true
       tags:
       - Invitations
@@ -140,11 +145,10 @@ paths:
       description: Update a Invitation.
       parameters:
       - in: path
-        name: key
+        name: id
         schema:
-          type: string
-          format: uuid
-          description: Key for the invitation
+          type: integer
+        description: A unique integer value identifying this Invitation.
         required: true
       tags:
       - Invitations
@@ -174,11 +178,10 @@ paths:
       description: Delete a Invitation.
       parameters:
       - in: path
-        name: key
+        name: id
         schema:
-          type: string
-          format: uuid
-          description: Key for the invitation
+          type: integer
+        description: A unique integer value identifying this Invitation.
         required: true
       tags:
       - Invitations
@@ -187,6 +190,63 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/accounts/invitations/{id}/send-email/:
+    post:
+      operationId: accounts_invitations_send_email_create
+      description: Send an invitation email.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Invitation.
+        required: true
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendInviteEmailSuccess'
+              examples:
+                InvitationEmailSentSuccessfully.:
+                  value:
+                    detail: Invitation email sent successfully.
+                  summary: Invitation email sent successfully.
+          description: The invitation email has been sent successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendInviteEmailBadRequest'
+              examples:
+                InvitationIsExpired:
+                  value:
+                    detail: Invitation is expired
+                  summary: Invitation is expired
+                UserIsAlreadyAMember:
+                  value:
+                    detail: User is already a member
+                  summary: User is already a member
+          description: The invitation is expired or the user is already a member.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendInviteEmailTooManyRequests'
+              examples:
+                AnInvitationEmailWasRecentlySent.PleaseWaitBeforeResending.:
+                  value:
+                    detail: An invitation email was recently sent. Please wait before
+                      resending.
+                    code: cooldown_active
+                    retry_after_seconds: 60
+                  summary: An invitation email was recently sent. Please wait before
+                    resending.
+          description: The invitation email cooldown is active.
   /api/accounts/invitations/choices/:
     get:
       operationId: accounts_invitations_choices_retrieve
@@ -247,6 +307,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -498,6 +564,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/MemberWithInviteCreate'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateWithInviteBadRequest'
+              examples:
+                InvitationIsExpired:
+                  value:
+                    detail: Invitation is expired
+                  summary: Invitation is expired
+                UserIsAlreadyAMember:
+                  value:
+                    detail: User is already a member
+                  summary: User is already a member
+          description: The invitation is expired or the user is already a member.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateWithInviteNotFound'
+              examples:
+                InvitationNotFoundOrExpired:
+                  value:
+                    detail: Invitation not found or expired
+                  summary: Invitation not found or expired
+          description: Invitation not found or already accepted/expired.
   /api/accounts/organization-images/:
     get:
       operationId: accounts_organization_images_list
@@ -536,6 +628,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       tags:
@@ -716,6 +814,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: website
         schema:
@@ -888,6 +992,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: slug
         schema:
@@ -905,7 +1015,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedOrganizationList'
+                $ref: '#/components/schemas/PaginatedOrganizationListList'
           description: ''
     post:
       operationId: accounts_organizations_create
@@ -1025,13 +1135,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
-              examples:
-                LoginToOrganization:
-                  value:
-                    detail: Logged in to organization.
-                  summary: Login to organization
-          description: Logged in to organization.
+                $ref: '#/components/schemas/Session'
+          description: ''
         '404':
           content:
             application/json:
@@ -1043,6 +1148,17 @@ paths:
                     detail: Organization not found.
                   summary: Organization not found
           description: Organization not found.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginUnauthorizedResponse'
+              examples:
+                UserNotAuthenticated:
+                  value:
+                    detail: User not authenticated.
+                  summary: User not authenticated
+          description: User not authenticated.
   /api/accounts/organizations/choices/:
     get:
       operationId: accounts_organizations_choices_retrieve
@@ -1070,6 +1186,39 @@ paths:
                         label: Organization 2
                   summary: Example response
           description: List organizations for choices (value/label format).
+  /api/accounts/session/:
+    get:
+      operationId: accounts_session_retrieve
+      description: Get current session data.
+      tags:
+      - Sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+  /api/accounts/session/config/:
+    get:
+      operationId: accounts_session_config_retrieve
+      description: Return current cookie and CORS configuration for frontend debugging.
+        This endpoint is intentionally public so the frontend can verify connectivity
+        before authentication is established.
+      tags:
+      - Session
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionConfig'
+          description: ''
   /api/accounts/signup/:
     post:
       operationId: accounts_signup_create
@@ -1135,6 +1284,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -1409,6 +1564,108 @@ paths:
                         label: Stored file 2
                   summary: Example response
           description: List stored files for choices (value/label format).
+  /api/accounts/users/me/:
+    get:
+      operationId: accounts_users_me_retrieve
+      description: Retrieve the authenticated user profile.
+      tags:
+      - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    patch:
+      operationId: accounts_users_me_partial_update
+      description: Partially update the authenticated user profile.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+  /api/accounts/users/me/change-password/:
+    post:
+      operationId: accounts_users_me_change_password_create
+      description: Change the authenticated user password.
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Password changed successfully.
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Blacklist the refresh token and clear the organization session.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '204':
+          description: Logout successful.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutErrorResponse'
+              examples:
+                MissingRefreshToken:
+                  value:
+                    detail: Refresh token is required.
+                  summary: Missing refresh token
+                InvalidOrExpiredToken:
+                  value:
+                    detail: Token is invalid or expired.
+                  summary: Invalid or expired token
+          description: Invalid request.
   /api/auth/password/reset/:
     post:
       operationId: auth_password_reset_create
@@ -1565,6 +1822,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -1779,6 +2042,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: slug
         schema:
@@ -1925,6 +2194,49 @@ paths:
           description: List teams for choices (value/label format).
 components:
   schemas:
+    ChangePassword:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - current_password
+      - new_password
+    CookieSettings:
+      type: object
+      properties:
+        session_cookie_samesite:
+          type: string
+        session_cookie_secure:
+          type: boolean
+        csrf_cookie_samesite:
+          type: string
+        csrf_cookie_secure:
+          type: boolean
+      required:
+      - csrf_cookie_samesite
+      - csrf_cookie_secure
+      - session_cookie_samesite
+      - session_cookie_secure
+    CreateWithInviteBadRequest:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    CreateWithInviteNotFound:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
     ImageTypeEnum:
       enum:
       - logo
@@ -1949,6 +2261,9 @@ components:
       type: object
       description: Mixin to validate the role of a user.
       properties:
+        id:
+          type: integer
+          readOnly: true
         email:
           type: string
           format: email
@@ -1980,9 +2295,21 @@ components:
           type: integer
           readOnly: true
           description: Organization to which the user is invited
+        last_email_sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Date and time when the last invitation email was sent
+        send_email:
+          type: boolean
+          writeOnly: true
+          default: false
       required:
       - email
+      - id
       - is_accepted
+      - last_email_sent_at
       - organization
     InvitationChoicesResponse:
       type: object
@@ -2001,13 +2328,27 @@ components:
           type: string
       required:
       - detail
-    LoginResponse:
+    LoginUnauthorizedResponse:
       type: object
       properties:
         detail:
           type: string
       required:
       - detail
+    LogoutErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
     MemberChoicesResponse:
       type: object
       properties:
@@ -2056,6 +2397,12 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2075,10 +2422,47 @@ components:
       - created_by
       - id
       - is_active
+      - last_login_at
       - organization
       - updated_at
       - updated_by
       - user
+    MemberPermissions:
+      type: object
+      properties:
+        is_owner:
+          type: boolean
+          readOnly: true
+        is_admin:
+          type: boolean
+          readOnly: true
+        is_manager:
+          type: boolean
+          readOnly: true
+        is_member:
+          type: boolean
+          readOnly: true
+        has_owner_permission:
+          type: boolean
+          readOnly: true
+        has_admin_permission:
+          type: boolean
+          readOnly: true
+        has_manager_permission:
+          type: boolean
+          readOnly: true
+        has_member_permission:
+          type: boolean
+          readOnly: true
+      required:
+      - has_admin_permission
+      - has_manager_permission
+      - has_member_permission
+      - has_owner_permission
+      - is_admin
+      - is_manager
+      - is_member
+      - is_owner
     MemberRoleUpdate:
       type: object
       description: Serializer for updating the role of a member.
@@ -2093,6 +2477,39 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+    MemberSession:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        nickname:
+          type: string
+          nullable: true
+          description: Nickname of the user in the organization
+          maxLength: 100
+        permissions:
+          allOf:
+          - $ref: '#/components/schemas/MemberPermissions'
+          readOnly: true
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
+      required:
+      - id
+      - permissions
     MemberUpdate:
       type: object
       description: Serializer for updating the Member model.
@@ -2132,6 +2549,12 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2151,6 +2574,7 @@ components:
       - created_by
       - id
       - is_active
+      - last_login_at
       - organization
       - role
       - updated_at
@@ -2163,18 +2587,8 @@ components:
         id:
           type: integer
           readOnly: true
-        refresh:
-          type: string
-          nullable: true
-          description: Return the refresh token.
-          readOnly: true
-        access:
-          type: string
-          nullable: true
-          description: Return the access token.
-          readOnly: true
         user:
-          $ref: '#/components/schemas/UserGetOrCreate'
+          $ref: '#/components/schemas/UserCreateWithInvite'
         is_active:
           type: boolean
           readOnly: true
@@ -2197,6 +2611,7 @@ components:
         role:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
           description: |-
             User role in the organization
 
@@ -2204,6 +2619,12 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2219,13 +2640,13 @@ components:
           readOnly: true
           description: Organization to which the user belongs
       required:
-      - access
       - created_at
       - created_by
       - id
       - is_active
+      - last_login_at
       - organization
-      - refresh
+      - role
       - updated_at
       - updated_by
       - user
@@ -2236,6 +2657,8 @@ components:
         id:
           type: integer
           readOnly: true
+        profile:
+          $ref: '#/components/schemas/OrganizationProfileRelated'
         is_active:
           type: boolean
           readOnly: true
@@ -2331,6 +2754,29 @@ components:
       required:
       - label
       - value
+    OrganizationList:
+      type: object
+      description: Serializer for the Organization model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Organization name
+          maxLength: 255
+        slug:
+          type: string
+          description: Organization slug
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        profile:
+          type: integer
+      required:
+      - id
+      - name
+      - profile
+      - slug
     OrganizationProfile:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2340,11 +2786,14 @@ components:
           type: integer
           readOnly: true
         website:
-          type: string
-          format: uri
           nullable: true
           description: Organization website
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         description:
           type: string
           nullable: true
@@ -2366,6 +2815,29 @@ components:
       required:
       - label
       - value
+    OrganizationProfileRelated:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        website:
+          nullable: true
+          description: Organization website
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+      required:
+      - id
     OrganizationReady:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2548,7 +3020,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationImage'
-    PaginatedOrganizationList:
+    PaginatedOrganizationListList:
       type: object
       required:
       - count
@@ -2570,7 +3042,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/Organization'
+            $ref: '#/components/schemas/OrganizationList'
     PaginatedOrganizationProfileChoicesResponseList:
       type: object
       required:
@@ -2843,6 +3315,12 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -2890,11 +3368,14 @@ components:
           type: integer
           readOnly: true
         website:
-          type: string
-          format: uri
           nullable: true
           description: Organization website
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         description:
           type: string
           nullable: true
@@ -2950,24 +3431,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
         original_name:
           type: string
           readOnly: true
@@ -2980,6 +3443,51 @@ components:
           type: integer
           readOnly: true
           description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+    PatchedUserProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
     RoleEnum:
       enum:
       - owner
@@ -2992,6 +3500,75 @@ components:
         * `admin` - Admin
         * `manager` - Manager
         * `member` - Member
+    SendInviteEmailBadRequest:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    SendInviteEmailSuccess:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    SendInviteEmailTooManyRequests:
+      type: object
+      properties:
+        detail:
+          type: string
+        code:
+          type: string
+        retry_after_seconds:
+          type: integer
+      required:
+      - code
+      - detail
+      - retry_after_seconds
+    Session:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserReady'
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationList'
+          readOnly: true
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/OrganizationList'
+          nullable: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/MemberSession'
+          nullable: true
+      required:
+      - organizations
+      - user
+    SessionConfig:
+      type: object
+      properties:
+        cookie_settings:
+          $ref: '#/components/schemas/CookieSettings'
+        cors_allowed_origins:
+          type: array
+          items:
+            type: string
+        cors_allow_credentials:
+          type: boolean
+        session_configured:
+          type: boolean
+        debug:
+          type: boolean
+      required:
+      - cookie_settings
+      - cors_allow_credentials
+      - cors_allowed_origins
+      - debug
+      - session_configured
     Signup:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.
@@ -3010,7 +3587,7 @@ components:
           description: Return the access token.
           readOnly: true
         user:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/UserCreateSignup'
         organization:
           $ref: '#/components/schemas/Organization'
         is_active:
@@ -3043,6 +3620,11 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last time the member logged into the organization
         created_by:
           type: integer
           readOnly: true
@@ -3138,24 +3720,6 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
         original_name:
           type: string
           readOnly: true
@@ -3168,6 +3732,24 @@ components:
           type: integer
           readOnly: true
           description: Size of the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
       required:
       - content_type
       - download_name
@@ -3556,10 +4138,6 @@ components:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.
       properties:
-        user:
-          allOf:
-          - $ref: '#/components/schemas/UserReady'
-          readOnly: true
         refresh:
           type: string
           nullable: true
@@ -3570,6 +4148,10 @@ components:
           nullable: true
           description: Return the access token.
           readOnly: true
+        auth_user:
+          allOf:
+          - $ref: '#/components/schemas/UserReady'
+          readOnly: true
         username:
           type: string
           writeOnly: true
@@ -3578,9 +4160,9 @@ components:
           writeOnly: true
       required:
       - access
+      - auth_user
       - password
       - refresh
-      - user
       - username
     TokenRefresh:
       type: object
@@ -3615,10 +4197,13 @@ components:
           pattern: ^[\w.@+-]+$
           maxLength: 150
         email:
-          type: string
-          format: email
           title: Email address
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         first_name:
           type: string
           maxLength: 150
@@ -3630,6 +4215,82 @@ components:
           writeOnly: true
           maxLength: 128
       required:
+      - id
+      - username
+    UserCreateSignup:
+      type: object
+      description: Serializer for creating a user.
+      properties:
+        auth_token:
+          allOf:
+          - $ref: '#/components/schemas/UserToken'
+          readOnly: true
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - auth_token
+      - id
+      - username
+    UserCreateWithInvite:
+      type: object
+      description: Serializer for creating a user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        auth_token:
+          allOf:
+          - $ref: '#/components/schemas/UserToken'
+          readOnly: true
+      required:
+      - auth_token
+      - email
       - id
       - username
     UserGetOrCreate:
@@ -3646,10 +4307,13 @@ components:
           pattern: ^[\w.@+-]+$
           maxLength: 150
         email:
-          type: string
-          format: email
           title: Email address
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         first_name:
           type: string
           maxLength: 150
@@ -3660,6 +4324,36 @@ components:
           type: string
           writeOnly: true
           maxLength: 128
+      required:
+      - id
+      - username
+    UserProfile:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
       required:
       - id
       - username
@@ -3693,6 +4387,23 @@ components:
       - id
       - last_name
       - username
+    UserToken:
+      type: object
+      description: Mixin to add access and refresh token fields to a serializer.
+      properties:
+        refresh:
+          type: string
+          nullable: true
+          description: Return the refresh token.
+          readOnly: true
+        access:
+          type: string
+          nullable: true
+          description: Return the access token.
+          readOnly: true
+      required:
+      - access
+      - refresh
   securitySchemes:
     jwtAuth:
       type: http

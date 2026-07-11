@@ -69,3 +69,13 @@ class User(AbstractUser, BaseModel):
     )
 
     objects = UserManager()
+
+    @property
+    def active_organizations(self):
+        from apps.accounts.models.organization import Organization
+
+        return Organization.objects.filter(
+            members__user=self,
+            members__is_active=True,
+            is_active=True,
+        )

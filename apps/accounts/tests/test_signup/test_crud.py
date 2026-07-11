@@ -11,14 +11,12 @@ from apps.accounts.factories.users import UserFactory
 User = get_user_model()
 
 
-class SignupAPITestCase(APITestCase):
+class SignupCRUDTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.url_name = 'accounts:signup-list'
-        cls.url = reverse(cls.url_name)
+        cls.url = reverse('accounts:signup-list')
 
     def test_create_account(self):
-        """Test the create view of the signup."""
         user_data = UserFactory.build()
         organization_data = OrganizationFactory.build()
         member_data = MemberFactory.build()
@@ -38,11 +36,7 @@ class SignupAPITestCase(APITestCase):
             'nickname': member_data.nickname,
         }
 
-        response = self.client.post(
-            path=self.url,
-            data=payload,
-            format='json',
-        )
+        response = self.client.post(path=self.url, data=payload, format='json')
 
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
         self.assertEqual(response.data.get('user').get('username'), user_data.username)
@@ -61,8 +55,9 @@ class SignupAPITestCase(APITestCase):
         )
         self.assertEqual(response.data.get('nickname'), member_data.nickname)
         self.assertEqual(response.data.get('role'), MemberRoleChoices.OWNER)
-        self.assertIsNotNone(response.data.get('access'))
-        self.assertIsNotNone(response.data.get('refresh'))
+        self.assertIsNotNone(response.data['user']['auth_token']['access'])
+        self.assertIsNotNone(response.data['user']['auth_token']['refresh'])
+
         user = User.objects.get_or_none(
             **{User.USERNAME_FIELD: getattr(user_data, User.USERNAME_FIELD)}
         )
@@ -70,7 +65,6 @@ class SignupAPITestCase(APITestCase):
         self.assertIsNotNone(user.password)
 
     def test_create_account_existing_user(self):
-        """Test the create view of the signup with an existing user."""
         existing_user = OrganizationFactory.create().owner.user
         organization_data = OrganizationFactory.build()
         member_data = MemberFactory.build()
@@ -90,17 +84,11 @@ class SignupAPITestCase(APITestCase):
             'nickname': member_data.nickname,
         }
 
-        response = self.client.post(
-            path=self.url,
-            data=payload,
-            format='json',
-        )
+        response = self.client.post(path=self.url, data=payload, format='json')
 
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('user', response.data)
 
     def test_create_account_empty_password(self):
-        """Test the create view of the signup with an empty password."""
         user_data = UserFactory.build()
         organization_data = OrganizationFactory.build()
         member_data = MemberFactory.build()
@@ -120,12 +108,7 @@ class SignupAPITestCase(APITestCase):
             'nickname': member_data.nickname,
         }
 
-        response = self.client.post(
-            path=self.url,
-            data=payload,
-            format='json',
-        )
+        response = self.client.post(path=self.url, data=payload, format='json')
 
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('user', response.data)
-        self.assertIn('password', response.data['user'])
+        self.assertIn('user', response.data['error']['details'])

@@ -1,15 +1,22 @@
 from django.conf import settings
 from django.utils.translation import gettext as _
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiResponse,
+    extend_schema,
+    inline_serializer,
+)
+from rest_framework import serializers
 from rest_framework import status as http_status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as TokenObtainPairViewBase,
 )
 
-from apps.accounts.emails import PasswordResetRequestEmail
 from apps.accounts.serializers.auth import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
@@ -46,8 +53,10 @@ class PasswordResetRequestView(APIView):
         uid = serializer.data.get('uid')
         token = serializer.data.get('token')
 
+        from apps.accounts.tasks import send_password_reset_email
+
         reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
-        PasswordResetRequestEmail(reset_url=reset_link, recipient_list=[email]).send()
+        send_password_reset_email(reset_link, [email])
 
         return Response(
             data={
@@ -97,3 +106,63 @@ class PasswordResetConfirmView(APIView):
             },
             status=http_status.HTTP_200_OK,
         )
+
+
+@extend_schema(
+    request=inline_serializer(
+        name='LogoutRequest',
+        fields={
+            'refresh': serializers.CharField(),
+        },
+    ),
+    responses={
+        http_status.HTTP_204_NO_CONTENT: OpenApiResponse(
+            response=None,
+            description=_('Logout successful.'),
+        ),
+        http_status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            response=inline_serializer(
+                name='LogoutErrorResponse',
+                fields={
+                    'detail': serializers.CharField(),
+                },
+            ),
+            examples=[
+                OpenApiExample(
+                    name=str(_('Missing refresh token')),
+                    value={'detail': _('Refresh token is required.')},
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name=str(_('Invalid or expired token')),
+                    value={'detail': _('Token is invalid or expired.')},
+                    response_only=True,
+                ),
+            ],
+            description=_('Invalid request.'),
+        ),
+    },
+    description=_('Blacklist the refresh token and clear the organization session.'),
+)
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response(
+                {'detail': _('Refresh token is required.')},
+                status=http_status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except TokenError:
+            return Response(
+                {'detail': _('Token is invalid or expired.')},
+                status=http_status.HTTP_400_BAD_REQUEST,
+            )
+
+        request.session.flush()
+        return Response(status=http_status.HTTP_204_NO_CONTENT)

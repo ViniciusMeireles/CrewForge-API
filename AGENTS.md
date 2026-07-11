@@ -36,6 +36,13 @@ must not assume that obtaining a JWT alone is enough to represent a fully logged
 in user in CrewForge.
 
 
+## Frontend Integration
+
+For a comprehensive guide to consuming the CrewForge API from a frontend
+application (Angular, React, etc.), see
+[`docs/frontend-integration-guide.md`](./docs/frontend-integration-guide.md).
+
+
 ## Stack And Runtime
 
 - Python `>=3.14`
@@ -66,6 +73,8 @@ setup, prefer the Docker workflow.
 ## Environment Notes
 
 - Copy `example.env` to `.env` for local Docker development.
+- `SELF_URL` is required for building absolute file download URLs (`StoredFile.file_url`).
+- `FRONTEND_URL` is required for generating invitation accept links (`Invitation.get_invitation_link()`).
 - The example development setup uses `DJANGO_SETTINGS_MODULE=config.settings.local`.
 - Base settings are production-leaning:
   - `DEBUG = False`
@@ -73,9 +82,18 @@ setup, prefer the Docker workflow.
   - HSTS enabled
   - SSL redirect enabled
 - `config.settings.local` explicitly relaxes those settings for development.
+- CORS and cookie SameSite are configured cross-origin by default (`SameSite=None`)
+  and overridden to `Lax` in local dev to support HTTP. See `CORS_ALLOW_CREDENTIALS`,
+  `SESSION_COOKIE_SAMESITE`, and `CSRF_COOKIE_SAMESITE` in `base.py`.
 - `run.sh` runs migrations and `collectstatic` before starting the app.
 - In production mode the app runs with Gunicorn on port `8000`.
 - In local/dev mode the container runs Django `runserver` on port `8000`.
+- `GET /api/accounts/session/config/` is a public diagnostic endpoint that
+  returns current cookie and CORS settings. Useful for frontend teams to
+  verify connectivity before authentication.
+- Cookie rules: `SameSite=None` requires `Secure=True` (HTTPS). Local dev
+  (HTTP) must use `SameSite=Lax` + `Secure=False` or the browser will
+  silently drop the session cookie.
 
 
 ## API And Domain Conventions
@@ -93,6 +111,13 @@ setup, prefer the Docker workflow.
   - Admin
   - Manager
   - Member
+- `POST /api/accounts/invitations/{id}/send-email/` sends (or resends) an
+  invitation email with 60s cooldown; returns 429 if within cooldown, 400 if
+  expired/accepted, 200 on success
+- Invitations are looked up by PK (`id`), not by `key` (UUID)
+- Invitations list is role-scoped cumulatively: managers see MANAGER+MEMBER,
+  admins see ADMIN+MANAGER+MEMBER, owners see all roles
+- `StoredFile.file_url` provides absolute download URLs using `SELF_URL`
 
 Preserve this domain model when adding or changing behavior. Permission changes
 should be treated as high impact and accompanied by tests.
@@ -236,7 +261,9 @@ class MyViewSet(
 - Default read-only fields: `id`, `is_active`, `created_at`, `updated_at`,
   `created_by`, `updated_by`.
 - Use `ValidateRoleSerializerMixin` for any serializer that modifies a `role`
-  field.
+  field. The mixin enforces hierarchical role assignment: setting OWNER/ADMIN
+  requires `has_owner_permission`, MANAGER requires `has_admin_permission`,
+  MEMBER requires `has_manager_permission`.
 - Use `UserTokenSerializerMixin` for serializers that return JWT tokens
   (signup, member creation via invitation).
 
@@ -254,7 +281,9 @@ class MyViewSet(
   `has_permission` — viewsets must add `IsActiveMember` separately in
   `permission_classes`.
 - Object-level permissions should always allow SAFE methods (GET, HEAD, OPTIONS)
-  before checking write access.
+  before checking write access, unless the resource explicitly requires role
+  scoping on reads (e.g., `InvitationPermission` — all actions require
+  matching role level).
 
 ### Schema
 
@@ -452,7 +481,8 @@ When implementing Sentry error tracking, follow these patterns:
 
 ### Error Response Format
 
-Use standardized JSON error responses:
+All API errors now use a standardized JSON envelope implemented by
+`apps/generics/exceptions.crewforge_exception_handler`:
 
 ```json
 {
@@ -464,8 +494,17 @@ Use standardized JSON error responses:
 }
 ```
 
-- Error codes: `VALIDATION_ERROR`, `PERMISSION_DENIED`, `NOT_FOUND`,
-  `AUTHENTICATION_ERROR`, `INTERNAL_ERROR`
+| Error code | HTTP status | `details` |
+|---|---|---|
+| `VALIDATION_ERROR` | 400 | Per-field dict |
+| `AUTHENTICATION_ERROR` | 401 | `null` |
+| `PERMISSION_DENIED` | 403 | `null` |
+| `NOT_FOUND` | 404 | `null` |
+| `METHOD_NOT_ALLOWED` | 405 | `null` |
+| `NOT_ACCEPTABLE` | 406 | `null` |
+| `THROTTLED` | 429 | `null` |
+| `INTERNAL_ERROR` | 500 | `null` |
+
 - Never expose stack traces in production (DEBUG=False)
 - For permission denied, return 403
 - For resources not found, return 404 (not 403) to avoid resource enumeration
@@ -545,3 +584,4 @@ A change is usually ready when:
 - OpenAPI schema is regenerated when API contracts changed
   (`make l_spectacular`)
 - migrations are created and reviewed if models changed
+- `docs/frontend-integration-guide.md` is updated when adding new endpoints or changing request/response contracts

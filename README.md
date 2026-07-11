@@ -120,12 +120,12 @@ Additional authentication-related actions:
 ## Installation :inbox_tray:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ViniciusMeireles/CrewForge.git
+   git clone https://github.com/ViniciusMeireles/CrewForge-API.git
     ```
    
 2. Navigate to the project directory:
    ```bash
-   cd CrewForge
+   cd CrewForge-API
     ```
 
 3. Copy the example environment file and configure it:
@@ -190,6 +190,9 @@ Interactive API documentation is available at `http://localhost:8000/api/schema/
 - Interactive testing capabilities.
 - Request/response examples.
 - Authentication support for testing secured endpoints.
+- [Frontend Integration Guide](./docs/frontend-integration-guide.md) — Practical guide for consuming the API from
+  Angular, React, or other frontend applications, including authentication flow, error handling, pagination, and
+  troubleshooting.
 
 
 ## Design Patterns :blue_book:
@@ -211,7 +214,8 @@ CrewForge follows established design patterns for maintainability and extensibil
 - :framed_picture: Organization image management with admin-level write restrictions and public read access.
 - :page_with_curl: Organization profile management with admin-level write restrictions.
 - :e-mail: Secure password reset workflow.
-- :globe_with_meridians: CORS protection configured for production environments.
+- :globe_with_meridians: CORS with credentialed support (`withCredentials`) and
+  configurable `SameSite` cookies for SPAs on different domains or subdomains.
 
 
 ## Contributing :handshake:

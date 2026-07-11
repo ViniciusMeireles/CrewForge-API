@@ -19,4 +19,5 @@ class TeamViewSet(
     permission_classes = [TeamPermission]
     filterset_class = TeamFilter
     filter_backends = [backends.DjangoFilterBackend]
+    base_filters = {'is_active': True}
     label_expression = 'name'

@@ -1,12 +1,21 @@
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
-from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiResponse,
+    OpenApiTypes,
+    extend_schema,
+    inline_serializer,
+)
+from rest_framework import serializers, viewsets
 from rest_framework import status as http_status
-from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.accounts.choices import InvitationErrorMessages
+from apps.accounts.consts import INVITATION_LOOKUP_URL_KWARG
 from apps.accounts.filters.members import MemberFilter
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.accounts.models.invitation import Invitation
@@ -40,6 +49,56 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             'Create a new %(name)s with an invitation.'
             % {'name': get_verbose_name(Member)}
         ),
+        responses={
+            http_status.HTTP_200_OK: MemberWithInviteCreateSerializer,
+            http_status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=inline_serializer(
+                    name='CreateWithInviteBadRequest',
+                    fields={'detail': serializers.CharField()},
+                ),
+                examples=[
+                    OpenApiExample(
+                        name=str(InvitationErrorMessages.INVITATION_EXPIRED.label),
+                        value={
+                            'detail': str(
+                                InvitationErrorMessages.INVITATION_EXPIRED.label
+                            )
+                        },
+                        response_only=True,
+                    ),
+                    OpenApiExample(
+                        name=str(InvitationErrorMessages.USER_ALREADY_MEMBER.label),
+                        value={
+                            'detail': str(
+                                InvitationErrorMessages.USER_ALREADY_MEMBER.label
+                            )
+                        },
+                        response_only=True,
+                    ),
+                ],
+                description=_(
+                    'The invitation is expired or the user is already a member.'
+                ),
+            ),
+            http_status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=inline_serializer(
+                    name='CreateWithInviteNotFound',
+                    fields={'detail': serializers.CharField()},
+                ),
+                examples=[
+                    OpenApiExample(
+                        name=str(InvitationErrorMessages.INVITATION_NOT_FOUND.label),
+                        value={
+                            'detail': str(
+                                InvitationErrorMessages.INVITATION_NOT_FOUND.label
+                            )
+                        },
+                        response_only=True,
+                    ),
+                ],
+                description=_('Invitation not found or already accepted/expired.'),
+            ),
+        },
     ),
     # Create route is excluded
     create=extend_schema(exclude=True),
@@ -90,7 +149,7 @@ class MemberViewSet(
         """Get the invitation object."""
         return (
             Invitation.objects.filter(
-                key=self.kwargs.get('invitation_key'),
+                key=self.kwargs.get(INVITATION_LOOKUP_URL_KWARG),
                 is_active=True,
                 is_expired=False,
                 is_accepted=False,
@@ -122,7 +181,7 @@ class MemberViewSet(
         """Create a new member."""
         if not (invitation := self.get_invitation()):
             return Response(
-                data={'detail': _('Invitation not found or expired.')},
+                data={'detail': InvitationErrorMessages.INVITATION_NOT_FOUND.label},
                 status=http_status.HTTP_404_NOT_FOUND,
             )
 
@@ -133,12 +192,6 @@ class MemberViewSet(
             )
 
         return super().create(request, *args, **kwargs)
-
-    def perform_create(self, serializer):
-        """Perform the create action."""
-        member = serializer.save()
-        if invitation := self.get_invitation():
-            invitation.accept(member=member, check=False)
 
     @action(detail=True, methods=['patch'], url_path='update-role')
     def update_role(self, request, *args, **kwargs):

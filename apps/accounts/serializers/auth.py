@@ -5,59 +5,46 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainSerializer
-
-from apps.accounts.serializers.mixins import (
-    UserTokenMixin,
-    UserTokenSerializerMetaclass,
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer as TokenObtainPairBaseSerializer,
 )
+
+from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.user import UserReadySerializer
 
 User = get_user_model()
 
 
-class UserSerializerMetaclass(serializers.SerializerMetaclass):
-    def __new__(cls, name, bases, attrs):
-        attrs['user'] = serializers.SerializerMethodField()
-        return super().__new__(cls, name, bases, attrs)
+class UserTokenSerializer(UserTokenSerializerMixin, serializers.ModelSerializer):
+    AUTO_SET_TOKEN = True
+
+    class Meta(UserTokenSerializerMixin.Meta):
+        model = User
+        fields = UserTokenSerializerMixin.Meta.fields
+        read_only_fields = fields
 
 
-class UserMixin:
-    def get_user(self, obj=None) -> UserReadySerializer:
+class TokenObtainPairSerializer(
+    UserTokenSerializerMixin,
+    TokenObtainPairBaseSerializer,
+):
+    auth_user = serializers.SerializerMethodField()
+
+    @extend_schema_field(UserReadySerializer)
+    def get_auth_user(self, obj=None):
         """Return the user associated with the token."""
+        if not hasattr(self, 'user') or not self.user:
+            return None
         return UserReadySerializer(
             instance=self.user,
             context=self.context,
         ).data
 
-
-class UserSerializerMixin(UserMixin, metaclass=UserSerializerMetaclass):
-    pass
-
-
-class TokenWithUserSerializerMetaclass(
-    UserSerializerMetaclass, UserTokenSerializerMetaclass
-):
-    pass
-
-
-class TokenObtainPairSerializer(
-    UserTokenMixin,
-    UserMixin,
-    TokenObtainSerializer,
-    metaclass=TokenWithUserSerializerMetaclass,
-):
-    def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         attrs = super().validate(attrs)
-        self.set_tokens_for_user(self.user)
-        attrs.update(
-            {
-                'user': self.get_user(),
-                'refresh': self._refresh_token,
-                'access': self._access_token,
-            }
-        )
+        attrs.update({'auth_user': self.get_auth_user()})
         return attrs
 
 

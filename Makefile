@@ -42,6 +42,25 @@ uv_upgrade:  ## Upgrade all libraries in the uv project
 	docker compose exec django_api uv sync --upgrade
 
 
+##@ Celery
+
+up_celery:  ## Start celery worker in foreground (manual)
+	docker compose exec celery_worker uv run celery -A config worker -l INFO
+
+restart_celery:  ## Restart celery worker
+	docker compose restart celery_worker
+
+up_flower:  ## Start flower monitoring in foreground
+	docker compose exec flower uv run celery -A config flower --port=5555
+
+up_beat:  ## Start celery beat in foreground
+	docker compose exec celery_beat uv run celery -A config beat -l INFO
+
+##@ Services
+
+up_partial:  ## Start all services except django_api
+	docker compose up postgres_db redis mailpit celery_worker celery_beat flower -d
+
 ##@ Development
 
 makemigrations:  ## Make migrations for the Django project
@@ -64,7 +83,7 @@ format_code:  ## Format code with ruff
 	docker compose exec django_api uv run ruff format .
 
 test:  ## Run tests for the Django project
-	docker compose exec django_api uv run pytest
+	docker compose exec django_api env DJANGO_SETTINGS_MODULE=config.settings.testing uv run pytest --reuse-db
 
 precommit: format_code spectacular test  ## Run code formatting and tests
 	@echo "Pre-commit checks passed."
@@ -85,7 +104,7 @@ l_createsuperuser:  ## Create a superuser for the Django project
 	POSTGRES_HOST=localhost uv run python manage.py createsuperuser
 
 l_shell_plus:  ## Open Django shell with all models imported
-	POSTGRES_HOST=localhost uv run python manage.py shell_plus
+	POSTGRES_HOST=localhost EMAIL_HOST=localhost CELERY_BROKER_URL=redis://localhost:6379/0 CELERY_RESULT_BACKEND=redis://localhost:6379/0 uv run python manage.py shell_plus
 
 l_spectacular:  ## Generate OpenAPI schema for the Django project
 	uv run python manage.py spectacular --color --file schema.yml
@@ -94,8 +113,17 @@ l_format_code:  ## Format code with ruff
 	uv run ruff check . --fix
 	uv run ruff format .
 
-l_test:  ## Run tests for the Django project
-	POSTGRES_HOST=localhost uv run --env-file test.env pytest
+l_test:  ## Run tests with coverage (sequential, for CI)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db
 
-l_precommit: l_format_code l_spectacular l_test  ## Run code formatting and tests
+l_test_fast:  ## Run tests without coverage (faster for local iteration)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db --no-cov -x
+
+l_test_parallel:  ## Run tests in parallel (fastest)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto
+
+l_test_parallel_nocov:  ## Run tests in parallel without coverage (fastest)
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto --no-cov -x
+
+l_precommit: l_format_code l_spectacular l_test  ## Run code formatting and tests (sequential with coverage)
 	@echo "Pre-commit checks passed."

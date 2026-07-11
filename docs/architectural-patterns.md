@@ -271,6 +271,39 @@ def get_user_of_context(context: dict) -> User | None:
     return user
 ```
 
+### CORS and Cookie Configuration
+
+The organization context relies on the session cookie being sent from the SPA
+to the API. This requires explicit CORS and SameSite configuration depending
+on the deployment topology.
+
+**Production defaults** (`config/settings/base.py`):
+
+```python
+CORS_ALLOW_CREDENTIALS = True               # allow withCredentials cookies
+SESSION_COOKIE_SAMESITE = 'None'            # cross-origin SPA support
+CSRF_COOKIE_SAMESITE = 'None'               # cross-origin CSRF support
+SESSION_COOKIE_SECURE = True                # required when SameSite=None
+```
+
+**Local development** (`config/settings/local.py`) overrides SameSite to `Lax`
+and Secure to `False` because modern browsers reject `SameSite=None` without
+`Secure=True` on HTTP.
+
+| Scenario | `SameSite` | Extra config |
+|---|---|---|
+| Same domain (`app.com/api`) | `Lax` or `None` | none |
+| Subdomains (`app.com` + `api.app.com`) | `Lax` | `SESSION_COOKIE_DOMAIN=.app.com` (optional) |
+| Different domains (`app.com` + `api.com`) | `None` | `CSRF_TRUSTED_ORIGINS=https://app.com` |
+
+All three values are configurable via environment variables:
+
+- `CORS_ALLOWED_ORIGINS` — comma-separated list of allowed origins
+- `SESSION_COOKIE_SAMESITE` — `'Lax'` or `'None'`
+- `CSRF_COOKIE_SAMESITE` — `'Lax'` or `'None'`
+- `SESSION_COOKIE_DOMAIN` — shared cookie domain for subdomains
+- `CSRF_TRUSTED_ORIGINS` — comma-separated list for CSRF protection
+
 ---
 
 ## Test Infrastructure

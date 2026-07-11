@@ -6,7 +6,7 @@ from apps.accounts.models.organization import Organization
 
 def get_organization_id(request: Request) -> int | None:
     """Get the organization ID from the request."""
-    if not request or not request.user.is_authenticated:
+    if not request or not request.user.is_authenticated or not request.user.is_active:
         return None
     return request.session.get('organization_id')
 
@@ -15,9 +15,12 @@ def get_organization(request: Request) -> Organization | None:
     """Get the organization from the request."""
     if not (organization_id := get_organization_id(request)):
         return None
-    return request.user.organizations.filter(is_active=True).get_or_none(
-        id=organization_id
-    )
+    return Organization.objects.filter(
+        members__user=request.user,
+        members__is_active=True,
+        is_active=True,
+        id=organization_id,
+    ).get_or_none()
 
 
 def get_member(request: Request) -> Member | None:
@@ -27,11 +30,15 @@ def get_member(request: Request) -> Member | None:
     user = request.user
     if not user.is_authenticated:
         return None
+    if not user.is_active:
+        return None
     if not (organization_id := request.session.get('organization_id')):
         return None
-    return user.members.filter(is_active=True).get_or_none(
-        organization_id=organization_id
+    member_queryset = Member.objects.filter_actives().filter(
+        user=user,
+        organization_id=organization_id,
     )
+    return member_queryset.get_or_none(organization_id=organization_id)
 
 
 def is_same_organization_scope(

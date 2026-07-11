@@ -12,7 +12,7 @@ class InvitationFactory(ModelFactoryMixin, DjangoModelFactory):
     email = factory.Sequence(lambda n: f'unit_test_invite{n}@example.com')
     is_accepted = False
     is_expired = False
-    expired_at = factory.Faker('date_time', tzinfo=timezone.utc)
+    expired_at = factory.Faker('future_datetime', tzinfo=timezone.utc)
     role = MemberRoleChoices.MEMBER
     organization = factory.SubFactory(
         factory='apps.accounts.factories.organizations.OrganizationFactory',

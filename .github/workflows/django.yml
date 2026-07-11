@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Install uv
       uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
@@ -53,7 +53,7 @@ jobs:
     - name: Run Tests
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-        DJANGO_SETTINGS_MODULE: config.settings.local
+        DJANGO_SETTINGS_MODULE: config.settings.testing
         ENVIRONMENT: test
       run: |
-        uv run pytest
+        uv run pytest --reuse-db
