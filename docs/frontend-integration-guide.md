@@ -127,6 +127,28 @@ Authorization: Bearer eyJhbGciOiJI...
 
 Parse the results and present the list so the user can pick an organization.
 
+#### 3.3.1. Filtering Organizations
+
+The list endpoint supports the following query parameters:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `my_organizations` | `boolean` | When `true`, returns only organizations where the authenticated user is an active member (`false` by default) |
+| `name` | `string` | Exact match on name |
+| `name__icontains` | `string` | Case-insensitive name contains |
+| `slug` | `string` | Exact match on slug |
+| `slug__icontains` | `string` | Case-insensitive slug contains |
+| `is_active` | `boolean` | Filter by active status |
+
+**Example — list only organizations the user belongs to:**
+
+```
+GET /api/accounts/organizations/?my_organizations=true
+```
+
+This is useful for the organization selection screen (Step 2 of the auth flow),
+especially when the user has a large number of organizations.
+
 ### 3.4. Step 3 — Organization Login
 
 **Request:**

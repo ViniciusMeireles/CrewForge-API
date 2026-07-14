@@ -548,6 +548,27 @@ Run the relevant checks for the change you made:
 If models change, create and review migrations as part of the same change.
 
 
+## Commit Conventions
+
+Follow the conventional commit format documented in
+[`.github/git-commit-instructions.md`](./.github/git-commit-instructions.md).
+Use the emoji + type prefix pattern:
+
+| Change type | Emoji | Prefix |
+|---|---|---|
+| New feature | ✨ `:sparkles:` | `feat` |
+| Bug fix | 🐛 `:bug:` | `fix` |
+| Documentation | 📚 `:books:` | `docs` |
+| Tests | 🧪 `:test_tube:` | `test` |
+| Refactoring | ♻️ `:recycle:` | `refactor` |
+| Chore | 🔧 `:wrench:` | `chore` |
+| Cleanup | 🧹 `:broom:` | `cleanup` |
+| Removal | 🗑️ `:wastebasket:` | `remove` |
+
+First line should be at most 4 words after the prefix.
+Example: `✨ feat: add login page`
+
+
 ## Practical Guardrails For Agents
 
 - Do not replace the organization-context login flow with JWT-only assumptions.
