@@ -2,7 +2,9 @@ from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
+from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 
 
@@ -34,3 +36,29 @@ class OrganizationFilterTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.list_url, {'slug__icontains': 'llc'})
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_my_organizations_true(self):
+        response = self.client.get(self.list_url, {'my_organizations': 'true'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.organization.id)
+
+    def test_filter_my_organizations_false(self):
+        response = self.client.get(self.list_url, {'my_organizations': 'false'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 4)
+
+    def test_filter_my_organizations_excludes_inactive_members(self):
+        user = UserFactory.create()
+        org = OrganizationFactory.create()
+        MemberFactory.create(user=user, organization=org, is_active=False)
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.list_url, {'my_organizations': 'true'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_filter_my_organizations_unauthenticated(self):
+        self.client.logout()
+        response = self.client.get(self.list_url, {'my_organizations': 'true'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 4)

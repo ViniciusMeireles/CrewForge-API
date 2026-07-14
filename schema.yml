@@ -979,6 +979,10 @@ paths:
         schema:
           type: boolean
       - in: query
+        name: my_organizations
+        schema:
+          type: boolean
+      - in: query
         name: name
         schema:
           type: string
@@ -3431,36 +3435,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
     PatchedUserProfile:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -3720,36 +3724,36 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         updated_at:
           type: string
           format: date-time
           readOnly: true
           description: When the record was last updated
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+          description: Original name of the file
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
+        content_type:
+          type: string
+          readOnly: true
+          description: Content type of the file
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
       required:
       - content_type
       - download_name
