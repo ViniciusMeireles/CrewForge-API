@@ -6,6 +6,7 @@ from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization, OrganizationProfile
 from apps.generics.utils.shortcuts import get_object_or_none
+from apps.generics.utils.strings import str_to_bool
 
 
 class OrganizationReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
@@ -19,12 +20,50 @@ class OrganizationReadySerializer(ModelSerializerMixin, serializers.ModelSeriali
         read_only_fields = fields
 
 
+class OrganizationProfileListRelatedSerializer(
+    ModelSerializerMixin,
+    serializers.ModelSerializer,
+):
+    logo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationProfile
+        fields = ['id', 'logo_url']
+
+    def get_logo_url(self, obj: OrganizationProfile) -> str | None:
+        request = self.context.get('request')
+        dark_logo_param = request.GET.get('dark_logo', 'false') if request else 'false'
+        logo = obj.get_logo_obj(dark_priority=str_to_bool(value=dark_logo_param))
+        if logo and logo.image:
+            return logo.image.file_url
+        return None
+
+
 class OrganizationListSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     """Serializer for the Organization model."""
+
+    profile = OrganizationProfileListRelatedSerializer()
 
     class Meta:
         model = Organization
         fields = ['id', 'name', 'slug', 'profile']
+        read_only_fields = fields
+
+
+class OrganizationProfileDetailRelatedSerializer(
+    OrganizationProfileListRelatedSerializer
+):
+    class Meta:
+        model = OrganizationProfile
+        fields = ['id', 'website', 'description', 'logo_url']
+
+
+class OrganizationDetailSerializer(ModelSerializerMixin, serializers.ModelSerializer):
+    profile = OrganizationProfileDetailRelatedSerializer(read_only=True)
+
+    class Meta:
+        model = Organization
+        fields = '__all__'
 
 
 class OrganizationProfileRelatedSerializer(

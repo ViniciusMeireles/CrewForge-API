@@ -1,8 +1,10 @@
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
+    OpenApiParameter,
     OpenApiResponse,
     extend_schema,
     inline_serializer,
@@ -17,12 +19,23 @@ from apps.accounts.mixins.views import ModelViewSetMixin
 from apps.accounts.models.organization import Organization
 from apps.accounts.permissions.organization import OrganizationPermission
 from apps.accounts.serializers.organization import (
+    OrganizationDetailSerializer,
     OrganizationListSerializer,
     OrganizationSerializer,
 )
 from apps.accounts.serializers.session import SessionSerializer
 from apps.accounts.utils.requests import get_member
-from apps.generics.utils.schema import extend_schema_list, extend_schema_model_view_set
+from apps.generics.utils.schema import (
+    extend_schema_list,
+    extend_schema_model_view_set,
+    extend_schema_retrieve,
+)
+
+_dark_logo_parameter = OpenApiParameter(
+    name='dark_logo',
+    type=OpenApiTypes.BOOL,
+    description=_('Whether to show the dark logo or not.'),
+)
 
 
 @extend_schema_model_view_set(
@@ -67,14 +80,23 @@ from apps.generics.utils.schema import extend_schema_list, extend_schema_model_v
             ),
         },
     ),
-    list=extend_schema_list(model=Organization, responses=OrganizationListSerializer),
+    list=extend_schema_list(
+        model=Organization,
+        responses=OrganizationListSerializer,
+        parameters=[_dark_logo_parameter],
+    ),
+    retrieve=extend_schema_retrieve(
+        model=Organization,
+        responses=OrganizationDetailSerializer,
+        parameters=[_dark_logo_parameter],
+    ),
 )
 class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     """View for handling organization CRUD operations."""
 
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
-    http_method_names = ['get', 'put', 'post', 'delete', 'options']
+    http_method_names = ['get', 'put', 'patch', 'post', 'delete', 'options']
     permission_classes = [OrganizationPermission]
     filterset_class = OrganizationFilter
     filter_backends = [backends.DjangoFilterBackend]
@@ -99,6 +121,8 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return OrganizationListSerializer
+        elif self.action == 'retrieve':
+            return OrganizationDetailSerializer
         return super().get_serializer_class()
 
     @action(detail=True, methods=['post'])

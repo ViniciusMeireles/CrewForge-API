@@ -83,6 +83,38 @@ class OrganizationProfile(BaseModel):
     def __str__(self):
         return f'{self.organization}'
 
+    def get_logo_obj(self, dark_priority: bool) -> OrganizationImage | None:
+        logo_query = (
+            self.images.filter(
+                image_type__in=[
+                    OrganizationImageTypeChoices.LOGO,
+                    OrganizationImageTypeChoices.LOGO_DARK,
+                    OrganizationImageTypeChoices.LOGO_LIGHT,
+                ],
+                is_active=True,
+            )
+            .annotate(
+                priority=models.Case(
+                    models.When(
+                        image_type=OrganizationImageTypeChoices.LOGO_LIGHT,
+                        then=models.Value(0),
+                    ),
+                    models.When(
+                        image_type=OrganizationImageTypeChoices.LOGO,
+                        then=models.Value(1),
+                    ),
+                    models.When(
+                        image_type=OrganizationImageTypeChoices.LOGO_DARK,
+                        then=models.Value(2),
+                    ),
+                    default=models.Value(1),
+                    output_field=models.IntegerField(),
+                )
+            )
+            .order_by('priority')
+        )
+        return logo_query.last() if dark_priority else logo_query.first()
+
 
 class OrganizationImage(BaseModel):
     profile = models.ForeignKey(
