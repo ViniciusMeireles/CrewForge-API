@@ -27,6 +27,7 @@ class StoredFileOrgImageSerializer(
             'size',
             'file_url',
             'download_name',
+            'organization',
         ]
         fields = update_fields + read_only_fields
         extra_kwargs = {

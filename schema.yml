@@ -975,6 +975,11 @@ paths:
       description: List all Organizations.
       parameters:
       - in: query
+        name: dark_logo
+        schema:
+          type: boolean
+        description: Whether to show the dark logo or not.
+      - in: query
         name: is_active
         schema:
           type: boolean
@@ -1052,6 +1057,11 @@ paths:
       operationId: accounts_organizations_retrieve
       description: Retrieve a specific Organization.
       parameters:
+      - in: query
+        name: dark_logo
+        schema:
+          type: boolean
+        description: Whether to show the dark logo or not.
       - in: path
         name: id
         schema:
@@ -1067,7 +1077,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
+                $ref: '#/components/schemas/OrganizationDetail'
           description: ''
     put:
       operationId: accounts_organizations_update
@@ -1093,6 +1103,38 @@ paths:
             schema:
               $ref: '#/components/schemas/Organization'
         required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+    patch:
+      operationId: accounts_organizations_partial_update
+      description: Partially update a Organization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      tags:
+      - Organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganization'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganization'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganization'
       security:
       - jwtAuth: []
       responses:
@@ -2721,6 +2763,59 @@ components:
       required:
       - label
       - value
+    OrganizationDetail:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/OrganizationProfileDetailRelated'
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Is this record active or not
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        name:
+          type: string
+          description: Organization name
+          maxLength: 255
+        slug:
+          type: string
+          description: Organization slug
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        created_by:
+          type: integer
+          nullable: true
+          description: User who created the record
+        updated_by:
+          type: integer
+          nullable: true
+          description: User who last updated the record
+        owner:
+          type: integer
+          nullable: true
+          description: Owner of the organization
+      required:
+      - created_at
+      - id
+      - name
+      - profile
+      - slug
+      - updated_at
     OrganizationImage:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -2767,15 +2862,15 @@ components:
           readOnly: true
         name:
           type: string
+          readOnly: true
           description: Organization name
-          maxLength: 255
         slug:
           type: string
+          readOnly: true
           description: Organization slug
-          maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
         profile:
-          type: integer
+          $ref: '#/components/schemas/OrganizationProfileListRelated'
       required:
       - id
       - name
@@ -2819,6 +2914,49 @@ components:
       required:
       - label
       - value
+    OrganizationProfileDetailRelated:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        website:
+          nullable: true
+          description: Organization website
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+        logo_url:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - id
+      - logo_url
+    OrganizationProfileListRelated:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        logo_url:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - id
+      - logo_url
     OrganizationProfileRelated:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -3339,6 +3477,53 @@ components:
           type: integer
           readOnly: true
           description: Organization to which the user belongs
+    PatchedOrganization:
+      type: object
+      description: Serializer for the Organization model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        profile:
+          $ref: '#/components/schemas/OrganizationProfileRelated'
+        is_active:
+          type: boolean
+          readOnly: true
+          description: Is this record active or not
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        name:
+          type: string
+          description: Organization name
+          maxLength: 255
+        slug:
+          type: string
+          description: Organization slug
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: User who created the record
+        updated_by:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: User who last updated the record
+        owner:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Owner of the organization
     PatchedOrganizationImage:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -3440,19 +3625,10 @@ components:
           format: date-time
           readOnly: true
           description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         content_type:
           type: string
           readOnly: true
@@ -3465,6 +3641,15 @@ components:
           type: string
           nullable: true
           readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
     PatchedUserProfile:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -3729,19 +3914,10 @@ components:
           format: date-time
           readOnly: true
           description: When the record was last updated
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
         original_name:
           type: string
           readOnly: true
           description: Original name of the file
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
         content_type:
           type: string
           readOnly: true
@@ -3754,6 +3930,15 @@ components:
           type: string
           nullable: true
           readOnly: true
+        download_name:
+          type: string
+          description: Return the name to download the file.
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the file
       required:
       - content_type
       - download_name
