@@ -108,7 +108,7 @@ class OrganizationProfile(BaseModel):
                 default=models.Value(1),
                 output_field=models.IntegerField(),
             )
-        )
+        ).order_by('priority')
         return logo_query.last() if dark_priority else logo_query.first()
 
 

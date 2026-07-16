@@ -31,11 +31,9 @@ class OrganizationProfileListRelatedSerializer(
         fields = ['id', 'logo_url']
 
     def get_logo_url(self, obj: OrganizationProfile) -> str | None:
-        logo = obj.get_logo_obj(
-            dark_priority=str_to_bool(
-                value=self.context.get('request').GET.get('dark_logo', 'false')
-            )
-        )
+        request = self.context.get('request')
+        dark_logo_param = request.GET.get('dark_logo', 'false') if request else 'false'
+        logo = obj.get_logo_obj(dark_priority=str_to_bool(value=dark_logo_param))
         if logo and logo.image:
             return logo.image.file_url
         return None
