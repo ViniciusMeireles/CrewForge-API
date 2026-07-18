@@ -1,3 +1,5 @@
+import logging
+
 from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions, status
@@ -9,6 +11,8 @@ from rest_framework.exceptions import (
 )
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+logger = logging.getLogger(__name__)
 
 
 def _get_error_code(exc: APIException) -> str:
@@ -66,6 +70,8 @@ def _get_error_details(exc: APIException) -> dict | None:
 
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
+
+    logger.exception('Internal server error: %s', exc)
 
     if response is None:
         return Response(
