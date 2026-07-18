@@ -132,6 +132,7 @@ class MemberViewSet(
     filterset_class = MemberFilter
     filter_backends = [backends.DjangoFilterBackend]
     label_expression = Member.label_expression()
+    auto_orderable_filter = True
 
     base_filters = {'is_active': True}
 

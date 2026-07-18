@@ -22,3 +22,4 @@ class OrganizationImageViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     filter_backends = [backends.DjangoFilterBackend]
     label_expression = OrganizationImage.label_expression()
     parser_classes = [MultiPartParser, FormParser]
+    auto_orderable_filter = True

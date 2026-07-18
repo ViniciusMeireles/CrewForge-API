@@ -76,6 +76,7 @@ class StoredFileViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     label_expression = StoredFile.label_expression()
     queryset = StoredFile.objects.all()
+    auto_orderable_filter = True
 
     def get_queryset(self):
         queryset = super().get_queryset()
