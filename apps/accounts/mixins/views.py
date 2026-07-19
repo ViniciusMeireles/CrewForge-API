@@ -12,9 +12,9 @@ from apps.generics.serializers.choices import ChoiceSerializer
 class ModelViewSetMetaclass(type):
     def __new__(cls, name, bases, attrs):
         klass = super().__new__(cls, name, bases, attrs)
-        if not attrs.get('auto_orderable_filter', False):
+        if not getattr(klass, 'auto_orderable_filter', False):
             return klass
-        http_method_names = attrs.get('http_method_names', [])
+        http_method_names = getattr(klass, 'http_method_names', [])
         if http_method_names and 'get' not in http_method_names:
             return klass
         if not cls._get_filterset_class(klass=klass):

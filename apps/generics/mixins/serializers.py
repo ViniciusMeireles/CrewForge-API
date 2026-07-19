@@ -29,7 +29,7 @@ class ModelSerializerFieldsMixin(serializers.ModelSerializer):
 
     @classmethod
     def _get_verbose_name_field(cls, field_name: str) -> str | None:
-        verbose_name = str(_(pretty_name(field_name)))
+        verbose_name = _(pretty_name(field_name))
         if not (model_class := getattr(cls.Meta, 'model', None)):
             return verbose_name
         opts = model_class._meta
