@@ -40,3 +40,37 @@ class TeamMemberFilterTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.list_url, {'role': TeamMemberRoleChoices.ADMIN})
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_order_by_role_ascending(self):
+        TeamMemberFactory.create_batch(size=3, organization=self.organization)
+        response = self.client.get(self.list_url, {'order_by': 'role'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        roles = [r['role'] for r in response.data['results']]
+        self.assertEqual(roles, sorted(roles))
+
+    def test_filter_order_by_role_descending(self):
+        TeamMemberFactory.create_batch(size=3, organization=self.organization)
+        response = self.client.get(self.list_url, {'order_by': '-role'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        roles = [r['role'] for r in response.data['results']]
+        self.assertEqual(roles, sorted(roles, reverse=True))
+
+    def test_filter_order_by_invalid_field(self):
+        TeamMemberFactory(organization=self.organization)
+        response = self.client.get(self.list_url, {'order_by': 'bogus'})
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_order_by_with_role_filter(self):
+        TeamMemberFactory(
+            organization=self.organization, role=TeamMemberRoleChoices.ADMIN
+        )
+        TeamMemberFactory(
+            organization=self.organization, role=TeamMemberRoleChoices.MEMBER
+        )
+        response = self.client.get(
+            self.list_url,
+            {'order_by': 'role', 'role': TeamMemberRoleChoices.ADMIN},
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        for r in response.data['results']:
+            self.assertEqual(r['role'], TeamMemberRoleChoices.ADMIN)

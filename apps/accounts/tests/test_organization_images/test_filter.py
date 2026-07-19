@@ -73,3 +73,28 @@ class OrganizationImageFilterTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_order_by_image_type_ascending(self):
+        response = self.client.get(self.list_url, {'order_by': 'image_type'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        image_types = [r['image_type'] for r in response.data['results']]
+        self.assertEqual(image_types, sorted(image_types))
+
+    def test_filter_order_by_image_type_descending(self):
+        response = self.client.get(self.list_url, {'order_by': '-image_type'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        image_types = [r['image_type'] for r in response.data['results']]
+        self.assertEqual(image_types, sorted(image_types, reverse=True))
+
+    def test_filter_order_by_invalid_field(self):
+        response = self.client.get(self.list_url, {'order_by': 'bogus'})
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_order_by_with_image_type_filter(self):
+        response = self.client.get(
+            self.list_url,
+            {'order_by': 'image_type', 'image_type': OrganizationImageTypeChoices.LOGO},
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        for r in response.data['results']:
+            self.assertEqual(r['image_type'], OrganizationImageTypeChoices.LOGO)

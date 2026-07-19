@@ -84,3 +84,40 @@ class MemberFilterTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.list_url, {'is_active': False})
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
+
+    def test_filter_order_by_nickname_ascending(self):
+        response = self.client.get(self.list_url, {'order_by': 'nickname'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        nicknames = [r['nickname'] for r in response.data['results']]
+        self.assertEqual(nicknames, sorted(nicknames))
+
+    def test_filter_order_by_nickname_descending(self):
+        response = self.client.get(self.list_url, {'order_by': '-nickname'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        nicknames = [r['nickname'] for r in response.data['results']]
+        self.assertEqual(nicknames, sorted(nicknames, reverse=True))
+
+    def test_filter_order_by_created_at_ascending(self):
+        response = self.client.get(self.list_url, {'order_by': 'created_at'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        created_at = [r['created_at'] for r in response.data['results']]
+        self.assertEqual(created_at, sorted(created_at))
+
+    def test_filter_order_by_created_at_descending(self):
+        response = self.client.get(self.list_url, {'order_by': '-created_at'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        created_at = [r['created_at'] for r in response.data['results']]
+        self.assertEqual(created_at, sorted(created_at, reverse=True))
+
+    def test_filter_order_by_invalid_field(self):
+        response = self.client.get(self.list_url, {'order_by': 'nonexistent_field'})
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_order_by_with_other_filter(self):
+        response = self.client.get(
+            self.list_url,
+            {'order_by': 'nickname', 'role': MemberRoleChoices.MEMBER},
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        for r in response.data['results']:
+            self.assertEqual(r['role'], MemberRoleChoices.MEMBER)
