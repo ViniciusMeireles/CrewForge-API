@@ -12,29 +12,31 @@ from rest_framework.exceptions import (
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
+from apps.generics.choices import ErrorCode
+
 logger = logging.getLogger(__name__)
 
 
-def _get_error_code(exc: APIException) -> str:
+def _get_error_code(exc: APIException) -> ErrorCode:
     mapping = {
-        AuthenticationFailed: 'AUTHENTICATION_ERROR',
-        NotAuthenticated: 'AUTHENTICATION_ERROR',
-        PermissionDenied: 'PERMISSION_DENIED',
-        Http404: 'NOT_FOUND',
-        exceptions.MethodNotAllowed: 'METHOD_NOT_ALLOWED',
-        exceptions.NotAcceptable: 'NOT_ACCEPTABLE',
-        exceptions.Throttled: 'THROTTLED',
+        AuthenticationFailed: ErrorCode.AUTHENTICATION_ERROR,
+        NotAuthenticated: ErrorCode.AUTHENTICATION_ERROR,
+        PermissionDenied: ErrorCode.PERMISSION_DENIED,
+        Http404: ErrorCode.NOT_FOUND,
+        exceptions.MethodNotAllowed: ErrorCode.METHOD_NOT_ALLOWED,
+        exceptions.NotAcceptable: ErrorCode.NOT_ACCEPTABLE,
+        exceptions.Throttled: ErrorCode.THROTTLED,
     }
     for exc_type, code in mapping.items():
         if isinstance(exc, exc_type):
             return code
     if isinstance(exc, exceptions.ValidationError):
-        return 'VALIDATION_ERROR'
-    return 'INTERNAL_ERROR'
+        return ErrorCode.VALIDATION_ERROR
+    return ErrorCode.INTERNAL_ERROR
 
 
-def _get_error_message(exc: APIException, code: str) -> str:
-    if code == 'VALIDATION_ERROR':
+def _get_error_message(exc: APIException, code: ErrorCode) -> str:
+    if code == ErrorCode.VALIDATION_ERROR:
         return _('One or more fields are invalid.')
     if isinstance(exc, APIException) and hasattr(exc, 'detail'):
         detail = exc.detail
@@ -71,13 +73,12 @@ def _get_error_details(exc: APIException) -> dict | None:
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
-    logger.exception('Internal server error: %s', exc)
-
     if response is None:
+        logger.exception('Internal server error: %s', exc)
         return Response(
             {
                 'error': {
-                    'code': 'INTERNAL_ERROR',
+                    'code': ErrorCode.INTERNAL_ERROR,
                     'message': _('An unexpected error occurred.'),
                     'details': None,
                 },
@@ -85,7 +86,8 @@ def custom_exception_handler(exc, context):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    code = _get_error_code(exc)
+    if (code := _get_error_code(exc)) == ErrorCode.INTERNAL_ERROR:
+        logger.exception('Internal server error: %s', exc)
     message = _get_error_message(exc, code)
     details = _get_error_details(exc)
 
