@@ -126,12 +126,10 @@ class InvitationViewSet(
         if not (auth_member := self.auth_member):
             return queryset.none()
         role_list = []
-        if auth_member.has_manager_permission:
-            role_list.extend([MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER])
         if auth_member.has_admin_permission:
-            role_list.append(MemberRoleChoices.ADMIN)
+            role_list.extend([MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER])
         if auth_member.has_owner_permission:
-            role_list.append(MemberRoleChoices.OWNER)
+            role_list.extend([MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN])
         queryset = queryset.filter(role__in=role_list)
         return queryset
 

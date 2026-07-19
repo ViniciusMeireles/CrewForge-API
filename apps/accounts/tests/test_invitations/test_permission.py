@@ -204,7 +204,7 @@ class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
-    def test_admin_can_retrieve_admin_invite(self):
+    def test_not_permission_admin_retrieve_admin_invite(self):
         invite = self._create_invitation(role=MemberRoleChoices.ADMIN)
         admin = MemberFactory(
             organization=self.organization,
@@ -213,7 +213,7 @@ class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=admin)
         url = self._detail_url(invite)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_admin_can_retrieve_manager_invite(self):
         invite = self._create_invitation(role=MemberRoleChoices.MANAGER)
