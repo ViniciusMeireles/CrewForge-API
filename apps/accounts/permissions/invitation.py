@@ -17,13 +17,7 @@ class InvitationPermission(OrganizationScopedPermission):
 
         if not (auth_member := get_member(request)):
             return False
-        return (
-            obj.role == MemberRoleChoices.OWNER
-            and auth_member.has_owner_permission
-            or obj.role == MemberRoleChoices.ADMIN
+        return auth_member.has_owner_permission or (
+            obj.role in [MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER]
             and auth_member.has_admin_permission
-            or (
-                obj.role in [MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER]
-                and auth_member.has_manager_permission
-            )
         )

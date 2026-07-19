@@ -1,12 +1,72 @@
 from django.db.models.expressions import Combinable, F
+from django_filters.rest_framework import filters, filterset
+from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.accounts.mixins.requests import OrganizationScopedRequestMixin
+from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 from apps.generics.serializers.choices import ChoiceSerializer
 
 
-class ModelViewSetMixin(OrganizationScopedRequestMixin):
+class ModelViewSetMetaclass(type):
+    def __new__(cls, name, bases, attrs):
+        klass = super().__new__(cls, name, bases, attrs)
+        if not getattr(klass, 'auto_orderable_filter', False):
+            return klass
+        http_method_names = getattr(klass, 'http_method_names', [])
+        if http_method_names and 'get' not in http_method_names:
+            return klass
+        if not cls._get_filterset_class(klass=klass):
+            return klass
+        klass.filterset_class = cls._orderable_filter_factory(klass=klass)
+        return klass
+
+    @classmethod
+    def _get_filterset_class(cls, klass) -> type[filterset.FilterSet] | None:
+        view_obj = klass()
+        filterset_class = getattr(view_obj, 'filterset_class', None)
+        if not filterset_class or not issubclass(filterset_class, filterset.FilterSet):
+            return None
+        return filterset_class
+
+    @classmethod
+    def _get_list_serializer_class(cls, klass: type) -> type[serializers.Serializer]:
+        view_obj = klass()
+        view_obj.action = 'list'
+        return view_obj.get_serializer_class()
+
+    @classmethod
+    def _orderable_filter_factory(cls, klass: type) -> type[filterset.FilterSet]:
+        filterset_class: type[filterset.FilterSet] = cls._get_filterset_class(  # type: ignore
+            klass=klass
+        )
+        if 'order_by' in filterset_class.declared_filters:
+            return filterset_class
+
+        serializer_class = cls._get_list_serializer_class(klass=klass)
+        if not issubclass(serializer_class, ModelSerializerFieldsMixin):
+            serializer_class = type(
+                f'Orderable{serializer_class.__name__}',
+                (ModelSerializerFieldsMixin, serializer_class),
+                {},
+            )
+
+        return type(  # type: ignore
+            f'Orderable{filterset_class.__name__}',
+            (filterset_class,),
+            {
+                'order_by': filters.OrderingFilter(
+                    choices=serializer_class.orderable_fields_choices
+                ),
+            },
+        )
+
+
+class ModelViewSetMixin(
+    OrganizationScopedRequestMixin,
+    metaclass=ModelViewSetMetaclass,
+):
     """Mixin for views to add user, member, and organization properties."""
 
     def perform_destroy(self, instance):

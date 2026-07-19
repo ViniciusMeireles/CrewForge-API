@@ -21,3 +21,4 @@ class TeamViewSet(
     filter_backends = [backends.DjangoFilterBackend]
     base_filters = {'is_active': True}
     label_expression = 'name'
+    auto_orderable_filter = True

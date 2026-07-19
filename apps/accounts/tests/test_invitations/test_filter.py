@@ -119,3 +119,55 @@ class InvitationFilterTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_order_by_email_ascending(self):
+        self._create_invitation(email='alice@example.com')
+        self._create_invitation(email='bob@example.com')
+        response = self.client.get(self.list_url, {'order_by': 'email'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        emails = [r['email'] for r in response.data['results']]
+        self.assertEqual(emails, sorted(emails))
+
+    def test_filter_order_by_email_descending(self):
+        self._create_invitation(email='alice@example.com')
+        self._create_invitation(email='bob@example.com')
+        response = self.client.get(self.list_url, {'order_by': '-email'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        emails = [r['email'] for r in response.data['results']]
+        self.assertEqual(emails, sorted(emails, reverse=True))
+
+    def test_filter_order_by_expired_at_ascending(self):
+        now = timezone.now()
+        self._create_invitation(expired_at=now + timedelta(days=10))
+        self._create_invitation(expired_at=now + timedelta(days=1))
+        response = self.client.get(self.list_url, {'order_by': 'expired_at'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        expired_ats = [r['expired_at'] for r in response.data['results']]
+        self.assertEqual(expired_ats, sorted(expired_ats))
+
+    def test_filter_order_by_expired_at_descending(self):
+        now = timezone.now()
+        self._create_invitation(expired_at=now + timedelta(days=1))
+        self._create_invitation(expired_at=now + timedelta(days=10))
+        response = self.client.get(self.list_url, {'order_by': '-expired_at'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        expired_ats = [r['expired_at'] for r in response.data['results']]
+        self.assertEqual(expired_ats, sorted(expired_ats, reverse=True))
+
+    def test_filter_order_by_invalid_field(self):
+        self._create_invitation()
+        response = self.client.get(self.list_url, {'order_by': 'nonexistent'})
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_order_by_with_role_filter(self):
+        self._create_invitation(role=MemberRoleChoices.ADMIN, email='admin@example.com')
+        self._create_invitation(
+            role=MemberRoleChoices.MEMBER, email='member@example.com'
+        )
+        response = self.client.get(
+            self.list_url,
+            {'order_by': 'email', 'role': MemberRoleChoices.ADMIN},
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        for r in response.data['results']:
+            self.assertEqual(r['role'], MemberRoleChoices.ADMIN)

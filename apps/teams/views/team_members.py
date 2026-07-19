@@ -39,6 +39,7 @@ class TeamMemberViewSet(
     filterset_class = TeamMemberFilter
     filter_backends = [backends.DjangoFilterBackend]
     label_expression = TeamMember.label_expression()
+    auto_orderable_filter = True
 
     organization_filter = 'team__organization_id'
     base_filters = {

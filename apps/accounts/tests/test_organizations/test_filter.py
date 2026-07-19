@@ -62,3 +62,38 @@ class OrganizationFilterTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.list_url, {'my_organizations': 'true'})
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 4)
+
+    def test_filter_order_by_name_ascending(self):
+        response = self.client.get(self.list_url, {'order_by': 'name'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        names = [r['name'] for r in response.data['results']]
+        self.assertEqual(names, sorted(names))
+
+    def test_filter_order_by_name_descending(self):
+        response = self.client.get(self.list_url, {'order_by': '-name'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        names = [r['name'] for r in response.data['results']]
+        self.assertEqual(names, sorted(names, reverse=True))
+
+    def test_filter_order_by_slug_ascending(self):
+        response = self.client.get(self.list_url, {'order_by': 'slug'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        slugs = [r['slug'] for r in response.data['results']]
+        self.assertEqual(slugs, sorted(slugs))
+
+    def test_filter_order_by_slug_descending(self):
+        response = self.client.get(self.list_url, {'order_by': '-slug'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        slugs = [r['slug'] for r in response.data['results']]
+        self.assertEqual(slugs, sorted(slugs, reverse=True))
+
+    def test_filter_order_by_invalid_field(self):
+        response = self.client.get(self.list_url, {'order_by': 'invalid'})
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_order_by_with_name_filter(self):
+        response = self.client.get(
+            self.list_url,
+            {'order_by': 'slug', 'name__icontains': 'corp'},
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)

@@ -334,12 +334,10 @@ Each resource defines its own permission strategy by extending `OrganizationScop
   object-level role checks
 - `has_object_permission` checks the invitation's role against the auth member's
   permission level:
-  - OWNER role → requires `has_owner_permission`
-  - ADMIN role → requires `has_admin_permission`
-  - MANAGER or MEMBER role → requires `has_manager_permission`
-- `InvitationViewSet.get_queryset()` applies cumulative role-based filtering:
-  managers see MANAGER+MEMBER, admins see ADMIN+MANAGER+MEMBER, owners see all
-  roles (OWNER+ADMIN+MANAGER+MEMBER)
+  - Owner can access any invitation role
+  - MANAGER or MEMBER role → requires `has_admin_permission`
+- `InvitationViewSet.get_queryset()` applies role-based filtering:
+  admins see MANAGER+MEMBER, owners see all roles (OWNER+ADMIN+MANAGER+MEMBER)
 
 **TeamPermission** (`apps/teams/permissions/team.py`):
 - SAFE methods allowed for all active members

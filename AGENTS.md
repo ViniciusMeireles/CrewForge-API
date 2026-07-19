@@ -115,8 +115,8 @@ setup, prefer the Docker workflow.
   invitation email with 60s cooldown; returns 429 if within cooldown, 400 if
   expired/accepted, 200 on success
 - Invitations are looked up by PK (`id`), not by `key` (UUID)
-- Invitations list is role-scoped cumulatively: managers see MANAGER+MEMBER,
-  admins see ADMIN+MANAGER+MEMBER, owners see all roles
+- Invitations list is role-scoped: admins see MANAGER+MEMBER,
+  owners see all roles (OWNER+ADMIN+MANAGER+MEMBER)
 - `StoredFile.file_url` provides absolute download URLs using `SELF_URL`
 
 Preserve this domain model when adding or changing behavior. Permission changes

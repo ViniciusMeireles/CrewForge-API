@@ -476,13 +476,13 @@ Email and role are taken from the invitation itself (not from the request body).
 
 | Action | Endpoint | Permission |
 |---|---|---|
-| List | `GET /api/accounts/invitations/` | Role-scoped (manager+ sees their level and below) |
-| Create | `POST /api/accounts/invitations/` | Admin+ (or manager for member-level invites) |
-| Retrieve | `GET /api/accounts/invitations/{id}/` | Sufficient role |
-| Update | `PUT/PATCH /api/accounts/invitations/{id}/` | Sufficient role |
-| Delete | `DELETE /api/accounts/invitations/{id}/` | Sufficient role |
-| Send email | `POST /api/accounts/invitations/{id}/send-email/` | Manager+ |
-| Choices | `GET /api/accounts/invitations/choices/` | Member of the org |
+| List | `GET /api/accounts/invitations/` | Admins see MANAGER+MEMBER; owners see all roles |
+| Create | `POST /api/accounts/invitations/` | Admin+ (owner for OWNER/ADMIN roles) |
+| Retrieve | `GET /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
+| Update | `PUT/PATCH /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
+| Delete | `DELETE /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
+| Send email | `POST /api/accounts/invitations/{id}/send-email/` | Owner: any role; Admin: MANAGER+MEMBER only |
+| Choices | `GET /api/accounts/invitations/choices/` | Admins see MANAGER+MEMBER; owners see all roles |
 
 ### Send Email Cooldown
 
