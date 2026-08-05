@@ -8,7 +8,7 @@ from apps.accounts.choices import (
 
 class InvitationErrorMessagesTestCase(TestCase):
     def test_values_count(self):
-        self.assertEqual(len(InvitationErrorMessages), 4)
+        self.assertEqual(len(InvitationErrorMessages), 5)
 
     def test_invitation_expired(self):
         self.assertEqual(
@@ -38,6 +38,16 @@ class InvitationErrorMessagesTestCase(TestCase):
         self.assertEqual(
             InvitationErrorMessages.INVITATION_ACCEPTED.label,
             'Invitation already accepted',
+        )
+
+    def test_invitation_declined(self):
+        self.assertEqual(
+            InvitationErrorMessages.INVITATION_DECLINED.value,
+            'invitation_declined',
+        )
+        self.assertEqual(
+            InvitationErrorMessages.INVITATION_DECLINED.label,
+            'The invitation has already been declined.',
         )
 
     def test_user_already_member(self):

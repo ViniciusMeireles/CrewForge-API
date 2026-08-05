@@ -66,6 +66,19 @@ class InvitationModelTestCase(TestCase):
             message, str(InvitationErrorMessages.INVITATION_ACCEPTED.label)
         )
 
+    def test_is_acceptable_declined_returns_false(self):
+        invitation = InvitationFactory(
+            is_declined=True,
+            is_accepted=False,
+            is_expired=False,
+            expired_at=timezone.now() + timedelta(days=7),
+        )
+        is_acceptable, message = invitation.is_acceptable()
+        self.assertFalse(is_acceptable)
+        self.assertEqual(
+            message, str(InvitationErrorMessages.INVITATION_DECLINED.label)
+        )
+
     def test_is_acceptable_user_already_member_returns_false(self):
         member = MemberFactory()
         invitation = InvitationFactory(
@@ -102,6 +115,7 @@ class InvitationModelTestCase(TestCase):
         invitation.accept(member=member)
         self.assertTrue(invitation.is_accepted)
         self.assertEqual(invitation.member, member)
+        self.assertIsNotNone(invitation.accepted_at)
 
     def test_accept_raises_on_expired(self):
         invitation = InvitationFactory(
