@@ -90,9 +90,9 @@ Standard declaration:
 
 ```python
 class MyViewSet(
-    OrganizationScopedViewSetMixin,    # 1st: scope by org
-    ModelViewSetMixin,                  # 2nd: soft-delete + choices
-    viewsets.ModelViewSet,              # 3rd: DRF base
+    OrganizationScopedViewSetMixin,  # 1st: scope by org
+    ModelViewSetMixin,  # 2nd: soft-delete + choices
+    viewsets.ModelViewSet,  # 3rd: DRF base
 ):
     serializer_class = MySerializer
     queryset = MyModel.objects.all()
@@ -182,8 +182,9 @@ def extend_schema_model_view_set(
 
 ```python
 @extend_schema_model_view_set(model=Team)
-class TeamViewSet(OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet):
-    ...
+class TeamViewSet(
+    OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
+): ...
 ```
 
 This replaces 8 individual `@extend_schema` decorators with a single annotation.
@@ -280,10 +281,10 @@ on the deployment topology.
 **Production defaults** (`config/settings/base.py`):
 
 ```python
-CORS_ALLOW_CREDENTIALS = True               # allow withCredentials cookies
-SESSION_COOKIE_SAMESITE = 'None'            # cross-origin SPA support
-CSRF_COOKIE_SAMESITE = 'None'               # cross-origin CSRF support
-SESSION_COOKIE_SECURE = True                # required when SameSite=None
+CORS_ALLOW_CREDENTIALS = True  # allow withCredentials cookies
+SESSION_COOKIE_SAMESITE = 'None'  # cross-origin SPA support
+CSRF_COOKIE_SAMESITE = 'None'  # cross-origin CSRF support
+SESSION_COOKIE_SECURE = True  # required when SameSite=None
 ```
 
 **Local development** (`config/settings/local.py`) overrides SameSite to `Lax`
@@ -395,16 +396,16 @@ class TestMembersAPITestCase(APITestCaseMixin, APITestCase):
 `config/urls.py` groups URL patterns into categories:
 
 ```python
-django_urlpatterns = [...]       # Admin
+django_urlpatterns = [...]  # Admin
 third_party_urlpatterns = [...]  # Swagger, ReDoc, Schema, Root redirect
-local_urlpatterns = [...]        # App routers
+local_urlpatterns = [...]  # App routers
 ```
 
 `apps/accounts/urls.py` further splits into authentication and account routes:
 
 ```python
 authentication_urlpatterns = [...]  # Token obtain/refresh/verify, password reset
-accounts_urlpatterns = [...]        # Organizations, members, invitations, files, images
+accounts_urlpatterns = [...]  # Organizations, members, invitations, files, images
 ```
 
 ### Serializer Composition
@@ -413,10 +414,9 @@ Model serializers compose behaviors through mixin inheritance:
 
 ```python
 class MySerializer(
-    ModelSerializerMixin,              # Auto-populates created_by, updated_by, organization
+    ModelSerializerMixin,  # Auto-populates created_by, updated_by, organization
     serializers.ModelSerializer,
-):
-    ...
+): ...
 ```
 
 Additional mixins for specific needs:
@@ -432,6 +432,7 @@ pattern) that exposes app-level configuration:
 
 ```python
 from apps.accounts.settings import api_settings
+
 api_settings.UPDATE_LAST_LOGIN
 ```
 

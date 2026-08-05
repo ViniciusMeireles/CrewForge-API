@@ -248,8 +248,7 @@ class MyViewSet(
     OrganizationScopedViewSetMixin,
     ModelViewSetMixin,
     viewsets.ModelViewSet,
-):
-    ...
+): ...
 ```
 
 ### Serializers
