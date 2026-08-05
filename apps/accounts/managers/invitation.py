@@ -1,14 +1,18 @@
-from django.contrib.auth import get_user_model
+from typing import TYPE_CHECKING
+
 from django.db.models import Q
 from django.utils import timezone
 
 from apps.generics.managers.querysets import BaseManager, BaseQuerySet
 
-User = get_user_model()
+if TYPE_CHECKING:
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
 
 
 class InvitationQuerySet(BaseQuerySet):
-    def filter_received_by_user(self, user: User):
+    def filter_received_by_user(self, user: 'User'):
         return self.filter(
             Q(email=user.email, member__isnull=True) | Q(member__user=user),
         )
