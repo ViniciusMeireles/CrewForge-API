@@ -10,6 +10,9 @@
 /**/.specs
 /**/.mailpit-data
 .coverage
+coverage.xml
+coverage.json
+pytest.xml
 celerybeat-schedule
 celerybeat-schedule-shm
 celerybeat-schedule-wal
