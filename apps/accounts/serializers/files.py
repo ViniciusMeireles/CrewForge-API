@@ -74,11 +74,15 @@ class StoredFileCreateUpdateModelSerializer(
             'owner',
             'organization',
         ]
-        read_only_fields = list(
-            set(StoredFileDetailModelSerializer.Meta.read_only_fields)
-            - set(update_fields)
-            - {'file'}
-        )
+        read_only_fields = [
+            'size',
+            'file_url',
+            'updated_at',
+            'content_type',
+            'download_name',
+            'original_name',
+            'uuid',
+        ]
         fields = update_fields + read_only_fields
         extra_kwargs = {
             'file': {'write_only': True, 'required': True},
