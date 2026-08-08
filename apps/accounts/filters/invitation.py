@@ -13,6 +13,7 @@ class InvitationFilter(FilterSetMixin, filterset.FilterSet):
             'email': ['exact', 'icontains'],
             'is_accepted': ['exact'],
             'is_expired': ['exact'],
+            'is_declined': ['exact'],
             'expired_at': ['exact', 'gt', 'lt'],
             'role': ['exact', 'in'],
         }
