@@ -76,6 +76,8 @@ class InvitationSerializer(
                 is_active=True,
                 is_expired=False,
                 is_accepted=False,
+                is_declined=False,
+                organization_id=self.auth_organization_id,
             ).exclude(
                 expired_at__lt=timezone.now(),
             )
