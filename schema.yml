@@ -41,6 +41,10 @@ paths:
         schema:
           type: boolean
       - in: query
+        name: is_declined
+        schema:
+          type: boolean
+      - in: query
         name: is_expired
         schema:
           type: boolean
@@ -519,6 +523,10 @@ paths:
           format: date-time
       - in: query
         name: is_accepted
+        schema:
+          type: boolean
+      - in: query
+        name: is_declined
         schema:
           type: boolean
       - in: query
