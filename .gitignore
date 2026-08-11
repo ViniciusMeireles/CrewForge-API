@@ -7,7 +7,7 @@
 /**/.env
 /**/staticfiles
 /**/media
-/**/.specs
+/**/specs
 /**/.mailpit-data
 .coverage
 coverage.xml
