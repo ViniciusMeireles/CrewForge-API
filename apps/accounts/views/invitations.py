@@ -21,7 +21,10 @@ from apps.accounts.choices import (
     MemberRoleChoices,
 )
 from apps.accounts.consts import INVITATION_EMAIL_COOLDOWN_SECONDS
-from apps.accounts.filters.invitation import InvitationFilter
+from apps.accounts.filters.invitation import (
+    InvitationAcceptanceFilter,
+    InvitationFilter,
+)
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.permissions.invitation import (
@@ -35,6 +38,7 @@ from apps.accounts.serializers.invitation import (
     InvitationReceivedSerializer,
     InvitationSerializer,
 )
+from apps.generics.decorators import action_custom
 from apps.generics.utils.schema import extend_schema_model_view_set
 
 
@@ -387,12 +391,14 @@ class InvitationViewSet(
             status=status.HTTP_200_OK,
         )
 
-    @action(
+    @action_custom(
         detail=False,
         methods=['get'],
         url_path='received',
         permission_classes=[IsAuthenticated],
         serializer_class=InvitationReceivedSerializer,
+        filterset_class=InvitationAcceptanceFilter,
+        auto_orderable_filter=True,
     )
     def received(self, request, *args, **kwargs):
         queryset = Invitation.objects.filter_actives().filter_received_by_user(

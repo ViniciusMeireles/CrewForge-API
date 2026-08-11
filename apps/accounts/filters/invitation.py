@@ -17,3 +17,8 @@ class InvitationFilter(FilterSetMixin, filterset.FilterSet):
             'expired_at': ['exact', 'gt', 'lt'],
             'role': ['exact', 'in'],
         }
+
+
+class InvitationAcceptanceFilter(InvitationFilter):
+    class Meta(InvitationFilter.Meta):
+        fields = dict(InvitationFilter.Meta.fields, **{'key': ['exact']})

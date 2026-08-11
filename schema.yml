@@ -534,6 +534,11 @@ paths:
         schema:
           type: boolean
       - in: query
+        name: key
+        schema:
+          type: string
+          format: uuid
+      - in: query
         name: order_by
         schema:
           type: array
@@ -548,6 +553,7 @@ paths:
             - -is_accepted
             - -is_declined
             - -is_expired
+            - -key
             - -last_email_sent_at
             - -organization
             - -role
@@ -559,6 +565,7 @@ paths:
             - is_accepted
             - is_declined
             - is_expired
+            - key
             - last_email_sent_at
             - organization
             - role
@@ -581,6 +588,8 @@ paths:
           * `-is_declined` - Descending Is Declined
           * `is_expired` - Is Expired
           * `-is_expired` - Descending Is Expired
+          * `key` - Key
+          * `-key` - Descending Key
           * `last_email_sent_at` - Last Email Sent At
           * `-last_email_sent_at` - Descending Last Email Sent At
           * `organization` - Organization
