@@ -127,7 +127,7 @@ class MemberViewSet(
     OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
 ):
     queryset = Member.objects.all()
-    http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'options']
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
     permission_classes = [MemberPermission]
     filterset_class = MemberFilter
     filter_backends = [backends.DjangoFilterBackend]

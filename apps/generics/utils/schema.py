@@ -116,15 +116,6 @@ def extend_schema_partial_update(model: type[BaseModel], **kwargs):
     return extend_schema(**kwargs)
 
 
-def extend_schema_options(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault(
-        'description',
-        _('Get %(name)s options.' % {'name': get_verbose_name(model)}),
-    )
-    return extend_schema(**kwargs)
-
-
 def extend_schema_model_view_set(
     *,
     model: type[BaseModel],
@@ -136,6 +127,5 @@ def extend_schema_model_view_set(
     kwargs.setdefault('destroy', extend_schema_destroy(model=model))
     kwargs.setdefault('update', extend_schema_update(model=model))
     kwargs.setdefault('partial_update', extend_schema_partial_update(model=model))
-    kwargs.setdefault('options', extend_schema_options(model=model))
     kwargs.setdefault('choices', extend_schema_choices_route(model=model))
     return extend_schema_view(**kwargs)

@@ -21,7 +21,7 @@ class OrganizationProfileViewSet(
 ):
     serializer_class = OrganizationProfileSerializer
     queryset = OrganizationProfile.objects.filter_actives()
-    http_method_names = ['get', 'put', 'patch', 'delete', 'options']
+    http_method_names = ['get', 'put', 'patch', 'delete']
     permission_classes = [IsActiveMember, OrganizationProfilePermission]
     filterset_class = OrganizationProfileFilter
     filter_backends = [backends.DjangoFilterBackend]

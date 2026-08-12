@@ -338,7 +338,7 @@ class InvitationViewSet(
 ):
     serializer_class = InvitationSerializer
     queryset = Invitation.objects.filter(is_active=True)
-    http_method_names = ['get', 'post', 'put', 'delete', 'options']
+    http_method_names = ['get', 'post', 'put', 'delete']
     permission_classes = [InvitationPermission]
     filterset_class = InvitationFilter
     filter_backends = [backends.DjangoFilterBackend]

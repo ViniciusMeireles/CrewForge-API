@@ -16,7 +16,7 @@ class OrganizationImageViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     queryset = OrganizationImage.objects.select_related(
         'profile', 'image'
     ).filter_actives()
-    http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'options']
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
     permission_classes = [OrganizationImagePermission]
     filterset_class = OrganizationImageFilter
     filter_backends = [backends.DjangoFilterBackend]

@@ -34,7 +34,7 @@ class TeamMemberViewSet(
 ):
     serializer_class = TeamMemberSerializer
     queryset = TeamMember.objects.all()
-    http_method_names = ['get', 'post', 'put', 'delete', 'options']
+    http_method_names = ['get', 'post', 'put', 'delete']
     permission_classes = [TeamMemberPermission]
     filterset_class = TeamMemberFilter
     filter_backends = [backends.DjangoFilterBackend]

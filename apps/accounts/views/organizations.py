@@ -96,7 +96,7 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
 
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
-    http_method_names = ['get', 'put', 'patch', 'post', 'delete', 'options']
+    http_method_names = ['get', 'put', 'patch', 'post', 'delete']
     permission_classes = [OrganizationPermission]
     filterset_class = OrganizationFilter
     filter_backends = [backends.DjangoFilterBackend]
