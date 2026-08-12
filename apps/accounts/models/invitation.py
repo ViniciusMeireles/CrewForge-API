@@ -30,9 +30,26 @@ class Invitation(BaseModel):
         verbose_name=_('Is Expired'),
         help_text=_('Is the invitation expired'),
     )
+    is_declined = models.BooleanField(
+        default=False,
+        verbose_name=_('Is Declined'),
+        help_text=_('Whether the invitation was declined by the user'),
+    )
     expired_at = models.DateTimeField(
         verbose_name=_('Expired At'),
         help_text=_('Date and time when the invitation will expire'),
+        null=True,
+        blank=True,
+    )
+    declined_at = models.DateTimeField(
+        verbose_name=_('Declined At'),
+        help_text=_('When the invitation was declined'),
+        null=True,
+        blank=True,
+    )
+    accepted_at = models.DateTimeField(
+        verbose_name=_('Accepted At'),
+        help_text=_('When the invitation was accepted'),
         null=True,
         blank=True,
     )
@@ -64,6 +81,14 @@ class Invitation(BaseModel):
         null=True,
         blank=True,
     )
+    user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name=_('User'),
+        help_text=_('User associated with the invitation'),
+        null=True,
+        blank=True,
+    )
     last_email_sent_at = models.DateTimeField(
         verbose_name=_('Last Email Sent At'),
         help_text=_('Date and time when the last invitation email was sent'),
@@ -83,6 +108,8 @@ class Invitation(BaseModel):
 
     def get_user(self):
         """Get the user associated with the invitation email."""
+        if self.user_id:
+            return self.user
         return get_object_or_none(get_user_model(), email=self.email, is_active=True)
 
     def get_invitation_link(self) -> str:
@@ -98,6 +125,8 @@ class Invitation(BaseModel):
         """
         if self.is_accepted:
             return False, str(InvitationErrorMessages.INVITATION_ACCEPTED.label)
+        if self.is_declined:
+            return False, str(InvitationErrorMessages.INVITATION_DECLINED.label)
         if self.is_expired:
             return False, str(InvitationErrorMessages.INVITATION_EXPIRED.label)
         elif self.expired_at and self.expired_at <= timezone.now():
@@ -123,8 +152,39 @@ class Invitation(BaseModel):
                 raise ValueError(message)
 
         self.member = member
+        self.user_id = member.user_id
         self.is_accepted = True
-        self.save()
+        self.accepted_at = timezone.now()
+        self.save(
+            update_fields=[
+                'member',
+                'user_id',
+                'is_accepted',
+                'accepted_at',
+                'updated_at',
+            ],
+        )
+
+    def is_declinable(self) -> tuple[bool, str]:
+        return self.is_acceptable()
+
+    def decline(self, *, user, check: bool = True):
+        if check:
+            is_declinable, message = self.is_declinable()
+            if not is_declinable:
+                raise ValueError(message)
+
+        self.user = user
+        self.is_declined = True
+        self.declined_at = timezone.now()
+        self.save(
+            update_fields=[
+                'user',
+                'is_declined',
+                'declined_at',
+                'updated_at',
+            ]
+        )
 
     def clean(self):
         """

@@ -339,9 +339,9 @@ import tempfile
 
 from django.test import override_settings
 
+
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
-    ...
+class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase): ...
 ```
 
 ---
@@ -354,9 +354,7 @@ class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
 class OrganizationImageModelTestCase(TestCase):
     def test_str(self):
         image = OrganizationImageFactory()
-        self.assertEqual(
-            str(image), f'{image.profile} - {image.image_type}'
-        )
+        self.assertEqual(str(image), f'{image.profile} - {image.image_type}')
 ```
 
 ### API tests (APITestCase + APITestCaseMixin)
@@ -439,7 +437,9 @@ def _create_image(self, **kwargs):
 ### Status codes
 
 ```python
-self.assertEqual(response.status_code, http_status.HTTP_200_OK)   # list, retrieve, update
+self.assertEqual(
+    response.status_code, http_status.HTTP_200_OK
+)  # list, retrieve, update
 self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)  # create
 self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)  # delete
 self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)  # validation
@@ -470,9 +470,14 @@ def test_detail_serializer_fields(self):
     self.assertEqual(
         set(response.data.keys()),
         {
-            'id', 'image_type', 'image', 'is_active',
-            'created_at', 'updated_at',
-            'created_by', 'updated_by',
+            'id',
+            'image_type',
+            'image',
+            'is_active',
+            'created_at',
+            'updated_at',
+            'created_by',
+            'updated_by',
         },
     )
 ```
@@ -494,9 +499,13 @@ def test_delete_soft_delete(self):
 ```python
 def test_unique_constraint_same_profile_and_type(self):
     profile = OrganizationProfileFactory()
-    OrganizationImageFactory(profile=profile, image_type=OrganizationImageTypeChoices.LOGO)
+    OrganizationImageFactory(
+        profile=profile, image_type=OrganizationImageTypeChoices.LOGO
+    )
     with self.assertRaises(IntegrityError):
-        OrganizationImageFactory(profile=profile, image_type=OrganizationImageTypeChoices.LOGO)
+        OrganizationImageFactory(
+            profile=profile, image_type=OrganizationImageTypeChoices.LOGO
+        )
 ```
 
 ---

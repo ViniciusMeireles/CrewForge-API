@@ -66,6 +66,7 @@ class MemberModelSerializer(
     """Serializer for the Member model."""
 
     user = UserGetOrCreateSerializer()
+    role_label = serializers.CharField(read_only=True, source='get_role_display')
 
     class Meta:
         model = Member
@@ -125,7 +126,12 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
     @transaction.atomic
     def save(self, **kwargs):
         invitation = self._get_invitation()
-        kwargs.update({'role': invitation.role})
+        kwargs.update(
+            {
+                'role': invitation.role,
+                'organization_id': invitation.organization_id,
+            }
+        )
         instance = super().save(**kwargs)
         invitation.accept(member=instance, check=False)
         return instance

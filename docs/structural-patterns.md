@@ -169,8 +169,12 @@ Automatically injects `created_by`, `updated_by`, and `organization` into valida
 class ModelSerializerMixin(OrganizationScopedFieldMixin):
     serializer_related_field = PrimaryKeyRelatedField
     _default_read_only_fields = [
-        'id', 'is_active', 'created_at', 'updated_at',
-        'created_by', 'updated_by',
+        'id',
+        'is_active',
+        'created_at',
+        'updated_at',
+        'created_by',
+        'updated_by',
     ]
 
     @property
@@ -200,9 +204,7 @@ member can only assign roles at or below their own level in the hierarchy.
 class ValidateRoleSerializerMixin(OrganizationScopedFieldMixin):
     def validate_role(self, value):
         if self.instance == self.auth_member:
-            raise serializers.ValidationError(
-                _('Not allowed to change your own role.')
-            )
+            raise serializers.ValidationError(_('Not allowed to change your own role.'))
         if (
             (
                 value in [MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN]
@@ -397,13 +399,15 @@ class BaseModel(models.Model):
         to=settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name='+',
-        null=True, blank=True,
+        null=True,
+        blank=True,
     )
     updated_by = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name='+',
-        null=True, blank=True,
+        null=True,
+        blank=True,
     )
 
     objects = BaseManager.from_queryset(BaseQuerySet)

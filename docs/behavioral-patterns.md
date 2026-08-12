@@ -93,15 +93,11 @@ class InvitationEmail(EmailBase):
         return [self.get_object().email]
 
     def get_subject(self) -> str:
-        return self.subject.format(
-            organization_name=self.get_organization_name()
-        )
+        return self.subject.format(organization_name=self.get_organization_name())
 
     def get_cta(self) -> CTAEmail:
         return CTAEmail(
-            url=self.get_object().get_invitation_link()
-            if not self.is_preview
-            else '',
+            url=self.get_object().get_invitation_link() if not self.is_preview else '',
             text=_('Accept Invitation'),
         )
 
@@ -176,6 +172,7 @@ Location: `apps/generics/models/abstracts.py`
 def activate(self):
     self.is_active = True
     self.save()
+
 
 def inactivate(self):
     self.is_active = False
@@ -397,9 +394,7 @@ own permission level.
 class ValidateRoleSerializerMixin(OrganizationScopedFieldMixin):
     def validate_role(self, value):
         if self.instance == self.auth_member:
-            raise serializers.ValidationError(
-                _('Not allowed to change your own role.')
-            )
+            raise serializers.ValidationError(_('Not allowed to change your own role.'))
         if (
             (
                 value in [MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN]

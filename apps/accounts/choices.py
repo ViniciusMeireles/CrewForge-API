@@ -154,6 +154,10 @@ class InvitationErrorMessages(models.TextChoices):
     INVITATION_EXPIRED = 'invitation_expired', _('Invitation is expired')
     INVITATION_NOT_FOUND = 'invitation_not_found', _('Invitation not found or expired')
     INVITATION_ACCEPTED = 'invitation_accepted', _('Invitation already accepted')
+    INVITATION_DECLINED = (
+        'invitation_declined',
+        _('The invitation has already been declined.'),
+    )
     USER_ALREADY_MEMBER = 'user_already_member', _('User is already a member')
 
 

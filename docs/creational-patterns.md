@@ -68,12 +68,12 @@ class OrganizationFactory(ModelFactoryMixin, DjangoModelFactory):
             return
         from apps.accounts.factories.members import MemberFactory
         from apps.accounts.factories.users import UserFactory
+
         owner_user = UserFactory()
         self.owner = MemberFactory(
             user=owner_user, organization=self, role=MemberRoleChoices.OWNER.value
         )
         self.save()
-
 ```
 
 ### OrganizationProfileFactory
@@ -312,6 +312,7 @@ class PasswordResetRequestEmail(EmailBase):
     def __init__(self, *, reset_url: str, **kwargs):
         super().__init__(**kwargs)
         self.cta = CTAEmail(url=reset_url, text=_('Reset Password'))
+
 
 # Step 2: Build with constructor kwargs
 email = PasswordResetRequestEmail(

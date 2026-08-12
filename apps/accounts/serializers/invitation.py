@@ -6,9 +6,28 @@ from rest_framework import serializers
 from apps.accounts.choices import InvitationErrorMessages
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.invitation import Invitation
+from apps.accounts.models.organization import Organization
 from apps.accounts.serializers.mixins import ValidateRoleSerializerMixin
 
 User = get_user_model()
+
+
+class InvitationOrganizationSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(source='profile.description', read_only=True)
+    logo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = ['id', 'name', 'description', 'logo_url']
+        read_only_fields = fields
+
+    @classmethod
+    def get_logo_url(cls, obj) -> str | None:
+        profile = getattr(obj, '_profile', None) or obj.get_profile()
+        logo = profile.get_logo_obj(dark_priority=False) if profile else None
+        if logo and logo.image:
+            return logo.image.file_url
+        return None
 
 
 class InvitationSerializer(
@@ -27,8 +46,12 @@ class InvitationSerializer(
             'email',
             'is_expired',
             'is_accepted',
+            'is_declined',
             'expired_at',
+            'declined_at',
+            'accepted_at',
             'role',
+            'role_label',
             'organization',
             'last_email_sent_at',
             'send_email',
@@ -37,8 +60,14 @@ class InvitationSerializer(
             'id',
             'organization',
             'is_accepted',
+            'is_declined',
+            'declined_at',
+            'accepted_at',
             'last_email_sent_at',
         ]
+        extra_kwargs = {
+            'role_label': {'read_only': True, 'source': 'get_role_display'},
+        }
 
     def validate_email(self, value):
         if value and not self.instance:
@@ -47,6 +76,8 @@ class InvitationSerializer(
                 is_active=True,
                 is_expired=False,
                 is_accepted=False,
+                is_declined=False,
+                organization_id=self.auth_organization_id,
             ).exclude(
                 expired_at__lt=timezone.now(),
             )
@@ -82,3 +113,46 @@ class InvitationSerializer(
         if send_email and instance.is_acceptable()[0]:
             instance.send_email()
         return instance
+
+
+class InvitationReceivedDetailSerializer(InvitationSerializer):
+    organization = InvitationOrganizationSerializer(read_only=True)
+
+
+class InvitationReceivedSerializer(InvitationSerializer):
+    organization_name = serializers.CharField(
+        read_only=True,
+        source='organization.name',
+        allow_null=True,
+    )
+
+    class Meta(InvitationSerializer.Meta):
+        fields = InvitationSerializer.Meta.fields + ['key', 'organization_name']
+        read_only_fields = fields
+
+
+class InvitationByKeySerializer(serializers.ModelSerializer):
+    organization = InvitationOrganizationSerializer(read_only=True)
+    has_user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Invitation
+        fields = [
+            'key',
+            'email',
+            'organization',
+            'has_user',
+        ]
+        read_only_fields = fields
+
+    @classmethod
+    def get_has_user(cls, obj) -> bool:
+        return obj.get_user() is not None
+
+
+class InvitationAcceptSerializer(serializers.Serializer):
+    nickname = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=100,
+    )

@@ -41,6 +41,10 @@ paths:
         schema:
           type: boolean
       - in: query
+        name: is_declined
+        schema:
+          type: boolean
+      - in: query
         name: is_expired
         schema:
           type: boolean
@@ -51,18 +55,24 @@ paths:
           items:
             type: string
             enum:
+            - -accepted_at
+            - -declined_at
             - -email
             - -expired_at
             - -id
             - -is_accepted
+            - -is_declined
             - -is_expired
             - -last_email_sent_at
             - -organization
             - -role
+            - accepted_at
+            - declined_at
             - email
             - expired_at
             - id
             - is_accepted
+            - is_declined
             - is_expired
             - last_email_sent_at
             - organization
@@ -70,6 +80,10 @@ paths:
         description: |-
           Ordering
 
+          * `accepted_at` - Accepted At
+          * `-accepted_at` - Descending Accepted At
+          * `declined_at` - Declined At
+          * `-declined_at` - Descending Declined At
           * `email` - Email
           * `-email` - Descending Email
           * `expired_at` - Expired At
@@ -78,6 +92,8 @@ paths:
           * `-id` - Descending ID
           * `is_accepted` - Is Accepted
           * `-is_accepted` - Descending Is Accepted
+          * `is_declined` - Is Declined
+          * `-is_declined` - Descending Is Declined
           * `is_expired` - Is Expired
           * `-is_expired` - Descending Is Expired
           * `last_email_sent_at` - Last Email Sent At
@@ -162,6 +178,130 @@ paths:
               schema:
                 $ref: '#/components/schemas/Invitation'
           description: ''
+  /api/accounts/invitations/{invitation_pk}/accept/:
+    post:
+      operationId: accounts_invitations_accept_create
+      description: Accept an invitation and create a member record.
+      parameters:
+      - in: path
+        name: invitation_pk
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - Invitations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationAccept'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvitationAccept'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvitationAccept'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationAcceptSuccess'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationAcceptBadRequest'
+              examples:
+                InvitationAlreadyAccepted:
+                  value:
+                    detail: Invitation already accepted
+                  summary: Invitation already accepted
+                TheInvitationHasAlreadyBeenDeclined.:
+                  value:
+                    detail: The invitation has already been declined.
+                  summary: The invitation has already been declined.
+                InvitationIsExpired:
+                  value:
+                    detail: Invitation is expired
+                  summary: Invitation is expired
+                UserIsAlreadyAMember:
+                  value:
+                    detail: User is already a member
+                  summary: User is already a member
+          description: The invitation is no longer acceptable.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationAcceptNotFound'
+              examples:
+                InvitationNotFoundOrExpired:
+                  value:
+                    detail: Invitation not found or expired
+                  summary: Invitation not found or expired
+          description: Invitation not found.
+  /api/accounts/invitations/{invitation_pk}/decline/:
+    post:
+      operationId: accounts_invitations_decline_create
+      description: Decline an invitation.
+      parameters:
+      - in: path
+        name: invitation_pk
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationDeclineSuccess'
+              examples:
+                DeclineSuccess:
+                  value:
+                    detail: Invitation declined successfully.
+                  summary: Decline success
+          description: The invitation has been declined successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationDeclineBadRequest'
+              examples:
+                InvitationAlreadyAccepted:
+                  value:
+                    detail: Invitation already accepted
+                  summary: Invitation already accepted
+                TheInvitationHasAlreadyBeenDeclined.:
+                  value:
+                    detail: The invitation has already been declined.
+                  summary: The invitation has already been declined.
+                InvitationIsExpired:
+                  value:
+                    detail: Invitation is expired
+                  summary: Invitation is expired
+          description: The invitation is not in a pending state.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationDeclineNotFound'
+              examples:
+                InvitationNotFoundOrExpired:
+                  value:
+                    detail: Invitation not found or expired
+                  summary: Invitation not found or expired
+          description: Invitation not found.
   /api/accounts/invitations/{id}/:
     get:
       operationId: accounts_invitations_retrieve
@@ -291,6 +431,41 @@ paths:
                   summary: An invitation email was recently sent. Please wait before
                     resending.
           description: The invitation email cooldown is active.
+  /api/accounts/invitations/by-key/{invitation_key}/:
+    get:
+      operationId: accounts_invitations_by_key_retrieve
+      description: Retrieve an invitation by its secret key.
+      parameters:
+      - in: path
+        name: invitation_key
+        schema:
+          type: string
+          format: uuid
+        description: The secret key of the invitation.
+        required: true
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationByKey'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ByKeyNotFound'
+              examples:
+                InvitationNotFoundOrExpired:
+                  value:
+                    detail: Invitation not found or expired
+                  summary: Invitation not found or expired
+          description: Invitation not found.
   /api/accounts/invitations/choices/:
     get:
       operationId: accounts_invitations_choices_retrieve
@@ -318,6 +493,187 @@ paths:
                         label: Invitation 2
                   summary: Example response
           description: List invitations for choices (value/label format).
+  /api/accounts/invitations/received/:
+    get:
+      operationId: accounts_invitations_received_list
+      description: List received invitations for the authenticated user.
+      parameters:
+      - in: query
+        name: email
+        schema:
+          type: string
+      - in: query
+        name: email__icontains
+        schema:
+          type: string
+      - in: query
+        name: expired_at
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: expired_at__gt
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: expired_at__lt
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: is_accepted
+        schema:
+          type: boolean
+      - in: query
+        name: is_declined
+        schema:
+          type: boolean
+      - in: query
+        name: is_expired
+        schema:
+          type: boolean
+      - in: query
+        name: key
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: order_by
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -accepted_at
+            - -declined_at
+            - -email
+            - -expired_at
+            - -id
+            - -is_accepted
+            - -is_declined
+            - -is_expired
+            - -key
+            - -last_email_sent_at
+            - -organization
+            - -role
+            - accepted_at
+            - declined_at
+            - email
+            - expired_at
+            - id
+            - is_accepted
+            - is_declined
+            - is_expired
+            - key
+            - last_email_sent_at
+            - organization
+            - role
+        description: |-
+          Ordering
+
+          * `accepted_at` - Accepted At
+          * `-accepted_at` - Descending Accepted At
+          * `declined_at` - Declined At
+          * `-declined_at` - Descending Declined At
+          * `email` - Email
+          * `-email` - Descending Email
+          * `expired_at` - Expired At
+          * `-expired_at` - Descending Expired At
+          * `id` - ID
+          * `-id` - Descending ID
+          * `is_accepted` - Is Accepted
+          * `-is_accepted` - Descending Is Accepted
+          * `is_declined` - Is Declined
+          * `-is_declined` - Descending Is Declined
+          * `is_expired` - Is Expired
+          * `-is_expired` - Descending Is Expired
+          * `key` - Key
+          * `-key` - Descending Key
+          * `last_email_sent_at` - Last Email Sent At
+          * `-last_email_sent_at` - Descending Last Email Sent At
+          * `organization` - Organization
+          * `-organization` - Descending Organization
+          * `role` - Role
+          * `-role` - Descending Role
+        explode: false
+        style: form
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - admin
+          - manager
+          - member
+          - owner
+        description: |-
+          User role in the organization
+
+          * `owner` - Owner
+          * `admin` - Admin
+          * `manager` - Manager
+          * `member` - Member
+      - in: query
+        name: role__in
+        schema:
+          type: array
+          items:
+            type: string
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvitationReceivedList'
+          description: ''
+  /api/accounts/invitations/received/{invitation_pk}/:
+    get:
+      operationId: accounts_invitations_received_retrieve
+      description: Retrieve a received invitation detail.
+      parameters:
+      - in: path
+        name: invitation_pk
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationReceivedDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceivedDetailNotFound'
+          description: Invitation not found.
   /api/accounts/members/:
     get:
       operationId: accounts_members_list
@@ -2544,6 +2900,13 @@ paths:
           description: List teams for choices (value/label format).
 components:
   schemas:
+    ByKeyNotFound:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
     ChangePassword:
       type: object
       properties:
@@ -2626,11 +2989,27 @@ components:
           type: boolean
           readOnly: true
           description: Is the invitation accepted by the user
+        is_declined:
+          type: boolean
+          readOnly: true
+          description: Whether the invitation was declined by the user
         expired_at:
           type: string
           format: date-time
           nullable: true
           description: Date and time when the invitation will expire
+        declined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the invitation was declined
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the invitation was accepted
         role:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
@@ -2641,6 +3020,9 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
         organization:
           type: integer
           readOnly: true
@@ -2656,10 +3038,72 @@ components:
           writeOnly: true
           default: false
       required:
+      - accepted_at
+      - declined_at
       - email
       - id
       - is_accepted
+      - is_declined
       - last_email_sent_at
+      - organization
+      - role_label
+    InvitationAccept:
+      type: object
+      properties:
+        nickname:
+          type: string
+          maxLength: 100
+    InvitationAcceptBadRequest:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    InvitationAcceptNotFound:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    InvitationAcceptSuccess:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        member_id:
+          type: integer
+      required:
+      - access
+      - member_id
+      - refresh
+    InvitationByKey:
+      type: object
+      properties:
+        key:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Key for the invitation
+        email:
+          type: string
+          format: email
+          readOnly: true
+          description: Email of the user to invite
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/InvitationOrganization'
+          readOnly: true
+        has_user:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - has_user
+      - key
       - organization
     InvitationChoicesResponse:
       type: object
@@ -2671,6 +3115,220 @@ components:
       required:
       - label
       - value
+    InvitationDeclineBadRequest:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    InvitationDeclineNotFound:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    InvitationDeclineSuccess:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    InvitationOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Organization name
+        description:
+          type: string
+          readOnly: true
+        logo_url:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - description
+      - id
+      - logo_url
+      - name
+    InvitationReceived:
+      type: object
+      description: Mixin to validate the role of a user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          description: Email of the user to invite
+        is_expired:
+          type: boolean
+          readOnly: true
+          description: Is the invitation expired
+        is_accepted:
+          type: boolean
+          readOnly: true
+          description: Is the invitation accepted by the user
+        is_declined:
+          type: boolean
+          readOnly: true
+          description: Whether the invitation was declined by the user
+        expired_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Date and time when the invitation will expire
+        declined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the invitation was declined
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the invitation was accepted
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
+        organization:
+          type: integer
+          readOnly: true
+          description: Organization to which the user is invited
+        last_email_sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Date and time when the last invitation email was sent
+        send_email:
+          type: boolean
+          writeOnly: true
+          default: false
+        key:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Key for the invitation
+        organization_name:
+          type: string
+          readOnly: true
+          nullable: true
+      required:
+      - accepted_at
+      - declined_at
+      - email
+      - expired_at
+      - id
+      - is_accepted
+      - is_declined
+      - is_expired
+      - key
+      - last_email_sent_at
+      - organization
+      - organization_name
+      - role
+      - role_label
+    InvitationReceivedDetail:
+      type: object
+      description: Mixin to validate the role of a user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          description: Email of the user to invite
+          maxLength: 254
+        is_expired:
+          type: boolean
+          description: Is the invitation expired
+        is_accepted:
+          type: boolean
+          readOnly: true
+          description: Is the invitation accepted by the user
+        is_declined:
+          type: boolean
+          readOnly: true
+          description: Whether the invitation was declined by the user
+        expired_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date and time when the invitation will expire
+        declined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the invitation was declined
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the invitation was accepted
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/InvitationOrganization'
+          readOnly: true
+        last_email_sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Date and time when the last invitation email was sent
+        send_email:
+          type: boolean
+          writeOnly: true
+          default: false
+      required:
+      - accepted_at
+      - declined_at
+      - email
+      - id
+      - is_accepted
+      - is_declined
+      - last_email_sent_at
+      - organization
+      - role_label
     LoginNotFoundResponse:
       type: object
       properties:
@@ -2718,6 +3376,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/UserGetOrCreate'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -2774,6 +3435,7 @@ components:
       - is_active
       - last_login_at
       - organization
+      - role_label
       - updated_at
       - updated_by
       - user
@@ -2869,6 +3531,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/User'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -2927,6 +3592,7 @@ components:
       - last_login_at
       - organization
       - role
+      - role_label
       - updated_at
       - updated_by
       - user
@@ -2939,6 +3605,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/UserCreateWithInvite'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -2997,6 +3666,7 @@ components:
       - last_login_at
       - organization
       - role
+      - role_label
       - updated_at
       - updated_by
       - user
@@ -3351,6 +4021,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Invitation'
+    PaginatedInvitationReceivedList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvitationReceived'
     PaginatedMemberChoicesResponseList:
       type: object
       required:
@@ -3731,6 +4424,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/User'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -3924,6 +4620,19 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         content_type:
           type: string
           readOnly: true
@@ -3936,24 +4645,11 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
     PatchedUserProfile:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -3981,6 +4677,13 @@ components:
         last_name:
           type: string
           maxLength: 150
+    ReceivedDetailNotFound:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
     RoleEnum:
       enum:
       - owner
@@ -4213,6 +4916,19 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
+        size:
+          type: integer
+          readOnly: true
+          description: Size of the file
+        file_url:
+          type: string
+          nullable: true
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         content_type:
           type: string
           readOnly: true
@@ -4225,24 +4941,11 @@ components:
           type: string
           readOnly: true
           description: Original name of the file
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
         uuid:
           type: string
           format: uuid
           readOnly: true
           description: Unique identifier for the file
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
       required:
       - content_type
       - download_name

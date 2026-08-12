@@ -31,7 +31,7 @@ User = get_user_model()
 class UserProfileViewSet(viewsets.GenericViewSet):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ['get', 'patch', 'post', 'options']
+    http_method_names = ['get', 'patch', 'post']
 
     def get_object(self):
         return self.request.user

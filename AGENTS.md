@@ -220,7 +220,7 @@ Detailed pattern documentation is available in `docs/`:
 
 ## Feature Specifications
 
-Feature-level specifications and implementation plans live in `.specs/`.
+Feature-level specifications and implementation plans live in `specs/`.
 Consult this directory before implementing new features to check for existing
 specs, test plans, or acceptance criteria.
 
@@ -248,8 +248,7 @@ class MyViewSet(
     OrganizationScopedViewSetMixin,
     ModelViewSetMixin,
     viewsets.ModelViewSet,
-):
-    ...
+): ...
 ```
 
 ### Serializers
@@ -432,7 +431,7 @@ test_not_active_member_{action}  # inactive: test_not_active_member_retrieve_mem
 ### When to Optimize
 
 - Profile before optimizing; do not add indexes or caching speculatively.
-- Cache configuration is planned and will be documented in `.specs/` when
+- Cache configuration is planned and will be documented in `specs/` when
   implemented.
 
 
@@ -467,7 +466,7 @@ When implementing Sentry error tracking, follow these patterns:
 - Create middleware in `apps/generics/middleware/` to add user and organization context
 - Set `send_default_pii=False` to avoid capturing sensitive user data
 - Use different DSNs for production vs development environments
-- See `.specs/sentry_integration_spec.md` for detailed implementation guide
+- See `specs/sentry_integration_spec.md` for detailed implementation guide
 
 
 ## Error Handling Guidelines
@@ -515,7 +514,7 @@ All API errors now use a standardized JSON envelope implemented by
 Caching is planned for future implementation. When implemented, follow:
 
 - Add cache only after profiling identifies bottlenecks.
-- Use Redis as cache backend (see `.specs/cache_feature_spec.md`).
+- Use Redis as cache backend (see `specs/cache_feature_spec.md`).
 - Implement cache invalidation on model changes.
 - Cache key naming: `crewforge:{app}:{model}:{action}:{identifier}`
 - TTL guidelines:

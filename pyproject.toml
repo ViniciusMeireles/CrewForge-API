@@ -11,16 +11,16 @@ dependencies = [
     "django-cors-headers>=4.9.0",
     "django-filter>=26.1",
     "django-nested-admin>=4.1.6",
-    "djangorestframework>=3.17.1",
+    "djangorestframework>=3.17.2",
     "djangorestframework-simplejwt>=5.5.1",
     "drf-spectacular>=0.30.0",
-    "drf-spectacular-sidecar>=2026.7.1",
+    "drf-spectacular-sidecar>=2026.8.1",
     "flower>=2.0.1",
     "gunicorn>=26.0.0",
     "pillow>=12.3.0",
     "psycopg>=3.3.4",
     "python-dotenv>=1.2.2",
-    "redis>=8.0.1",
+    "redis>=8.1.0",
     "uuid6>=2025.0.1",
     "whitenoise>=6.12.0",
 ]
@@ -28,12 +28,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "django-extensions>=4.1",
-    "djangorestframework-stubs>=3.17.0",
+    "djangorestframework-stubs>=3.17.1",
     "factory-boy>=3.3.3",
     "pytest-cov>=7.1.0",
     "pytest-django>=4.12.0",
     "pytest-xdist>=3.8.0",
-    "ruff>=0.15.22",
+    "ruff>=0.16.1",
 ]
 
 [tool.ruff]

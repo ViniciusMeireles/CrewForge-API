@@ -1,12 +1,12 @@
 from django.db.models.expressions import Combinable, F
-from django_filters.rest_framework import filters, filterset
+from django_filters.rest_framework import filterset
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.accounts.mixins.requests import OrganizationScopedRequestMixin
-from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 from apps.generics.serializers.choices import ChoiceSerializer
+from apps.generics.utils.filters import orderable_filter_factory
 
 
 class ModelViewSetMetaclass(type):
@@ -41,25 +41,10 @@ class ModelViewSetMetaclass(type):
         filterset_class: type[filterset.FilterSet] = cls._get_filterset_class(  # type: ignore
             klass=klass
         )
-        if 'order_by' in filterset_class.declared_filters:
-            return filterset_class
-
         serializer_class = cls._get_list_serializer_class(klass=klass)
-        if not issubclass(serializer_class, ModelSerializerFieldsMixin):
-            serializer_class = type(
-                f'Orderable{serializer_class.__name__}',
-                (ModelSerializerFieldsMixin, serializer_class),
-                {},
-            )
-
-        return type(  # type: ignore
-            f'Orderable{filterset_class.__name__}',
-            (filterset_class,),
-            {
-                'order_by': filters.OrderingFilter(
-                    choices=serializer_class.orderable_fields_choices
-                ),
-            },
+        return orderable_filter_factory(
+            serializer_class=serializer_class,
+            filterset_class=filterset_class,
         )
 
 

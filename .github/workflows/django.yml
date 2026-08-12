@@ -1,11 +1,19 @@
 name: Django CI
 
-on: [pull_request]
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:18
@@ -15,24 +23,24 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
-
-    strategy:
-      max-parallel: 4
-      matrix:
-        python-version: [3.14]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v7
 
     - name: Install uv
-      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
 
     - name: Set up Python
       run: uv python install
 
     - name: Enable caching
-      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
       with:
         enable-cache: true
 
@@ -45,6 +53,20 @@ jobs:
     - name: Run ruff check
       run: uv run ruff check .
 
+    - name: Check migrations
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+        DJANGO_SETTINGS_MODULE: config.settings.testing
+        ENVIRONMENT: test
+      run: uv run python manage.py makemigrations --check --dry-run
+
+    - name: Check OpenAPI schema
+      env:
+        DJANGO_SETTINGS_MODULE: config.settings.local
+      run: |
+        uv run python manage.py spectacular --file /tmp/schema.yml
+        diff schema.yml /tmp/schema.yml
+
     - name: Collect static files
       env:
         DJANGO_SETTINGS_MODULE: config.settings.local
@@ -56,4 +78,51 @@ jobs:
         DJANGO_SETTINGS_MODULE: config.settings.testing
         ENVIRONMENT: test
       run: |
-        uv run pytest --reuse-db
+        uv run pytest --cov-report=xml --cov-report=json \
+          --junitxml=pytest.xml --reuse-db -n auto
+
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: coverage-reports
+        path: |
+          coverage.xml
+          coverage.json
+          pytest.xml
+        if-no-files-found: error
+
+  coverage:
+    name: Coverage Report
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: coverage-reports
+          path: .
+
+      - name: Add coverage report to PR
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        id: coverage
+        uses: MishaKav/pytest-coverage-comment@v1
+        with:
+          pytest-xml-coverage-path: coverage.xml
+          pytest-json-coverage-path: coverage.json
+          junitxml-path: pytest.xml
+          title: "Backend Coverage"
+          badge-title: "Backend Coverage"
+
+      - name: Check coverage threshold
+        run: |
+          coverage=$(python3 -c "import json; print(json.load(open('coverage.json'))['totals']['percent_covered'])")
+          echo "Coverage: ${coverage}%"
+          python3 -c "import json,sys; sys.exit(0 if json.load(open('coverage.json'))['totals']['percent_covered'] >= 88 else 1)" || {
+            echo "Coverage is below the 88% threshold" >&2
+            exit 1
+          }

@@ -11,6 +11,7 @@ from apps.generics.factories.mixins import ModelFactoryMixin
 class InvitationFactory(ModelFactoryMixin, DjangoModelFactory):
     email = factory.Sequence(lambda n: f'unit_test_invite{n}@example.com')
     is_accepted = False
+    is_declined = False
     is_expired = False
     expired_at = factory.Faker('future_datetime', tzinfo=timezone.utc)
     role = MemberRoleChoices.MEMBER
