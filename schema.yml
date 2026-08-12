@@ -3376,6 +3376,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/UserGetOrCreate'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -3432,6 +3435,7 @@ components:
       - is_active
       - last_login_at
       - organization
+      - role_label
       - updated_at
       - updated_by
       - user
@@ -3527,6 +3531,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/User'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -3585,6 +3592,7 @@ components:
       - last_login_at
       - organization
       - role
+      - role_label
       - updated_at
       - updated_by
       - user
@@ -3597,6 +3605,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/UserCreateWithInvite'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -3655,6 +3666,7 @@ components:
       - last_login_at
       - organization
       - role
+      - role_label
       - updated_at
       - updated_by
       - user
@@ -4412,6 +4424,9 @@ components:
           readOnly: true
         user:
           $ref: '#/components/schemas/User'
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true

@@ -66,6 +66,7 @@ class MemberModelSerializer(
     """Serializer for the Member model."""
 
     user = UserGetOrCreateSerializer()
+    role_label = serializers.CharField(read_only=True, source='get_role_display')
 
     class Meta:
         model = Member
