@@ -3581,7 +3581,7 @@ components:
           type: integer
           readOnly: true
         user:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/UserUpdate'
         role_label:
           type: string
           readOnly: true
@@ -4474,7 +4474,7 @@ components:
           type: integer
           readOnly: true
         user:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/UserUpdate'
         role_label:
           type: string
           readOnly: true
@@ -5436,40 +5436,6 @@ components:
           writeOnly: true
       required:
       - token
-    User:
-      type: object
-      description: Serializer for creating a user.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        email:
-          title: Email address
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        password:
-          type: string
-          writeOnly: true
-          maxLength: 128
-      required:
-      - id
-      - username
     UserCreateSignup:
       type: object
       description: Serializer for creating a user.
@@ -5657,6 +5623,34 @@ components:
       required:
       - access
       - refresh
+    UserUpdate:
+      type: object
+      description: Serializer for updating the User model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - id
+      - username
   securitySchemes:
     jwtAuth:
       type: http

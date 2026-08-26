@@ -137,10 +137,18 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
         return instance
 
 
+class UserUpdateSerializer(UserSerializer):
+    """Serializer for updating the User model."""
+
+    class Meta(UserSerializer.Meta):
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = UserSerializer.Meta.read_only_fields + ['email']
+
+
 class MemberUpdateSerializer(MemberModelSerializer):
     """Serializer for updating the Member model."""
 
-    user = UserSerializer()
+    user = UserUpdateSerializer()
 
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
