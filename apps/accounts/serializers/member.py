@@ -12,6 +12,7 @@ from apps.accounts.serializers.mixins import (
     ValidateRoleSerializerMixin,
 )
 from apps.accounts.serializers.user import UserGetOrCreateSerializer, UserSerializer
+from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 
 User = get_user_model()
 
@@ -61,7 +62,10 @@ class UserCreateWithInviteSerializer(UserSerializer):
 
 
 class MemberModelSerializer(
-    ValidateRoleSerializerMixin, ModelSerializerMixin, serializers.ModelSerializer
+    ValidateRoleSerializerMixin,
+    ModelSerializerMixin,
+    ModelSerializerFieldsMixin,
+    serializers.ModelSerializer,
 ):
     """Serializer for the Member model."""
 

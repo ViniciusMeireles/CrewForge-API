@@ -723,6 +723,11 @@ paths:
             - -role
             - -updated_at
             - -updated_by
+            - -user__email
+            - -user__first_name
+            - -user__id
+            - -user__last_name
+            - -user__username
             - created_at
             - created_by
             - id
@@ -733,6 +738,11 @@ paths:
             - role
             - updated_at
             - updated_by
+            - user__email
+            - user__first_name
+            - user__id
+            - user__last_name
+            - user__username
         description: |-
           Ordering
 
@@ -756,6 +766,16 @@ paths:
           * `-updated_at` - Descending Updated At
           * `updated_by` - Updated By
           * `-updated_by` - Descending Updated By
+          * `user__email` - User - Email address
+          * `-user__email` - User - Descending Email address
+          * `user__first_name` - User - First name
+          * `-user__first_name` - User - Descending First name
+          * `user__id` - User - ID
+          * `-user__id` - User - Descending ID
+          * `user__last_name` - User - Last name
+          * `-user__last_name` - User - Descending Last name
+          * `user__username` - User - Username
+          * `-user__username` - User - Descending Username
         explode: false
         style: form
       - in: query
@@ -1091,8 +1111,20 @@ paths:
             type: string
             enum:
             - -id
+            - -image__content_type
+            - -image__name
+            - -image__organization
+            - -image__original_name
+            - -image__size
+            - -image__uuid
             - -image_type
             - id
+            - image__content_type
+            - image__name
+            - image__organization
+            - image__original_name
+            - image__size
+            - image__uuid
             - image_type
         description: |-
           Ordering
@@ -1101,6 +1133,18 @@ paths:
           * `-id` - Descending ID
           * `image_type` - Image type
           * `-image_type` - Descending Image type
+          * `image__content_type` - Image - Content Type
+          * `-image__content_type` - Image - Descending Content Type
+          * `image__name` - Image - Name
+          * `-image__name` - Image - Descending Name
+          * `image__organization` - Image - Organization
+          * `-image__organization` - Image - Descending Organization
+          * `image__original_name` - Image - Original Name
+          * `-image__original_name` - Image - Descending Original Name
+          * `image__size` - Image - Size
+          * `-image__size` - Image - Descending Size
+          * `image__uuid` - Image - UUID
+          * `-image__uuid` - Image - Descending UUID
         explode: false
         style: form
       - in: query
@@ -1529,9 +1573,11 @@ paths:
             enum:
             - -id
             - -name
+            - -profile__id
             - -slug
             - id
             - name
+            - profile__id
             - slug
         description: |-
           Ordering
@@ -1542,6 +1588,8 @@ paths:
           * `-name` - Descending Name
           * `slug` - Slug
           * `-slug` - Descending Slug
+          * `profile__id` - Profile - ID
+          * `-profile__id` - Profile - Descending ID
         explode: false
         style: form
       - name: page
