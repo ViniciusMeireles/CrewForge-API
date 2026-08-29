@@ -12,6 +12,7 @@ from apps.accounts.serializers.mixins import (
     ValidateRoleSerializerMixin,
 )
 from apps.accounts.serializers.user import UserGetOrCreateSerializer, UserSerializer
+from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 
 User = get_user_model()
 
@@ -61,7 +62,10 @@ class UserCreateWithInviteSerializer(UserSerializer):
 
 
 class MemberModelSerializer(
-    ValidateRoleSerializerMixin, ModelSerializerMixin, serializers.ModelSerializer
+    ValidateRoleSerializerMixin,
+    ModelSerializerMixin,
+    ModelSerializerFieldsMixin,
+    serializers.ModelSerializer,
 ):
     """Serializer for the Member model."""
 
@@ -137,10 +141,18 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
         return instance
 
 
+class UserUpdateSerializer(UserSerializer):
+    """Serializer for updating the User model."""
+
+    class Meta(UserSerializer.Meta):
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = UserSerializer.Meta.read_only_fields + ['email']
+
+
 class MemberUpdateSerializer(MemberModelSerializer):
     """Serializer for updating the Member model."""
 
-    user = UserSerializer()
+    user = UserUpdateSerializer()
 
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']

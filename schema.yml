@@ -12,6 +12,7 @@ paths:
     get:
       operationId: accounts_invitations_list
       description: List all Invitations.
+      summary: List all Invitations.
       parameters:
       - in: query
         name: email
@@ -155,6 +156,7 @@ paths:
     post:
       operationId: accounts_invitations_create
       description: Create a new Invitation.
+      summary: Create a new Invitation.
       tags:
       - Invitations
       requestBody:
@@ -306,6 +308,7 @@ paths:
     get:
       operationId: accounts_invitations_retrieve
       description: Retrieve a specific Invitation.
+      summary: Retrieve a specific Invitation.
       parameters:
       - in: path
         name: id
@@ -327,6 +330,7 @@ paths:
     put:
       operationId: accounts_invitations_update
       description: Update a Invitation.
+      summary: Update a Invitation.
       parameters:
       - in: path
         name: id
@@ -360,6 +364,7 @@ paths:
     delete:
       operationId: accounts_invitations_destroy
       description: Delete a Invitation.
+      summary: Delete a Invitation.
       parameters:
       - in: path
         name: id
@@ -470,6 +475,7 @@ paths:
     get:
       operationId: accounts_invitations_choices_retrieve
       description: List invitations for choices (value/label format).
+      summary: List invitations for choices (value/label format).
       tags:
       - Invitations
       security:
@@ -678,6 +684,7 @@ paths:
     get:
       operationId: accounts_members_list
       description: List all Members.
+      summary: List all Members.
       parameters:
       - in: query
         name: email__icontains
@@ -716,6 +723,11 @@ paths:
             - -role
             - -updated_at
             - -updated_by
+            - -user__email
+            - -user__first_name
+            - -user__id
+            - -user__last_name
+            - -user__username
             - created_at
             - created_by
             - id
@@ -726,6 +738,11 @@ paths:
             - role
             - updated_at
             - updated_by
+            - user__email
+            - user__first_name
+            - user__id
+            - user__last_name
+            - user__username
         description: |-
           Ordering
 
@@ -749,6 +766,16 @@ paths:
           * `-updated_at` - Descending Updated At
           * `updated_by` - Updated By
           * `-updated_by` - Descending Updated By
+          * `user__email` - User - Email address
+          * `-user__email` - User - Descending Email address
+          * `user__first_name` - User - First name
+          * `-user__first_name` - User - Descending First name
+          * `user__id` - User - ID
+          * `-user__id` - User - Descending ID
+          * `user__last_name` - User - Last name
+          * `-user__last_name` - User - Descending Last name
+          * `user__username` - User - Username
+          * `-user__username` - User - Descending Username
         explode: false
         style: form
       - in: query
@@ -811,6 +838,7 @@ paths:
     get:
       operationId: accounts_members_retrieve
       description: Retrieve a specific Member.
+      summary: Retrieve a specific Member.
       parameters:
       - in: path
         name: id
@@ -870,6 +898,7 @@ paths:
     patch:
       operationId: accounts_members_partial_update
       description: Partially update a Member.
+      summary: Partially update a Member.
       parameters:
       - in: path
         name: id
@@ -902,6 +931,7 @@ paths:
     delete:
       operationId: accounts_members_destroy
       description: Delete a Member.
+      summary: Delete a Member.
       parameters:
       - in: path
         name: id
@@ -958,6 +988,7 @@ paths:
     get:
       operationId: accounts_members_choices_retrieve
       description: List members for choices (value/label format).
+      summary: List members for choices (value/label format).
       tags:
       - Members
       security:
@@ -1046,6 +1077,7 @@ paths:
     get:
       operationId: accounts_organization_images_list
       description: List all Organization Images.
+      summary: List all Organization Images.
       parameters:
       - in: query
         name: image_type
@@ -1079,8 +1111,20 @@ paths:
             type: string
             enum:
             - -id
+            - -image__content_type
+            - -image__name
+            - -image__organization
+            - -image__original_name
+            - -image__size
+            - -image__uuid
             - -image_type
             - id
+            - image__content_type
+            - image__name
+            - image__organization
+            - image__original_name
+            - image__size
+            - image__uuid
             - image_type
         description: |-
           Ordering
@@ -1089,6 +1133,18 @@ paths:
           * `-id` - Descending ID
           * `image_type` - Image type
           * `-image_type` - Descending Image type
+          * `image__content_type` - Image - Content Type
+          * `-image__content_type` - Image - Descending Content Type
+          * `image__name` - Image - Name
+          * `-image__name` - Image - Descending Name
+          * `image__organization` - Image - Organization
+          * `-image__organization` - Image - Descending Organization
+          * `image__original_name` - Image - Original Name
+          * `-image__original_name` - Image - Descending Original Name
+          * `image__size` - Image - Size
+          * `-image__size` - Image - Descending Size
+          * `image__uuid` - Image - UUID
+          * `-image__uuid` - Image - Descending UUID
         explode: false
         style: form
       - in: query
@@ -1122,6 +1178,7 @@ paths:
     post:
       operationId: accounts_organization_images_create
       description: Create a new Organization Image.
+      summary: Create a new Organization Image.
       tags:
       - Organization images
       requestBody:
@@ -1146,6 +1203,7 @@ paths:
     get:
       operationId: accounts_organization_images_retrieve
       description: Retrieve a specific Organization Image.
+      summary: Retrieve a specific Organization Image.
       parameters:
       - in: path
         name: id
@@ -1167,6 +1225,7 @@ paths:
     put:
       operationId: accounts_organization_images_update
       description: Update a Organization Image.
+      summary: Update a Organization Image.
       parameters:
       - in: path
         name: id
@@ -1197,6 +1256,7 @@ paths:
     patch:
       operationId: accounts_organization_images_partial_update
       description: Partially update a Organization Image.
+      summary: Partially update a Organization Image.
       parameters:
       - in: path
         name: id
@@ -1226,6 +1286,7 @@ paths:
     delete:
       operationId: accounts_organization_images_destroy
       description: Delete a Organization Image.
+      summary: Delete a Organization Image.
       parameters:
       - in: path
         name: id
@@ -1244,6 +1305,7 @@ paths:
     get:
       operationId: accounts_organization_images_choices_retrieve
       description: List organization images for choices (value/label format).
+      summary: List organization images for choices (value/label format).
       tags:
       - Organization images
       security:
@@ -1271,6 +1333,7 @@ paths:
     get:
       operationId: accounts_organization_profiles_list
       description: List all Organization Profiles.
+      summary: List all Organization Profiles.
       parameters:
       - in: query
         name: description
@@ -1343,6 +1406,7 @@ paths:
     get:
       operationId: accounts_organization_profiles_retrieve
       description: Retrieve a specific Organization Profile.
+      summary: Retrieve a specific Organization Profile.
       parameters:
       - in: path
         name: id
@@ -1364,6 +1428,7 @@ paths:
     put:
       operationId: accounts_organization_profiles_update
       description: Update a Organization Profile.
+      summary: Update a Organization Profile.
       parameters:
       - in: path
         name: id
@@ -1396,6 +1461,7 @@ paths:
     patch:
       operationId: accounts_organization_profiles_partial_update
       description: Partially update a Organization Profile.
+      summary: Partially update a Organization Profile.
       parameters:
       - in: path
         name: id
@@ -1428,6 +1494,7 @@ paths:
     delete:
       operationId: accounts_organization_profiles_destroy
       description: Delete a Organization Profile.
+      summary: Delete a Organization Profile.
       parameters:
       - in: path
         name: id
@@ -1446,6 +1513,7 @@ paths:
     get:
       operationId: accounts_organization_profiles_choices_retrieve
       description: List organization profiles for choices (value/label format).
+      summary: List organization profiles for choices (value/label format).
       tags:
       - Organization profiles
       security:
@@ -1473,6 +1541,7 @@ paths:
     get:
       operationId: accounts_organizations_list
       description: List all Organizations.
+      summary: List all Organizations.
       parameters:
       - in: query
         name: dark_logo
@@ -1504,9 +1573,11 @@ paths:
             enum:
             - -id
             - -name
+            - -profile__id
             - -slug
             - id
             - name
+            - profile__id
             - slug
         description: |-
           Ordering
@@ -1517,6 +1588,8 @@ paths:
           * `-name` - Descending Name
           * `slug` - Slug
           * `-slug` - Descending Slug
+          * `profile__id` - Profile - ID
+          * `-profile__id` - Profile - Descending ID
         explode: false
         style: form
       - name: page
@@ -1553,6 +1626,7 @@ paths:
     post:
       operationId: accounts_organizations_create
       description: Create a new Organization.
+      summary: Create a new Organization.
       tags:
       - Organizations
       requestBody:
@@ -1580,6 +1654,7 @@ paths:
     get:
       operationId: accounts_organizations_retrieve
       description: Retrieve a specific Organization.
+      summary: Retrieve a specific Organization.
       parameters:
       - in: query
         name: dark_logo
@@ -1606,6 +1681,7 @@ paths:
     put:
       operationId: accounts_organizations_update
       description: Update a Organization.
+      summary: Update a Organization.
       parameters:
       - in: path
         name: id
@@ -1639,6 +1715,7 @@ paths:
     patch:
       operationId: accounts_organizations_partial_update
       description: Partially update a Organization.
+      summary: Partially update a Organization.
       parameters:
       - in: path
         name: id
@@ -1671,6 +1748,7 @@ paths:
     delete:
       operationId: accounts_organizations_destroy
       description: Delete a Organization.
+      summary: Delete a Organization.
       parameters:
       - in: path
         name: id
@@ -1733,6 +1811,7 @@ paths:
     get:
       operationId: accounts_organizations_choices_retrieve
       description: List organizations for choices (value/label format).
+      summary: List organizations for choices (value/label format).
       tags:
       - Organizations
       security:
@@ -1821,6 +1900,7 @@ paths:
     get:
       operationId: accounts_stored_files_list
       description: List all Stored Files.
+      summary: List all Stored Files.
       parameters:
       - in: query
         name: content_type
@@ -1990,6 +2070,7 @@ paths:
     post:
       operationId: accounts_stored_files_create
       description: Create a new Stored File.
+      summary: Create a new Stored File.
       tags:
       - Stored files
       requestBody:
@@ -2014,6 +2095,7 @@ paths:
     get:
       operationId: accounts_stored_files_retrieve
       description: Retrieve a specific Stored File.
+      summary: Retrieve a specific Stored File.
       parameters:
       - in: path
         name: uuid
@@ -2036,6 +2118,7 @@ paths:
     put:
       operationId: accounts_stored_files_update
       description: Update a Stored File.
+      summary: Update a Stored File.
       parameters:
       - in: path
         name: uuid
@@ -2067,6 +2150,7 @@ paths:
     patch:
       operationId: accounts_stored_files_partial_update
       description: Partially update a Stored File.
+      summary: Partially update a Stored File.
       parameters:
       - in: path
         name: uuid
@@ -2097,6 +2181,7 @@ paths:
     delete:
       operationId: accounts_stored_files_destroy
       description: Delete a Stored File.
+      summary: Delete a Stored File.
       parameters:
       - in: path
         name: uuid
@@ -2147,6 +2232,7 @@ paths:
     get:
       operationId: accounts_stored_files_choices_retrieve
       description: List stored files for choices (value/label format).
+      summary: List stored files for choices (value/label format).
       tags:
       - Stored files
       security:
@@ -2174,6 +2260,7 @@ paths:
     get:
       operationId: accounts_users_me_retrieve
       description: Retrieve the authenticated user profile.
+      summary: Retrieve a specific user.
       tags:
       - Users
       security:
@@ -2188,6 +2275,7 @@ paths:
     patch:
       operationId: accounts_users_me_partial_update
       description: Partially update the authenticated user profile.
+      summary: Partially update a user.
       tags:
       - Users
       requestBody:
@@ -2407,6 +2495,7 @@ paths:
     get:
       operationId: teams_team_members_list
       description: List all Team Members.
+      summary: List all Team Members.
       parameters:
       - in: query
         name: is_active
@@ -2543,6 +2632,7 @@ paths:
     post:
       operationId: teams_team_members_create
       description: Create a new Team Member.
+      summary: Create a new Team Member.
       tags:
       - Team members
       requestBody:
@@ -2570,6 +2660,7 @@ paths:
     get:
       operationId: teams_team_members_retrieve
       description: Retrieve a specific Team Member.
+      summary: Retrieve a specific Team Member.
       parameters:
       - in: path
         name: id
@@ -2628,6 +2719,7 @@ paths:
     delete:
       operationId: teams_team_members_destroy
       description: Delete a Team Member.
+      summary: Delete a Team Member.
       parameters:
       - in: path
         name: id
@@ -2646,6 +2738,7 @@ paths:
     get:
       operationId: teams_team_members_choices_retrieve
       description: List team members for choices (value/label format).
+      summary: List team members for choices (value/label format).
       tags:
       - Team members
       security:
@@ -2673,6 +2766,7 @@ paths:
     get:
       operationId: teams_teams_list
       description: List all Teams.
+      summary: List all Teams.
       parameters:
       - in: query
         name: is_active
@@ -2776,6 +2870,7 @@ paths:
     post:
       operationId: teams_teams_create
       description: Create a new Team.
+      summary: Create a new Team.
       tags:
       - Teams
       requestBody:
@@ -2803,6 +2898,7 @@ paths:
     get:
       operationId: teams_teams_retrieve
       description: Retrieve a specific Team.
+      summary: Retrieve a specific Team.
       parameters:
       - in: path
         name: id
@@ -2824,6 +2920,7 @@ paths:
     put:
       operationId: teams_teams_update
       description: Update a Team.
+      summary: Update a Team.
       parameters:
       - in: path
         name: id
@@ -2857,6 +2954,7 @@ paths:
     delete:
       operationId: teams_teams_destroy
       description: Delete a Team.
+      summary: Delete a Team.
       parameters:
       - in: path
         name: id
@@ -2875,6 +2973,7 @@ paths:
     get:
       operationId: teams_teams_choices_retrieve
       description: List teams for choices (value/label format).
+      summary: List teams for choices (value/label format).
       tags:
       - Teams
       security:
@@ -3530,7 +3629,7 @@ components:
           type: integer
           readOnly: true
         user:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/UserUpdate'
         role_label:
           type: string
           readOnly: true
@@ -4423,7 +4522,7 @@ components:
           type: integer
           readOnly: true
         user:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/UserUpdate'
         role_label:
           type: string
           readOnly: true
@@ -5385,40 +5484,6 @@ components:
           writeOnly: true
       required:
       - token
-    User:
-      type: object
-      description: Serializer for creating a user.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        email:
-          title: Email address
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        password:
-          type: string
-          writeOnly: true
-          maxLength: 128
-      required:
-      - id
-      - username
     UserCreateSignup:
       type: object
       description: Serializer for creating a user.
@@ -5606,6 +5671,34 @@ components:
       required:
       - access
       - refresh
+    UserUpdate:
+      type: object
+      description: Serializer for updating the User model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - id
+      - username
   securitySchemes:
     jwtAuth:
       type: http

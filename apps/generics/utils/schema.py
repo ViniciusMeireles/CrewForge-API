@@ -22,12 +22,13 @@ def extend_schema_choices_route(
     Extend schema for choices route.
     This function is used to extend the schema for a choices route in the API.
     """
-    description = _(
+    msg = _(
         'List %(name_plural)s for choices (value/label format).'
         % {'name_plural': model._meta.verbose_name_plural.lower()}
     )
     kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault('description', description)
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
     kwargs.setdefault(
         'responses',
         {
@@ -56,7 +57,7 @@ def extend_schema_choices_route(
                         response_only=True,
                     )
                 ],
-                description=description,
+                description=msg,
             )
         },
     )
@@ -65,54 +66,49 @@ def extend_schema_choices_route(
 
 def extend_schema_retrieve(model: type[BaseModel], **kwargs):
     kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault(
-        'description',
-        _('Retrieve a specific %(name)s.' % {'name': get_verbose_name(model)}),
-    )
+    msg = _('Retrieve a specific %(name)s.' % {'name': get_verbose_name(model)})
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
     return extend_schema(**kwargs)
 
 
 def extend_schema_list(model: type[BaseModel], **kwargs):
     kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault(
-        'description',
-        _('List all %(name)s.' % {'name': get_verbose_name_plural(model)}),
-    )
+    msg = _('List all %(name)s.' % {'name': get_verbose_name_plural(model)})
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
     return extend_schema(**kwargs)
 
 
 def extend_schema_create(model: type[BaseModel], **kwargs):
     kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault(
-        'description',
-        _('Create a new %(name)s.' % {'name': get_verbose_name(model)}),
-    )
+    msg = _('Create a new %(name)s.' % {'name': get_verbose_name(model)})
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
     return extend_schema(**kwargs)
 
 
 def extend_schema_destroy(model: type[BaseModel], **kwargs):
     kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault(
-        'description',
-        _('Delete a %(name)s.' % {'name': get_verbose_name(model)}),
-    )
+    msg = _('Delete a %(name)s.' % {'name': get_verbose_name(model)})
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
     return extend_schema(**kwargs)
 
 
 def extend_schema_update(model: type[BaseModel], **kwargs):
     kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault(
-        'description', _('Update a %(name)s.' % {'name': get_verbose_name(model)})
-    )
+    msg = _('Update a %(name)s.' % {'name': get_verbose_name(model)})
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
     return extend_schema(**kwargs)
 
 
 def extend_schema_partial_update(model: type[BaseModel], **kwargs):
     kwargs.setdefault('tags', model.schema_tags())
-    kwargs.setdefault(
-        'description',
-        _('Partially update a %(name)s.' % {'name': get_verbose_name(model)}),
-    )
+    msg = _('Partially update a %(name)s.' % {'name': get_verbose_name(model)})
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
     return extend_schema(**kwargs)
 
 
