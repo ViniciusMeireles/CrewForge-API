@@ -1,5 +1,26 @@
 # Frontend Integration Guide
 
+## Table of Contents
+
+- [Overview](#1-overview)
+- [Getting Started](#2-getting-started)
+- [Authentication Flow](#3-authentication-flow)
+- [Password Reset](#4-password-reset)
+- [Signup](#5-signup)
+- [User Profile](#6-user-profile)
+- [Organization Management](#7-organization-management)
+- [Member Management](#8-member-management)
+- [Invitations](#9-invitations)
+- [Teams](#10-teams)
+- [Team Members](#11-team-members)
+- [File Upload & Download](#12-file-upload--download)
+- [Error Handling](#13-error-handling)
+- [Pagination](#14-pagination)
+- [Choices Endpoints](#15-choices-endpoints)
+- [Troubleshooting](#16-troubleshooting)
+
+---
+
 ## 1. Overview
 
 CrewForge is a Django REST API that uses a **two-layer authentication model**:

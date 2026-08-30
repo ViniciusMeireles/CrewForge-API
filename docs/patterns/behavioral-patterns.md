@@ -484,3 +484,4 @@ class UserTokenSerializerMixin(UserTokenMixin, metaclass=UserTokenSerializerMeta
 - [Creational Patterns](./creational-patterns.md) (Factory Method, Builder)
 - [Architectural Patterns](./architectural-patterns.md) (Layered, Facade, Test Infrastructure)
 - [Test Patterns](./test-patterns.md) (Modular test structure, coverage matrix)
+- [Architecture](../architecture.md) (Layered architecture, naming, code organization)

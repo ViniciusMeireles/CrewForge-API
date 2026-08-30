@@ -3,6 +3,12 @@
 API service for managing accounts, teams, and permissions with comprehensive 
 organizational hierarchy support.
 
+![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=flat&logo=python)
+![Django](https://img.shields.io/badge/Django-5-092E20?style=flat&logo=django)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat&logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 <img width="2560" height="1080" alt="CrewForge API" src="https://github.com/user-attachments/assets/d07500c8-cea4-41e4-a6e6-74c12fd43792" />
 
 ## Table of Contents
@@ -156,33 +162,6 @@ Additional authentication-related actions:
    - :gear: Admin Panel: `http://localhost:8000/admin/`
 
 
-## Usage :computer:
-- The Swagger UI for API documentation is available at `http://localhost:8000/api/schema/swagger-ui/`.
-- The admin panel is accessible at `http://localhost:8000/admin/`.
-- Use the superuser credentials created during installation to log in to the admin panel.
-- Refer to the API documentation for available endpoints and usage instructions.
-- To start the application, run:
-    ```bash
-   docker compose up -d
-    ```
-- To stop the application, run:
-    ```bash
-   docker compose down
-    ```
-- To view logs, run:
-    ```bash
-   docker compose logs -f
-    ```
-- To rebuild the containers, run:
-    ```bash
-   docker compose build --no-cache
-    ```
-- To see all available Makefile commands, run:
-    ```bash
-   make help
-    ```
-   
-
 ## API Documentation :books:
 Interactive API documentation is available at `http://localhost:8000/api/schema/swagger-ui/` providing:
 
@@ -195,14 +174,52 @@ Interactive API documentation is available at `http://localhost:8000/api/schema/
   troubleshooting.
 
 
-## Design Patterns :blue_book:
-CrewForge follows established design patterns for maintainability and extensibility. Documentation is available in the `docs/` directory:
+## Documentation :books:
 
-- [Structural Patterns](./docs/structural-patterns.md) - Mixin, Abstract Model, and Module patterns
-- [Behavioral Patterns](./docs/behavioral-patterns.md) - Template Method, Strategy, and Validation patterns
-- [Creational Patterns](./docs/creational-patterns.md) - Factory Method and Builder patterns
-- [Architectural Patterns](./docs/architectural-patterns.md) - Layered Architecture, Facade, and Test Infrastructure
-- [Test Patterns](./docs/test-patterns.md) - Modular test structure, naming conventions, and coverage matrix
+| Document | Description |
+|----------|-------------|
+| [`AGENTS.md`](./AGENTS.md) | Table of contents for agents |
+| [`docs/architecture.md`](./docs/architecture.md) | Layered architecture, naming conventions, code organization |
+| [`docs/product-sense.md`](./docs/product-sense.md) | Design beliefs, domain model, non-goals |
+| [`docs/security.md`](./docs/security.md) | Auth flow, cookie rules, security invariants |
+| [`docs/reliability.md`](./docs/reliability.md) | Error handling, performance, caching, logging |
+| [`docs/quality.md`](./docs/quality.md) | Coverage targets, quality gates, debt tracking |
+| [`docs/maintenance.md`](./docs/maintenance.md) | How to maintain and update documentation |
+| [`docs/frontend-integration-guide.md`](./docs/frontend-integration-guide.md) | Consuming the API from SPA frontends |
+| [`docs/patterns/`](./docs/patterns/) | Design patterns (structural, behavioral, creational, architectural) |
+| [`docs/design-docs/index.md`](./docs/design-docs/index.md) | Past architectural decisions with rationale |
+| [`docs/exec-plans/`](./docs/exec-plans/) | Execution plans, tech debt tracker |
+| [`docs/references/`](./docs/references/) | LLM-friendly library references |
+
+
+## Project Structure :file_folder:
+```
+CrewForge-API/
+├── apps/               # Django apps (accounts, teams, generics)
+│   ├── accounts/       # Organizations, members, invitations, files
+│   ├── teams/          # Teams and team memberships
+│   └── generics/       # Base models, managers, utilities
+├── config/             # Django settings
+├── docs/               # Documentation
+│   ├── patterns/       # Design patterns
+│   ├── design-docs/    # Architecture decision records
+│   ├── exec-plans/     # Execution plans
+│   └── references/     # LLM-friendly library references
+├── specs/              # Backend implementation specs
+├── templates/          # Email templates
+├── staticfiles/        # Static files
+└── manage.py           # Django management
+```
+
+
+## Design Patterns :blue_book:
+CrewForge follows established design patterns for maintainability and extensibility. Documentation is available in the `docs/patterns/` directory:
+
+- [Structural Patterns](./docs/patterns/structural-patterns.md) - Mixin, Abstract Model, and Module patterns
+- [Behavioral Patterns](./docs/patterns/behavioral-patterns.md) - Template Method, Strategy, and Validation patterns
+- [Creational Patterns](./docs/patterns/creational-patterns.md) - Factory Method and Builder patterns
+- [Architectural Patterns](./docs/patterns/architectural-patterns.md) - Layered Architecture, Facade, and Test Infrastructure
+- [Test Patterns](./docs/patterns/test-patterns.md) - Modular test structure, naming conventions, and coverage matrix
 
 
 ## Security Features :shield:
@@ -220,13 +237,26 @@ CrewForge follows established design patterns for maintainability and extensibil
 
 ## Contributing :handshake:
 Contributions are welcome! Please follow these steps:
+
 1. Fork the repository.
 2. Create a new branch for your feature or bugfix.
-3. Commit your changes with clear messages.
-4. Ensure your code adheres to the project's coding standards and passes all tests.
-5. Push your changes to your forked repository.
-6. Open a pull request to the main repository.
-7. Describe your changes and the problem they solve in the pull request description.
+3. Follow the conventions in [`AGENTS.md`](./AGENTS.md).
+4. Ensure your code passes all checks:
+   ```bash
+   make l_format_code  # Ruff check + format
+   make l_test         # pytest
+   make l_spectacular  # Schema (if API changed)
+   ```
+5. Commit your changes with clear messages following
+   [conventional commits](./.github/git-commit-instructions.md):
+   - `✨ feat:` — New feature
+   - `🐛 fix:` — Bug fix
+   - `📚 docs:` — Documentation
+   - `🧪 test:` — Tests
+   - `♻️ refactor:` — Refactor
+   - `🔧 chore:` — Maintenance
+6. Push your changes to your forked repository.
+7. Open a pull request to the main repository.
 
 
 ## License :page_facing_up:
@@ -235,8 +265,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact :telephone_receiver:
 For questions or support, please contact [Vinicius Meireles](https://github.com/ViniciusMeireles/).
-
-
-##
-CrewForge provides a comprehensive foundation for building applications requiring sophisticated organizational 
-structures, team management, and permission systems with enterprise-grade security and scalability. :rocket:

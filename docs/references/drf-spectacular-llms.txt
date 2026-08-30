@@ -1,0 +1,118 @@
+# drf-spectacular — LLM Reference
+
+Last verified: 2026-08-29
+Version: >=0.30.0
+
+Quick reference for agents working with OpenAPI schema in CrewForge.
+
+---
+
+## Core Concepts
+
+### extend_schema_view
+
+Decorates a ViewSet with schema annotations for all actions:
+
+```python
+from drf_spectacular.utils import extend_schema_view, extend_schema
+
+@extend_schema_view(
+    list=extend_schema(tags=['My Model'], summary='List all items'),
+    create=extend_schema(tags=['My Model'], summary='Create an item'),
+    retrieve=extend_schema(tags=['My Model'], summary='Retrieve an item'),
+)
+class MyViewSet(viewsets.ModelViewSet):
+    ...
+```
+
+### extend_schema
+
+Decorates individual methods or views:
+
+```python
+from drf_spectacular.utils import extend_schema, OpenApiExample
+
+@extend_schema(
+    summary='My endpoint',
+    description='What it does',
+    examples=[OpenApiExample('Example', value={'key': 'value'})],
+)
+def my_view(request):
+    ...
+```
+
+### inline_serializer
+
+Defines response schemas inline without a separate serializer class:
+
+```python
+from drf_spectacular.utils import inline_serializer
+from rest_framework import serializers
+
+@extend_schema(
+    responses={
+        200: inline_serializer(
+            name='MyResponse',
+            fields={
+                'count': serializers.IntegerField(),
+                'items': serializers.ListField(child=serializers.CharField()),
+            },
+        )
+    }
+)
+```
+
+### OpenApiExample
+
+Provides request/response examples for documentation:
+
+```python
+from drf_spectacular.utils import OpenApiExample
+
+OpenApiExample(
+    name='Example request',
+    value={'email': 'user@example.com'},
+    request_only=True,
+)
+```
+
+### Schema Generation
+
+```bash
+# Generate schema file
+make l_spectacular  # or make spectacular (Docker)
+```
+
+Output: `schema.yml` (YAML format)
+
+### CrewForge Pattern
+
+Use `extend_schema_model_view_set()` for ViewSets:
+
+```python
+from apps.generics.utils.schema import extend_schema_model_view_set
+
+@extend_schema_model_view_set(model=MyModel)
+class MyViewSet(
+    OrganizationScopedViewSetMixin,
+    ModelViewSetMixin,
+    viewsets.ModelViewSet,
+):
+    ...
+```
+
+This auto-generates schema for all 7 standard actions (retrieve, list, create,
+destroy, update, partial_update, choices).
+
+### Custom Actions
+
+For custom actions, override with specific schema:
+
+```python
+from drf_spectacular.utils import extend_schema
+
+@extend_schema(tags=['My Model'], summary='Custom action')
+@action(detail=False, methods=['post'])
+def my_action(self, request):
+    ...
+```

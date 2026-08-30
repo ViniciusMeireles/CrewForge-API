@@ -1,0 +1,169 @@
+# Django REST Framework — LLM Reference
+
+Last verified: 2026-08-30
+Version: >=3.18.0
+
+Quick reference for agents working with DRF in the CrewForge codebase.
+
+---
+
+## Core Concepts
+
+### ViewSets
+
+Class-based views that provide CRUD operations automatically.
+
+```python
+from rest_framework import viewsets
+
+class MyViewSet(viewsets.ModelViewSet):
+    serializer_class = MySerializer
+    queryset = MyModel.objects.all()
+    permission_classes = [MyPermission]
+```
+
+MRO: ViewSetMixin → GenericViewSet → CreateModelMixin, ListModelMixin,
+RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+
+### Serializers
+
+Convert model instances to JSON and validate input.
+
+```python
+from rest_framework import serializers
+
+class MySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MyModel
+        fields = ['id', 'name', 'created_at']
+        read_only_fields = ['id', 'created_at']
+```
+
+### Permissions
+
+Control access per-view or per-object.
+
+```python
+from rest_framework.permissions import BasePermission, IsAuthenticated
+
+class MyPermission(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        return True  # or check object-level access
+```
+
+SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+
+### Filters
+
+Use django-filter for query parameter filtering.
+
+```python
+from django_filters.rest_framework import DjangoFilterBackend
+
+class MyViewSet(viewsets.ModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = MyFilter
+```
+
+SearchFilter supports `unaccent` for accent-insensitive search (3.18+):
+
+```python
+from rest_framework.filters import SearchFilter
+
+class MyViewSet(viewsets.ModelViewSet):
+    filter_backends = [SearchFilter]
+    search_fields = ['name__unaccent']
+```
+
+### Pagination
+
+Default: PageNumberPagination with page_size=10, max_page_size=100.
+
+```python
+# Custom pagination
+class MyPagination(PageNumberPagination):
+    page_size = 20
+    max_page_size = 100
+```
+
+Response format:
+```json
+{
+    "count": 50,
+    "next": "http://...",
+    "previous": null,
+    "results": [...]
+}
+```
+
+### Routers
+
+Auto-generate URL patterns from ViewSets.
+
+```python
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'my-resources', MyViewSet, basename='my_resources')
+urlpatterns = router.urls
+```
+
+### Status Codes
+
+```python
+from rest_framework import status
+
+HTTP_200_OK = 200
+HTTP_201_CREATED = 201
+HTTP_204_NO_CONTENT = 204
+HTTP_400_BAD_REQUEST = 400
+HTTP_401_UNAUTHORIZED = 401
+HTTP_403_FORBIDDEN = 403
+HTTP_404_NOT_FOUND = 404
+HTTP_429_TOO_MANY_REQUESTS = 429
+```
+
+### Common Patterns
+
+```python
+# Override get_queryset
+def get_queryset(self):
+    return super().get_queryset().filter(owner=self.request.user)
+
+# Override get_serializer_class
+def get_serializer_class(self):
+    if self.action == 'create':
+        return CreateSerializer
+    return ListSerializer
+
+# Custom action
+from rest_framework.decorators import action
+
+@action(detail=False, methods=['get'])
+def my_action(self, request):
+    ...
+
+# Throttle scope for function-based views (3.18+)
+from rest_framework.decorators import throttle_scope, api_view
+
+@throttle_scope('burst')
+@api_view(['GET'])
+def my_view(request):
+    ...
+```
+
+### Breaking Changes (3.18+)
+
+- List serializer errors (`many=True`) now return **dict format**
+  instead of list. Update test error assertions accordingly.
+- Django <5.2 no longer supported.
+
+---
+
+## CrewForge-Specific Patterns
+
+See `docs/architecture.md` for the standard ViewSet MRO and composition.
+See `docs/patterns/architectural-patterns.md` for schema facade and request helpers.

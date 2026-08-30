@@ -1,0 +1,76 @@
+# django-filter — LLM Reference
+
+Last verified: 2026-08-29
+Version: >=26.1
+
+Quick reference for agents working with django-filter in CrewForge.
+
+---
+
+## Core Concepts
+
+### FilterSet
+
+Declares filter fields for a model. Each field maps to a query parameter.
+
+```python
+import django_filters
+from apps.accounts.models import MyModel
+
+class MyFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(lookup_expr='icontains')
+    is_active = django_filters.BooleanFilter()
+    created_after = django_filters.DateFilter(field_name='created_at', lookup_expr='gte')
+
+    class Meta:
+        model = MyModel
+        fields = ['name', 'is_active']
+```
+
+### Filter Field Types
+
+| Field | Query param | Lookup |
+|-------|-------------|--------|
+| `CharFilter` | `?name=foo` | exact (default) |
+| `CharFilter(lookup_expr='icontains')` | `?name=foo` | contains |
+| `NumberFilter` | `?id=1` | exact |
+| `BooleanFilter` | `?is_active=true` | exact |
+| `DateFilter` | `?date=2025-01-01` | exact |
+| `DateTimeFilter` | `?created_at=2025-01-01` | exact |
+| `ChoiceFilter` | `?role=admin` | exact |
+| `MultipleChoiceFilter` | `?role=admin,manager` | in |
+| `ModelChoiceFilter` | `?org=1` | FK lookup |
+
+### Integration with DRF
+
+```python
+from django_filters.rest_framework import DjangoFilterBackend
+
+class MyViewSet(viewsets.ModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = MyFilter
+```
+
+### OrderingFilter
+
+```python
+from django_filters.rest_framework import OrderingFilter
+
+class MyFilter(django_filters.FilterSet):
+    order_by = OrderingFilter(fields=('name', 'created_at'))
+```
+
+### CrewForge Pattern
+
+Use `FilterSetMixin` from `apps.accounts.mixins.filters` to access auth context:
+
+```python
+from apps.accounts.mixins.filters import FilterSetMixin
+
+class MyFilter(FilterSetMixin, django_filters.FilterSet):
+    # Has access to self.auth_member, self.auth_organization
+    pass
+```
+
+Use `orderable_filter_factory()` from `apps.generics.utils.filters` to
+dynamically add ordering to any FilterSet.

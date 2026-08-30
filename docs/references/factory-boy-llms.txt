@@ -1,0 +1,119 @@
+# factory-boy — LLM Reference
+
+Last verified: 2026-08-29
+Version: >=3.3.3
+
+Quick reference for agents creating or modifying test factories in CrewForge.
+
+---
+
+## Core Concepts
+
+### DjangoModelFactory
+
+Base class for creating test model instances.
+
+```python
+import factory
+from factory.django import DjangoModelFactory
+from apps.accounts.models import MyModel
+
+class MyModelFactory(DjangoModelFactory):
+    name = factory.Faker('company')
+    is_active = True
+
+    class Meta:
+        model = MyModel
+```
+
+### Field Types
+
+```python
+# Static value
+name = 'Fixed Name'
+
+# Faker (random data)
+name = factory.Faker('company')
+email = factory.Faker('email')
+
+# Sequence (unique values)
+email = factory.Sequence(lambda n: f'user{n}@example.com')
+
+# LazyAttribute (derived from other fields)
+slug = factory.LazyAttribute(lambda o: o.name.lower().replace(' ', '-'))
+
+# SubFactory (FK relationship)
+organization = factory.SubFactory(OrganizationFactory)
+
+# RelatedFactory
+members = factory.RelatedFactory(MemberFactory, 'organization')
+```
+
+### Traits (Params)
+
+Named variations using inner `Params` class:
+
+```python
+class MyModelFactory(DjangoModelFactory):
+    class Params:
+        admin = factory.Trait(role='admin', is_superuser=True)
+        inactive = factory.Trait(is_active=False)
+
+    role = 'member'
+    is_active = True
+```
+
+Usage: `MyModelFactory(admin=True)` or `MyModelFactory(inactive=True)`
+
+### Context Propagation
+
+Use `SelfAttribute` to share context across SubFactories:
+
+```python
+class TeamMemberFactory(DjangoModelFactory):
+    class Params:
+        organization = factory.SubFactory(OrganizationFactory)
+
+    team = factory.SubFactory(
+        TeamFactory,
+        organization=factory.SelfAttribute('..organization'),
+    )
+    member = factory.SubFactory(
+        MemberFactory,
+        organization=factory.SelfAttribute('..organization'),
+    )
+```
+
+### CrewForge Pattern
+
+All factories extend `ModelFactoryMixin` + `DjangoModelFactory`:
+
+```python
+from apps.generics.factories.mixins import ModelFactoryMixin
+
+class MyModelFactory(ModelFactoryMixin, DjangoModelFactory):
+    name = factory.Faker('company')
+
+    class Meta:
+        model = MyModel
+        skip_postgeneration_save = True
+```
+
+Exception: `UserFactory` extends `DjangoModelFactory` directly (User has its own `id`).
+
+### Usage in Tests
+
+```python
+# Create (persists to DB)
+obj = MyModelFactory()
+objs = MyModelFactory.create_batch(5)
+
+# Build (no DB, in-memory only)
+obj = MyModelFactory.build()
+
+# With traits
+file = StoredFileFactory(pdf=True, public=True)
+
+# With overrides
+member = MemberFactory(role=MemberRoleChoices.ADMIN)
+```
