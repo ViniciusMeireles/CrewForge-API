@@ -1,7 +1,7 @@
 # Django REST Framework — LLM Reference
 
-Last verified: 2026-08-29
-Version: >=3.17.2
+Last verified: 2026-08-30
+Version: >=3.18.0
 
 Quick reference for agents working with DRF in the CrewForge codebase.
 
