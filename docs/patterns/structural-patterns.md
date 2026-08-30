@@ -591,3 +591,4 @@ For behavioral, creational, and architectural patterns, see:
 - [Behavioral Patterns](./behavioral-patterns.md) (Template Method, Strategy, Validation)
 - [Creational Patterns](./creational-patterns.md) (Factory Method, Builder)
 - [Architectural Patterns](./architectural-patterns.md) (Layered, Facade, Test Infrastructure)
+- [Test Patterns](./test-patterns.md) (Modular test structure, coverage matrix)

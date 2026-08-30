@@ -464,3 +464,4 @@ Concrete email classes live in `apps/accounts/emails.py`.
 - [Behavioral Patterns](./behavioral-patterns.md) (Template Method, Strategy, Validation)
 - [Creational Patterns](./creational-patterns.md) (Factory Method, Builder)
 - [Test Patterns](./test-patterns.md) (Modular test structure, coverage matrix)
+- [Architecture](../architecture.md) (Layered architecture, naming, code organization)

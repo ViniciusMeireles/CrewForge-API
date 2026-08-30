@@ -383,3 +383,4 @@ if settings.ENVIRONMENT in ['local_development', 'test']:
 - [Behavioral Patterns](./behavioral-patterns.md) (Template Method, Strategy, Validation)
 - [Architectural Patterns](./architectural-patterns.md) (Layered, Facade, Test Infrastructure)
 - [Test Patterns](./test-patterns.md) (Modular test structure, coverage matrix)
+- [Architecture](../architecture.md) (Layered architecture, naming, code organization)

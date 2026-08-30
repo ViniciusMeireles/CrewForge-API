@@ -1,0 +1,91 @@
+# djangorestframework-simplejwt — LLM Reference
+
+Last verified: 2026-08-29
+Version: >=5.5.1
+
+Quick reference for agents working with JWT auth in CrewForge.
+
+---
+
+## Core Concepts
+
+### Token Obtain
+
+```python
+POST /api/auth/token/
+Body: { "email": "user@example.com", "password": "secret" }
+Response: {
+    "access": "<jwt-access-token>",
+    "refresh": "<jwt-refresh-token>",
+    "user": { "id": 1, "email": "...", ... }
+}
+```
+
+### Token Refresh
+
+```python
+POST /api/auth/token/refresh/
+Body: { "refresh": "<jwt-refresh-token>" }
+Response: {
+    "access": "<new-access-token>",
+    "refresh": "<new-refresh-token>"  # rotated
+}
+```
+
+With `ROTATE_REFRESH_TOKENS=True`, every refresh returns a new refresh token.
+The old one is blacklisted.
+
+### Token Verify
+
+```python
+POST /api/auth/token/verify/
+Body: { "token": "<jwt-access-token>" }
+Response: {}  # 200 if valid, 401 if invalid
+```
+
+### Settings (CrewForge)
+
+```python
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+```
+
+### Usage in Views
+
+```python
+from rest_framework.permissions import IsAuthenticated
+
+class MyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # request.user is the JWT-authenticated user
+        user = request.user
+        ...
+```
+
+### Token in Headers
+
+```
+Authorization: Bearer <access-token>
+```
+
+### Blacklist
+
+After logout, the refresh token is blacklisted and cannot be used again.
+The session is also flushed.
+
+### Important Notes
+
+- Access tokens are short-lived (60 min default)
+- Refresh tokens are long-lived (7 days) but rotate on use
+- Blacklisted refresh tokens return 401 on refresh
+- CrewForge uses session-based org context ON TOP of JWT auth
