@@ -68,7 +68,6 @@ Every change must pass these checks before merge:
 | Tests | `make l_test` | Yes |
 | Schema | `make l_spectacular` | Yes (if API changed) |
 | Migrations | Review migration files | Yes (if models changed) |
-| Doc gardener | `make doc_gardener` | Yes |
 
 ### Non-Blocking Checks
 
