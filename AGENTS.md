@@ -102,3 +102,15 @@ Emoji + type prefix. Max 4 words after prefix.
 Example: `✨ feat: add login page`
 
 See [`.github/git-commit-instructions.md`](./.github/git-commit-instructions.md) for full details.
+
+---
+
+## Agent Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `scaffold-resource` | Generate complete Django resource (12-step checklist with grilling) |
+| `scaffold-permission` | Generate permission class with role-based checks |
+| `scaffold-test-matrix` | Generate 8 test files covering 19 scenarios |
+
+Skills are in `.agents/skills/`. Reference templates in `references/` subdirectories.
