@@ -11,7 +11,6 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('teams:teams-list')
-        self.choices_url = reverse('teams:teams-choices')
 
     def _detail_url(self, team):
         return reverse('teams:teams-detail', args=[team.id])
@@ -101,16 +100,6 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         payload = self._team_payload(slug=team.slug)
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
-    def test_choices_endpoint(self):
-        TeamFactory.create_batch(size=3, organization=self.organization)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertIn('count', response.data)
-        self.assertIn('results', response.data)
-        if response.data['count'] > 0:
-            self.assertIn('value', response.data['results'][0])
-            self.assertIn('label', response.data['results'][0])
 
     def test_create_team_without_name(self):
         payload = self._team_payload()

@@ -15,7 +15,6 @@ class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('teams:team_members-list')
-        self.choices_url = reverse('teams:team_members-choices')
 
     def _detail_url(self, tm):
         return reverse('teams:team_members-detail', args=[tm.id])
@@ -58,11 +57,6 @@ class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.delete(self._detail_url(tm))
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
-    def test_not_authenticated_choices(self):
-        self.client.logout()
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
     # --- Inactive member ---
 
     def test_not_active_member_list(self):
@@ -101,12 +95,6 @@ class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
         inactive = MemberFactory(organization=self.organization, is_active=False)
         self.client.force_authenticate(member=inactive)
         response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_choices(self):
-        inactive = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=inactive)
-        response = self.client.get(self.choices_url)
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
 
     # --- Owner ---
@@ -306,14 +294,5 @@ class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
         TeamMemberFactory(organization=self.organization)
         self.client.force_authenticate(member=other_member)
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
-
-    def test_cross_org_member_choices_returns_empty(self):
-        other_org = OrganizationFactory()
-        other_member = other_org.owner
-        TeamMemberFactory(organization=self.organization)
-        self.client.force_authenticate(member=other_member)
-        response = self.client.get(self.choices_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
