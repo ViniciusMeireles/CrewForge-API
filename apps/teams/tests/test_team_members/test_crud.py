@@ -154,6 +154,8 @@ class TeamMemberCRUDTestCase(APITestCaseMixin, APITestCase):
         }
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertEqual(response.data['id'], tm.id)
+        self.assertTrue(response.data['is_active'])
 
     def test_create_duplicate_team_member(self):
         tm = TeamMemberFactory(organization=self.organization)

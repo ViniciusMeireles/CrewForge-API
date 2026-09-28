@@ -527,11 +527,19 @@ Invitations are looked up by primary key (`id`), not by the UUID `key`.
 | List | `GET /api/teams/teams/` | Member of the org |
 | Create | `POST /api/teams/teams/` | Member of the org |
 | Retrieve | `GET /api/teams/teams/{id}/` | Member of the org |
-| Update | `PUT/PATCH /api/teams/teams/{id}/` | Admin+ |
+| Update | `PUT /api/teams/teams/{id}/` | Admin+ |
 | Delete | `DELETE /api/teams/teams/{id}/` | Admin+ |
 | Choices | `GET /api/teams/teams/choices/` | Member of the org |
 
 Creating a team auto-creates a `TeamMember` record with `OWNER` role for the creator.
+
+- `slug` is **read-only**: it is auto-generated from `name` on create and regenerated
+  whenever `name` changes. Send `name` only — ignore `slug` in payloads.
+- The list response includes `member_count` (active team members); create, retrieve
+  and update responses do not.
+- `name` and `slug` must be unique per organization **among active teams**. A
+  duplicate returns `400` with `name: ["This team already exists."]`. Soft-deleted
+  teams release their `name`/`slug` for reuse.
 
 ---
 

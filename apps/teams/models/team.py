@@ -9,9 +9,7 @@ class Team(BaseModel):
     name = models.CharField(
         max_length=100, verbose_name=_('Name'), help_text=_('Name of the team')
     )
-    slug = models.SlugField(
-        unique=True, verbose_name=_('Slug'), help_text=_('Team slug')
-    )
+    slug = models.SlugField(verbose_name=_('Slug'), help_text=_('Team slug'))
     description = models.TextField(
         null=True,
         blank=True,
@@ -32,7 +30,20 @@ class Team(BaseModel):
         ordering = ['-id']
         verbose_name = _('Team')
         verbose_name_plural = _('Teams')
-        unique_together = ['name', 'organization']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'organization'],
+                name='unique_name_org_when_active',
+                condition=models.Q(is_active=True),
+                violation_error_message=_('This team already exists.'),
+            ),
+            models.UniqueConstraint(
+                fields=['slug', 'organization'],
+                name='unique_slug_org_when_active',
+                condition=models.Q(is_active=True),
+                violation_error_message=_('This team already exists.'),
+            ),
+        ]
 
     def __str__(self):
         return self.name

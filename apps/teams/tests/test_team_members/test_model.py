@@ -18,3 +18,13 @@ class TeamMemberModelTestCase(TestCase):
                 member=tm.member,
                 organization=tm.team.organization,
             )
+
+    def test_unique_team_member_allows_reuse_after_soft_delete(self):
+        tm = TeamMemberFactory()
+        tm.inactivate()
+        other = TeamMemberFactory(
+            team=tm.team,
+            member=tm.member,
+            organization=tm.team.organization,
+        )
+        self.assertNotEqual(tm.id, other.id)

@@ -1,3 +1,4 @@
+from django.db.models import Count, Q
 from django_filters.rest_framework import backends
 from rest_framework import viewsets
 
@@ -6,7 +7,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
 from apps.teams.filters.team import TeamFilter
 from apps.teams.models.team import Team
 from apps.teams.permissions.team import TeamPermission
-from apps.teams.serializers.team import TeamSerializer
+from apps.teams.serializers.team import TeamListSerializer, TeamSerializer
 
 
 @extend_schema_model_view_set(model=Team)
@@ -22,3 +23,16 @@ class TeamViewSet(
     base_filters = {'is_active': True}
     label_expression = 'name'
     auto_orderable_filter = True
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == 'list':
+            qs = qs.annotate(
+                member_count=Count('members', filter=Q(members__is_active=True))
+            ).order_by('-id')
+        return qs
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TeamListSerializer
+        return super().get_serializer_class()

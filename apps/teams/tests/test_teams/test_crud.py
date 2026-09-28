@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.utils.text import slugify
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
@@ -19,7 +20,6 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         team_data = TeamFactory.build()
         payload = {
             'name': team_data.name,
-            'slug': team_data.slug,
             'description': team_data.description,
         }
         payload.update(overrides)
@@ -43,7 +43,7 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], payload['name'])
-        self.assertEqual(response.data['slug'], payload['slug'])
+        self.assertEqual(response.data['slug'], slugify(payload['name']))
         self.assertEqual(response.data['description'], payload['description'])
         self.assertEqual(response.data['organization'], self.organization.id)
 
@@ -66,7 +66,6 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.put(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['name'], payload['name'])
-        self.assertEqual(response.data['slug'], payload['slug'])
         self.assertEqual(response.data['description'], payload['description'])
 
     def test_delete_team(self):
@@ -95,21 +94,9 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
-    def test_create_duplicate_slug_in_same_org(self):
-        team = TeamFactory(organization=self.organization)
-        payload = self._team_payload(slug=team.slug)
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
     def test_create_team_without_name(self):
         payload = self._team_payload()
         del payload['name']
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
-    def test_create_team_without_slug(self):
-        payload = self._team_payload()
-        del payload['slug']
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
