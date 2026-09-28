@@ -427,13 +427,13 @@ Additional mixins for specific needs:
 
 ### App-Specific Settings
 
-`apps/accounts/settings.py` defines a `api_settings` object (following SimpleJWT's
+`apps/accounts/settings.py` defines a `jwt_settings` object (following SimpleJWT's
 pattern) that exposes app-level configuration:
 
 ```python
-from apps.accounts.settings import api_settings
+from apps.accounts.settings import jwt_settings
 
-api_settings.UPDATE_LAST_LOGIN
+jwt_settings.UPDATE_LAST_LOGIN
 ```
 
 ### Custom Serializer Selection

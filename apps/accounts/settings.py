@@ -10,4 +10,4 @@ DEFAULTS.update(
 )
 
 
-api_settings = APISettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS)
+jwt_settings = APISettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS)

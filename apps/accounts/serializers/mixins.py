@@ -7,7 +7,7 @@ from rest_framework.serializers import SerializerMetaclass
 
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.mixins.fields import OrganizationScopedFieldMixin
-from apps.accounts.settings import api_settings
+from apps.accounts.settings import jwt_settings
 
 User = get_user_model()
 
@@ -86,10 +86,10 @@ class UserTokenSerializerMixin(metaclass=SerializerMetaclass):
 
     def set_tokens_for_user(self, user: User):
         """Generate tokens directly from the user (no password required)."""
-        refresh = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).get_token(
+        refresh = import_string(jwt_settings.TOKEN_OBTAIN_SERIALIZER).get_token(
             user=user
         )
         self._refresh_token[user.pk] = str(refresh)
         self._access_token[user.pk] = str(refresh.access_token)
-        if api_settings.UPDATE_LAST_LOGIN:
+        if jwt_settings.UPDATE_LAST_LOGIN:
             update_last_login(None, user)
