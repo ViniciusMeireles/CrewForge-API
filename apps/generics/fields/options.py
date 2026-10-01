@@ -14,15 +14,20 @@ serialized and render the available options instead.
 """
 
 import logging
+import time
+import unicodedata
 from types import SimpleNamespace
 from typing import Any
 
+import regex
+from django.contrib.postgres.lookups import Unaccent
 from django.core.paginator import InvalidPage
 from django.db import models
 from django.db.models import enums, query
 from django.db.models.expressions import Combinable, F
+from django.utils.translation import gettext_lazy as _
 from django_filters.conf import settings as filters_settings
-from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 from rest_framework.settings import api_settings
@@ -31,6 +36,17 @@ from apps.generics.fields.fields import get_python_type
 from apps.generics.types import OptionType, PageDataType
 
 log = logging.getLogger(__name__)
+
+# Total time (seconds) a ``?<field>=<regex>`` search may spend on one choice field.
+# User-supplied expressions can backtrack exponentially; once the budget is spent
+# the field returns no options.
+CHOICES_SEARCH_TIMEOUT = 0.05
+
+
+def strip_accents(value: str) -> str:
+    """Remove diacritics (``Gestão`` -> ``Gestao``)."""
+    normalized = unicodedata.normalize('NFKD', value)
+    return ''.join(char for char in normalized if not unicodedata.combining(char))
 
 
 class OptionBaseSerializer[T](serializers.Serializer):
@@ -146,12 +162,12 @@ def _build_option_serializer_class(
 
     namespace.setdefault('output_type', output_type)
     namespace.setdefault('get_value_option', get_value_option)
-    namespace.setdefault('__doc__', 'Value/label option.')
-    return type(  # type: ignore
+    option_class = type(
         f'{name_prefix}{_get_type_name(output_type)}Serializer',
         (base_class,),
         namespace,
     )
+    return extend_schema_serializer(description=_('Value/label option.'))(option_class)
 
 
 class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
@@ -172,10 +188,17 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
       ``pk``.
     - ``filter_field_name`` / ``filter_lookup_expr``: enables text search with
       ``?<field>=<text>``.
+
+    ``option_serializer_class`` and ``filter_lookup_expr`` are also class
+    attributes; the kwargs override them per field. ``filter_ignore_accents``
+    wraps the searched column in PostgreSQL ``unaccent()`` and strips accents
+    from the searched value (requires the ``unaccent`` extension).
     """
 
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
     option_serializer_class: type[OptionBaseSerializer[T]] | None = None
+    filter_lookup_expr: str = filters_settings.DEFAULT_LOOKUP_EXPR
+    filter_ignore_accents: bool = False
     output_type: type = None
 
     count = serializers.SerializerMethodField()
@@ -198,11 +221,11 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
         self.queryset = queryset
         self.value_field_name = value_field_name
         self.label_field_name = label_field_name
-        self.option_serializer_class = option_serializer_class
         self.filter_field_name = filter_field_name
-        if filter_lookup_expr is None:
-            filter_lookup_expr = filters_settings.DEFAULT_LOOKUP_EXPR
-        self.filter_lookup_expr = filter_lookup_expr
+        if option_serializer_class is not None:
+            self.option_serializer_class = option_serializer_class
+        if filter_lookup_expr is not None:
+            self.filter_lookup_expr = filter_lookup_expr
         self._paginator = None
         self._page_data: PageDataType | None = None
 
@@ -227,31 +250,37 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
     ) -> query.QuerySet[models.Model]:
         """
         Apply ``?<field>=<text>`` as a search filter, only when the field opted in
-        with ``filter_field_name`` or ``label_field_name``. Otherwise the query
-        param just selects the field (see ``OptionsSerializer.fields``).
+        with ``filter_field_name`` or ``label_field_name``. Without that
+        configuration the field cannot be filtered: the value is ignored (and a
+        warning is logged) and the query param just selects the field (see
+        ``OptionsSerializer.fields``).
         """
-        if (
-            not self.filter_field_name and not self.label_field_name
-        ) or not self.source_attrs:
-            log.debug(
+        if not self.source_attrs:
+            return queryset
+        request = self.context.get('request')
+        params = getattr(request, 'query_params', None) or {}
+        if not (filter_value := params.get(self.source_attrs[0])):
+            return queryset
+
+        if not self.filter_field_name and not self.label_field_name:
+            log.warning(
                 'Filter field and label field are not set in %s.%s',
                 self.parent.__class__.__name__ if self.parent else None,
                 self.field_name,
             )
             return queryset
 
-        request = self.context.get('request')
-        params = getattr(request, 'query_params', None) or {}
-        if filter_value := params.get(self.source_attrs[0]):
-            # Without ``filter_field_name``, search on the annotated label.
-            option_serializer_class = self.get_option_serializer_class()
-            field_name = (
-                self.filter_field_name
-                or option_serializer_class.DEFAULT_OPTION_LABEL_FIELD
-            )
-            field_expr = '%s__%s' % (field_name, self.filter_lookup_expr)
-            queryset = queryset.filter(**{field_expr: filter_value})
-        return queryset
+        # Without ``filter_field_name``, search on the annotated label.
+        option_serializer_class = self.get_option_serializer_class()
+        field_name = (
+            self.filter_field_name or option_serializer_class.DEFAULT_OPTION_LABEL_FIELD
+        )
+        if self.filter_ignore_accents:
+            queryset = queryset.alias(_option_search=Unaccent(F(field_name)))
+            field_name = '_option_search'
+            filter_value = strip_accents(filter_value)
+        field_expr = '%s__%s' % (field_name, self.filter_lookup_expr)
+        return queryset.filter(**{field_expr: filter_value})
 
     def get_object_list(
         self,
@@ -403,11 +432,13 @@ def _build_paginated_options_serializer_class(
     namespace = namespace or {}
     namespace.setdefault('output_type', output_type)
     namespace.setdefault('get_results', get_results)
-    namespace.setdefault('__doc__', 'Paginated value/label options.')
-    return type(  # type: ignore
+    paginated_class = type(
         f'Paginated{_get_type_name(output_type)}OptionsSerializer',
         (base_class,),
         namespace,
+    )
+    return extend_schema_serializer(description=_('Paginated value/label options.'))(
+        paginated_class
     )
 
 
@@ -463,6 +494,56 @@ class PaginatedOptionsSerializer(PaginatedOptionsBaseSerializer):
         return cls.output_init(*args, output_type=output_type, **kwargs)
 
 
+class ListChoicesOptionsSerializer(serializers.ListSerializer):
+    """
+    List of choice options.
+
+    Renders its own ``initial_data`` (the choices) instead of reading an attribute
+    from the serialized instance. A non-empty ``?<field>=<regex>`` keeps only the
+    options whose label or value matches the regular expression, ignoring case and
+    accents; an invalid expression is matched as plain text. Matching runs with the
+    ``regex`` package under ``CHOICES_SEARCH_TIMEOUT``, so a catastrophic expression
+    cannot hold the worker.
+    """
+
+    def get_attribute(self, instance):
+        return self.filter_choices(self.initial_data)
+
+    def get_search_pattern(self) -> regex.Pattern | None:
+        request = self.context.get('request')
+        params = getattr(request, 'query_params', None) or {}
+        if not (value := params.get(self.field_name)):
+            return None
+        # Combining marks are never regex metacharacters, so the pattern can be
+        # normalized the same way as the searched text.
+        value = strip_accents(value)
+        try:
+            return regex.compile(value, regex.IGNORECASE)
+        except regex.error:
+            return regex.compile(regex.escape(value), regex.IGNORECASE)
+
+    def filter_choices(self, choices: list[OptionType]) -> list[OptionType]:
+        if (pattern := self.get_search_pattern()) is None:
+            return choices
+        deadline = time.monotonic() + CHOICES_SEARCH_TIMEOUT
+        matches = []
+        try:
+            for choice in choices:
+                for text in (choice['label'], choice['value']):
+                    timeout = max(deadline - time.monotonic(), 0.001)
+                    if pattern.search(strip_accents(str(text)), timeout=timeout):
+                        matches.append(choice)
+                        break
+        except TimeoutError:
+            log.warning(
+                'Choices search timed out in %s.%s',
+                self.parent.__class__.__name__ if self.parent else None,
+                self.field_name,
+            )
+            return []
+        return matches
+
+
 class ChoicesOptionsSerializer(OptionBaseSerializer):
     """
     Entry point used as ``serializer_choice_field``.
@@ -475,6 +556,9 @@ class ChoicesOptionsSerializer(OptionBaseSerializer):
 
     DEFAULT_OPTION_VALUE_FIELD = 'value'
     DEFAULT_OPTION_LABEL_FIELD = 'label'
+
+    class Meta:
+        list_serializer_class = ListChoicesOptionsSerializer
 
     def __new__(cls, *args, **kwargs):
         if choices := kwargs.pop('choices', None):
@@ -489,23 +573,6 @@ class ChoicesOptionsSerializer(OptionBaseSerializer):
                     'output_type': output_type,
                 }
             )
-
-            # The list renders its own ``initial_data`` (the choices) instead of
-            # reading an attribute from the serialized instance.
-            meta = getattr(cls, 'Meta', None)
-            if not getattr(meta, 'list_serializer_class', None):
-
-                class ListOptionsSerializer(serializers.ListSerializer):
-                    def get_attribute(self, instance):
-                        return self.initial_data
-
-                if meta is None:
-                    cls.Meta = type(
-                        'Meta', (), {'list_serializer_class': ListOptionsSerializer}
-                    )
-                else:
-                    meta.list_serializer_class = ListOptionsSerializer
-
             return cls.many_init(*args, **list_kwargs)
         if output_type := kwargs.pop('output_type', None):
             klass = _create_option_serializer_class(

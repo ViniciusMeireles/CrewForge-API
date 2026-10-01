@@ -29,4 +29,9 @@ class PaginatedOptionsActiveOrganizationSerializer(
     (``is_active`` / ``organization_id``). Models without ``organization_id``
     (e.g. ``User``, ``Organization``) are therefore NOT tenant-scoped; ViewSets
     exposing such relations must opt out with ``options_actions = ()``.
+
+    Text search defaults to ``icontains`` and ignores accents.
     """
+
+    filter_lookup_expr = 'icontains'
+    filter_ignore_accents = True

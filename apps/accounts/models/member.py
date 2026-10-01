@@ -98,11 +98,11 @@ class Member(BaseModel):
         """
         Define the label expression for the member model.
         This is used to generate the label of the member based on
-        the nickname, first name, and last name.
+        the nickname, first name, and last name, falling back to the
+        translated role label.
         """
         full_name = f'{outer_ref}__user__full_name' if outer_ref else 'user__full_name'
         nickname = f'{outer_ref}__nickname' if outer_ref else 'nickname'
-        role = f'{outer_ref}__role' if outer_ref else 'role'
         label_expression = Case(
             When(
                 condition=models.Q(
@@ -113,7 +113,7 @@ class Member(BaseModel):
                 ),
                 then=Concat(
                     full_name,
-                    Value('('),
+                    Value(' ('),
                     nickname,
                     Value(')'),
                 ),
@@ -132,7 +132,28 @@ class Member(BaseModel):
                 ),
                 then=nickname,
             ),
-            default=models.F(role),
+            default=cls.role_label_expression(outer_ref=outer_ref),
             output_field=models.CharField(),
         )
         return label_expression
+
+    @classmethod
+    def role_label_expression(
+        cls, outer_ref: str | None = None
+    ) -> models.expressions.Combinable:
+        """
+        Translated role label. The lazy labels are resolved when the query is
+        compiled, so they follow the active language of the request.
+        """
+        role = f'{outer_ref}__role' if outer_ref else 'role'
+        return Case(
+            *[
+                When(
+                    **{role: value},
+                    then=Value(label, output_field=models.CharField()),
+                )
+                for value, label in MemberRoleChoices.choices
+            ],
+            default=models.F(role),
+            output_field=models.CharField(),
+        )

@@ -1,13 +1,18 @@
+from django.utils.text import format_lazy
+from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import filterset
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.generics.serializers.options import OptionsModelSerializer, OptionsSerializer
 from apps.generics.utils.filters import orderable_filter_factory
+from apps.generics.utils.models import get_verbose_name
 from apps.generics.utils.schema import (
     extend_schema_options_create,
     extend_schema_options_update,
+    get_form_options_parameters,
 )
 
 
@@ -54,6 +59,12 @@ class OrderableModelViewSetMetaclass(type):
             serializer_class=serializer_class,
             filterset_class=filterset_class,
         )
+
+
+OPTIONS_SERIALIZER_DESCRIPTIONS = {
+    'create': _('Form options to create a {name}.'),
+    'update': _('Form options to update a {name}.'),
+}
 
 
 class OptionsBaseModelMixin:
@@ -114,19 +125,22 @@ class OptionsBaseModelMixin:
             meta_bases = ()
             if serializer_meta := getattr(serializer_class, 'Meta', None):
                 meta_bases = (serializer_meta,)
-            cache[key] = type(
-                f'Options{view_action}{serializer_class.Meta.model.__name__}',
+            model = serializer_class.Meta.model
+            options_class = type(
+                f'Options{view_action}{model.__name__}',
                 (cls.options_serializer_class,),
                 {
-                    '__doc__': (
-                        f'Form options to {view_action.lower()} a '
-                        f'{serializer_class.Meta.model._meta.verbose_name}.'
-                    ),
                     'Meta': type(
                         'Meta', meta_bases, {'serializer_class': serializer_class}
                     ),
                 },
             )
+            description = OPTIONS_SERIALIZER_DESCRIPTIONS.get(view_action.lower())
+            if description is not None:
+                options_class = extend_schema_serializer(
+                    description=format_lazy(description, name=get_verbose_name(model))
+                )(options_class)
+            cache[key] = options_class
         return cache[key]
 
     def get_options_serializer_class(self):
@@ -216,6 +230,7 @@ class OptionsModelViewSetMetaclass(type):
             view_func = schema(
                 model=serializer_class.Meta.model,
                 responses=serializer_class,
+                parameters=get_form_options_parameters(serializer_class),
             )(view_func)
             setattr(klass, action_name, view_func)
 

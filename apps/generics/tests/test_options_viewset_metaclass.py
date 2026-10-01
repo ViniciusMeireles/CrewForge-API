@@ -1,10 +1,11 @@
 from django.test import SimpleTestCase
-from django.urls import NoReverseMatch, reverse
+from django.urls import NoReverseMatch, URLResolver, get_resolver, reverse
 from rest_framework import serializers, viewsets
 
 from apps.accounts.views.members import MemberViewSet
 from apps.accounts.views.organization_images import OrganizationImageViewSet
 from apps.accounts.views.signup import SignupViewSet
+from apps.generics.fields.options import PaginatedOptionsBaseSerializer
 from apps.generics.mixins.views import OptionsModelMixin, OptionsModelViewSetMetaclass
 from apps.generics.serializers.options import OptionsModelSerializer
 from apps.teams.models.team import Team
@@ -174,3 +175,41 @@ class OptionsRoutesTestCase(SimpleTestCase):
                 with self.subTest(basename=basename, suffix=suffix):
                     with self.assertRaises(NoReverseMatch):
                         reverse(f'{basename}-form-options-{suffix}')
+
+
+def _iter_url_patterns(patterns):
+    for pattern in patterns:
+        if isinstance(pattern, URLResolver):
+            yield from _iter_url_patterns(pattern.url_patterns)
+        else:
+            yield pattern
+
+
+class PaginatedOptionsSearchConfiguredTestCase(SimpleTestCase):
+    def test_every_paginated_option_declares_search_field(self):
+        checked = set()
+        for pattern in _iter_url_patterns(get_resolver().url_patterns):
+            viewset_class = getattr(pattern.callback, 'cls', None)
+            action_name = (getattr(pattern.callback, 'actions', None) or {}).get('get')
+            if not viewset_class or not hasattr(
+                viewset_class, 'get_options_actions_inverse_map'
+            ):
+                continue
+            if action_name not in viewset_class.get_options_actions_inverse_map():
+                continue
+            view = viewset_class()
+            view.action = action_name
+            fields = view.get_options_serializer_class()({}).get_fields()
+            for field_name, field in fields.items():
+                if not isinstance(field, PaginatedOptionsBaseSerializer):
+                    continue
+                checked.add((viewset_class.__name__, action_name, field_name))
+                with self.subTest(
+                    viewset=viewset_class.__name__, action=action_name, field=field_name
+                ):
+                    self.assertTrue(
+                        field.filter_field_name or field.label_field_name,
+                        'Paginated options must declare filter_field_name or '
+                        'label_field_name in Meta.options_extra_kwargs',
+                    )
+        self.assertIn(('TeamMemberViewSet', 'form_options_create', 'member'), checked)

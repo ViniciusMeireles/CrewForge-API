@@ -21,6 +21,7 @@ dependencies = [
     "psycopg>=3.3.4",
     "python-dotenv>=1.2.3",
     "redis>=8.1.0",
+    "regex>=2026.9.29",
     "uuid6>=2025.0.1",
     "whitenoise>=6.12.0",
 ]

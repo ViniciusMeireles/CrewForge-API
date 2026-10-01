@@ -7,6 +7,7 @@ write serializer. Only fields the write endpoint accepts as a choice or a PK are
 exposed.
 """
 
+import copy
 from functools import cached_property
 
 from rest_framework import relations, serializers
@@ -101,10 +102,16 @@ class OptionsModelSerializer(OptionsSerializer, serializers.ModelSerializer):
 
     def get_extra_kwargs(self):
         """
-        Carry over what the source declared fields restrict: their choices and
-        their queryset (organization/active scoping still applies on top).
+        Merge the source ``Meta.options_extra_kwargs`` (options-only kwargs such as
+        ``label_field_name``/``filter_field_name``, which the write fields do not
+        accept) and carry over what the source declared fields restrict: their
+        choices and their queryset (organization/active scoping still applies on
+        top).
         """
         extra_kwargs = super().get_extra_kwargs()
+        options_extra_kwargs = getattr(self.Meta, 'options_extra_kwargs', {})
+        for field_name, kwargs in copy.deepcopy(options_extra_kwargs).items():
+            extra_kwargs.setdefault(field_name, {}).update(kwargs)
         for field_name, field in self.get_source_declared_fields().items():
             if not self.is_source_declared_field_allowed(field):
                 continue
@@ -130,8 +137,12 @@ class OptionsModelSerializer(OptionsSerializer, serializers.ModelSerializer):
         - ``many`` is dropped: a to-many relation renders the same single
           paginated envelope as a FK.
         - Unsupported kwargs are dropped (see ``OPTIONS_FIELD_KWARGS``).
+        - Every field is optional, since ``?<field>`` may leave it out.
         """
         kwargs = super().include_extra_kwargs(kwargs, extra_kwargs)
+        # Any field can be left out with ``?<field>`` selection.
+        kwargs['required'] = False
+        kwargs.pop('default', None)
         if (to_field := kwargs.pop('to_field', None)) and not kwargs.get(
             'value_field_name'
         ):

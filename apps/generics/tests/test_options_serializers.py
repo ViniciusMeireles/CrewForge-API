@@ -52,13 +52,13 @@ class _OptInSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamMember
         fields = ['team', 'role']
-        extra_kwargs = {
+        extra_kwargs = {'role': {'write_only': True}}
+        options_extra_kwargs = {
             'team': {
                 'label_field_name': 'name',
                 'filter_field_name': 'name',
                 'filter_lookup_expr': 'icontains',
             },
-            'role': {'write_only': True},
         }
 
 
@@ -162,6 +162,11 @@ class OptionsModelSerializerFieldNamesTestCase(SimpleTestCase):
         self.assertEqual(team.label_field_name, 'name')
         self.assertEqual(team.filter_field_name, 'name')
         self.assertEqual(team.filter_lookup_expr, 'icontains')
+
+    def test_options_extra_kwargs_do_not_reach_write_serializer(self):
+        team = _OptInSerializer().fields['team']
+        self.assertFalse(hasattr(team, 'label_field_name'))
+        self.assertIsInstance(team, serializers.PrimaryKeyRelatedField)
 
     def test_write_only_extra_kwarg_is_ignored(self):
         role = _options_class(_OptInSerializer)({}).get_fields()['role']
