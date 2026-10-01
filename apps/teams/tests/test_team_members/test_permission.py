@@ -296,3 +296,56 @@ class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
+
+    # --- Form options ---
+
+    def _form_options_urls(self):
+        return (
+            reverse('teams:team_members-form-options-create'),
+            reverse('teams:team_members-form-options-update'),
+        )
+
+    def test_not_authenticated_form_options(self):
+        self.client.logout()
+        for url in self._form_options_urls():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(
+                    response.status_code, http_status.HTTP_401_UNAUTHORIZED
+                )
+
+    def test_without_organization_session_form_options(self):
+        self.client.logout()
+        self.client.force_authenticate(user=self.organization.owner.user)
+        for url in self._form_options_urls():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    def test_inactive_member_form_options(self):
+        member = MemberFactory(organization=self.organization, is_active=False)
+        self.client.force_authenticate(member=member)
+        for url in self._form_options_urls():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    def test_member_role_can_read_form_options(self):
+        member = self._create_role_member()
+        self.client.force_authenticate(member=member)
+        for url in self._form_options_urls():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_cross_org_form_options_only_session_organization(self):
+        own_team = TeamFactory(organization=self.organization)
+        other_org = OrganizationFactory()
+        TeamFactory(organization=other_org)
+        self.client.force_authenticate(member=other_org.owner)
+        response = self.client.get(
+            reverse('teams:team_members-form-options-create'), {'team': ''}
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        team_values = {r['value'] for r in response.data['team']['results']}
+        self.assertNotIn(own_team.pk, team_values)

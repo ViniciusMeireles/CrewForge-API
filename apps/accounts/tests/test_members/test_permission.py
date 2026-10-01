@@ -12,7 +12,6 @@ class MemberPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('accounts:members-list')
-        self.choices_url = reverse('accounts:members-choices')
         self.update_role_url_name = 'accounts:members-update-role'
 
     def _detail_url(self, member):
@@ -213,17 +212,6 @@ class MemberPermissionTestCase(APITestCaseMixin, APITestCase):
 
     # --- Choices ---
 
-    def test_not_authenticated_choices(self):
-        self.client.logout()
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_active_member_choices(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
     # --- Owner list ---
 
     def test_owner_can_list(self):
@@ -319,15 +307,6 @@ class MemberPermissionTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         for result in response.data['results']:
             self.assertNotEqual(result['id'], member.id)
-
-    def test_cross_org_member_choices_returns_empty(self):
-        member = self._create_target_member()
-        other_member = MemberFactory()
-        self.client.force_authenticate(member=other_member)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        for result in response.data['results']:
-            self.assertNotEqual(int(result['value']), member.id)
 
     def test_cross_org_member_retrieve_returns_404(self):
         other_org = OrganizationFactory()

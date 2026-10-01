@@ -21,7 +21,6 @@ class TeamViewSet(
     filterset_class = TeamFilter
     filter_backends = [backends.DjangoFilterBackend]
     base_filters = {'is_active': True}
-    label_expression = 'name'
     auto_orderable_filter = True
 
     def get_queryset(self):

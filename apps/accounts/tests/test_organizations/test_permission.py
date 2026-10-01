@@ -12,7 +12,6 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('accounts:organizations-list')
-        self.choices_url = reverse('accounts:organizations-choices')
 
     def _detail_url(self, org):
         return reverse('accounts:organizations-detail', args=[org.id])
@@ -233,17 +232,6 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
 
     # --- Choices ---
 
-    def test_not_authenticated_choices(self):
-        self.client.logout()
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_not_active_member_choices(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
     # --- List ---
 
     def test_owner_can_list(self):
@@ -267,12 +255,4 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         # Organization list is global, cross-org members see all orgs
-        self.assertGreater(response.data['count'], 0)
-
-    def test_cross_org_member_choices_returns_empty(self):
-        other_org = OrganizationFactory()
-        other_owner = other_org.owner
-        self.client.force_authenticate(member=other_owner)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertGreater(response.data['count'], 0)

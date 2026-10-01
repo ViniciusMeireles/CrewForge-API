@@ -63,9 +63,9 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
-    def test_not_authenticated_choices(self):
+    def test_not_authenticated_form_options(self):
         self.client.logout()
-        url = reverse(viewname='accounts:organization_images-choices')
+        url = reverse(viewname='accounts:organization_images-form-options-create')
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 

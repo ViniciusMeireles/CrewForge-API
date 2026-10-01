@@ -176,11 +176,3 @@ class OrganizationImageIntegrationTestCase(APITestCaseMixin, APITestCase):
                     http_status.HTTP_200_OK,
                     f'{member.role} expected 200, got {response.status_code}',
                 )
-
-    def test_create_then_choices_reflects(self):
-        self.client.post(self.list_url, data=self._payload(), format='multipart')
-        choices_resp = self.client.get(
-            reverse(viewname='accounts:organization_images-choices')
-        )
-        self.assertEqual(choices_resp.status_code, http_status.HTTP_200_OK)
-        self.assertGreaterEqual(choices_resp.data['count'], 1)

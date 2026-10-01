@@ -40,12 +40,6 @@ class OrganizationProfilePermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
-    def test_not_authenticated_choices(self):
-        self.client.logout()
-        url = reverse(viewname='accounts:organization_profiles-choices')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
     def test_not_active_member_retrieve(self):
         member = MemberFactory(
             organization=self.organization,
@@ -88,17 +82,6 @@ class OrganizationProfilePermissionTestCase(APITestCaseMixin, APITestCase):
         )
         self.client.force_authenticate(member=member)
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_choices(self):
-        member = MemberFactory(
-            organization=self.organization,
-            is_active=False,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=member)
-        url = reverse(viewname='accounts:organization_profiles-choices')
-        response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
 
     def test_owner_can_update(self):

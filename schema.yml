@@ -471,11 +471,11 @@ paths:
                     detail: Invitation not found or expired
                   summary: Invitation not found or expired
           description: Invitation not found.
-  /api/accounts/invitations/choices/:
+  /api/accounts/invitations/form-options-create/:
     get:
-      operationId: accounts_invitations_choices_retrieve
-      description: List invitations for choices (value/label format).
-      summary: List invitations for choices (value/label format).
+      operationId: accounts_invitations_form_options_create_retrieve
+      description: Create options for a Invitation.
+      summary: Create options for a Invitation.
       tags:
       - Invitations
       security:
@@ -485,20 +485,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedInvitationChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Invitation 1
-                      - value: 2
-                        label: Invitation 2
-                  summary: Example response
-          description: List invitations for choices (value/label format).
+                $ref: '#/components/schemas/OptionsCreateInvitation'
+          description: ''
+  /api/accounts/invitations/form-options-update/:
+    get:
+      operationId: accounts_invitations_form_options_update_retrieve
+      description: Update options for a Invitation.
+      summary: Update options for a Invitation.
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsUpdateInvitation'
+          description: ''
   /api/accounts/invitations/received/:
     get:
       operationId: accounts_invitations_received_list
@@ -984,34 +988,6 @@ paths:
             application/json:
               schema: null
           description: ''
-  /api/accounts/members/choices/:
-    get:
-      operationId: accounts_members_choices_retrieve
-      description: List members for choices (value/label format).
-      summary: List members for choices (value/label format).
-      tags:
-      - Members
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedMemberChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Member 1
-                      - value: 2
-                        label: Member 2
-                  summary: Example response
-          description: List members for choices (value/label format).
   /api/accounts/members/create-with-invite/{invitation_key}/:
     post:
       operationId: accounts_members_create_with_invite_create
@@ -1301,11 +1277,11 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/accounts/organization-images/choices/:
+  /api/accounts/organization-images/form-options-create/:
     get:
-      operationId: accounts_organization_images_choices_retrieve
-      description: List organization images for choices (value/label format).
-      summary: List organization images for choices (value/label format).
+      operationId: accounts_organization_images_form_options_create_retrieve
+      description: Create options for a Organization Image.
+      summary: Create options for a Organization Image.
       tags:
       - Organization images
       security:
@@ -1315,20 +1291,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedOrganizationImageChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Organization image 1
-                      - value: 2
-                        label: Organization image 2
-                  summary: Example response
-          description: List organization images for choices (value/label format).
+                $ref: '#/components/schemas/OptionsCreateOrganizationImage'
+          description: ''
+  /api/accounts/organization-images/form-options-update/:
+    get:
+      operationId: accounts_organization_images_form_options_update_retrieve
+      description: Update options for a Organization Image.
+      summary: Update options for a Organization Image.
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsUpdateOrganizationImage'
+          description: ''
   /api/accounts/organization-profiles/:
     get:
       operationId: accounts_organization_profiles_list
@@ -1509,34 +1489,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/accounts/organization-profiles/choices/:
-    get:
-      operationId: accounts_organization_profiles_choices_retrieve
-      description: List organization profiles for choices (value/label format).
-      summary: List organization profiles for choices (value/label format).
-      tags:
-      - Organization profiles
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedOrganizationProfileChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Organization profile 1
-                      - value: 2
-                        label: Organization profile 2
-                  summary: Example response
-          description: List organization profiles for choices (value/label format).
   /api/accounts/organizations/:
     get:
       operationId: accounts_organizations_list
@@ -1807,34 +1759,6 @@ paths:
                     detail: User not authenticated.
                   summary: User not authenticated
           description: User not authenticated.
-  /api/accounts/organizations/choices/:
-    get:
-      operationId: accounts_organizations_choices_retrieve
-      description: List organizations for choices (value/label format).
-      summary: List organizations for choices (value/label format).
-      tags:
-      - Organizations
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedOrganizationChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Organization 1
-                      - value: 2
-                        label: Organization 2
-                  summary: Example response
-          description: List organizations for choices (value/label format).
   /api/accounts/session/:
     get:
       operationId: accounts_session_retrieve
@@ -2228,34 +2152,6 @@ paths:
           description: The file content.
         '404':
           description: File not found.
-  /api/accounts/stored-files/choices/:
-    get:
-      operationId: accounts_stored_files_choices_retrieve
-      description: List stored files for choices (value/label format).
-      summary: List stored files for choices (value/label format).
-      tags:
-      - Stored files
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedStoredFileChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Stored file 1
-                      - value: 2
-                        label: Stored file 2
-                  summary: Example response
-          description: List stored files for choices (value/label format).
   /api/accounts/users/me/:
     get:
       operationId: accounts_users_me_retrieve
@@ -2734,11 +2630,11 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/teams/team-members/choices/:
+  /api/teams/team-members/form-options-create/:
     get:
-      operationId: teams_team_members_choices_retrieve
-      description: List team members for choices (value/label format).
-      summary: List team members for choices (value/label format).
+      operationId: teams_team_members_form_options_create_retrieve
+      description: Create options for a Team Member.
+      summary: Create options for a Team Member.
       tags:
       - Team members
       security:
@@ -2748,20 +2644,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedTeamMemberChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Team member 1
-                      - value: 2
-                        label: Team member 2
-                  summary: Example response
-          description: List team members for choices (value/label format).
+                $ref: '#/components/schemas/OptionsCreateTeamMember'
+          description: ''
+  /api/teams/team-members/form-options-update/:
+    get:
+      operationId: teams_team_members_form_options_update_retrieve
+      description: Update options for a Team Member.
+      summary: Update options for a Team Member.
+      tags:
+      - Team members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsUpdateTeamMember'
+          description: ''
   /api/teams/teams/:
     get:
       operationId: teams_teams_list
@@ -2865,7 +2765,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedTeamList'
+                $ref: '#/components/schemas/PaginatedTeamListList'
           description: ''
     post:
       operationId: teams_teams_create
@@ -2969,34 +2869,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/teams/teams/choices/:
-    get:
-      operationId: teams_teams_choices_retrieve
-      description: List teams for choices (value/label format).
-      summary: List teams for choices (value/label format).
-      tags:
-      - Teams
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedTeamChoicesResponseList'
-              examples:
-                ExampleResponse:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - - value: 1
-                        label: Team 1
-                      - value: 2
-                        label: Team 2
-                  summary: Example response
-          description: List teams for choices (value/label format).
 components:
   schemas:
     ByKeyNotFound:
@@ -3019,6 +2891,19 @@ components:
       required:
       - current_password
       - new_password
+    ChoiceOptionStr:
+      type: object
+      description: Value/label option.
+      properties:
+        value:
+          type: string
+          readOnly: true
+        label:
+          type: string
+          readOnly: true
+      required:
+      - label
+      - value
     CookieSettings:
       type: object
       properties:
@@ -3204,16 +3089,6 @@ components:
       - has_user
       - key
       - organization
-    InvitationChoicesResponse:
-      type: object
-      properties:
-        value:
-          type: integer
-        label:
-          type: string
-      required:
-      - label
-      - value
     InvitationDeclineBadRequest:
       type: object
       properties:
@@ -3456,16 +3331,6 @@ components:
           type: string
       required:
       - refresh
-    MemberChoicesResponse:
-      type: object
-      properties:
-        value:
-          type: integer
-        label:
-          type: string
-      required:
-      - label
-      - value
     MemberModel:
       type: object
       description: Serializer for the Member model.
@@ -3769,6 +3634,84 @@ components:
       - updated_at
       - updated_by
       - user
+    OptionInt:
+      type: object
+      description: Value/label option.
+      properties:
+        value:
+          type: integer
+          readOnly: true
+        label:
+          type: string
+          readOnly: true
+      required:
+      - label
+      - value
+    OptionsCreateInvitation:
+      type: object
+      description: Form options to create a Invitation.
+      properties:
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: User role in the organization
+    OptionsCreateOrganizationImage:
+      type: object
+      description: Form options to create a Organization Image.
+      properties:
+        image_type:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Type of organization image
+    OptionsCreateTeamMember:
+      type: object
+      description: Form options to create a Team Member.
+      properties:
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Role of the member in the team
+        team:
+          allOf:
+          - $ref: '#/components/schemas/PaginatedIntOptions'
+          description: Team to which this member belongs
+        member:
+          allOf:
+          - $ref: '#/components/schemas/PaginatedIntOptions'
+          description: Member of the team
+      required:
+      - member
+      - team
+    OptionsUpdateInvitation:
+      type: object
+      description: Form options to update a Invitation.
+      properties:
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: User role in the organization
+    OptionsUpdateOrganizationImage:
+      type: object
+      description: Form options to update a Organization Image.
+      properties:
+        image_type:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Type of organization image
+    OptionsUpdateTeamMember:
+      type: object
+      description: Form options to update a Team Member.
+      properties:
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Role of the member in the team
     Organization:
       type: object
       description: Serializer for the Organization model.
@@ -3826,16 +3769,6 @@ components:
       - slug
       - updated_at
       - updated_by
-    OrganizationChoicesResponse:
-      type: object
-      properties:
-        value:
-          type: integer
-        label:
-          type: string
-      required:
-      - label
-      - value
     OrganizationDetail:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -3916,16 +3849,6 @@ components:
       required:
       - id
       - image
-    OrganizationImageChoicesResponse:
-      type: object
-      properties:
-        value:
-          type: integer
-        label:
-          type: string
-      required:
-      - label
-      - value
     OrganizationList:
       type: object
       description: Serializer for the Organization model.
@@ -3977,16 +3900,6 @@ components:
       required:
       - id
       - organization
-    OrganizationProfileChoicesResponse:
-      type: object
-      properties:
-        value:
-          type: integer
-        label:
-          type: string
-      required:
-      - label
-      - value
     OrganizationProfileDetailRelated:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -4074,29 +3987,28 @@ components:
       - id
       - name
       - slug
-    PaginatedInvitationChoicesResponseList:
+    PaginatedIntOptions:
       type: object
-      required:
-      - count
-      - results
+      description: Paginated value/label options.
       properties:
         count:
           type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
+          readOnly: true
+        num_pages:
+          type: integer
+          readOnly: true
+        page_number:
+          type: integer
+          readOnly: true
         results:
-          type: array
-          items:
-            $ref: '#/components/schemas/InvitationChoicesResponse'
+          allOf:
+          - $ref: '#/components/schemas/OptionInt'
+          readOnly: true
+      required:
+      - count
+      - num_pages
+      - page_number
+      - results
     PaginatedInvitationList:
       type: object
       required:
@@ -4143,29 +4055,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvitationReceived'
-    PaginatedMemberChoicesResponseList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/MemberChoicesResponse'
     PaginatedMemberModelList:
       type: object
       required:
@@ -4189,52 +4078,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MemberModel'
-    PaginatedOrganizationChoicesResponseList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationChoicesResponse'
-    PaginatedOrganizationImageChoicesResponseList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationImageChoicesResponse'
     PaginatedOrganizationImageList:
       type: object
       required:
@@ -4281,29 +4124,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationList'
-    PaginatedOrganizationProfileChoicesResponseList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationProfileChoicesResponse'
     PaginatedOrganizationProfileList:
       type: object
       required:
@@ -4327,29 +4147,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationProfile'
-    PaginatedStoredFileChoicesResponseList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/StoredFileChoicesResponse'
     PaginatedStoredFileListModelList:
       type: object
       required:
@@ -4373,7 +4170,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StoredFileListModel'
-    PaginatedTeamChoicesResponseList:
+    PaginatedTeamListList:
       type: object
       required:
       - count
@@ -4395,53 +4192,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/TeamChoicesResponse'
-    PaginatedTeamList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Team'
-    PaginatedTeamMemberChoicesResponseList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/TeamMemberChoicesResponse'
+            $ref: '#/components/schemas/TeamList'
     PaginatedTeamMemberList:
       type: object
       required:
@@ -4958,16 +4709,6 @@ components:
         * `members_organization` - Members of Organization
         * `owner` - Owner
         * `public` - Public
-    StoredFileChoicesResponse:
-      type: object
-      properties:
-        value:
-          type: integer
-        label:
-          type: string
-      required:
-      - label
-      - value
     StoredFileCreateUpdateModel:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -5253,6 +4994,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string
@@ -5270,8 +5012,8 @@ components:
           maxLength: 100
         slug:
           type: string
+          readOnly: true
           description: Team slug
-          maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
         description:
           type: string
@@ -5301,16 +5043,70 @@ components:
       - slug
       - updated_at
       - updated_by
-    TeamChoicesResponse:
+    TeamList:
       type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
       properties:
-        value:
+        id:
           type: integer
-        label:
+          readOnly: true
+        member_count:
+          type: integer
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+          default: true
+          description: Is this record active or not
+        created_at:
           type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+        name:
+          type: string
+          description: Name of the team
+          maxLength: 100
+        slug:
+          type: string
+          readOnly: true
+          description: Team slug
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          nullable: true
+          description: Description of the team
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: User who created the record
+        updated_by:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: User who last updated the record
+        organization:
+          type: integer
+          readOnly: true
+          description: Organization to which the team belongs
       required:
-      - label
-      - value
+      - created_at
+      - created_by
+      - id
+      - is_active
+      - member_count
+      - name
+      - organization
+      - slug
+      - updated_at
+      - updated_by
     TeamMember:
       type: object
       description: Serializer for the TeamMember model.
@@ -5321,6 +5117,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string
@@ -5367,16 +5164,6 @@ components:
       - team
       - updated_at
       - updated_by
-    TeamMemberChoicesResponse:
-      type: object
-      properties:
-        value:
-          type: integer
-        label:
-          type: string
-      required:
-      - label
-      - value
     TeamMemberUpdate:
       type: object
       description: Serializer for updating a TeamMember.
@@ -5387,6 +5174,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string

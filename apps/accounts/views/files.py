@@ -74,9 +74,10 @@ class StoredFileViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     filter_backends = [backends.DjangoFilterBackend]
     parser_classes = [MultiPartParser, FormParser]
     lookup_field = 'uuid'
-    label_expression = StoredFile.label_expression()
     queryset = StoredFile.objects.all()
     auto_orderable_filter = True
+    # No form options: ``owner``/``organization`` are not tenant-scoped (TD-003).
+    options_actions = ()
 
     def get_queryset(self):
         queryset = super().get_queryset()

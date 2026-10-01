@@ -1,4 +1,4 @@
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -14,7 +14,6 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('accounts:members-list')
-        self.choices_url = reverse('accounts:members-choices')
         self.create_with_invite_url_name = 'accounts:members-create-with-invite'
         self.update_role_url_name = 'accounts:members-update-role'
 
@@ -223,12 +222,11 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
             InvitationErrorMessages.INVITATION_NOT_FOUND.label,
         )
 
-    def test_choices_endpoint(self):
-        MemberFactory.create_batch(size=3, organization=self.organization)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertIn('count', response.data)
-        self.assertIn('results', response.data)
-        if response.data['count'] > 0:
-            self.assertIn('value', response.data['results'][0])
-            self.assertIn('label', response.data['results'][0])
+    def test_form_options_routes_absent(self):
+        for url_name in (
+            'accounts:members-form-options-create',
+            'accounts:members-form-options-update',
+        ):
+            with self.subTest(url_name=url_name):
+                with self.assertRaises(NoReverseMatch):
+                    reverse(url_name)

@@ -25,5 +25,4 @@ class OrganizationProfileViewSet(
     permission_classes = [IsActiveMember, OrganizationProfilePermission]
     filterset_class = OrganizationProfileFilter
     filter_backends = [backends.DjangoFilterBackend]
-    label_expression = 'organization__name'
     auto_orderable_filter = True

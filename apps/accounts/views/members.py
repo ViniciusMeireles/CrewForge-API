@@ -131,8 +131,9 @@ class MemberViewSet(
     permission_classes = [MemberPermission]
     filterset_class = MemberFilter
     filter_backends = [backends.DjangoFilterBackend]
-    label_expression = Member.label_expression()
     auto_orderable_filter = True
+    # No form options: ``create`` is deprecated and ``user`` is a nested serializer.
+    options_actions = ()
 
     base_filters = {'is_active': True}
 

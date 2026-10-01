@@ -88,16 +88,6 @@ class OrganizationProfileIntegrationTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
 
-    def test_choices_reflects_after_update(self):
-        choices_url = reverse(viewname='accounts:organization_profiles-choices')
-        response = self.client.get(choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
-        self.assertEqual(
-            response.data['results'][0]['label'],
-            self.organization.name,
-        )
-
     def test_cross_org_isolation(self):
         from apps.accounts.factories.organizations import OrganizationFactory
 

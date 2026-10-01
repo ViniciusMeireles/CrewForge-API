@@ -100,7 +100,6 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [OrganizationPermission]
     filterset_class = OrganizationFilter
     filter_backends = [backends.DjangoFilterBackend]
-    label_expression = 'name'
     auto_orderable_filter = True
 
     def get_queryset(self):
