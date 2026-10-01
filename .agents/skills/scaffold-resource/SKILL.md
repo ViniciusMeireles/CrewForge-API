@@ -204,6 +204,7 @@ See `references/model-template.py`, `references/viewset-template.py`, `reference
 - **Do not skip `super().has_object_permission()` in permissions.** Organization scope is mandatory
 - **Do not forget `@extend_schema_model_view_set` decorator.** Required for OpenAPI schema
 - **Do not expose form options for relations to models without `organization_id`** (`User`, `Organization`): they would list every tenant's records. Use a nested serializer or `options_actions = ()`
+- **Do not leave paginated form-options fields without search.** Each relation exposed in form options declares `label_field_name` or `filter_field_name` in the serializer `Meta.options_extra_kwargs`
 - **Do not add `label_expression`/`value_expression` to the ViewSet.** The `/choices/` action was replaced by auto-generated `form-options-create/update` routes
 - **Do not forget barrel exports.** Models `__init__.py`, serializers, factories must be importable
 - **Do not use `related_name='+'` for FK fields that need reverse access.** Use meaningful related_names
