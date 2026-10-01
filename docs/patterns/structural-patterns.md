@@ -115,6 +115,28 @@ class ModelViewSetMixin(
 - To-many relations render the same envelope as a FK; a FK with `to_field` uses
   that field as the option value; write-only kwargs (`allow_blank`, `max_length`...)
   from the source serializer are ignored
+- `?<field>=<value>` filters choice fields by a regex (label or value,
+  ignoring case and accents); paginated fields only filter when `filter_field_name`/`label_field_name`
+  is configured, otherwise the value is ignored and a warning is logged
+- Choice regexes run with the `regex` package under a time budget
+  (`CHOICES_SEARCH_TIMEOUT`); `re` has no timeout and a user-supplied pattern such
+  as `(\w|\w)*\d` would hold the worker. Never evaluate user regexes with `re`
+- `filter_ignore_accents = True` (organization-scoped options) searches through
+  PostgreSQL `unaccent()` (extension created in `accounts/0002_unaccent_extension`)
+- Every paginated field must declare its label/search field or expression in the
+  source serializer `Meta.options_extra_kwargs` (case by case, never automatic).
+  `PaginatedOptionsSearchConfiguredTestCase` fails for any route that misses it:
+
+  ```python
+  class Meta:
+      options_extra_kwargs = {
+          'team': {'label_field_name': 'name'},
+          'member': {'label_field_name': Member.label_expression()},
+      }
+  ```
+- The OpenAPI schema of each route lists one query parameter per field (field
+  selection, plus search when opted in) and `page`/`page_size` when at least one
+  field is paginated (`get_form_options_parameters` in `apps/generics/utils/schema.py`)
 
 ---
 

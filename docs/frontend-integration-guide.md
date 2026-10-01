@@ -742,24 +742,44 @@ organization and to active records, the same rules the write endpoint validates:
 
 | Parameter | Effect |
 |---|---|
-| `?<field>` | Return only that field (e.g. `?team` or `?team=`). Multiple fields can be combined. |
+| `?<field>` | Return only that field (e.g. `?team` or `?team=`). Multiple fields can be combined. A non-empty value also filters the field (see below). |
 | `?page=N` | Page of every relation field in the response. |
 | `?page_size=N` | Page size (default 10, max 100). |
 
 `page` and `page_size` apply to **all** relation fields in the response. To paginate
 a single picker, combine them with field selection: `?member&page=2`.
 
-Text search by label (`?team=plat`) only works for fields whose serializer opted in
-(see 15.3). Without that configuration the value of `?<field>` is ignored and the
-parameter only selects the field.
+Filtering by value:
+
+- **Choice fields:** the value is a regular expression matched against the label
+  or the value of each option, ignoring case and accents (`?role=^ad`, `?role=owner|admin`).
+  An invalid expression is matched as plain text. Matching has a time budget: an
+  expression too expensive to evaluate returns no options.
+- **Paginated fields:** text search by label (`?team=plat`) only works for fields
+  whose serializer opted in (see 15.3). Without that configuration the value is
+  ignored and the parameter only selects the field.
+
+These parameters are documented per route in the OpenAPI schema (`schema.yml`):
+one parameter per field of the route, plus `page`/`page_size` only when the route
+has at least one paginated field.
 
 ### 15.3. Backend opt-in for label and search
 
-The options field reads these keys from the source serializer `Meta.extra_kwargs`:
+Every paginated field declares, case by case, the field or expression used for
+its label and search in the source serializer `Meta.options_extra_kwargs` (read only
+by the options serializer; the write fields never see it):
 `label_field_name` (str or expression), `filter_field_name` and
-`filter_lookup_expr` (default `exact`). No serializer uses them yet. Before any
-serializer does, these keys need a dedicated `Meta` entry, because `extra_kwargs`
-also reaches the write field.
+`filter_lookup_expr` (default `icontains` on organization-scoped relations,
+`exact` otherwise).
+
+| Route field | Label / search |
+|---|---|
+| team-members `team` | `name` |
+| team-members `member` | `Member.label_expression()`: `Full Name (nickname)`, falling back to the full name, the nickname or the translated role |
+
+Search on organization-scoped paginated fields ignores case and accents
+(`?team=gestao` matches "Gestão"), using PostgreSQL `unaccent`
+(`filter_ignore_accents`).
 
 ### 15.4. Migration from `/choices/`
 
