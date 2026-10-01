@@ -91,14 +91,13 @@ Standard declaration:
 ```python
 class MyViewSet(
     OrganizationScopedViewSetMixin,  # 1st: scope by org
-    ModelViewSetMixin,  # 2nd: soft-delete + choices
+    ModelViewSetMixin,  # 2nd: soft-delete + form options
     viewsets.ModelViewSet,  # 3rd: DRF base
 ):
     serializer_class = MySerializer
     queryset = MyModel.objects.all()
     permission_classes = [MyPermission]
     filterset_class = MyFilter
-    label_expression = 'name'
 ```
 
 Additional attributes commonly used:
@@ -174,7 +173,6 @@ def extend_schema_model_view_set(
     kwargs.setdefault('update', extend_schema_update(model=model))
     kwargs.setdefault('partial_update', extend_schema_partial_update(model=model))
     kwargs.setdefault('options', extend_schema_options(model=model))
-    kwargs.setdefault('choices', extend_schema_choices_route(model=model))
     return extend_schema_view(**kwargs)
 ```
 
@@ -423,7 +421,7 @@ Additional mixins for specific needs:
 
 - `ValidateRoleSerializerMixin` — validates role field changes with hierarchy checks
 - `UserTokenSerializerMixin` — injects JWT `refresh`/`access` fields via metaclass
-- `ChoiceSerializer` (`apps/generics/serializers/choices.py`) — value/label output format
+- `OptionsModelSerializer` (`apps/generics/serializers/options.py`) — builds form-options (value/label) from a source serializer
 
 ### App-Specific Settings
 

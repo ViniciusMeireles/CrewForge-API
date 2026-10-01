@@ -16,7 +16,7 @@
 - [File Upload & Download](#12-file-upload--download)
 - [Error Handling](#13-error-handling)
 - [Pagination](#14-pagination)
-- [Choices Endpoints](#15-choices-endpoints)
+- [Form Options Endpoints](#15-form-options-endpoints)
 - [Troubleshooting](#16-troubleshooting)
 
 ---
@@ -453,7 +453,6 @@ Validates that the new password differs from the current one and is at least 8 c
 | Retrieve | `GET /api/accounts/organizations/{id}/` | Member of the organization |
 | Update | `PUT/PATCH /api/accounts/organizations/{id}/` | Admin+ role |
 | Login | `POST /api/accounts/organizations/{id}/login/` | Active member |
-| Choices | `GET /api/accounts/organizations/choices/` | Authenticated user |
 
 ---
 
@@ -465,7 +464,6 @@ Validates that the new password differs from the current one and is at least 8 c
 | Retrieve | `GET /api/accounts/members/{id}/` | Member of the org |
 | Update role | `PATCH /api/accounts/members/{id}/` | Sufficient role hierarchy |
 | Create via invite | `POST /api/accounts/members/create-with-invite/{invitation_key}/` | No auth required |
-| Choices | `GET /api/accounts/members/choices/` | Member of the org |
 
 ### 8.1. Create Member via Invitation
 
@@ -503,7 +501,8 @@ Email and role are taken from the invitation itself (not from the request body).
 | Update | `PUT/PATCH /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Delete | `DELETE /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Send email | `POST /api/accounts/invitations/{id}/send-email/` | Owner: any role; Admin: MANAGER+MEMBER only |
-| Choices | `GET /api/accounts/invitations/choices/` | Admins see MANAGER+MEMBER; owners see all roles |
+| Form options (create) | `GET /api/accounts/invitations/form-options-create/` | Admin+ |
+| Form options (update) | `GET /api/accounts/invitations/form-options-update/` | Admin+ |
 
 ### Send Email Cooldown
 
@@ -529,7 +528,6 @@ Invitations are looked up by primary key (`id`), not by the UUID `key`.
 | Retrieve | `GET /api/teams/teams/{id}/` | Member of the org |
 | Update | `PUT /api/teams/teams/{id}/` | Admin+ |
 | Delete | `DELETE /api/teams/teams/{id}/` | Admin+ |
-| Choices | `GET /api/teams/teams/choices/` | Member of the org |
 
 Creating a team auto-creates a `TeamMember` record with `OWNER` role for the creator.
 
@@ -552,7 +550,8 @@ Creating a team auto-creates a `TeamMember` record with `OWNER` role for the cre
 | Retrieve | `GET /api/teams/team-members/{id}/` | Member of the org |
 | Update role | `PATCH /api/teams/team-members/{id}/` | Sufficient role |
 | Delete | `DELETE /api/teams/team-members/{id}/` | Admin+ |
-| Choices | `GET /api/teams/team-members/choices/` | Member of the org |
+| Form options (create) | `GET /api/teams/team-members/form-options-create/` | Member of the org |
+| Form options (update) | `GET /api/teams/team-members/form-options-update/` | Member of the org |
 
 Re-adding a previously removed (soft-deleted) team member reactivates their membership.
 
@@ -688,33 +687,90 @@ The `next` and `previous` URLs automatically preserve the `page_size` parameter.
 
 ---
 
-## 15. Choices Endpoints
+## 15. Form Options Endpoints
 
-Every resource provides a `GET /api/<resource>/choices/` endpoint that returns value/label pairs. Useful for populating dropdowns and select inputs.
+Resources with select-like fields expose `GET .../form-options-create/` and
+`GET .../form-options-update/`. Each returns one key per selectable field of the
+corresponding write form (create or update), so the frontend can populate dropdowns
+with exactly the values the write endpoint accepts.
 
-**Examples:**
+| Resource | Create form fields | Update form fields |
+|---|---|---|
+| `GET /api/accounts/invitations/form-options-{create,update}/` | `role` | `role` |
+| `GET /api/accounts/organization-images/form-options-{create,update}/` | `image_type` | `image_type` |
+| `GET /api/teams/team-members/form-options-{create,update}/` | `role`, `team`, `member` | `role` |
 
-```
-GET /api/accounts/organizations/choices/
-GET /api/accounts/members/choices/
-GET /api/accounts/invitations/choices/
-GET /api/teams/teams/choices/
-GET /api/teams/team-members/choices/
-```
+Organizations, organization profiles, members, teams and stored files have **no**
+form-options endpoint. Use the regular list endpoints when a picker is needed.
 
-**Response (paginated):**
+Permissions are the same as the resource's read permission, and the organization
+session is required (see [Authentication](#3-authentication-flow)).
+
+### 15.1. Response shapes
+
+Fields with fixed choices return a plain array:
+
 ```json
 {
-  "count": 3,
-  "next": null,
-  "previous": null,
-  "results": [
-    {"value": "1", "label": "Acme Corp"},
-    {"value": "2", "label": "Globex Inc"},
-    {"value": "3", "label": "Initech"}
+  "role": [
+    {"value": "owner", "label": "Owner"},
+    {"value": "admin", "label": "Admin"},
+    {"value": "manager", "label": "Manager"},
+    {"value": "member", "label": "Member"}
   ]
 }
 ```
+
+Relation fields return a paginated envelope. Results are scoped to the session
+organization and to active records, the same rules the write endpoint validates:
+
+```json
+{
+  "team": {
+    "count": 12,
+    "num_pages": 2,
+    "page_number": 1,
+    "results": [
+      {"value": 7, "label": "Platform"},
+      {"value": 5, "label": "Design"}
+    ]
+  }
+}
+```
+
+### 15.2. Query parameters
+
+| Parameter | Effect |
+|---|---|
+| `?<field>` | Return only that field (e.g. `?team` or `?team=`). Multiple fields can be combined. |
+| `?page=N` | Page of every relation field in the response. |
+| `?page_size=N` | Page size (default 10, max 100). |
+
+`page` and `page_size` apply to **all** relation fields in the response. To paginate
+a single picker, combine them with field selection: `?member&page=2`.
+
+Text search by label (`?team=plat`) only works for fields whose serializer opted in
+(see 15.3). Without that configuration the value of `?<field>` is ignored and the
+parameter only selects the field.
+
+### 15.3. Backend opt-in for label and search
+
+The options field reads these keys from the source serializer `Meta.extra_kwargs`:
+`label_field_name` (str or expression), `filter_field_name` and
+`filter_lookup_expr` (default `exact`). No serializer uses them yet. Before any
+serializer does, these keys need a dedicated `Meta` entry, because `extra_kwargs`
+also reaches the write field.
+
+### 15.4. Migration from `/choices/`
+
+The legacy `GET /api/<resource>/choices/` endpoints were removed (no alias).
+
+| Before | After |
+|---|---|
+| `GET /api/accounts/invitations/choices/` | `GET /api/accounts/invitations/form-options-create/` (`role`) |
+| `GET /api/teams/team-members/choices/` | `GET /api/teams/team-members/form-options-create/` (`team`, `member`, `role`) |
+| `GET /api/accounts/{organizations,members}/choices/`, `GET /api/teams/teams/choices/`, ... | List endpoint of the resource |
+| Response `{count, next, previous, results}` | Object keyed by field; array for choices, `{count, num_pages, page_number, results}` for relations |
 
 ---
 

@@ -125,7 +125,7 @@ Tests HTTP CRUD operations via the API.
 - `test_delete_nonexistent` — 404
 - `test_create_duplicate_{field}` — 400
 - `test_create_all_{variants}` — all type/permission variants
-- `test_choices_endpoint` — choices returns value/label pairs
+- `test_form_options_{create,update}` — form-options returns the expected field keys and shapes (or `NoReverseMatch` when the resource opts out)
 
 **Standard imports:**
 ```python
@@ -224,7 +224,6 @@ Tests multi-step flows that combine several operations.
 - Full CRUD flow: create → list → retrieve → update → delete → verify gone
 - Permission hierarchy read access (all roles can read)
 - Permission hierarchy write access (matrix: role × expected status)
-- "Create then choices reflects" — verify choices endpoint after creation
 
 **Standard imports:**
 ```python
@@ -593,7 +592,7 @@ Every new resource's test suite must cover:
 | 11 | Validation errors (duplicates, missing fields) | 400 | `test_serializer.py` |
 | 12 | Auto-populated fields | Set from auth context | `test_serializer.py` |
 | 13 | Filter fields | Filtered result set | `test_filter.py` |
-| 14 | Choices endpoint | Value/label format | `test_crud.py` + `test_choices.py` |
+| 14 | Form-options endpoint | Field keys + value/label shapes (or route absent) | `test_crud.py` + `test_permission.py` |
 | 15 | Enum values and labels | Correct strings | `test_choices.py` |
 | 16 | Multi-step integration flow | End-to-end | `test_integration.py` |
 | 17 | Send email cooldown (429 within window, 200 after) | 429/200 | `test_permission.py` |
@@ -638,11 +637,11 @@ When a serializer exposes a write-only `send_email` boolean:
 These test directories embody the pattern described here:
 
 - `apps/accounts/tests/test_organization_images/` — Clean example with 8 files,
-  92 tests covering model, serializer, CRUD, permission, filter, choices, and
+  89 tests covering model, serializer, CRUD, permission, filter, form options, and
   integration.
 - `apps/accounts/tests/test_stored_files/` — Extended example with 9 files
   (adds `test_download.py` for resource-specific behavior), covering model,
-  serializer, CRUD, permission, filter, choices, download, and integration.
+  serializer, CRUD, permission, filter, download, and integration.
 - `apps/accounts/tests/test_organization_profiles/` — Clean example with 8 files,
-  68 tests covering model, serializer, CRUD, permission, filter, choices, and
+  64 tests covering model, serializer, CRUD, permission, filter, and
   integration.

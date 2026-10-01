@@ -101,14 +101,13 @@ Standard declaration:
 ```python
 class MyViewSet(
     OrganizationScopedViewSetMixin,  # 1st: scope by org
-    ModelViewSetMixin,  # 2nd: soft-delete + choices
+    ModelViewSetMixin,  # 2nd: soft-delete + form options
     viewsets.ModelViewSet,  # 3rd: DRF base
 ):
     serializer_class = MySerializer
     queryset = MyModel.objects.all()
     permission_classes = [MyPermission]
     filterset_class = MyFilter
-    label_expression = 'name'
 ```
 
 ### ViewSet Attributes
@@ -121,6 +120,7 @@ class MyViewSet(
 | `organization_filter` | FK traversal override | `'team__organization_id'` |
 | `lookup_field` | Non-default PK field | `'uuid'` for StoredFile |
 | `parser_classes` | Request parsing | `[MultiPartParser, FormParser]` |
+| `options_actions` | Form-options routes to generate (`()` disables them) | `('create', 'update')` |
 
 ### MRO Variations
 

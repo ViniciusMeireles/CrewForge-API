@@ -72,46 +72,49 @@ class OrganizationScopedRequestMixin(RequestUserMixin):
 
 Location: `apps/accounts/mixins/views.py`
 
-Adds common functionality to DRF ModelViewSets including soft-delete support and a `choices` action endpoint.
+Adds soft-delete support and auto-generated form-options endpoints to DRF ModelViewSets.
 
 ```python
-class ModelViewSetMixin(OrganizationScopedRequestMixin):
+class ModelViewSetMetaclass(
+    OrderableModelViewSetMetaclass,
+    OptionsModelViewSetMetaclass,
+):
+    pass
+
+
+class OptionsOrganizationModelMixin(OptionsModelMixin):
+    options_serializer_class = OptionsOrganizationModelSerializer
+
+
+class ModelViewSetMixin(
+    OptionsOrganizationModelMixin,
+    OrganizationScopedRequestMixin,
+    metaclass=ModelViewSetMetaclass,
+):
     def perform_destroy(self, instance):
         if hasattr(instance, 'is_active'):
             instance.inactivate()
         else:
             super().perform_destroy(instance)
-
-    def get_label_expression(self) -> str | Combinable:
-        if label_expression := getattr(self, 'label_expression', None):
-            return label_expression
-        raise NotImplementedError('Subclasses must implement this method.')
-
-    def get_value_expression(self) -> str | Combinable:
-        if value_expression := getattr(self, 'value_expression', None):
-            return value_expression
-        elif self.lookup_field:
-            return self.lookup_field
-        return 'pk'
-
-    @action(detail=False, methods=['get'], url_path='choices')
-    def choices(self, request, *args, **kwargs):
-        """List items for choices (value/label format)."""
-        queryset = self.filter_queryset(self.get_queryset())
-        label = self.get_label_expression()
-        value = self.get_value_expression()
-        choices_queryset = queryset.annotate(
-            _choice_label=F(label) if isinstance(label, str) else label,
-            _choice_value=F(value) if isinstance(value, str) else value,
-        ).values('_choice_value', '_choice_label')
-        # Returns paginated {value, label} pairs
-        ...
 ```
 
 **Features:**
 - Soft-delete via `inactivate()` when model has `is_active` field
-- `choices` action returns data suitable for dropdown selects
-- `label_expression` and `value_expression` for customizing choice output
+- `OptionsModelViewSetMetaclass` (`apps/generics/mixins/views.py`) registers
+  `GET form-options-create/` and `GET form-options-update/` for each action in
+  `options_actions` whose source serializer (the one `get_serializer_class()` returns
+  for `create`/`update`) has selectable fields
+- Selectable fields: model fields with `choices` (plain `[{value, label}]` array) and
+  writable relations (paginated envelope). Read-only fields and fields the source
+  serializer declares as nested serializers are excluded
+- Relation querysets are scoped to the session organization and active records
+  (`PaginatedOptionsActiveOrganizationSerializer` in `apps/accounts/fields.py`)
+- `options_actions = ()` disables the routes (used by `MemberViewSet` and
+  `StoredFileViewSet`); a subclass that disables them also hides the routes
+  inherited from its parent
+- To-many relations render the same envelope as a FK; a FK with `to_field` uses
+  that field as the option value; write-only kwargs (`allow_blank`, `max_length`...)
+  from the source serializer are ignored
 
 ---
 
@@ -154,7 +157,6 @@ class TeamViewSet(
     queryset = Team.objects.all()
     permission_classes = [TeamPermission]
     filterset_class = TeamFilter
-    label_expression = 'name'
 ```
 
 ---
@@ -567,7 +569,7 @@ apps/
 | `teams` | Teams and team memberships |
 | `generics` | Reusable base classes, mixins, utilities (app-agnostic) |
 | `generics/mails/` | Base classes for HTML email composition and sending |
-| `generics/serializers/` | Generic serializers (e.g., `ChoiceSerializer`) |
+| `generics/serializers/` | Generic serializers (e.g., `OptionsModelSerializer`) |
 | `generics/managers/` | `BaseManager` and `BaseQuerySet` |
 
 ### App Configuration
