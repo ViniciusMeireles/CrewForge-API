@@ -14,7 +14,6 @@ serialized and render the available options instead.
 """
 
 import logging
-import time
 import unicodedata
 from types import SimpleNamespace
 from typing import Any
@@ -37,10 +36,11 @@ from apps.generics.types import OptionType, PageDataType
 
 log = logging.getLogger(__name__)
 
-# Total time (seconds) a ``?<field>=<regex>`` search may spend on one choice field.
-# User-supplied expressions can backtrack exponentially; once the budget is spent
-# the field returns no options.
-CHOICES_SEARCH_TIMEOUT = 0.05
+# Time (seconds) the regex engine may spend on one label/value of a choice field.
+# User-supplied expressions can backtrack exponentially; the first search that
+# exceeds it stops the field, which then returns no options. Legitimate patterns
+# run in microseconds, and only the engine call is timed (not the Python loop).
+CHOICES_SEARCH_TIMEOUT = 0.02
 
 
 def strip_accents(value: str) -> str:
@@ -556,13 +556,12 @@ class ListChoicesOptionsSerializer(serializers.ListSerializer):
     def filter_choices(self, choices: list[OptionType]) -> list[OptionType]:
         if (pattern := self.get_search_pattern()) is None:
             return choices
-        deadline = time.monotonic() + CHOICES_SEARCH_TIMEOUT
         matches = []
         try:
             for choice in choices:
                 for text in (choice['label'], choice['value']):
-                    timeout = max(deadline - time.monotonic(), 0.001)
-                    if pattern.search(strip_accents(str(text)), timeout=timeout):
+                    searched = strip_accents(str(text))
+                    if pattern.search(searched, timeout=CHOICES_SEARCH_TIMEOUT):
                         matches.append(choice)
                         break
         except TimeoutError:
