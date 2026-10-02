@@ -1,12 +1,11 @@
 import factory
-from factory.django import DjangoModelFactory
 
 from apps.generics.factories.mixins import ModelFactoryMixin
 from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.models.team_member import TeamMember
 
 
-class TeamMemberFactory(ModelFactoryMixin, DjangoModelFactory):
+class TeamMemberFactory(ModelFactoryMixin):
     team = factory.SubFactory(
         'apps.teams.factories.teams.TeamFactory',
         organization=factory.SelfAttribute('..organization'),
