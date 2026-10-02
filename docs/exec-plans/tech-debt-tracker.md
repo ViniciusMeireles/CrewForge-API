@@ -41,3 +41,6 @@ Known technical debt, prioritized by impact and effort.
 | TD-006 | `PaginatedOptionsBaseSerializer.get_pagination_class()` reads `DEFAULT_PAGINATION_CLASS` at runtime | 2026-10-01 | — |
 | TD-007 | Constraint `IntegrityError` maps to a 400 with the constraint message (global handler); team names need a letter or number; `member_count` ignores inactive organization members | 2026-10-01 | — |
 | TD-008 | View descriptions in members/team-members use `format_lazy` and are translatable | 2026-10-01 | — |
+| TD-009 | Relations scoped through a path declare `organization_lookup` (options via `Meta.options_extra_kwargs`, write fields via `extra_kwargs`); the options startup check accepts and validates it | 2026-10-02 | — |
+| TD-010 | `apps/accounts/serializers/user.py` covered by unit tests (password validation, `is_valid`, create/update with password) | 2026-10-02 | — |
+| TD-011 | Removed the dead `UserGetOrCreateSerializer` and the unreachable "user already exists" block of `UserSerializer.is_valid` (the model `UniqueValidator` always ran first); members join through invitations | 2026-10-02 | — |

@@ -759,7 +759,7 @@ Filtering by value:
 
 - **Choice fields:** the value is a regular expression matched against the label
   or the value of each option, ignoring case and accents (`?role=^ad`, `?role=owner|admin`).
-  An invalid expression is matched as plain text. Matching has a time budget: an
+  An invalid expression is matched as plain text. Matching has a timeout: an
   expression too expensive to evaluate returns no options.
 - **Paginated fields:** text search by label (`?team=plat`) only works for fields
   whose serializer opted in (see 15.3). Without that configuration the value is
@@ -787,10 +787,11 @@ Search on organization-scoped paginated fields ignores case and accents
 (`?team=gestao` matches "Gestão"), using PostgreSQL `unaccent`
 (`filter_ignore_accents`).
 
-Relations to models without `organization_id` (e.g. `User`, `Organization`) cannot be
-scoped to the session organization: the API refuses to start if such a field is
-exposed, unless the serializer marks it as global with
-`options_extra_kwargs = {'<field>': {'organization_scoped': False}}`.
+Relations to models without `organization_id` (e.g. `User`, `Organization`) must
+declare how they are scoped: `options_extra_kwargs = {'<field>':
+{'organization_lookup': 'members__organization_id'}}` (a path to the organization).
+Otherwise the API refuses to start, unless the field is explicitly marked global with
+`{'organization_scoped': False}`.
 
 ### 15.4. Migration from `/choices/`
 

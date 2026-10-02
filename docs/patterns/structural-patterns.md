@@ -118,8 +118,10 @@ class ModelViewSetMixin(
 - `?<field>=<value>` filters choice fields by a regex (label or value,
   ignoring case and accents); paginated fields only filter when `filter_field_name`/`label_field_name`
   is configured, otherwise the value is ignored and a warning is logged
-- Choice regexes run with the `regex` package under a time budget
-  (`CHOICES_SEARCH_TIMEOUT`); `re` has no timeout and a user-supplied pattern such
+- Choice regexes run with the `regex` package and a per-call engine timeout
+  (`CHOICES_SEARCH_TIMEOUT`); the first timeout stops the field, which returns no
+  options. Only the engine call is timed, so GC or CPU pauses in the Python loop do
+  not cut legitimate searches. `re` has no timeout and a user-supplied pattern such
   as `(\w|\w)*\d` would hold the worker. Never evaluate user regexes with `re`
 - `filter_ignore_accents = True` (organization-scoped options) applies PostgreSQL
   `unaccent()` to both the column and the searched value (extension created in
@@ -129,7 +131,11 @@ class ModelViewSetMixin(
   the ViewSet class is created, so `get_serializer_class()` runs without a request
   (guard with `getattr(self, 'request', None)`), and an organization-scoped options
   serializer refuses relations to models without `organization_id` unless the field
-  declares `organization_scoped: False` in `Meta.options_extra_kwargs`
+  declares `organization_lookup` (path to the organization, validated at startup) or
+  `organization_scoped: False` in `Meta.options_extra_kwargs`
+- `PrimaryKeyOrganizationRelatedFieldMixin` accepts `organization_lookup` as a kwarg,
+  so write fields (`extra_kwargs`) and options fields share the same scoping; lookups
+  through a relation apply `distinct()`
 - Pagination: `PaginatedOptionsBaseSerializer.get_pagination_class()` reads
   `DEFAULT_PAGINATION_CLASS` at runtime; a page past the end of a field is empty
   (200), not a 404 for the whole response
