@@ -15,3 +15,6 @@ class TeamFilter(FilterSetMixin, filterset.FilterSet):
             'organization': ['exact'],
             'is_active': ['exact'],
         }
+        options_extra_kwargs = {
+            'organization': {'organization_lookup': 'id', 'label_field_name': 'name'},
+        }

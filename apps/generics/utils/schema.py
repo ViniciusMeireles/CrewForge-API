@@ -77,6 +77,16 @@ def extend_schema_options_update(model: type[BaseModel], **kwargs):
     return extend_schema(**kwargs)
 
 
+def extend_schema_options_list(model: type[BaseModel], **kwargs):
+    kwargs.setdefault('tags', model.schema_tags())
+    msg = format_lazy(
+        _('Filter options for listing {name}.'), name=get_verbose_name_plural(model)
+    )
+    kwargs.setdefault('description', msg)
+    kwargs.setdefault('summary', msg)
+    return extend_schema(**kwargs)
+
+
 def _get_form_options_field_description(
     field_name: str, field: serializers.Field, search: bool = True
 ) -> str:

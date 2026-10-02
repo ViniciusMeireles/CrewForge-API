@@ -1,17 +1,23 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
-from django_filters.rest_framework import filterset
+from django_filters.rest_framework import DjangoFilterBackend, filterset
 from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
-from apps.generics.serializers.options import OptionsModelSerializer, OptionsSerializer
+from apps.generics.serializers.options import (
+    OptionsFilterSetSerializer,
+    OptionsModelSerializer,
+    OptionsSerializer,
+)
 from apps.generics.utils.filters import orderable_filter_factory
-from apps.generics.utils.models import get_verbose_name
+from apps.generics.utils.models import get_verbose_name, get_verbose_name_plural
 from apps.generics.utils.schema import (
     extend_schema_options_create,
+    extend_schema_options_list,
     extend_schema_options_update,
     get_form_options_parameters,
 )
@@ -63,8 +69,9 @@ class OrderableModelViewSetMetaclass(type):
 
 
 OPTIONS_SERIALIZER_DESCRIPTIONS = {
-    'create': _('Form options to create a {name}.'),
-    'update': _('Form options to update a {name}.'),
+    'create': (_('Form options to create a {name}.'), get_verbose_name),
+    'update': (_('Form options to update a {name}.'), get_verbose_name),
+    'list': (_('Filter options for listing {name}.'), get_verbose_name_plural),
 }
 
 
@@ -74,15 +81,18 @@ class OptionsBaseModelMixin:
 
     ``GET form-options-create/`` and ``GET form-options-update/`` describe the
     selectable fields (choices and writable relations) of the serializer the
-    ViewSet uses for ``create`` and ``update``. The routes themselves are
-    registered by ``OptionsModelViewSetMetaclass``.
+    ViewSet uses for ``create`` and ``update``. ``GET filter-options/`` describes
+    the selectable filters (choices, relations and ``order_by``) of the
+    ``filterset_class`` used by ``list``. The routes themselves are registered by
+    ``OptionsModelViewSetMetaclass``.
 
     ViewSet attributes:
 
     - ``options_actions``: CRUD actions that get an options route; ``()`` disables
       them (use it when a relation points to a model without organization scope).
-    - ``options_serializer_class``: base class of the generated options
+    - ``options_serializer_class``: base class of the generated form options
       serializer; defines how relation querysets are scoped.
+    - ``options_filterset_serializer_class``: same for the filter options.
     - ``options_search``: ``False`` turns off the ``?<field>=<value>`` search on
       every field of the routes (field selection keeps working).
     - ``url_path_options_*`` / ``action_options_*``: route path and action name.
@@ -95,10 +105,13 @@ class OptionsBaseModelMixin:
 
     url_path_options_create = 'form-options-create'
     url_path_options_update = 'form-options-update'
+    url_path_options_list = 'filter-options'
     action_options_create = 'form_options_create'
     action_options_update = 'form_options_update'
-    options_actions = ('create', 'update')
+    action_options_list = 'filter_options'
+    options_actions = ('create', 'update', 'list')
     options_serializer_class = OptionsModelSerializer
+    options_filterset_serializer_class = OptionsFilterSetSerializer
     options_search = True
 
     @classmethod
@@ -107,11 +120,19 @@ class OptionsBaseModelMixin:
         return {
             'create': cls.action_options_create,
             'update': cls.action_options_update,
+            'list': cls.action_options_list,
         }
 
     @classmethod
     def get_options_actions_inverse_map(cls) -> dict[str, str]:
         return {v: k for k, v in cls.get_options_actions_map().items()}
+
+    @classmethod
+    def _get_options_cache(cls) -> dict:
+        """Options serializer classes built for this ViewSet (not inherited)."""
+        if '_options_serializer_class_cache' not in cls.__dict__:
+            cls._options_serializer_class_cache = {}
+        return cls._options_serializer_class_cache
 
     @classmethod
     def _get_options_serializer_class(cls, serializer_class, view_action):
@@ -125,10 +146,7 @@ class OptionsBaseModelMixin:
         """
         if issubclass(serializer_class, OptionsSerializer):
             return serializer_class
-        cache = cls.__dict__.get('_options_serializer_class_cache')
-        if cache is None:
-            cache = {}
-            cls._options_serializer_class_cache = cache
+        cache = cls._get_options_cache()
         key = (serializer_class, cls.options_serializer_class, view_action)
         if key not in cache:
             meta_bases = ()
@@ -144,13 +162,61 @@ class OptionsBaseModelMixin:
                     ),
                 },
             )
-            description = OPTIONS_SERIALIZER_DESCRIPTIONS.get(view_action.lower())
-            if description is not None:
-                options_class = extend_schema_serializer(
-                    description=format_lazy(description, name=get_verbose_name(model))
-                )(options_class)
-            cache[key] = options_class
+            cache[key] = cls._describe_options_serializer_class(
+                options_class, model, view_action
+            )
         return cache[key]
+
+    @classmethod
+    def _get_filter_options_serializer_class(cls, filterset_class):
+        """Build (once per ViewSet) the options serializer for a filterset."""
+        cache = cls._get_options_cache()
+        key = (filterset_class, cls.options_filterset_serializer_class, 'List')
+        if key not in cache:
+            model = filterset_class._meta.model
+            options_class = type(
+                f'OptionsList{model.__name__}',
+                (cls.options_filterset_serializer_class,),
+                {
+                    'Meta': type(
+                        'Meta',
+                        (),
+                        {'model': model, 'filterset_class': filterset_class},
+                    )
+                },
+            )
+            cache[key] = cls._describe_options_serializer_class(
+                options_class, model, 'List'
+            )
+        return cache[key]
+
+    @staticmethod
+    def _describe_options_serializer_class(options_class, model, view_action):
+        description = OPTIONS_SERIALIZER_DESCRIPTIONS.get(view_action.lower())
+        if description is None:
+            return options_class
+        message, get_name = description
+        return extend_schema_serializer(
+            description=format_lazy(message, name=get_name(model))
+        )(options_class)
+
+    def get_options_filterset_class(self):
+        """
+        Filterset whose filters are described by ``filter-options/``: the
+        ``filterset_class`` of a ViewSet that filters with ``DjangoFilterBackend``.
+        """
+        filter_backends = getattr(self, 'filter_backends', None) or ()
+        if not any(
+            isinstance(backend, type) and issubclass(backend, DjangoFilterBackend)
+            for backend in filter_backends
+        ):
+            return None
+        filterset_class = getattr(self, 'filterset_class', None)
+        if filterset_class is None or getattr(filterset_class, '_meta', None) is None:
+            return None
+        if filterset_class._meta.model is None:
+            return None
+        return filterset_class
 
     def get_options_serializer_class(self):
         """
@@ -162,6 +228,10 @@ class OptionsBaseModelMixin:
         """
         options_action = self.action
         source_action = self.get_options_actions_inverse_map()[options_action]
+        if source_action == 'list':
+            if (filterset_class := self.get_options_filterset_class()) is None:
+                return None
+            return self._get_filter_options_serializer_class(filterset_class)
         self.action = source_action
         try:
             serializer_class = self.get_serializer_class()
@@ -174,7 +244,8 @@ class OptionsBaseModelMixin:
 
     def form_options(self, request, *args, **kwargs):
         """Render the options; fields ignore the (empty) instance."""
-        serializer_class = self.get_options_serializer_class()
+        if (serializer_class := self.get_options_serializer_class()) is None:
+            raise NotFound()
         context = self.get_serializer_context()
         context['options_search'] = self.options_search
         serializer = serializer_class({}, context=context)
@@ -186,6 +257,9 @@ class OptionsBaseModelMixin:
     def _form_options_update(self, request, *args, **kwargs):
         return self.form_options(request, *args, **kwargs)
 
+    def _form_options_list(self, request, *args, **kwargs):
+        return self.form_options(request, *args, **kwargs)
+
 
 class OptionsModelViewSetMetaclass(type):
     """
@@ -193,7 +267,8 @@ class OptionsModelViewSetMetaclass(type):
 
     A route is added for each action in ``options_actions`` whose options
     serializer has at least one field, so resources without choices or writable
-    relations get no route. ViewSets without ``GET`` are skipped.
+    relations (or, for ``list``, without a filterset with choice/relation filters)
+    get no route. ViewSets without ``GET`` are skipped.
     """
 
     def __new__(cls, name, bases, attrs):
@@ -223,6 +298,13 @@ class OptionsModelViewSetMetaclass(type):
                 klass.url_path_options_update,
                 klass._form_options_update,
                 extend_schema_options_update,
+            ),
+            (
+                'list',
+                klass.action_options_list,
+                klass.url_path_options_list,
+                klass._form_options_list,
+                extend_schema_options_list,
             ),
         )
         for source_action, action_name, url_path, handler, schema in options_routes:
@@ -278,6 +360,8 @@ class OptionsModelViewSetMetaclass(type):
             view_obj = klass()
             view_obj.action = options_action
             serializer_class = view_obj.get_options_serializer_class()
+            if serializer_class is None:
+                return None
             fields = serializer_class({}).get_fields()
         except ImproperlyConfigured:
             raise

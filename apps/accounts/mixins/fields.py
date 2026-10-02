@@ -37,14 +37,31 @@ class PrimaryKeyOrganizationRelatedFieldMixin(OrganizationScopedFieldMixin):
     model has that field. Models scoped through a relation declare the path with
     the ``organization_lookup`` kwarg (e.g. ``'team__organization_id'`` or
     ``'members__organization_id'``), which is always applied.
+
+    ``organization_filters`` adds lookups to the same ``filter()`` call as the
+    organization lookup, so conditions on a to-many path apply to the same related
+    row (e.g. ``{'members__is_active': True}`` with ``'members__organization_id'``
+    keeps only users with an active membership in the session organization).
+
+    Without a session organization the queryset is empty: ``<lookup>=None`` would
+    match rows without an organization (``IS NULL``).
     """
 
     organization_lookup: str | None = None
+    organization_filters: dict | None = None
 
-    def __init__(self, *args, organization_lookup: str | None = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        organization_lookup: str | None = None,
+        organization_filters: dict | None = None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if organization_lookup is not None:
             self.organization_lookup = organization_lookup
+        if organization_filters is not None:
+            self.organization_filters = dict(organization_filters)
 
     def get_organization_lookup(self, model) -> str | None:
         """Lookup that scopes ``model`` to the organization, or ``None``."""
@@ -54,13 +71,23 @@ class PrimaryKeyOrganizationRelatedFieldMixin(OrganizationScopedFieldMixin):
             return 'organization_id'
         return None
 
+    def get_organization_filters(self, model) -> dict:
+        """Lookups applied together with the organization lookup."""
+        return dict(self.organization_filters or {})
+
     def get_queryset(self):
         queryset = super().get_queryset()
-        if lookup := self.get_organization_lookup(queryset.model):
-            queryset = queryset.filter(**{lookup: self.auth_organization_id})
-            # A lookup through a to-many relation can repeat rows.
-            if '__' in lookup:
-                queryset = queryset.distinct()
+        if not (lookup := self.get_organization_lookup(queryset.model)):
+            return queryset
+        if self.auth_organization_id is None:
+            return queryset.none()
+        queryset = queryset.filter(
+            **{lookup: self.auth_organization_id},
+            **self.get_organization_filters(queryset.model),
+        )
+        # A lookup through a to-many relation can repeat rows.
+        if '__' in lookup:
+            queryset = queryset.distinct()
         return queryset
 
 

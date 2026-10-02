@@ -1,6 +1,7 @@
 from django_filters.rest_framework import filters, filterset
 
 from apps.accounts.mixins.filters import FilterSetMixin
+from apps.accounts.models.member import Member
 from apps.teams.models.team_member import TeamMember
 
 
@@ -39,4 +40,8 @@ class TeamMemberFilter(FilterSetMixin, filterset.FilterSet):
             'member': ['exact'],
             'is_active': ['exact'],
             'role': ['exact', 'in'],
+        }
+        options_extra_kwargs = {
+            'team': {'label_field_name': 'name'},
+            'member': {'label_field_name': Member.label_expression()},
         }

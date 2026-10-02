@@ -2,11 +2,14 @@ import copy
 from types import SimpleNamespace
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase, TestCase
 from rest_framework import viewsets
 
+from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
+from apps.accounts.factories.users import UserFactory
 from apps.accounts.fields import PaginatedOptionsActiveOrganizationSerializer
 from apps.accounts.mixins.fields import PrimaryKeyRelatedField
 from apps.accounts.mixins.views import ModelViewSetMixin
@@ -134,3 +137,82 @@ class OrganizationLookupScopeTestCase(TestCase):
         field = PrimaryKeyRelatedField(queryset=User.objects.all())
         field._context = self.context
         self.assertIsNone(field.get_organization_lookup(User))
+
+    def test_without_session_organization_is_empty(self):
+        MemberFactory(organization=self.organization)
+        UserFactory()
+        field_builders = {
+            'options_lookup': lambda: PaginatedOptionsActiveOrganizationSerializer(
+                queryset=User.objects.all(),
+                organization_lookup='members__organization_id',
+            ),
+            'options_default': lambda: PaginatedOptionsActiveOrganizationSerializer(
+                queryset=Member.objects.all()
+            ),
+            'write_lookup': lambda: PrimaryKeyRelatedField(
+                queryset=User.objects.all(),
+                organization_lookup='members__organization_id',
+            ),
+            'write_default': lambda: PrimaryKeyRelatedField(
+                queryset=Member.objects.all()
+            ),
+        }
+        requests = {
+            'no_request': None,
+            'anonymous': SimpleNamespace(user=AnonymousUser(), session={}),
+        }
+        for request_name, request in requests.items():
+            for field_name, build_field in field_builders.items():
+                with self.subTest(field=field_name, request=request_name):
+                    field = build_field()
+                    field._context = {'request': request}
+                    self.assertFalse(field.get_queryset().exists())
+
+    def test_unscoped_model_is_kept_without_session_organization(self):
+        field = PrimaryKeyRelatedField(queryset=User.objects.all())
+        field._context = {'request': None}
+        self.assertTrue(field.get_queryset().exists())
+
+    def test_organization_filters_apply_to_the_same_relation_row(self):
+        user = UserFactory()
+        MemberFactory(organization=self.organization, user=user, is_active=False)
+        MemberFactory(organization=self.other_organization, user=user)
+        field = PaginatedOptionsActiveOrganizationSerializer(
+            queryset=User.objects.all(),
+            organization_lookup='members__organization_id',
+            organization_filters={'members__is_active': True},
+        )
+        field._context = self.context
+        users = set(field.get_queryset())
+        self.assertIn(self.organization.owner.user, users)
+        self.assertNotIn(user, users)
+
+    def test_organization_filters_survive_deepcopy(self):
+        field = PrimaryKeyRelatedField(
+            queryset=User.objects.all(),
+            organization_lookup='members__organization_id',
+            organization_filters={'members__is_active': True},
+        )
+        self.assertEqual(
+            copy.deepcopy(field).organization_filters, {'members__is_active': True}
+        )
+
+
+class _InvalidOrganizationFiltersSerializer(StoredFileCreateUpdateModelSerializer):
+    class Meta(StoredFileCreateUpdateModelSerializer.Meta):
+        options_extra_kwargs = {
+            'owner': {
+                'organization_lookup': 'members__organization_id',
+                'organization_filters': {'members__nope': True},
+            },
+            'organization': {'organization_lookup': 'id'},
+        }
+
+
+class OrganizationFiltersBuildTestCase(SimpleTestCase):
+    def test_invalid_organization_filters_fail_at_class_creation(self):
+        with self.assertRaisesMessage(ImproperlyConfigured, 'members__nope'):
+
+            class InvalidViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
+                queryset = StoredFile.objects.all()
+                serializer_class = _InvalidOrganizationFiltersSerializer

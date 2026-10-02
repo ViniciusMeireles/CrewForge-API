@@ -503,6 +503,7 @@ Email and role are taken from the invitation itself (not from the request body).
 | Send email | `POST /api/accounts/invitations/{id}/send-email/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Form options (create) | `GET /api/accounts/invitations/form-options-create/` | Admin+ |
 | Form options (update) | `GET /api/accounts/invitations/form-options-update/` | Admin+ |
+| Filter options | `GET /api/accounts/invitations/filter-options/` | Admin+ |
 
 ### Send Email Cooldown
 
@@ -552,6 +553,7 @@ Creating a team auto-creates a `TeamMember` record with `OWNER` role for the cre
 | Delete | `DELETE /api/teams/team-members/{id}/` | Admin+ |
 | Form options (create) | `GET /api/teams/team-members/form-options-create/` | Member of the org |
 | Form options (update) | `GET /api/teams/team-members/form-options-update/` | Member of the org |
+| Filter options | `GET /api/teams/team-members/filter-options/` | Member of the org |
 
 Re-adding a previously removed (soft-deleted) team member reactivates their membership.
 
@@ -702,6 +704,7 @@ with exactly the values the write endpoint accepts.
 
 Organizations, organization profiles, members, teams and stored files have **no**
 form-options endpoint. Use the regular list endpoints when a picker is needed.
+For the dropdowns of **list filters**, use `filter-options/` (see 15.5).
 
 Permissions are the same as the resource's read permission (see
 [Authentication](#3-authentication-flow)): invitations require an admin,
@@ -791,7 +794,10 @@ Relations to models without `organization_id` (e.g. `User`, `Organization`) must
 declare how they are scoped: `options_extra_kwargs = {'<field>':
 {'organization_lookup': 'members__organization_id'}}` (a path to the organization).
 Otherwise the API refuses to start, unless the field is explicitly marked global with
-`{'organization_scoped': False}`.
+`{'organization_scoped': False}`. Extra conditions on the same related row go in
+`organization_filters` (e.g. `{'members__is_active': True}`). Without a session
+organization, relation options are always empty. A key of `options_extra_kwargs`
+that is not a field/filter, or an unknown kwarg, also makes the API refuse to start.
 
 ### 15.4. Migration from `/choices/`
 
@@ -803,6 +809,53 @@ The legacy `GET /api/<resource>/choices/` endpoints were removed (no alias).
 | `GET /api/teams/team-members/choices/` | `GET /api/teams/team-members/form-options-create/` (`team`, `member`, `role`) |
 | `GET /api/accounts/{organizations,members}/choices/`, `GET /api/teams/teams/choices/`, ... | List endpoint of the resource |
 | Response `{count, next, previous, results}` | Object keyed by field; array for choices, `{count, num_pages, page_number, results}` for relations |
+
+### 15.5. Filter options (list filters)
+
+Resources whose list has select-like filters expose `GET .../filter-options/`. It
+returns one key per filter of the list endpoint, **named after the list query
+parameter**, so the value of an option can be sent as-is to the list:
+`GET .../filter-options/` → `{"role": [{"value": "admin", ...}]}` →
+`GET .../?role=admin`.
+
+| Route | Keys |
+|---|---|
+| `GET /api/accounts/invitations/filter-options/` | `role`, `role__in`, `order_by` |
+| `GET /api/accounts/members/filter-options/` | `organization`, `user`, `role`, `role__in`, `order_by` |
+| `GET /api/accounts/organization-images/filter-options/` | `image_type`, `organization`, `order_by` |
+| `GET /api/accounts/organizations/filter-options/` | `order_by` |
+| `GET /api/accounts/organization-profiles/filter-options/` | `order_by` |
+| `GET /api/teams/teams/filter-options/` | `organization`, `order_by` |
+| `GET /api/teams/team-members/filter-options/` | `team`, `member`, `role`, `role__in`, `order_by` |
+
+Stored files have no filter-options endpoint.
+
+- **Shapes, field selection, pagination and search** are the same as the form
+  options (15.1–15.2): choice filters return an array, relation filters a paginated
+  envelope scoped to the session organization and active records.
+- `role` and `role__in` return the same options: `role` takes one value, `role__in`
+  a comma-separated list (`?role__in=admin,member`) **on the list endpoint**. On
+  `filter-options/` the value of `?role__in=` is a search regex like any other
+  choice field, not a CSV: send `?role__in` (empty) to select the field.
+- `order_by` lists every sort option of the list, ascending (`email`) and
+  descending (`-email`).
+- Text filters (`*__icontains`, `name`...), boolean, date and number filters have
+  no options and are not returned; neither are custom (`method=`) filters unless
+  they declare their own choices.
+- Permissions are the same as the list of the resource (the route answers with the
+  same status code as `GET .../`). Options do not depend on the caller role: for
+  invitations every role is listed even when the list hides some of them.
+- Label/search of relation filters:
+
+| Route field | Label / search |
+|---|---|
+| members `user` | user `full_name` (falls back to the username); only users with an **active** membership in the session organization |
+| members, organization-images, teams `organization` | `name` (only the session organization) |
+| team-members `team` | `name` |
+| team-members `member` | `Member.label_expression()` |
+
+The backend declares these per filter in the filterset `Meta.options_extra_kwargs`
+(same keys as 15.3).
 
 ---
 

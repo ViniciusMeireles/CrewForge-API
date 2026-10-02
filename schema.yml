@@ -471,6 +471,44 @@ paths:
                     detail: Invitation not found or expired
                   summary: Invitation not found or expired
           description: Invitation not found.
+  /api/accounts/invitations/filter-options/:
+    get:
+      operationId: accounts_invitations_filter_options_retrieve
+      description: Filter options for listing Invitations.
+      summary: Filter options for listing Invitations.
+      parameters:
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: Return only `order_by`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: role
+        schema:
+          type: string
+        description: Return only `role`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: role__in
+        schema:
+          type: string
+        description: Return only `role__in`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListInvitation'
+          description: ''
   /api/accounts/invitations/form-options-create/:
     get:
       operationId: accounts_invitations_form_options_create_retrieve
@@ -1065,6 +1103,70 @@ paths:
                     detail: Invitation not found or expired
                   summary: Invitation not found or expired
           description: Invitation not found or already accepted/expired.
+  /api/accounts/members/filter-options/:
+    get:
+      operationId: accounts_members_filter_options_retrieve
+      description: Filter options for listing Members.
+      summary: Filter options for listing Members.
+      parameters:
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: Return only `order_by`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: organization
+        schema:
+          type: string
+        description: Return only `organization` (paginated). A non-empty value filters
+          its options by label (`unaccent__icontains`).
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: A page number within the paginated result set. Applies to every
+          paginated field in the response; combine with `?<field>` to paginate a single
+          one.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of results to return per page. Maximum: 100. Applies
+          to every paginated field in the response; combine with `?<field>` to paginate
+          a single one.'
+      - in: query
+        name: role
+        schema:
+          type: string
+        description: Return only `role`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: role__in
+        schema:
+          type: string
+        description: Return only `role__in`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: user
+        schema:
+          type: string
+        description: Return only `user` (paginated). A non-empty value filters its
+          options by label (`unaccent__icontains`).
+      tags:
+      - Members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListMember'
+          description: ''
   /api/accounts/organization-images/:
     get:
       operationId: accounts_organization_images_list
@@ -1293,6 +1395,55 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/accounts/organization-images/filter-options/:
+    get:
+      operationId: accounts_organization_images_filter_options_retrieve
+      description: Filter options for listing Organization Images.
+      summary: Filter options for listing Organization Images.
+      parameters:
+      - in: query
+        name: image_type
+        schema:
+          type: string
+        description: 'Return only `image_type`. Search is disabled on this route:
+          the value is ignored.'
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: 'Return only `order_by`. Search is disabled on this route: the
+          value is ignored.'
+      - in: query
+        name: organization
+        schema:
+          type: string
+        description: 'Return only `organization`. Search is disabled on this route:
+          the value is ignored.'
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: A page number within the paginated result set. Applies to every
+          paginated field in the response; combine with `?<field>` to paginate a single
+          one.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of results to return per page. Maximum: 100. Applies
+          to every paginated field in the response; combine with `?<field>` to paginate
+          a single one.'
+      tags:
+      - Organization images
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListOrganizationImage'
+          description: ''
   /api/accounts/organization-images/form-options-create/:
     get:
       operationId: accounts_organization_images_form_options_create_retrieve
@@ -1519,6 +1670,30 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/accounts/organization-profiles/filter-options/:
+    get:
+      operationId: accounts_organization_profiles_filter_options_retrieve
+      description: Filter options for listing Organization Profiles.
+      summary: Filter options for listing Organization Profiles.
+      parameters:
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: Return only `order_by`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      tags:
+      - Organization profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListOrganizationProfile'
+          description: ''
   /api/accounts/organizations/:
     get:
       operationId: accounts_organizations_list
@@ -1789,6 +1964,30 @@ paths:
                     detail: User not authenticated.
                   summary: User not authenticated
           description: User not authenticated.
+  /api/accounts/organizations/filter-options/:
+    get:
+      operationId: accounts_organizations_filter_options_retrieve
+      description: Filter options for listing Organizations.
+      summary: Filter options for listing Organizations.
+      parameters:
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: Return only `order_by`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      tags:
+      - Organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListOrganization'
+          description: ''
   /api/accounts/session/:
     get:
       operationId: accounts_session_retrieve
@@ -2660,6 +2859,70 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/teams/team-members/filter-options/:
+    get:
+      operationId: teams_team_members_filter_options_retrieve
+      description: Filter options for listing Team Members.
+      summary: Filter options for listing Team Members.
+      parameters:
+      - in: query
+        name: member
+        schema:
+          type: string
+        description: Return only `member` (paginated). A non-empty value filters its
+          options by label (`unaccent__icontains`).
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: Return only `order_by`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: A page number within the paginated result set. Applies to every
+          paginated field in the response; combine with `?<field>` to paginate a single
+          one.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of results to return per page. Maximum: 100. Applies
+          to every paginated field in the response; combine with `?<field>` to paginate
+          a single one.'
+      - in: query
+        name: role
+        schema:
+          type: string
+        description: Return only `role`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: role__in
+        schema:
+          type: string
+        description: Return only `role__in`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: team
+        schema:
+          type: string
+        description: Return only `team` (paginated). A non-empty value filters its
+          options by label (`unaccent__icontains`).
+      tags:
+      - Team members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListTeamMember'
+          description: ''
   /api/teams/team-members/form-options-create/:
     get:
       operationId: teams_team_members_form_options_create_retrieve
@@ -2941,6 +3204,50 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/teams/teams/filter-options/:
+    get:
+      operationId: teams_teams_filter_options_retrieve
+      description: Filter options for listing Teams.
+      summary: Filter options for listing Teams.
+      parameters:
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: Return only `order_by`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: organization
+        schema:
+          type: string
+        description: Return only `organization` (paginated). A non-empty value filters
+          its options by label (`unaccent__icontains`).
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: A page number within the paginated result set. Applies to every
+          paginated field in the response; combine with `?<field>` to paginate a single
+          one.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of results to return per page. Maximum: 100. Applies
+          to every paginated field in the response; combine with `?<field>` to paginate
+          a single one.'
+      tags:
+      - Teams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListTeam'
+          description: ''
 components:
   schemas:
     ByKeyNotFound:
@@ -3754,6 +4061,114 @@ components:
           allOf:
           - $ref: '#/components/schemas/PaginatedIntOptions'
           description: Member of the team
+    OptionsListInvitation:
+      type: object
+      description: Filter options for listing Invitations.
+      properties:
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+        role__in:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Multiple values may be separated by commas.
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
+    OptionsListMember:
+      type: object
+      description: Filter options for listing Members.
+      properties:
+        organization:
+          $ref: '#/components/schemas/PaginatedIntOptions'
+        user:
+          $ref: '#/components/schemas/PaginatedIntOptions'
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+        role__in:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Multiple values may be separated by commas.
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
+    OptionsListOrganization:
+      type: object
+      description: Filter options for listing Organizations.
+      properties:
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
+    OptionsListOrganizationImage:
+      type: object
+      description: Filter options for listing Organization Images.
+      properties:
+        image_type:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/PaginatedIntOptions'
+          description: Filter by organization
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
+    OptionsListOrganizationProfile:
+      type: object
+      description: Filter options for listing Organization Profiles.
+      properties:
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
+    OptionsListTeam:
+      type: object
+      description: Filter options for listing Teams.
+      properties:
+        organization:
+          $ref: '#/components/schemas/PaginatedIntOptions'
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
+    OptionsListTeamMember:
+      type: object
+      description: Filter options for listing Team Members.
+      properties:
+        team:
+          $ref: '#/components/schemas/PaginatedIntOptions'
+        member:
+          $ref: '#/components/schemas/PaginatedIntOptions'
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+        role__in:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Multiple values may be separated by commas.
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
     OptionsUpdateInvitation:
       type: object
       description: Form options to update a Invitation.

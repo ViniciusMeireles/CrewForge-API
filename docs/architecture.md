@@ -101,7 +101,7 @@ Standard declaration:
 ```python
 class MyViewSet(
     OrganizationScopedViewSetMixin,  # 1st: scope by org
-    ModelViewSetMixin,  # 2nd: soft-delete + form options
+    ModelViewSetMixin,  # 2nd: soft-delete + form/filter options
     viewsets.ModelViewSet,  # 3rd: DRF base
 ):
     serializer_class = MySerializer

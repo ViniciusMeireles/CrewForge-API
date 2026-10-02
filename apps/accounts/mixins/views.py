@@ -1,5 +1,8 @@
 from apps.accounts.mixins.requests import OrganizationScopedRequestMixin
-from apps.accounts.serializers.options import OptionsOrganizationModelSerializer
+from apps.accounts.serializers.options import (
+    OptionsOrganizationFilterSetSerializer,
+    OptionsOrganizationModelSerializer,
+)
 from apps.generics.mixins.views import (
     OptionsModelMixin,
     OptionsModelViewSetMetaclass,
@@ -8,16 +11,23 @@ from apps.generics.mixins.views import (
 
 
 class ModelViewSetMetaclass(
-    OrderableModelViewSetMetaclass,
     OptionsModelViewSetMetaclass,
+    OrderableModelViewSetMetaclass,
 ):
-    """Combine the orderable filter and form-options metaclasses."""
+    """
+    Combine the orderable filter and options metaclasses.
+
+    ``OptionsModelViewSetMetaclass`` comes first so ``OrderableModelViewSetMetaclass``
+    runs inside its ``super().__new__``: the ``order_by`` filter already exists when
+    the filter options are built.
+    """
 
 
 class OptionsOrganizationModelMixin(OptionsModelMixin):
-    """Form-options mixin with organization and active scoping on relations."""
+    """Options mixin with organization and active scoping on relations."""
 
     options_serializer_class = OptionsOrganizationModelSerializer
+    options_filterset_serializer_class = OptionsOrganizationFilterSetSerializer
 
 
 class ModelViewSetMixin(

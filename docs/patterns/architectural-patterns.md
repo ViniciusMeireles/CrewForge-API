@@ -91,7 +91,7 @@ Standard declaration:
 ```python
 class MyViewSet(
     OrganizationScopedViewSetMixin,  # 1st: scope by org
-    ModelViewSetMixin,  # 2nd: soft-delete + form options
+    ModelViewSetMixin,  # 2nd: soft-delete + form/filter options
     viewsets.ModelViewSet,  # 3rd: DRF base
 ):
     serializer_class = MySerializer
@@ -422,6 +422,7 @@ Additional mixins for specific needs:
 - `ValidateRoleSerializerMixin` — validates role field changes with hierarchy checks
 - `UserTokenSerializerMixin` — injects JWT `refresh`/`access` fields via metaclass
 - `OptionsModelSerializer` (`apps/generics/serializers/options.py`) — builds form-options (value/label) from a source serializer
+- `OptionsFilterSetSerializer` (`apps/generics/serializers/options.py`) — builds filter-options (value/label) from a source filterset
 
 ### App-Specific Settings
 

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Group, Permission
+from django.core.exceptions import ImproperlyConfigured
 from django.test import RequestFactory, SimpleTestCase
 from rest_framework import serializers
 from rest_framework.request import Request
@@ -171,3 +172,33 @@ class OptionsModelSerializerFieldNamesTestCase(SimpleTestCase):
     def test_write_only_extra_kwarg_is_ignored(self):
         role = _options_class(_OptInSerializer)({}).get_fields()['role']
         self.assertFalse(role.write_only)
+
+
+class _UnknownFieldOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeamMember
+        fields = ['team', 'role']
+        options_extra_kwargs = {'tema': {'label_field_name': 'name'}}
+
+
+class _UnknownKwargOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeamMember
+        fields = ['team', 'role']
+        options_extra_kwargs = {'team': {'label_feld_name': 'name'}}
+
+
+class OptionsExtraKwargsValidationTestCase(SimpleTestCase):
+    def test_unknown_field_fails(self):
+        options_class = _options_class(_UnknownFieldOptionsSerializer)
+        with self.assertRaisesMessage(ImproperlyConfigured, "['tema']"):
+            options_class({}).get_fields()
+
+    def test_unknown_kwarg_fails(self):
+        options_class = _options_class(_UnknownKwargOptionsSerializer)
+        with self.assertRaisesMessage(ImproperlyConfigured, "['label_feld_name']"):
+            options_class({}).get_fields()
+
+    def test_valid_options_extra_kwargs(self):
+        fields = _options_class(TeamMemberSerializer)({}).get_fields()
+        self.assertEqual(fields['team'].label_field_name, 'name')

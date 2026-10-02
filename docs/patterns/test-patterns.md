@@ -126,6 +126,7 @@ Tests HTTP CRUD operations via the API.
 - `test_create_duplicate_{field}` — 400
 - `test_create_all_{variants}` — all type/permission variants
 - `test_form_options_{create,update}` — form-options returns the expected field keys and shapes (or `NoReverseMatch` when the resource opts out)
+- `test_filter_options.py` (per app) — filter-options keys per resource, cross-org/inactive scoping of relation filters, and an `expected_status` table per auth scenario (`FilterOptionsTestMixin` in `apps/accounts/tests/mixins.py` pins each status and checks the list answers the same)
 
 **Standard imports:**
 ```python
