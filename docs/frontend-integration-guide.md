@@ -703,8 +703,11 @@ with exactly the values the write endpoint accepts.
 Organizations, organization profiles, members, teams and stored files have **no**
 form-options endpoint. Use the regular list endpoints when a picker is needed.
 
-Permissions are the same as the resource's read permission, and the organization
-session is required (see [Authentication](#3-authentication-flow)).
+Permissions are the same as the resource's read permission (see
+[Authentication](#3-authentication-flow)): invitations require an admin,
+team-members an active member of the session organization, and organization-images
+also answer anonymous requests. Search is **disabled** on the organization-images
+routes (`?image_type=<value>` only selects the field).
 
 ### 15.1. Response shapes
 
@@ -747,7 +750,10 @@ organization and to active records, the same rules the write endpoint validates:
 | `?page_size=N` | Page size (default 10, max 100). |
 
 `page` and `page_size` apply to **all** relation fields in the response. To paginate
-a single picker, combine them with field selection: `?member&page=2`.
+a single picker, combine them with field selection: `?member&page=2`. A page past
+the end of a field returns that field with `results: []` (keeping `count`,
+`num_pages` and the requested `page_number`), so infinite scroll can stop when
+`page_number >= num_pages`. `page=0`, negative or non-numeric pages answer 404.
 
 Filtering by value:
 
@@ -780,6 +786,11 @@ by the options serializer; the write fields never see it):
 Search on organization-scoped paginated fields ignores case and accents
 (`?team=gestao` matches "Gestão"), using PostgreSQL `unaccent`
 (`filter_ignore_accents`).
+
+Relations to models without `organization_id` (e.g. `User`, `Organization`) cannot be
+scoped to the session organization: the API refuses to start if such a field is
+exposed, unless the serializer marks it as global with
+`options_extra_kwargs = {'<field>': {'organization_scoped': False}}`.
 
 ### 15.4. Migration from `/choices/`
 

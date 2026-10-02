@@ -121,8 +121,21 @@ class ModelViewSetMixin(
 - Choice regexes run with the `regex` package under a time budget
   (`CHOICES_SEARCH_TIMEOUT`); `re` has no timeout and a user-supplied pattern such
   as `(\w|\w)*\d` would hold the worker. Never evaluate user regexes with `re`
-- `filter_ignore_accents = True` (organization-scoped options) searches through
-  PostgreSQL `unaccent()` (extension created in `accounts/0002_unaccent_extension`)
+- `filter_ignore_accents = True` (organization-scoped options) applies PostgreSQL
+  `unaccent()` to both the column and the searched value (extension created in
+  `accounts/0002_unaccent_extension`); never strip accents in Python for a database
+  search, as `unaccent` maps more characters (`ø`, `ł`, `ß`, `æ`) than NFKD
+- Build errors fail at startup (`ImproperlyConfigured`): the routes are built when
+  the ViewSet class is created, so `get_serializer_class()` runs without a request
+  (guard with `getattr(self, 'request', None)`), and an organization-scoped options
+  serializer refuses relations to models without `organization_id` unless the field
+  declares `organization_scoped: False` in `Meta.options_extra_kwargs`
+- Pagination: `PaginatedOptionsBaseSerializer.get_pagination_class()` reads
+  `DEFAULT_PAGINATION_CLASS` at runtime; a page past the end of a field is empty
+  (200), not a 404 for the whole response
+- `options_search = False` on a ViewSet turns off the value search on all its
+  form-options fields; the schema documents the value as ignored. Used by
+  `OrganizationImageViewSet`, whose routes answer anonymous requests
 - Every paginated field must declare its label/search field or expression in the
   source serializer `Meta.options_extra_kwargs` (case by case, never automatic).
   `PaginatedOptionsSearchConfiguredTestCase` fails for any route that misses it:

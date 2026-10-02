@@ -25,7 +25,7 @@ Known technical debt, prioritized by impact and effort.
 
 | ID | Description | Priority | Effort | Identified | Module | PR/Issue |
 |----|-------------|----------|--------|------------|--------|----------|
-| TD-003 | Form-options relations to models without `organization_id` (`User`, `Organization`) are only filtered by `is_active`, which would list records from every tenant. Today they are avoided with `options_actions = ()` (`MemberViewSet`, `StoredFileViewSet`) and nested-field exclusion; a framework-level guard is missing | high | s | 2026-09-30 | `apps/generics/mixins/views.py` | — |
+| — | *No active debt* | — | — | — | — | — |
 
 ---
 
@@ -35,3 +35,9 @@ Known technical debt, prioritized by impact and effort.
 |----|-------------|----------|----------|
 | TD-001 | Form-options label `str(obj)` caused N+1 on team-members `member`; it now uses `Member.label_expression()` | 2026-10-01 | — |
 | TD-002 | Form-options opt-in moved to the dedicated `Meta.options_extra_kwargs`, which never reaches the write fields | 2026-10-01 | — |
+| TD-003 | Organization-scoped form options refuse relations to models without `organization_id` at startup (`ImproperlyConfigured`) unless the field declares `organization_scoped: False` | 2026-10-01 | — |
+| TD-004 | A page past the end of a paginated options field returns an empty page for that field instead of a 404 for the whole response | 2026-10-01 | — |
+| TD-005 | Form-options build errors raise `ImproperlyConfigured` naming the ViewSet; unmapped value types fall back to `str` (more Django fields mapped) | 2026-10-01 | — |
+| TD-006 | `PaginatedOptionsBaseSerializer.get_pagination_class()` reads `DEFAULT_PAGINATION_CLASS` at runtime | 2026-10-01 | — |
+| TD-007 | Constraint `IntegrityError` maps to a 400 with the constraint message (global handler); team names need a letter or number; `member_count` ignores inactive organization members | 2026-10-01 | — |
+| TD-008 | View descriptions in members/team-members use `format_lazy` and are translatable | 2026-10-01 | — |
