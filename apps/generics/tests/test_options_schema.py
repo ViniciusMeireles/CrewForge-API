@@ -1,9 +1,13 @@
+from unittest import mock
+
 from django.contrib.auth.models import Group
 from django.test import SimpleTestCase
 from django.utils.functional import Promise
 from drf_spectacular.generators import SchemaGenerator
 from rest_framework import serializers
+from rest_framework.pagination import PageNumberPagination
 
+from apps.generics.fields.options import PaginatedOptionsBaseSerializer
 from apps.generics.mixins.views import OptionsBaseModelMixin
 from apps.generics.utils.schema import get_form_options_parameters
 from apps.teams.models.team_member import TeamMember
@@ -76,6 +80,23 @@ class FormOptionsParametersTestCase(SimpleTestCase):
         description = options_class._spectacular_annotation['description']
         self.assertIsInstance(description, Promise)
         self.assertEqual(str(description), 'Form options to create a Team Member.')
+
+    def test_page_size_without_maximum(self):
+        class UnboundedPagination(PageNumberPagination):
+            page_size_query_param = 'page_size'
+            max_page_size = None
+
+        options_class = OptionsBaseModelMixin._get_options_serializer_class(
+            serializer_class=TeamMemberSerializer,
+            view_action='Create',
+        )
+        with mock.patch.object(
+            PaginatedOptionsBaseSerializer,
+            'get_pagination_class',
+            return_value=UnboundedPagination,
+        ):
+            parameters = {p.name: p for p in get_form_options_parameters(options_class)}
+        self.assertNotIn('Maximum', str(parameters['page_size'].description))
 
     def test_page_size_mentions_maximum(self):
         description = _parameters(TeamMemberSerializer)['page_size'].description
