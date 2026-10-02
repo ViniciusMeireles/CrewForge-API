@@ -123,10 +123,11 @@ class ModelViewSetMixin(
   options. Only the engine call is timed, so GC or CPU pauses in the Python loop do
   not cut legitimate searches. `re` has no timeout and a user-supplied pattern such
   as `(\w|\w)*\d` would hold the worker. Never evaluate user regexes with `re`
-- `filter_ignore_accents = True` (organization-scoped options) applies PostgreSQL
-  `unaccent()` to both the column and the searched value (extension created in
-  `accounts/0002_unaccent_extension`); never strip accents in Python for a database
-  search, as `unaccent` maps more characters (`ø`, `ł`, `ß`, `æ`) than NFKD
+- Organization-scoped options search with `filter_lookup_expr = 'unaccent__icontains'`.
+  The `unaccent` lookup (`django.contrib.postgres`, extension created in
+  `accounts/0002_unaccent_extension`) is bilateral: both the column and the searched
+  value go through PostgreSQL `unaccent()`. Never strip accents in Python for a
+  database search, as `unaccent` maps more characters (`ø`, `ł`, `ß`, `æ`) than NFKD
 - Build errors fail at startup (`ImproperlyConfigured`): the routes are built when
   the ViewSet class is created, so `get_serializer_class()` runs without a request
   (guard with `getattr(self, 'request', None)`), and an organization-scoped options

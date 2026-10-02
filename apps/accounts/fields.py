@@ -30,8 +30,9 @@ class PaginatedOptionsActiveOrganizationSerializer(
     declared for the field; ``OptionsOrganizationModelSerializer`` refuses
     relations that have neither.
 
-    Text search defaults to ``icontains`` and ignores accents.
+    Text search defaults to ``unaccent__icontains``: case- and accent-insensitive.
+    The ``unaccent`` lookup (``django.contrib.postgres``) is bilateral, so both the
+    column and the searched value go through PostgreSQL ``unaccent()``.
     """
 
-    filter_lookup_expr = 'icontains'
-    filter_ignore_accents = True
+    filter_lookup_expr = 'unaccent__icontains'

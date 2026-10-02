@@ -144,7 +144,7 @@ class PaginatedOptionsClassAttributesTestCase(SimpleTestCase):
         field = PaginatedOptionsActiveOrganizationSerializer(
             queryset=Team.objects.all()
         )
-        self.assertEqual(field.filter_lookup_expr, 'icontains')
+        self.assertEqual(field.filter_lookup_expr, 'unaccent__icontains')
 
     def test_filter_lookup_expr_kwarg_overrides_class_attribute(self):
         field = PaginatedOptionsActiveOrganizationSerializer(

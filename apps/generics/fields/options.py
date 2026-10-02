@@ -19,11 +19,10 @@ from types import SimpleNamespace
 from typing import Any
 
 import regex
-from django.contrib.postgres.lookups import Unaccent
 from django.core.paginator import EmptyPage, InvalidPage
 from django.db import models
 from django.db.models import enums, query
-from django.db.models.expressions import Combinable, F, Value
+from django.db.models.expressions import Combinable, F
 from django.utils.translation import gettext_lazy as _
 from django_filters.conf import settings as filters_settings
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -191,15 +190,13 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
       ``?<field>=<text>``.
 
     ``option_serializer_class`` and ``filter_lookup_expr`` are also class
-    attributes; the kwargs override them per field. ``filter_ignore_accents``
-    wraps the searched column in PostgreSQL ``unaccent()`` and strips accents
-    from the searched value (requires the ``unaccent`` extension).
+    attributes; the kwargs override them per field. Any lookup is accepted,
+    including transforms such as ``unaccent__icontains``.
     """
 
     pagination_class = None
     option_serializer_class: type[OptionBaseSerializer[T]] | None = None
     filter_lookup_expr: str = filters_settings.DEFAULT_LOOKUP_EXPR
-    filter_ignore_accents: bool = False
     output_type: type = None
 
     count = serializers.SerializerMethodField()
@@ -283,14 +280,6 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
         field_name = (
             self.filter_field_name or option_serializer_class.DEFAULT_OPTION_LABEL_FIELD
         )
-        if self.filter_ignore_accents:
-            # Both sides go through ``unaccent()`` so the database mapping is used
-            # for the column and the searched value alike (e.g. ``ø`` -> ``o``).
-            queryset = queryset.alias(_option_search=Unaccent(F(field_name)))
-            field_name = '_option_search'
-            filter_value = Unaccent(
-                Value(filter_value, output_field=models.CharField())
-            )
         field_expr = '%s__%s' % (field_name, self.filter_lookup_expr)
         return queryset.filter(**{field_expr: filter_value})
 

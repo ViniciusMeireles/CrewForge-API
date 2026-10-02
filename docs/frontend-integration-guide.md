@@ -775,7 +775,7 @@ Every paginated field declares, case by case, the field or expression used for
 its label and search in the source serializer `Meta.options_extra_kwargs` (read only
 by the options serializer; the write fields never see it):
 `label_field_name` (str or expression), `filter_field_name` and
-`filter_lookup_expr` (default `icontains` on organization-scoped relations,
+`filter_lookup_expr` (default `unaccent__icontains` on organization-scoped relations,
 `exact` otherwise).
 
 | Route field | Label / search |
@@ -784,8 +784,8 @@ by the options serializer; the write fields never see it):
 | team-members `member` | `Member.label_expression()`: `Full Name (nickname)`, falling back to the full name, the nickname or the translated role |
 
 Search on organization-scoped paginated fields ignores case and accents
-(`?team=gestao` matches "Gestão"), using PostgreSQL `unaccent`
-(`filter_ignore_accents`).
+(`?team=gestao` matches "Gestão"), through the `unaccent__icontains` lookup
+(PostgreSQL `unaccent`).
 
 Relations to models without `organization_id` (e.g. `User`, `Organization`) must
 declare how they are scoped: `options_extra_kwargs = {'<field>':

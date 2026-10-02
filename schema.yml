@@ -2671,7 +2671,7 @@ paths:
         schema:
           type: string
         description: Return only `member` (paginated). A non-empty value filters its
-          options by label (`icontains`).
+          options by label (`unaccent__icontains`).
       - in: query
         name: page
         schema:
@@ -2698,7 +2698,7 @@ paths:
         schema:
           type: string
         description: Return only `team` (paginated). A non-empty value filters its
-          options by label (`icontains`).
+          options by label (`unaccent__icontains`).
       tags:
       - Team members
       security:
