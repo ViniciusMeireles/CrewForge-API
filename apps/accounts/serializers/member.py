@@ -11,7 +11,7 @@ from apps.accounts.serializers.auth import UserTokenSerializer
 from apps.accounts.serializers.mixins import (
     ValidateRoleSerializerMixin,
 )
-from apps.accounts.serializers.user import UserGetOrCreateSerializer, UserSerializer
+from apps.accounts.serializers.user import UserSerializer
 from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 
 User = get_user_model()
@@ -69,7 +69,7 @@ class MemberModelSerializer(
 ):
     """Serializer for the Member model."""
 
-    user = UserGetOrCreateSerializer()
+    user = UserSerializer()
     role_label = serializers.CharField(read_only=True, source='get_role_display')
 
     class Meta:

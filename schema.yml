@@ -3411,7 +3411,7 @@ components:
           type: integer
           readOnly: true
         user:
-          $ref: '#/components/schemas/UserGetOrCreate'
+          $ref: '#/components/schemas/User'
         role_label:
           type: string
           readOnly: true
@@ -5341,6 +5341,40 @@ components:
           writeOnly: true
       required:
       - token
+    User:
+      type: object
+      description: Serializer for creating a user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - id
+      - username
     UserCreateSignup:
       type: object
       description: Serializer for creating a user.
@@ -5415,40 +5449,6 @@ components:
       required:
       - auth_token
       - email
-      - id
-      - username
-    UserGetOrCreate:
-      type: object
-      description: Serializer for getting or creating a user.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        email:
-          title: Email address
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        password:
-          type: string
-          writeOnly: true
-          maxLength: 128
-      required:
       - id
       - username
     UserProfile:
