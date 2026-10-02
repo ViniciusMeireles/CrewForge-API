@@ -7,12 +7,15 @@ from apps.teams.models.team import Team
 
 
 class TeamFactory(ModelFactoryMixin, DjangoModelFactory):
-    name = factory.Faker('company')
+    name = factory.LazyAttributeSequence(lambda o, n: f'{o.base_name} {n}')
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
     description = factory.Faker('text', max_nb_chars=200)
     organization = factory.SubFactory(
         factory='apps.accounts.factories.organizations.OrganizationFactory',
     )
+
+    class Params:
+        base_name = factory.Faker('company')
 
     class Meta:
         model = Team

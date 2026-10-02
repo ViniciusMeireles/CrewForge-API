@@ -8,8 +8,11 @@ from apps.generics.factories.mixins import ModelFactoryMixin
 
 
 class OrganizationFactory(ModelFactoryMixin, DjangoModelFactory):
-    name = factory.Faker('company')
+    name = factory.LazyAttributeSequence(lambda o, n: f'{o.base_name} {n}')
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
+
+    class Params:
+        base_name = factory.Faker('company')
 
     class Meta:
         model = Organization
