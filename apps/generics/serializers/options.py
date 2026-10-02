@@ -90,6 +90,7 @@ class OptionsModelSerializer(OptionsSerializer, serializers.ModelSerializer):
 
     serializer_choice_field = ChoicesOptionsSerializer
     serializer_related_field = PaginatedOptionsSerializer
+    options_field_kwargs = OPTIONS_FIELD_KWARGS
 
     def get_source_declared_fields(self) -> dict[str, serializers.Field]:
         serializer_class = getattr(self.Meta, 'serializer_class', None)
@@ -136,7 +137,7 @@ class OptionsModelSerializer(OptionsSerializer, serializers.ModelSerializer):
           option value is what the write endpoint expects.
         - ``many`` is dropped: a to-many relation renders the same single
           paginated envelope as a FK.
-        - Unsupported kwargs are dropped (see ``OPTIONS_FIELD_KWARGS``).
+        - Unsupported kwargs are dropped (see ``options_field_kwargs``).
         - Every field is optional, since ``?<field>`` may leave it out.
         """
         kwargs = super().include_extra_kwargs(kwargs, extra_kwargs)
@@ -147,7 +148,7 @@ class OptionsModelSerializer(OptionsSerializer, serializers.ModelSerializer):
             'value_field_name'
         ):
             kwargs['value_field_name'] = to_field
-        return {k: v for k, v in kwargs.items() if k in OPTIONS_FIELD_KWARGS}
+        return {k: v for k, v in kwargs.items() if k in self.options_field_kwargs}
 
     def get_field_names(self, declared_fields, info):
         """

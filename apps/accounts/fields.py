@@ -25,10 +25,10 @@ class PaginatedOptionsActiveOrganizationSerializer(
     Relation options with the same scope as the write ``PrimaryKeyRelatedField``:
     active records of the session organization.
 
-    Each filter is applied only when the related model has the field
-    (``is_active`` / ``organization_id``). Models without ``organization_id``
-    (e.g. ``User``, ``Organization``) are therefore NOT tenant-scoped; ViewSets
-    exposing such relations must opt out with ``options_actions = ()``.
+    The active filter applies when the related model has ``is_active``. The
+    organization filter uses ``organization_id`` or the ``organization_lookup``
+    declared for the field; ``OptionsOrganizationModelSerializer`` refuses
+    relations that have neither.
 
     Text search defaults to ``icontains`` and ignores accents.
     """
