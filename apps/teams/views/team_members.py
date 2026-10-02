@@ -1,3 +1,4 @@
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.types import OpenApiTypes
@@ -21,7 +22,9 @@ from apps.teams.serializers.team_member import (
     model=TeamMember,
     update=extend_schema(
         tags=TeamMember.schema_tags(),
-        description=_('Update a %(name)s.' % {'name': get_verbose_name(TeamMember)}),
+        description=format_lazy(
+            _('Update a {name}.'), name=get_verbose_name(TeamMember)
+        ),
         request=TeamMemberUpdateSerializer,
         responses={
             http_status.HTTP_200_OK: TeamMemberUpdateSerializer,

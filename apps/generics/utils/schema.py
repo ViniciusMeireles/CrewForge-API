@@ -78,8 +78,16 @@ def extend_schema_options_update(model: type[BaseModel], **kwargs):
 
 
 def _get_form_options_field_description(
-    field_name: str, field: serializers.Field
+    field_name: str, field: serializers.Field, search: bool = True
 ) -> str:
+    if not search:
+        return format_lazy(
+            _(
+                'Return only `{field}`. Search is disabled on this route: the value '
+                'is ignored.'
+            ),
+            field=field_name,
+        )
     if not isinstance(field, PaginatedOptionsBaseSerializer):
         return format_lazy(
             _(
@@ -110,7 +118,7 @@ def _get_form_options_field_description(
 def _get_form_options_pagination_parameters(
     field: PaginatedOptionsBaseSerializer,
 ) -> list[OpenApiParameter]:
-    paginator = field.pagination_class()
+    paginator = field.get_pagination_class()()
     scope = _(
         'Applies to every paginated field in the response; combine with '
         '`?<field>` to paginate a single one.'
@@ -142,13 +150,16 @@ def _get_form_options_pagination_parameters(
 
 def get_form_options_parameters(
     serializer_class: type[serializers.Serializer],
+    search: bool = True,
 ) -> list[OpenApiParameter]:
     """
     Query parameters of a form-options route.
 
     One parameter per field, which selects that field in the response (and, on
     paginated fields with a search opt-in, filters its options). ``page`` and
-    ``page_size`` are added only when at least one field is paginated.
+    ``page_size`` are added only when at least one field is paginated. With
+    ``search=False`` (``options_search`` on the ViewSet) the value is documented
+    as ignored.
     """
     fields = serializer_class({}).get_fields()
     parameters = [
@@ -158,7 +169,9 @@ def get_form_options_parameters(
             location=OpenApiParameter.QUERY,
             required=False,
             allow_blank=True,
-            description=_get_form_options_field_description(field_name, field),
+            description=_get_form_options_field_description(
+                field_name, field, search=search
+            ),
         )
         for field_name, field in fields.items()
     ]

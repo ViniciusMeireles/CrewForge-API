@@ -27,7 +27,10 @@ class TeamViewSet(
         qs = super().get_queryset()
         if self.action == 'list':
             qs = qs.annotate(
-                member_count=Count('members', filter=Q(members__is_active=True))
+                member_count=Count(
+                    'members',
+                    filter=Q(members__is_active=True, members__member__is_active=True),
+                )
             ).order_by('-id')
         return qs
 

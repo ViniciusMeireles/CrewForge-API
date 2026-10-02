@@ -3,8 +3,10 @@ from django.utils.text import slugify
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.teams.factories.team_members import TeamMemberFactory
 from apps.teams.factories.teams import TeamFactory
 
 
@@ -99,6 +101,25 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         del payload['name']
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_create_team_with_name_without_letters_or_numbers(self):
+        payload = self._team_payload()
+        payload['name'] = '!!!'
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('name', response.data['error']['details'])
+
+    def test_member_count_ignores_inactive_organization_members(self):
+        team = TeamFactory(organization=self.organization)
+        TeamMemberFactory(organization=self.organization, team=team)
+        TeamMemberFactory(
+            organization=self.organization,
+            team=team,
+            member=MemberFactory(organization=self.organization, is_active=False),
+        )
+        response = self.client.get(self.list_url)
+        result = next(r for r in response.data['results'] if r['id'] == team.id)
+        self.assertEqual(result['member_count'], 1)
 
     def test_partial_update_inactive_team(self):
         team = TeamFactory(organization=self.organization, is_active=False)

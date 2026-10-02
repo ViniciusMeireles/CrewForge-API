@@ -1303,9 +1303,8 @@ paths:
         name: image_type
         schema:
           type: string
-        description: Return only `image_type`. A non-empty value is a regular expression
-          matched against the label or the value of each option, ignoring case and
-          accents.
+        description: 'Return only `image_type`. Search is disabled on this route:
+          the value is ignored.'
       tags:
       - Organization images
       security:
@@ -1327,9 +1326,8 @@ paths:
         name: image_type
         schema:
           type: string
-        description: Return only `image_type`. A non-empty value is a regular expression
-          matched against the label or the value of each option, ignoring case and
-          accents.
+        description: 'Return only `image_type`. Search is disabled on this route:
+          the value is ignored.'
       tags:
       - Organization images
       security:

@@ -104,6 +104,13 @@ class FormOptionsSchemaTestCase(SimpleTestCase):
             {'role'},
         )
 
+    def test_search_disabled_route_description(self):
+        operation = self.schema['paths'][
+            '/api/accounts/organization-images/form-options-create/'
+        ]['get']
+        description = {p['name']: p['description'] for p in operation['parameters']}
+        self.assertIn('Search is disabled', str(description['image_type']))
+
     def test_invitations_create_parameters(self):
         self.assertEqual(
             self._parameter_names('/api/accounts/invitations/form-options-create/'),

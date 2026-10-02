@@ -1,3 +1,4 @@
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import filterset
@@ -82,7 +83,14 @@ class OptionsBaseModelMixin:
       them (use it when a relation points to a model without organization scope).
     - ``options_serializer_class``: base class of the generated options
       serializer; defines how relation querysets are scoped.
+    - ``options_search``: ``False`` turns off the ``?<field>=<value>`` search on
+      every field of the routes (field selection keeps working).
     - ``url_path_options_*`` / ``action_options_*``: route path and action name.
+
+    The routes are built when the ViewSet class is created, so
+    ``get_serializer_class()`` runs once **without a request**: guard any access
+    with ``getattr(self, 'request', None)``. Build errors raise
+    ``ImproperlyConfigured`` at startup.
     """
 
     url_path_options_create = 'form-options-create'
@@ -91,6 +99,7 @@ class OptionsBaseModelMixin:
     action_options_update = 'form_options_update'
     options_actions = ('create', 'update')
     options_serializer_class = OptionsModelSerializer
+    options_search = True
 
     @classmethod
     def get_options_actions_map(cls) -> dict[str, str]:
@@ -166,7 +175,9 @@ class OptionsBaseModelMixin:
     def form_options(self, request, *args, **kwargs):
         """Render the options; fields ignore the (empty) instance."""
         serializer_class = self.get_options_serializer_class()
-        serializer = serializer_class({}, context=self.get_serializer_context())
+        context = self.get_serializer_context()
+        context['options_search'] = self.options_search
+        serializer = serializer_class({}, context=context)
         return Response(serializer.to_representation({}))
 
     def _form_options_create(self, request, *args, **kwargs):
@@ -230,7 +241,9 @@ class OptionsModelViewSetMetaclass(type):
             view_func = schema(
                 model=serializer_class.Meta.model,
                 responses=serializer_class,
-                parameters=get_form_options_parameters(serializer_class),
+                parameters=get_form_options_parameters(
+                    serializer_class, search=klass.options_search
+                ),
             )(view_func)
             setattr(klass, action_name, view_func)
 
@@ -261,10 +274,21 @@ class OptionsModelViewSetMetaclass(type):
     @classmethod
     def _get_options_class(cls, klass, options_action):
         """Return the options serializer class, or ``None`` when it has no fields."""
-        view_obj = klass()
-        view_obj.action = options_action
-        serializer_class = view_obj.get_options_serializer_class()
-        if not serializer_class({}).get_fields():
+        try:
+            view_obj = klass()
+            view_obj.action = options_action
+            serializer_class = view_obj.get_options_serializer_class()
+            fields = serializer_class({}).get_fields()
+        except ImproperlyConfigured:
+            raise
+        except Exception as exc:
+            raise ImproperlyConfigured(
+                f'Could not build form options for {klass.__name__}.{options_action}: '
+                f'{exc!r}. get_serializer_class() runs without a request when the '
+                "class is created; guard it with getattr(self, 'request', None) or "
+                'disable the routes with options_actions = ().'
+            ) from exc
+        if not fields:
             return None
         return serializer_class
 

@@ -1,11 +1,15 @@
 import time
+from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
-from django.test import SimpleTestCase, TestCase
+from django.db import models
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from rest_framework import serializers
 from rest_framework import status as http_status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory, APITestCase, force_authenticate
 
@@ -13,12 +17,14 @@ from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.fields import PaginatedOptionsActiveOrganizationSerializer
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.generics.fields.fields import get_python_type
 from apps.generics.fields.options import (
     ListChoicesOptionsSerializer,
     OptionBaseSerializer,
     PaginatedOptionsSerializer,
 )
 from apps.generics.mixins.views import OptionsBaseModelMixin
+from apps.generics.pagination import CustomPageNumberPagination
 from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.factories.teams import TeamFactory
 from apps.teams.models.team import Team
@@ -64,6 +70,15 @@ def _render_options(serializer_class, params=None):
 
 
 class OptionBaseSerializerTestCase(SimpleTestCase):
+    def test_positional_instance_is_not_taken_as_option_field(self):
+        class IntOption(OptionBaseSerializer):
+            output_type = int
+
+        data = IntOption(
+            [{'_option_value': '1', '_option_label': 'One'}], many=True
+        ).data
+        self.assertEqual(data, [{'value': 1, 'label': 'One'}])
+
     def test_non_type_output_type_returns_value(self):
         class JsonOption(OptionBaseSerializer):
             output_type = dict | list
@@ -79,6 +94,45 @@ class OptionBaseSerializerTestCase(SimpleTestCase):
     def test_unordered_queryset_gets_pk_ordering(self):
         field = PaginatedOptionsSerializer(queryset=User.objects.all())
         self.assertTrue(field.get_queryset().ordered)
+
+
+class _TwoPerPagePagination(PageNumberPagination):
+    page_size = 2
+
+
+class PaginationClassTestCase(SimpleTestCase):
+    def test_default_pagination_class_is_read_at_runtime(self):
+        field = PaginatedOptionsSerializer(queryset=Team.objects.all())
+        rest_framework = {
+            **settings.REST_FRAMEWORK,
+            'DEFAULT_PAGINATION_CLASS': (
+                'apps.generics.tests.test_options_fields._TwoPerPagePagination'
+            ),
+        }
+        with override_settings(REST_FRAMEWORK=rest_framework):
+            self.assertIs(field.get_pagination_class(), _TwoPerPagePagination)
+        self.assertIs(field.get_pagination_class(), CustomPageNumberPagination)
+
+    def test_pagination_class_attribute_has_priority(self):
+        class CustomOptions(PaginatedOptionsSerializer):
+            pagination_class = _TwoPerPagePagination
+
+        field = CustomOptions(queryset=Team.objects.all())
+        self.assertIs(field.get_pagination_class(), _TwoPerPagePagination)
+
+
+class PythonTypeTestCase(SimpleTestCase):
+    def test_mapped_types(self):
+        self.assertIs(get_python_type(models.DurationField()), timedelta)
+        self.assertIs(get_python_type(models.GenericIPAddressField()), str)
+        self.assertIs(get_python_type(models.EmailField()), str)
+
+    def test_unmapped_type_falls_back_to_str(self):
+        class CustomField(models.Field):
+            pass
+
+        with self.assertLogs('apps.generics.fields.fields', level='WARNING'):
+            self.assertIs(get_python_type(CustomField()), str)
 
 
 class PaginatedOptionsClassAttributesTestCase(SimpleTestCase):
@@ -224,8 +278,30 @@ class TeamMemberFormOptionsTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(len(team['results']), 2)
 
     def test_invalid_page_returns_404(self):
-        response = self.client.get(self.create_url, {'team': '', 'page': 99})
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+        for page in (0, -1, 'abc'):
+            with self.subTest(page=page):
+                response = self.client.get(self.create_url, {'team': '', 'page': page})
+                self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_page_past_the_end_is_empty(self):
+        TeamFactory.create_batch(size=7, organization=self.organization)
+        response = self.client.get(
+            self.create_url, {'team': '', 'page_size': 5, 'page': 3}
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['team'],
+            {'count': 7, 'num_pages': 2, 'page_number': 3, 'results': []},
+        )
+
+    def test_page_past_the_end_of_one_field_keeps_the_others(self):
+        TeamFactory.create_batch(size=7, organization=self.organization)
+        response = self.client.get(
+            self.create_url, {'team': '', 'member': '', 'page_size': 5, 'page': 2}
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(len(response.data['team']['results']), 2)
+        self.assertEqual(response.data['member']['results'], [])
 
     def _role_values(self, pattern):
         response = self.client.get(self.create_url, {'role': pattern})
@@ -320,6 +396,21 @@ class TeamMemberSearchTestCase(TestCase):
         self.assertEqual(
             [r['value'] for r in response.data['member']['results']], [member.pk]
         )
+
+    def test_search_uses_database_unaccent_on_both_sides(self):
+        team = TeamFactory(organization=self.organization, name='Søren Team')
+        member = MemberFactory(organization=self.organization, nickname='Łukasz')
+        for params, field, expected in (
+            ({'team': 'soren'}, 'team', team.pk),
+            ({'team': 'Søren'}, 'team', team.pk),
+            ({'member': 'lukasz'}, 'member', member.pk),
+            ({'member': 'ŁUKASZ'}, 'member', member.pk),
+        ):
+            with self.subTest(params=params):
+                response = self._get(params)
+                self.assertEqual(
+                    [r['value'] for r in response.data[field]['results']], [expected]
+                )
 
 
 class UnconfiguredSearchTestCase(TestCase):

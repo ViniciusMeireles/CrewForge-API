@@ -21,10 +21,10 @@ from typing import Any
 
 import regex
 from django.contrib.postgres.lookups import Unaccent
-from django.core.paginator import InvalidPage
+from django.core.paginator import EmptyPage, InvalidPage
 from django.db import models
 from django.db.models import enums, query
-from django.db.models.expressions import Combinable, F
+from django.db.models.expressions import Combinable, F, Value
 from django.utils.translation import gettext_lazy as _
 from django_filters.conf import settings as filters_settings
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -69,9 +69,9 @@ class OptionBaseSerializer[T](serializers.Serializer):
 
     def __init__(
         self,
+        *args,
         option_value_field: str | None = None,
         option_label_field: str | None = None,
-        *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -90,7 +90,7 @@ class OptionBaseSerializer[T](serializers.Serializer):
             return None
 
         if self.output_type is None:
-            log.warning(f'Output type is None for {self.__class__.__name__}')
+            log.warning('Output type is None for %s', self.__class__.__name__)
             return value
 
         # Union types such as ``dict | list`` (JSONField) are not callable.
@@ -180,7 +180,8 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
     from the request, which means every relation field in the response shares
     the same page parameters.
 
-    Opt-in kwargs (usually via the source serializer ``Meta.extra_kwargs``):
+    Opt-in kwargs (set per field in the source serializer
+    ``Meta.options_extra_kwargs``):
 
     - ``label_field_name``: field name or expression annotated as the label;
       defaults to ``str(obj)``.
@@ -195,7 +196,7 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
     from the searched value (requires the ``unaccent`` extension).
     """
 
-    pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    pagination_class = None
     option_serializer_class: type[OptionBaseSerializer[T]] | None = None
     filter_lookup_expr: str = filters_settings.DEFAULT_LOOKUP_EXPR
     filter_ignore_accents: bool = False
@@ -208,13 +209,13 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
 
     def __init__(
         self,
+        *args,
         queryset: query.QuerySet[models.Model] | None = None,
         value_field_name: Combinable | str | None = None,
         label_field_name: Combinable | str | None = None,
         option_serializer_class: type[OptionBaseSerializer] | None = None,
         filter_field_name: str | None = None,
         filter_lookup_expr: str | None = None,
-        *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -228,6 +229,13 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
             self.filter_lookup_expr = filter_lookup_expr
         self._paginator = None
         self._page_data: PageDataType | None = None
+
+    def get_pagination_class(self):
+        """
+        ``pagination_class`` or, by default, ``DEFAULT_PAGINATION_CLASS`` read at
+        call time (DRF reloads ``api_settings`` when the settings change).
+        """
+        return self.pagination_class or api_settings.DEFAULT_PAGINATION_CLASS
 
     def get_option_serializer_class(self) -> type[OptionBaseSerializer]:
         if self.option_serializer_class is not None:
@@ -255,7 +263,7 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
         warning is logged) and the query param just selects the field (see
         ``OptionsSerializer.fields``).
         """
-        if not self.source_attrs:
+        if not self.source_attrs or self.context.get('options_search') is False:
             return queryset
         request = self.context.get('request')
         params = getattr(request, 'query_params', None) or {}
@@ -276,9 +284,13 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
             self.filter_field_name or option_serializer_class.DEFAULT_OPTION_LABEL_FIELD
         )
         if self.filter_ignore_accents:
+            # Both sides go through ``unaccent()`` so the database mapping is used
+            # for the column and the searched value alike (e.g. ``ø`` -> ``o``).
             queryset = queryset.alias(_option_search=Unaccent(F(field_name)))
             field_name = '_option_search'
-            filter_value = strip_accents(filter_value)
+            filter_value = Unaccent(
+                Value(filter_value, output_field=models.CharField())
+            )
         field_expr = '%s__%s' % (field_name, self.filter_lookup_expr)
         return queryset.filter(**{field_expr: filter_value})
 
@@ -323,7 +335,7 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
 
     def _get_page_data(self) -> PageDataType | None:
         request = self.context.get('request')
-        paginator = self.pagination_class()
+        paginator = self.get_pagination_class()()
 
         if not (page_size := paginator.get_page_size(request)):
             return None
@@ -336,11 +348,20 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
 
         try:
             page = django_paginator.page(page_number)
+        except EmptyPage as exc:
+            # The pagination is shared by every paginated field: a page past the
+            # end of this field is an empty page, not an error for the response.
+            if (number := int(page_number)) > django_paginator.num_pages:
+                self._page_data = PageDataType(
+                    count=django_paginator.count,
+                    num_pages=django_paginator.num_pages,
+                    page_number=number,
+                    data=[],
+                )
+                return self._page_data
+            raise self._get_invalid_page_error(paginator, page_number, exc) from exc
         except InvalidPage as exc:
-            msg = paginator.invalid_page_message.format(
-                page_number=page_number, message=str(exc)
-            )
-            raise NotFound(msg) from exc
+            raise self._get_invalid_page_error(paginator, page_number, exc) from exc
 
         self._page_data = PageDataType(
             count=page.paginator.count,
@@ -349,6 +370,14 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
             data=page.object_list,
         )
         return self._page_data
+
+    @staticmethod
+    def _get_invalid_page_error(paginator, page_number, exc) -> NotFound:
+        return NotFound(
+            paginator.invalid_page_message.format(
+                page_number=page_number, message=str(exc)
+            )
+        )
 
     def get_page_data(self, cache: bool = True) -> PageDataType | None:
         """Page data computed once and shared by the four envelope fields."""
@@ -376,7 +405,7 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
             return []
         serializer_class = self.get_option_serializer_class()
         return serializer_class(  # type: ignore
-            instance=page_data.get('data'),
+            page_data.get('data'),
             many=True,
             context=self.context,
         ).data
@@ -510,6 +539,8 @@ class ListChoicesOptionsSerializer(serializers.ListSerializer):
         return self.filter_choices(self.initial_data)
 
     def get_search_pattern(self) -> regex.Pattern | None:
+        if self.context.get('options_search') is False:
+            return None
         request = self.context.get('request')
         params = getattr(request, 'query_params', None) or {}
         if not (value := params.get(self.field_name)):

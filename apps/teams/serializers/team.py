@@ -22,7 +22,10 @@ class TeamSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         attrs = super().validate(attrs=attrs)
         if 'name' not in attrs:
             return attrs
-        slug = slugify(attrs['name'])
+        if not (slug := slugify(attrs['name'])):
+            raise serializers.ValidationError(
+                {'name': [_('The name must contain at least one letter or number.')]}
+            )
         teams_queryset = Team.objects.filter(
             organization_id=self.auth_organization_id,
             slug=slug,

@@ -1,3 +1,4 @@
+from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase
 from django.urls import NoReverseMatch, URLResolver, get_resolver, reverse
 from rest_framework import serializers, viewsets
@@ -64,6 +65,17 @@ class OptionsViewSetMetaclassTestCase(SimpleTestCase):
             class TV(viewsets.ModelViewSet, metaclass=OptionsModelViewSetMetaclass):
                 queryset = TeamMember.objects.all()
                 serializer_class = TeamMemberSerializer
+
+    def test_request_dependent_serializer_class_fails_with_diagnostic(self):
+        with self.assertRaisesMessage(ImproperlyConfigured, 'RequestViewSet'):
+
+            class RequestViewSet(OptionsModelMixin, viewsets.ModelViewSet):
+                queryset = TeamMember.objects.all()
+
+                def get_serializer_class(self):
+                    if self.request.user.is_staff:
+                        return TeamMemberSerializer
+                    return TeamMemberSerializer
 
     def test_custom_url_path(self):
         class TV(OptionsModelMixin, viewsets.ModelViewSet):
@@ -196,6 +208,8 @@ class PaginatedOptionsSearchConfiguredTestCase(SimpleTestCase):
             ):
                 continue
             if action_name not in viewset_class.get_options_actions_inverse_map():
+                continue
+            if not viewset_class.options_search:
                 continue
             view = viewset_class()
             view.action = action_name

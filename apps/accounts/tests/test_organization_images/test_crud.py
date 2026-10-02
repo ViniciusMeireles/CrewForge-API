@@ -214,6 +214,12 @@ class OrganizationImageCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(set(response.data), {'image_type'})
 
+    def test_form_options_search_is_disabled(self):
+        response = self.client.get(self.form_options_create_url, {'image_type': 'logo'})
+        self.assertEqual(
+            len(response.data['image_type']), len(OrganizationImageTypeChoices)
+        )
+
     def test_form_options_image_type_values(self):
         response = self.client.get(self.form_options_create_url)
         self.assertEqual(

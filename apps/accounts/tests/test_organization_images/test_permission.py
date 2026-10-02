@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
-from apps.accounts.choices import MemberRoleChoices
+from apps.accounts.choices import MemberRoleChoices, OrganizationImageTypeChoices
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organization_image import OrganizationImageFactory
 from apps.accounts.factories.organizations import OrganizationFactory
@@ -68,6 +68,15 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         url = reverse(viewname='accounts:organization_images-form-options-create')
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_not_authenticated_form_options_ignores_search(self):
+        self.client.logout()
+        url = reverse(viewname='accounts:organization_images-form-options-create')
+        response = self.client.get(url, {'image_type': r'(\w|\w)*\d'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(
+            len(response.data['image_type']), len(OrganizationImageTypeChoices)
+        )
 
     def test_not_active_member_create(self):
         member = MemberFactory(

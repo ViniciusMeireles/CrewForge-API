@@ -76,7 +76,8 @@ class StoredFileViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     queryset = StoredFile.objects.all()
     auto_orderable_filter = True
-    # No form options: ``owner``/``organization`` are not tenant-scoped (TD-003).
+    # No form options: ``owner``/``organization`` are not tenant-scoped and would
+    # fail the organization scope check of the options serializer.
     options_actions = ()
 
     def get_queryset(self):

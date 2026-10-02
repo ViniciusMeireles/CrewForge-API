@@ -22,3 +22,5 @@ class OrganizationImageViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     filter_backends = [backends.DjangoFilterBackend]
     parser_classes = [MultiPartParser, FormParser]
     auto_orderable_filter = True
+    # Form options are reachable without authentication: no search on them.
+    options_search = False
