@@ -129,9 +129,6 @@ Tests HTTP CRUD operations via the API.
 
 **Standard imports:**
 ```python
-import tempfile
-
-from django.test import override_settings
 from rest_framework import status as http_status
 
 from apps.accounts.tests.mixins import APITestCaseMixin
@@ -165,9 +162,6 @@ members, and cross-org isolation.
 
 **Standard imports:**
 ```python
-import tempfile
-
-from django.test import override_settings
 from rest_framework import status as http_status
 
 from apps.accounts.choices import MemberRoleChoices
@@ -227,9 +221,6 @@ Tests multi-step flows that combine several operations.
 
 **Standard imports:**
 ```python
-import tempfile
-
-from django.test import override_settings
 from rest_framework import status as http_status
 
 from apps.accounts.choices import MemberRoleChoices, OrganizationImageTypeChoices
@@ -327,21 +318,13 @@ login (step 3 of the auth flow), setting `request.session['organization_id']`.
 Always use `force_authenticate(member=member)` instead of
 `force_authenticate(user=user)` to ensure organization context is established.
 
-### @override_settings
+### File storage
 
-Use `@override_settings(MEDIA_ROOT=tempfile.mkdtemp())` on any test class that
-creates files via the API. This prevents test artifacts from polluting the
-real media directory.
-
-```python
-import tempfile
-
-from django.test import override_settings
-
-
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase): ...
-```
+`config/settings/testing.py` sets the default storage to Django's
+`InMemoryStorage`, so files created via the API or factories never touch the
+disk (`MEDIA_ROOT` or `/tmp`). Do not override `MEDIA_ROOT` in tests (e.g.
+`override_settings(MEDIA_ROOT=tempfile.mkdtemp())`): `mkdtemp()` runs when the
+module is imported and leaves directories behind that are never removed.
 
 ---
 

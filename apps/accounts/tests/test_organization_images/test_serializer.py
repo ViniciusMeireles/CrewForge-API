@@ -1,7 +1,4 @@
-import tempfile
-
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -12,7 +9,6 @@ from apps.accounts.models.organization import OrganizationImage
 from apps.accounts.tests.mixins import APITestCaseMixin
 
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
