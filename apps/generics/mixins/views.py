@@ -103,6 +103,8 @@ class OptionsBaseModelMixin:
     - ``options_filterset_serializer_class``: same for the filter options.
     - ``options_search``: ``False`` turns off the ``?<field>=<value>`` search on
       every field of the routes (field selection keeps working).
+    - ``options_form_parameters``: extra ``OpenApiParameter`` documented on the
+      form-options routes (context params read by option filters).
     - ``url_path_options_*`` / ``action_options_*``: route path and action name.
 
     The routes are built when the ViewSet class is created, so
@@ -121,6 +123,7 @@ class OptionsBaseModelMixin:
     options_serializer_class = OptionsModelSerializer
     options_filterset_serializer_class = OptionsFilterSetSerializer
     options_search = True
+    options_form_parameters = ()
 
     @classmethod
     def get_options_actions_map(cls) -> dict[str, str]:
@@ -402,9 +405,16 @@ class OptionsModelViewSetMetaclass(type):
             view_func = schema(
                 model=serializer_class.Meta.model,
                 responses=serializer_class,
-                parameters=get_form_options_parameters(
-                    serializer_class, search=klass.options_search
-                ),
+                parameters=[
+                    *get_form_options_parameters(
+                        serializer_class, search=klass.options_search
+                    ),
+                    *(
+                        klass.options_form_parameters
+                        if schema is not extend_schema_options_list
+                        else ()
+                    ),
+                ],
             )(view_func)
             setattr(klass, action_name, view_func)
 

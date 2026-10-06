@@ -194,6 +194,9 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
       ``pk``.
     - ``filter_field_name`` / ``filter_lookup_expr``: enables text search with
       ``?<field>=<text>``.
+    - ``queryset_filter``: callable ``(queryset, context) -> queryset`` that
+      narrows the options per request (after scoping, before search), e.g. to
+      exclude members already in a team.
 
     ``option_serializer_class`` and ``filter_lookup_expr`` are also class
     attributes; the kwargs override them per field. Any lookup is accepted,
@@ -219,10 +222,12 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
         option_serializer_class: type[OptionBaseSerializer] | None = None,
         filter_field_name: str | None = None,
         filter_lookup_expr: str | None = None,
+        queryset_filter=None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.queryset = queryset
+        self.queryset_filter = queryset_filter
         self.value_field_name = value_field_name
         self.label_field_name = label_field_name
         self.filter_field_name = filter_field_name
@@ -313,6 +318,8 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
             annotations.setdefault(value_key, F('pk'))
 
         queryset = self.get_queryset()
+        if self.queryset_filter is not None:
+            queryset = self.queryset_filter(queryset, self.context)
         if annotations:
             queryset = queryset.annotate(**annotations)
 
