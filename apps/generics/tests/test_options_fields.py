@@ -1,3 +1,4 @@
+import copy
 import time
 from datetime import timedelta
 
@@ -19,6 +20,7 @@ from apps.accounts.fields import PaginatedOptionsActiveOrganizationSerializer
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.generics.fields.fields import get_python_type
 from apps.generics.fields.options import (
+    ChoicesOptionsSerializer,
     ListChoicesOptionsSerializer,
     OptionBaseSerializer,
     PaginatedOptionsSerializer,
@@ -422,3 +424,22 @@ class UnconfiguredSearchTestCase(TestCase):
     def test_no_warning_without_value(self):
         with self.assertNoLogs('apps.generics.fields.options', level='WARNING'):
             _render_options(_GroupPermissionsSerializer, {'permissions': ''})
+
+
+class ChoicesFilterTestCase(SimpleTestCase):
+    @staticmethod
+    def _first_only(choices, context):
+        return choices[:1]
+
+    def _field(self):
+        return ChoicesOptionsSerializer(
+            choices=[('a', 'A'), ('b', 'B')], choices_filter=self._first_only
+        )
+
+    def test_filter_applies_before_render(self):
+        self.assertEqual([o['value'] for o in self._field().get_attribute({})], ['a'])
+
+    def test_deepcopy_keeps_filter(self):
+        field = copy.deepcopy(self._field())
+        self.assertIs(field.choices_filter, self._first_only)
+        self.assertEqual([o['value'] for o in field.get_attribute({})], ['a'])
