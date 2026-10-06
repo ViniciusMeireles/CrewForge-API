@@ -1,7 +1,4 @@
-import tempfile
-
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -13,7 +10,6 @@ from apps.accounts.models.organization import OrganizationImage
 from apps.accounts.tests.mixins import APITestCaseMixin
 
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class OrganizationImageIntegrationTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
@@ -176,11 +172,3 @@ class OrganizationImageIntegrationTestCase(APITestCaseMixin, APITestCase):
                     http_status.HTTP_200_OK,
                     f'{member.role} expected 200, got {response.status_code}',
                 )
-
-    def test_create_then_choices_reflects(self):
-        self.client.post(self.list_url, data=self._payload(), format='multipart')
-        choices_resp = self.client.get(
-            reverse(viewname='accounts:organization_images-choices')
-        )
-        self.assertEqual(choices_resp.status_code, http_status.HTTP_200_OK)
-        self.assertGreaterEqual(choices_resp.data['count'], 1)

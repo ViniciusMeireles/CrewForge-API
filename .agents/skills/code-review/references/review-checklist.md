@@ -4,7 +4,9 @@
 - [ ] MRO order correct: OrganizationScopedViewSetMixin → ModelViewSetMixin → viewsets.ModelViewSet
 - [ ] Imports from generics (apps/generics/), not apps/accounts/
 - [ ] @extend_schema_model_view_set decorator present
-- [ ] label_expression or value_expression on ViewSet
+- [ ] Form options: `form-options-create/update` routes exist when the write serializer has choice/relation fields, or `options_actions = ()` is set deliberately
+- [ ] Every paginated form-options field declares `label_field_name`/`filter_field_name` in `Meta.options_extra_kwargs`
+- [ ] No form-options relation to a model without `organization_id` (`User`, `Organization`) — nested serializer or `options_actions = ()`
 - [ ] Barrel exports in __init__.py
 
 ## Permissions

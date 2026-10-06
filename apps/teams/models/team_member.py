@@ -35,7 +35,14 @@ class TeamMember(BaseModel):
         ordering = ['-id']
         verbose_name = _('Team Member')
         verbose_name_plural = _('Team Members')
-        unique_together = ['team', 'member']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['team', 'member'],
+                name='unique_team_member_when_active',
+                condition=models.Q(is_active=True),
+                violation_error_message=_('This member is already part of the team.'),
+            ),
+        ]
 
     def __str__(self):
         return f'{self.member} - {self.team}'

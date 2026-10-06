@@ -17,3 +17,6 @@ class OrganizationImageFilter(FilterSetMixin, filterset.FilterSet):
         fields = {
             'image_type': ['exact'],
         }
+        options_extra_kwargs = {
+            'organization': {'organization_lookup': 'id', 'label_field_name': 'name'},
+        }

@@ -13,7 +13,6 @@ class TeamPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('teams:teams-list')
-        self.choices_url = reverse('teams:teams-choices')
 
     def _detail_url(self, team):
         return reverse('teams:teams-detail', args=[team.id])
@@ -259,19 +258,6 @@ class TeamPermissionTestCase(APITestCaseMixin, APITestCase):
         url = self._detail_url(team)
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    # --- Choices ---
-
-    def test_not_authenticated_choices(self):
-        self.client.logout()
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_active_member_choices(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
 
     # --- Owner list ---
 

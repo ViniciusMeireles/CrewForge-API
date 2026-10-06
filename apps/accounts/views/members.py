@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.utils import (
@@ -45,9 +46,8 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             ),
         ],
         tags=Member.schema_tags(),
-        description=_(
-            'Create a new %(name)s with an invitation.'
-            % {'name': get_verbose_name(Member)}
+        description=format_lazy(
+            _('Create a new {name} with an invitation.'), name=get_verbose_name(Member)
         ),
         responses={
             http_status.HTTP_200_OK: MemberWithInviteCreateSerializer,
@@ -109,8 +109,8 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             http_status.HTTP_400_BAD_REQUEST: OpenApiTypes.NONE,
         },
         tags=Member.schema_tags(),
-        description=_(
-            'Update the role of a %(name)s.' % {'name': get_verbose_name(Member)}
+        description=format_lazy(
+            _('Update the role of a {name}.'), name=get_verbose_name(Member)
         ),
     ),
     update=extend_schema(
@@ -120,7 +120,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             http_status.HTTP_400_BAD_REQUEST: OpenApiTypes.NONE,
         },
         tags=Member.schema_tags(),
-        description=_('Update a %(name)s.' % {'name': get_verbose_name(Member)}),
+        description=format_lazy(_('Update a {name}.'), name=get_verbose_name(Member)),
     ),
 )
 class MemberViewSet(
@@ -131,8 +131,10 @@ class MemberViewSet(
     permission_classes = [MemberPermission]
     filterset_class = MemberFilter
     filter_backends = [backends.DjangoFilterBackend]
-    label_expression = Member.label_expression()
     auto_orderable_filter = True
+    # No create/update form options: ``create`` is deprecated and ``user`` is a
+    # nested serializer. ``update_role`` gets ``form-options-update-role/``.
+    options_actions = ('list', 'update_role')
 
     base_filters = {'is_active': True}
 

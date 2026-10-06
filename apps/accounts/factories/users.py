@@ -7,11 +7,14 @@ DEFAULT_PASSWORD = 'passWord*123'
 
 
 class UserFactory(DjangoModelFactory):
-    username = factory.Faker('user_name')
+    username = factory.LazyAttributeSequence(lambda o, n: f'{o.base_username}{n}')
     email = factory.Sequence(lambda n: f'unit_test_user{n}@horologe.com')
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
     is_active = True
+
+    class Params:
+        base_username = factory.Faker('user_name')
 
     class Meta:
         model = User

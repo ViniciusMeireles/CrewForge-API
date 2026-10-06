@@ -1,5 +1,6 @@
 import logging
 
+from django.db import IntegrityError
 from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions, status
@@ -10,9 +11,11 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.views import exception_handler
 
 from apps.generics.choices import ErrorCode
+from apps.generics.utils.db import get_constraint_violation_message
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +74,12 @@ def _get_error_details(exc: APIException) -> dict | None:
 
 
 def custom_exception_handler(exc, context):
+    # A model constraint violated by a concurrent write (the serializer
+    # validation already passed) is a validation error, not a server error.
+    if isinstance(exc, IntegrityError) and (
+        message := get_constraint_violation_message(exc)
+    ):
+        exc = exceptions.ValidationError({api_settings.NON_FIELD_ERRORS_KEY: [message]})
     response = exception_handler(exc, context)
 
     if response is None:

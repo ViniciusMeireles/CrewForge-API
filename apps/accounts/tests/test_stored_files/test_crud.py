@@ -1,7 +1,4 @@
-import tempfile
-
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -13,7 +10,6 @@ from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class StoredFileCRUDTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
@@ -273,17 +269,3 @@ class StoredFileCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
         stored_file.refresh_from_db()
         self.assertFalse(stored_file.is_active)
-
-    def test_choices_endpoint(self):
-        StoredFileFactory.create_batch(
-            3,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        url = reverse(viewname='accounts:stored_files-choices')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 3)
-        result = response.data['results'][0]
-        self.assertIn('value', result)
-        self.assertIn('label', result)

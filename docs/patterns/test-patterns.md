@@ -125,13 +125,11 @@ Tests HTTP CRUD operations via the API.
 - `test_delete_nonexistent` — 404
 - `test_create_duplicate_{field}` — 400
 - `test_create_all_{variants}` — all type/permission variants
-- `test_choices_endpoint` — choices returns value/label pairs
+- `test_form_options_{create,update}` — form-options returns the expected field keys and shapes (or `NoReverseMatch` when the resource opts out)
+- `test_filter_options.py` (per app) — filter-options keys per resource, cross-org/inactive scoping of relation filters, and an `expected_status` table per auth scenario (`FilterOptionsTestMixin` in `apps/accounts/tests/mixins.py` pins each status and checks the list answers the same)
 
 **Standard imports:**
 ```python
-import tempfile
-
-from django.test import override_settings
 from rest_framework import status as http_status
 
 from apps.accounts.tests.mixins import APITestCaseMixin
@@ -165,9 +163,6 @@ members, and cross-org isolation.
 
 **Standard imports:**
 ```python
-import tempfile
-
-from django.test import override_settings
 from rest_framework import status as http_status
 
 from apps.accounts.choices import MemberRoleChoices
@@ -224,13 +219,9 @@ Tests multi-step flows that combine several operations.
 - Full CRUD flow: create → list → retrieve → update → delete → verify gone
 - Permission hierarchy read access (all roles can read)
 - Permission hierarchy write access (matrix: role × expected status)
-- "Create then choices reflects" — verify choices endpoint after creation
 
 **Standard imports:**
 ```python
-import tempfile
-
-from django.test import override_settings
 from rest_framework import status as http_status
 
 from apps.accounts.choices import MemberRoleChoices, OrganizationImageTypeChoices
@@ -328,21 +319,13 @@ login (step 3 of the auth flow), setting `request.session['organization_id']`.
 Always use `force_authenticate(member=member)` instead of
 `force_authenticate(user=user)` to ensure organization context is established.
 
-### @override_settings
+### File storage
 
-Use `@override_settings(MEDIA_ROOT=tempfile.mkdtemp())` on any test class that
-creates files via the API. This prevents test artifacts from polluting the
-real media directory.
-
-```python
-import tempfile
-
-from django.test import override_settings
-
-
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase): ...
-```
+`config/settings/testing.py` sets the default storage to Django's
+`InMemoryStorage`, so files created via the API or factories never touch the
+disk (`MEDIA_ROOT` or `/tmp`). Do not override `MEDIA_ROOT` in tests (e.g.
+`override_settings(MEDIA_ROOT=tempfile.mkdtemp())`): `mkdtemp()` runs when the
+module is imported and leaves directories behind that are never removed.
 
 ---
 
@@ -593,7 +576,7 @@ Every new resource's test suite must cover:
 | 11 | Validation errors (duplicates, missing fields) | 400 | `test_serializer.py` |
 | 12 | Auto-populated fields | Set from auth context | `test_serializer.py` |
 | 13 | Filter fields | Filtered result set | `test_filter.py` |
-| 14 | Choices endpoint | Value/label format | `test_crud.py` + `test_choices.py` |
+| 14 | Form-options endpoint | Field keys + value/label shapes (or route absent) | `test_crud.py` + `test_permission.py` |
 | 15 | Enum values and labels | Correct strings | `test_choices.py` |
 | 16 | Multi-step integration flow | End-to-end | `test_integration.py` |
 | 17 | Send email cooldown (429 within window, 200 after) | 429/200 | `test_permission.py` |
@@ -638,11 +621,11 @@ When a serializer exposes a write-only `send_email` boolean:
 These test directories embody the pattern described here:
 
 - `apps/accounts/tests/test_organization_images/` — Clean example with 8 files,
-  92 tests covering model, serializer, CRUD, permission, filter, choices, and
+  89 tests covering model, serializer, CRUD, permission, filter, form options, and
   integration.
 - `apps/accounts/tests/test_stored_files/` — Extended example with 9 files
   (adds `test_download.py` for resource-specific behavior), covering model,
-  serializer, CRUD, permission, filter, choices, download, and integration.
+  serializer, CRUD, permission, filter, download, and integration.
 - `apps/accounts/tests/test_organization_profiles/` — Clean example with 8 files,
-  68 tests covering model, serializer, CRUD, permission, filter, choices, and
+  64 tests covering model, serializer, CRUD, permission, filter, and
   integration.

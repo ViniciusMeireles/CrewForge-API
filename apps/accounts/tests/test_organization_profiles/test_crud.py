@@ -10,7 +10,6 @@ class OrganizationProfileCRUDTestCase(APITestCaseMixin, APITestCase):
         self.organization = self.new_account()
         self.profile = self.organization.get_profile()
         self.list_url = reverse(viewname='accounts:organization_profiles-list')
-        self.choices_url = reverse(viewname='accounts:organization_profiles-choices')
 
     def _detail_url(self, profile):
         return reverse(
@@ -96,18 +95,3 @@ class OrganizationProfileCRUDTestCase(APITestCaseMixin, APITestCase):
         url = reverse(viewname='accounts:organization_profiles-detail', args=[99999])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_choices_endpoint(self):
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertIn('count', response.data)
-        self.assertIn('results', response.data)
-
-    def test_choices_values(self):
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertGreater(len(response.data['results']), 0)
-        result = response.data['results'][0]
-        self.assertIn('value', result)
-        self.assertIn('label', result)
-        self.assertEqual(result['label'], self.organization.name)

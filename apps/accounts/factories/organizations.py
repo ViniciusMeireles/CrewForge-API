@@ -1,15 +1,17 @@
 import factory
 from django.utils.text import slugify
-from factory.django import DjangoModelFactory
 
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.models.organization import Organization, OrganizationProfile
 from apps.generics.factories.mixins import ModelFactoryMixin
 
 
-class OrganizationFactory(ModelFactoryMixin, DjangoModelFactory):
-    name = factory.Faker('company')
+class OrganizationFactory(ModelFactoryMixin):
+    name = factory.LazyAttributeSequence(lambda o, n: f'{o.base_name} {n}')
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
+
+    class Params:
+        base_name = factory.Faker('company')
 
     class Meta:
         model = Organization
@@ -31,7 +33,7 @@ class OrganizationFactory(ModelFactoryMixin, DjangoModelFactory):
         self.save()
 
 
-class OrganizationProfileFactory(ModelFactoryMixin, DjangoModelFactory):
+class OrganizationProfileFactory(ModelFactoryMixin):
     organization = factory.SubFactory(OrganizationFactory)
     website = factory.Faker('url')
     description = factory.Faker('text')

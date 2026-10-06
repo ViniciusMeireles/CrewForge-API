@@ -1,12 +1,11 @@
 import factory
-from factory.django import DjangoModelFactory
 
 from apps.accounts.choices import StoredFileAccess
 from apps.accounts.models.files import StoredFile
 from apps.generics.factories.mixins import ModelFactoryMixin
 
 
-class StoredFileFactory(ModelFactoryMixin, DjangoModelFactory):
+class StoredFileFactory(ModelFactoryMixin):
     file = factory.django.FileField(
         filename='test.txt',
         data=b'Hello, World!',

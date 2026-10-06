@@ -11,6 +11,9 @@ from apps.accounts.tests.mixins import APITestCaseMixin
 class OrganizationFilterTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
+        self.organization.name = 'Own Organization'
+        self.organization.slug = 'own-organization'
+        self.organization.save(update_fields=['name', 'slug'])
         self.list_url = reverse('accounts:organizations-list')
 
         self.alpha_org = OrganizationFactory(name='Alpha Corp', slug='alpha-corp')

@@ -21,11 +21,11 @@ from apps.accounts.serializers.auth import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
 )
-from apps.accounts.settings import api_settings
+from apps.accounts.settings import jwt_settings
 
 
 class TokenObtainPairView(TokenObtainPairViewBase):
-    _serializer_class = api_settings.TOKEN_OBTAIN_SERIALIZER
+    _serializer_class = jwt_settings.TOKEN_OBTAIN_SERIALIZER
 
 
 @extend_schema(

@@ -18,7 +18,12 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
     def setUpTestData(cls):
         cls.detail_url_name = 'accounts:invitations-detail'
         cls.list_url = reverse('accounts:invitations-list')
-        cls.choices_url = reverse('accounts:invitations-choices')
+        cls.form_options_create_url = reverse(
+            'accounts:invitations-form-options-create'
+        )
+        cls.form_options_update_url = reverse(
+            'accounts:invitations-form-options-update'
+        )
 
     def setUp(self):
         self.organization = self.new_account()
@@ -41,11 +46,22 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
         for result in response.data['results']:
             self.assertTrue(result['is_active'])
 
-    def test_choices_endpoint(self):
-        self._create_invitation()
-        response = self.client.get(self.choices_url)
+    def test_form_options_create(self):
+        response = self.client.get(self.form_options_create_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(set(response.data), {'role'})
+        self.assertEqual(
+            response.data['role'],
+            [
+                {'value': value, 'label': str(label)}
+                for value, label in MemberRoleChoices.choices
+            ],
+        )
+
+    def test_form_options_update(self):
+        response = self.client.get(self.form_options_update_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(set(response.data), {'role'})
 
     def test_create_invitation(self):
         invitation_data = InvitationFactory.build()

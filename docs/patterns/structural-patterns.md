@@ -72,46 +72,118 @@ class OrganizationScopedRequestMixin(RequestUserMixin):
 
 Location: `apps/accounts/mixins/views.py`
 
-Adds common functionality to DRF ModelViewSets including soft-delete support and a `choices` action endpoint.
+Adds soft-delete support and auto-generated form-options and filter-options
+endpoints to DRF ModelViewSets.
 
 ```python
-class ModelViewSetMixin(OrganizationScopedRequestMixin):
+class ModelViewSetMetaclass(
+    OptionsModelViewSetMetaclass,  # runs after Orderable (inside super().__new__)
+    OrderableModelViewSetMetaclass,
+):
+    pass
+
+
+class OptionsOrganizationModelMixin(OptionsModelMixin):
+    options_serializer_class = OptionsOrganizationModelSerializer
+    options_filterset_serializer_class = OptionsOrganizationFilterSetSerializer
+
+
+class ModelViewSetMixin(
+    OptionsOrganizationModelMixin,
+    OrganizationScopedRequestMixin,
+    metaclass=ModelViewSetMetaclass,
+):
     def perform_destroy(self, instance):
         if hasattr(instance, 'is_active'):
             instance.inactivate()
         else:
             super().perform_destroy(instance)
-
-    def get_label_expression(self) -> str | Combinable:
-        if label_expression := getattr(self, 'label_expression', None):
-            return label_expression
-        raise NotImplementedError('Subclasses must implement this method.')
-
-    def get_value_expression(self) -> str | Combinable:
-        if value_expression := getattr(self, 'value_expression', None):
-            return value_expression
-        elif self.lookup_field:
-            return self.lookup_field
-        return 'pk'
-
-    @action(detail=False, methods=['get'], url_path='choices')
-    def choices(self, request, *args, **kwargs):
-        """List items for choices (value/label format)."""
-        queryset = self.filter_queryset(self.get_queryset())
-        label = self.get_label_expression()
-        value = self.get_value_expression()
-        choices_queryset = queryset.annotate(
-            _choice_label=F(label) if isinstance(label, str) else label,
-            _choice_value=F(value) if isinstance(value, str) else value,
-        ).values('_choice_value', '_choice_label')
-        # Returns paginated {value, label} pairs
-        ...
 ```
 
 **Features:**
 - Soft-delete via `inactivate()` when model has `is_active` field
-- `choices` action returns data suitable for dropdown selects
-- `label_expression` and `value_expression` for customizing choice output
+- `OptionsModelViewSetMetaclass` (`apps/generics/mixins/views.py`) registers
+  `GET form-options-create/` and `GET form-options-update/` for each action in
+  `options_actions` whose source serializer (the one `get_serializer_class()` returns
+  for `create`/`update`) has selectable fields
+- `GET filter-options/` (action `filter_options`, `'list'` in `options_actions`) is
+  built from `filterset_class` by `OptionsFilterSetSerializer`
+  (`apps/generics/serializers/options.py`): one key per filter name; filters with
+  `choices` (`ChoiceFilter`, `OrderingFilter` → `order_by`) and `exact`/`in` filters on
+  a model field with `choices` become arrays, filters with a `queryset`
+  (`ModelChoiceFilter`...) become paginated envelopes (`to_field_name` → option
+  value); text/number/boolean filters are skipped, and `method=` filters only count
+  with their own `choices`/`queryset` (the model field says nothing about a custom
+  method). The filter `label`/`help_text` are kept. The route requires
+  `DjangoFilterBackend` in `filter_backends` (the default). Per-filter kwargs
+  (`label_field_name`, `organization_lookup`...) go in the filterset
+  `Meta.options_extra_kwargs`.
+- `Meta.options_extra_kwargs` (serializer or filterset) is validated when the
+  options fields are built: an unknown field/filter name or a kwarg outside
+  `options_field_kwargs` | `options_meta_kwargs` raises `ImproperlyConfigured` at
+  startup. A misspelled `organization_filters` must never silently widen the scope The metaclass order guarantees `order_by` already
+  exists when the options are built. `MemberViewSet` uses `options_actions = ('list',)`
+- Selectable fields: model fields with `choices` (plain `[{value, label}]` array) and
+  writable relations (paginated envelope). Read-only fields and fields the source
+  serializer declares as nested serializers are excluded
+- Relation querysets are scoped to the session organization and active records
+  (`PaginatedOptionsActiveOrganizationSerializer` in `apps/accounts/fields.py`)
+- `options_actions = ()` disables the routes (used by `StoredFileViewSet`); a subclass that disables them also hides the routes
+  inherited from its parent
+- To-many relations render the same envelope as a FK; a FK with `to_field` uses
+  that field as the option value; write-only kwargs (`allow_blank`, `max_length`...)
+  from the source serializer are ignored
+- `?<field>=<value>` filters choice fields by a regex (label or value,
+  ignoring case and accents); paginated fields only filter when `filter_field_name`/`label_field_name`
+  is configured, otherwise the value is ignored and a warning is logged
+- Choice regexes run with the `regex` package and a per-call engine timeout
+  (`CHOICES_SEARCH_TIMEOUT`); the first timeout stops the field, which returns no
+  options. Only the engine call is timed, so GC or CPU pauses in the Python loop do
+  not cut legitimate searches. `re` has no timeout and a user-supplied pattern such
+  as `(\w|\w)*\d` would hold the worker. Never evaluate user regexes with `re`
+- Organization-scoped options search with `filter_lookup_expr = 'unaccent__icontains'`.
+  The `unaccent` lookup (`django.contrib.postgres`, extension created in
+  `accounts/0002_unaccent_extension`) is bilateral: both the column and the searched
+  value go through PostgreSQL `unaccent()`. Never strip accents in Python for a
+  database search, as `unaccent` maps more characters (`ø`, `ł`, `ß`, `æ`) than NFKD
+- Build errors fail at startup (`ImproperlyConfigured`): the routes are built when
+  the ViewSet class is created, so `get_serializer_class()` runs without a request
+  (guard with `getattr(self, 'request', None)`), and an organization-scoped options
+  serializer refuses relations to models without `organization_id` unless the field
+  declares `organization_lookup` (path to the organization, validated at startup) or
+  `organization_scoped: False` in `Meta.options_extra_kwargs`
+- `PrimaryKeyOrganizationRelatedFieldMixin` accepts `organization_lookup` as a kwarg,
+  so write fields (`extra_kwargs`) and options fields share the same scoping; lookups
+  through a relation apply `distinct()`
+- `organization_filters` (kwarg, validated at startup with the lookup) adds
+  conditions to the **same** `filter()` call as `organization_lookup`. On a to-many
+  path, a separate `filter()` would join another row: a user active in another
+  organization would pass. Used by members `user`:
+  `{'organization_lookup': 'members__organization_id', 'organization_filters':
+  {'members__is_active': True}}`
+- Fail-closed: without a session organization, a scoped relation (options or write
+  field) is empty. `<lookup>=None` would otherwise match rows without an
+  organization (`IS NULL`), e.g. users without any membership
+- Pagination: `PaginatedOptionsBaseSerializer.get_pagination_class()` reads
+  `DEFAULT_PAGINATION_CLASS` at runtime; a page past the end of a field is empty
+  (200), not a 404 for the whole response
+- `options_search = False` on a ViewSet turns off the value search on all its
+  form-options fields; the schema documents the value as ignored. Used by
+  `OrganizationImageViewSet`, whose routes answer anonymous requests
+- Every paginated field must declare its label/search field or expression in the
+  source serializer `Meta.options_extra_kwargs` (case by case, never automatic).
+  `PaginatedOptionsSearchConfiguredTestCase` fails for any route that misses it:
+
+  ```python
+  class Meta:
+      options_extra_kwargs = {
+          'team': {'label_field_name': 'name'},
+          'member': {'label_field_name': Member.label_expression()},
+      }
+  ```
+- The OpenAPI schema of each route lists one query parameter per field (field
+  selection, plus search when opted in) and `page`/`page_size` when at least one
+  field is paginated (`get_form_options_parameters` in `apps/generics/utils/schema.py`)
 
 ---
 
@@ -154,7 +226,6 @@ class TeamViewSet(
     queryset = Team.objects.all()
     permission_classes = [TeamPermission]
     filterset_class = TeamFilter
-    label_expression = 'name'
 ```
 
 ---
@@ -567,7 +638,7 @@ apps/
 | `teams` | Teams and team memberships |
 | `generics` | Reusable base classes, mixins, utilities (app-agnostic) |
 | `generics/mails/` | Base classes for HTML email composition and sending |
-| `generics/serializers/` | Generic serializers (e.g., `ChoiceSerializer`) |
+| `generics/serializers/` | Generic serializers (e.g., `OptionsModelSerializer`) |
 | `generics/managers/` | `BaseManager` and `BaseQuerySet` |
 
 ### App Configuration

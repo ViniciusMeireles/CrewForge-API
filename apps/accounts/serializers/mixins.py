@@ -7,7 +7,7 @@ from rest_framework.serializers import SerializerMetaclass
 
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.mixins.fields import OrganizationScopedFieldMixin
-from apps.accounts.settings import api_settings
+from apps.accounts.settings import jwt_settings
 
 User = get_user_model()
 
@@ -21,20 +21,7 @@ class ValidateRoleSerializerMixin(OrganizationScopedFieldMixin):
         """Validate that the role is one of the allowed roles."""
         if self.instance == self.auth_member:
             raise serializers.ValidationError(_('Not allowed to change your own role.'))
-        if (
-            (
-                value in [MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN]
-                and not self.auth_member.has_owner_permission
-            )
-            or (
-                value == MemberRoleChoices.MANAGER
-                and not self.auth_member.has_admin_permission
-            )
-            or (
-                value == MemberRoleChoices.MEMBER
-                and not self.auth_member.has_manager_permission
-            )
-        ):
+        if value not in MemberRoleChoices.assignable_by(self.auth_member):
             raise serializers.ValidationError(
                 _('Not allowed to set the %(role)s role.') % {'role': value}
             )
@@ -86,10 +73,10 @@ class UserTokenSerializerMixin(metaclass=SerializerMetaclass):
 
     def set_tokens_for_user(self, user: User):
         """Generate tokens directly from the user (no password required)."""
-        refresh = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).get_token(
+        refresh = import_string(jwt_settings.TOKEN_OBTAIN_SERIALIZER).get_token(
             user=user
         )
         self._refresh_token[user.pk] = str(refresh)
         self._access_token[user.pk] = str(refresh.access_token)
-        if api_settings.UPDATE_LAST_LOGIN:
+        if jwt_settings.UPDATE_LAST_LOGIN:
             update_last_login(None, user)

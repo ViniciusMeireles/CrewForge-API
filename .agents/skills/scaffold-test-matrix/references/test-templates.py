@@ -89,7 +89,8 @@ class {Resource}CRUDTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('{app}:{resource}-list')
-        self.choices_url = reverse('{app}:{resource}-choices')
+        self.form_options_create_url = reverse('{app}:{resource}-form-options-create')
+        self.form_options_update_url = reverse('{app}:{resource}-form-options-update')
 
     def _detail_url(self, resource):
         return reverse('{app}:{resource}-detail', args=[resource.id])
@@ -145,12 +146,32 @@ class {Resource}CRUDTestCase(APITestCaseMixin, APITestCase):
         for result in response.data['results']:
             self.assertNotEqual(result['id'], resource.id)
 
-    def test_choices_endpoint(self):
-        {Resource}Factory.create_batch(size=3, organization=self.organization)
-        response = self.client.get(self.choices_url)
+    def test_form_options_create(self):
+        response = self.client.get(self.form_options_create_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('count', response.data)
-        self.assertIn('results', response.data)
+        self.assertEqual(set(response.data), {create_option_fields})
+
+    def test_form_options_update(self):
+        response = self.client.get(self.form_options_update_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(set(response.data), {update_option_fields})
+
+    def test_form_options_choice_shape(self):
+        response = self.client.get(self.form_options_create_url)
+        self.assertEqual(
+            response.data['{choice_field}'],
+            [
+                {'value': value, 'label': str(label)}
+                for value, label in {Resource}Choices.choices
+            ],
+        )
+
+    def test_form_options_relation_shape(self):
+        response = self.client.get(self.form_options_create_url)
+        self.assertEqual(
+            set(response.data['{relation_field}']),
+            {'count', 'num_pages', 'page_number', 'results'},
+        )
 
 
 # ============================================================

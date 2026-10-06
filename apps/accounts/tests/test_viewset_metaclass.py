@@ -2,8 +2,8 @@ from django.test import SimpleTestCase
 from django_filters.rest_framework import filters, filterset
 from rest_framework import serializers
 
-from apps.accounts.mixins.views import ModelViewSetMetaclass
 from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
+from apps.generics.mixins.views import OrderableModelViewSetMetaclass
 
 
 class _BaseFilterSet(filterset.FilterSet):
@@ -26,7 +26,7 @@ class _SerWithMixin(ModelSerializerFieldsMixin, serializers.Serializer):
 
 class OrderableFilterMetaclassTestCase(SimpleTestCase):
     def test_adds_ordering_filter(self):
-        class TV(metaclass=ModelViewSetMetaclass):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
             filterset_class = _BaseFilterSet
             http_method_names = ['get']
             auto_orderable_filter = True
@@ -38,7 +38,7 @@ class OrderableFilterMetaclassTestCase(SimpleTestCase):
         self.assertIn('order_by', TV.filterset_class.declared_filters)
 
     def test_skipped_when_flag_false(self):
-        class TV(metaclass=ModelViewSetMetaclass):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
             filterset_class = _BaseFilterSet
             http_method_names = ['get']
             serializer_class = _SimpleSer
@@ -49,7 +49,7 @@ class OrderableFilterMetaclassTestCase(SimpleTestCase):
         self.assertIs(TV.filterset_class, _BaseFilterSet)
 
     def test_skipped_when_no_get_method(self):
-        class TV(metaclass=ModelViewSetMetaclass):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
             filterset_class = _BaseFilterSet
             http_method_names = ['post', 'put']
             auto_orderable_filter = True
@@ -61,7 +61,7 @@ class OrderableFilterMetaclassTestCase(SimpleTestCase):
         self.assertIs(TV.filterset_class, _BaseFilterSet)
 
     def test_skipped_when_no_filterset_class(self):
-        class TV(metaclass=ModelViewSetMetaclass):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
             http_method_names = ['get']
             auto_orderable_filter = True
             serializer_class = _SimpleSer
@@ -72,7 +72,7 @@ class OrderableFilterMetaclassTestCase(SimpleTestCase):
         self.assertFalse(hasattr(TV, 'filterset_class'))
 
     def test_respects_existing_order_by(self):
-        class TV(metaclass=ModelViewSetMetaclass):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
             filterset_class = _OrderedFilterSet
             http_method_names = ['get']
             auto_orderable_filter = True
@@ -84,7 +84,7 @@ class OrderableFilterMetaclassTestCase(SimpleTestCase):
         self.assertIs(TV.filterset_class, _OrderedFilterSet)
 
     def test_wraps_serializer_with_mixin_if_missing(self):
-        class TV(metaclass=ModelViewSetMetaclass):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
             filterset_class = _BaseFilterSet
             http_method_names = ['get']
             auto_orderable_filter = True
@@ -97,7 +97,7 @@ class OrderableFilterMetaclassTestCase(SimpleTestCase):
         self.assertIsNotNone(order_by)
 
     def test_does_not_wrap_if_mixin_present(self):
-        class TV(metaclass=ModelViewSetMetaclass):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
             filterset_class = _BaseFilterSet
             http_method_names = ['get']
             auto_orderable_filter = True

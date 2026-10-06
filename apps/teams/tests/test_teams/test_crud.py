@@ -1,9 +1,12 @@
 from django.urls import reverse
+from django.utils.text import slugify
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.teams.factories.team_members import TeamMemberFactory
 from apps.teams.factories.teams import TeamFactory
 
 
@@ -11,7 +14,6 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.list_url = reverse('teams:teams-list')
-        self.choices_url = reverse('teams:teams-choices')
 
     def _detail_url(self, team):
         return reverse('teams:teams-detail', args=[team.id])
@@ -20,7 +22,6 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         team_data = TeamFactory.build()
         payload = {
             'name': team_data.name,
-            'slug': team_data.slug,
             'description': team_data.description,
         }
         payload.update(overrides)
@@ -44,7 +45,7 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], payload['name'])
-        self.assertEqual(response.data['slug'], payload['slug'])
+        self.assertEqual(response.data['slug'], slugify(payload['name']))
         self.assertEqual(response.data['description'], payload['description'])
         self.assertEqual(response.data['organization'], self.organization.id)
 
@@ -67,7 +68,6 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.put(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['name'], payload['name'])
-        self.assertEqual(response.data['slug'], payload['slug'])
         self.assertEqual(response.data['description'], payload['description'])
 
     def test_delete_team(self):
@@ -96,33 +96,30 @@ class TeamCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
-    def test_create_duplicate_slug_in_same_org(self):
-        team = TeamFactory(organization=self.organization)
-        payload = self._team_payload(slug=team.slug)
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
-    def test_choices_endpoint(self):
-        TeamFactory.create_batch(size=3, organization=self.organization)
-        response = self.client.get(self.choices_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertIn('count', response.data)
-        self.assertIn('results', response.data)
-        if response.data['count'] > 0:
-            self.assertIn('value', response.data['results'][0])
-            self.assertIn('label', response.data['results'][0])
-
     def test_create_team_without_name(self):
         payload = self._team_payload()
         del payload['name']
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
-    def test_create_team_without_slug(self):
+    def test_create_team_with_name_without_letters_or_numbers(self):
         payload = self._team_payload()
-        del payload['slug']
+        payload['name'] = '!!!'
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('name', response.data['error']['details'])
+
+    def test_member_count_ignores_inactive_organization_members(self):
+        team = TeamFactory(organization=self.organization)
+        TeamMemberFactory(organization=self.organization, team=team)
+        TeamMemberFactory(
+            organization=self.organization,
+            team=team,
+            member=MemberFactory(organization=self.organization, is_active=False),
+        )
+        response = self.client.get(self.list_url)
+        result = next(r for r in response.data['results'] if r['id'] == team.id)
+        self.assertEqual(result['member_count'], 1)
 
     def test_partial_update_inactive_team(self):
         team = TeamFactory(organization=self.organization, is_active=False)

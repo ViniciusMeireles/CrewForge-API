@@ -342,8 +342,8 @@ class InvitationViewSet(
     permission_classes = [InvitationPermission]
     filterset_class = InvitationFilter
     filter_backends = [backends.DjangoFilterBackend]
-    label_expression = 'email'
     auto_orderable_filter = True
+    options_actions = ('create', 'update', 'list', 'received')
 
     def get_queryset(self):
         queryset = super().get_queryset()

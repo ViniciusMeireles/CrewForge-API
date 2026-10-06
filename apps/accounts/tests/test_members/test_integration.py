@@ -140,28 +140,3 @@ class MemberIntegrationTestCase(APITestCaseMixin, APITestCase):
                     http_status.HTTP_200_OK,
                     f'{member.role} expected 200, got {response.status_code}',
                 )
-
-    def test_create_with_invite_then_choices_reflects(self):
-        user_data = UserFactory.build()
-        invite = InvitationFactory.create(
-            organization=self.organization,
-            email=user_data.email,
-            expired_at=None,
-        )
-        payload = {
-            'user': {
-                'username': user_data.username,
-                'email': user_data.email,
-                'first_name': user_data.first_name,
-                'last_name': user_data.last_name,
-                'password': user_data.password,
-            },
-            'nickname': 'choices_test',
-        }
-        create_url = reverse(self.create_with_invite_url_name, args=[invite.key])
-        self.client.post(create_url, data=payload, format='json')
-
-        choices_url = reverse('accounts:members-choices')
-        choices_resp = self.client.get(choices_url)
-        self.assertEqual(choices_resp.status_code, http_status.HTTP_200_OK)
-        self.assertGreaterEqual(choices_resp.data['count'], 2)

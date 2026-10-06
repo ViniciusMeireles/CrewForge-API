@@ -25,3 +25,11 @@ class MemberFilter(FilterSetMixin, filterset.FilterSet):
             'user': ['exact'],
             'role': ['exact', 'in'],
         }
+        options_extra_kwargs = {
+            'organization': {'organization_lookup': 'id', 'label_field_name': 'name'},
+            'user': {
+                'organization_lookup': 'members__organization_id',
+                'organization_filters': {'members__is_active': True},
+                'label_field_name': 'full_name',
+            },
+        }

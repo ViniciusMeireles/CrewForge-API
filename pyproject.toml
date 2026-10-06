@@ -11,16 +11,17 @@ dependencies = [
     "django-cors-headers>=4.9.0",
     "django-filter>=26.1",
     "django-nested-admin>=4.1.6",
-    "djangorestframework>=3.18.0",
+    "djangorestframework>=3.18.1",
     "djangorestframework-simplejwt>=5.5.1",
     "drf-spectacular>=0.30.0",
-    "drf-spectacular-sidecar>=2026.8.1",
-    "flower>=2.1.0",
+    "drf-spectacular-sidecar>=2026.10.1",
+    "flower>=2.2.0",
     "gunicorn>=26.2.0",
     "pillow>=12.3.0",
-    "psycopg>=3.3.4",
-    "python-dotenv>=1.2.3",
+    "psycopg>=3.3.6",
+    "python-dotenv>=1.2.4",
     "redis>=8.1.0",
+    "regex>=2026.9.29",
     "uuid6>=2025.0.1",
     "whitenoise>=6.12.0",
 ]
@@ -33,7 +34,7 @@ dev = [
     "pytest-cov>=7.1.0",
     "pytest-django>=4.14.0",
     "pytest-xdist>=3.8.0",
-    "ruff>=0.16.5",
+    "ruff>=0.16.10",
 ]
 
 [tool.ruff]

@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.test import SimpleTestCase, override_settings
+from django.db import IntegrityError, transaction
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import path, reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
@@ -16,7 +17,9 @@ from apps.generics.exceptions import (
     _get_error_code,
     _get_error_details,
     _get_error_message,
+    custom_exception_handler,
 )
+from apps.teams.factories.teams import TeamFactory
 
 
 class _InternalErrorView(APIView):
@@ -238,3 +241,26 @@ class ExceptionHandlerIntegrationTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(reverse('accounts:members-list'))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIsNone(response.data['error']['details'])
+
+
+class ConstraintViolationHandlerTestCase(TestCase):
+    def test_known_constraint_becomes_validation_error(self):
+        team = TeamFactory()
+        with self.assertRaises(IntegrityError) as context:
+            with transaction.atomic():
+                TeamFactory(
+                    organization=team.organization, name=team.name, slug=team.slug
+                )
+        response = custom_exception_handler(context.exception, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error = response.data['error']
+        self.assertEqual(error['code'], ErrorCode.VALIDATION_ERROR)
+        self.assertEqual(
+            [str(message) for message in error['details']['non_field_errors']],
+            ['This team already exists.'],
+        )
+
+    def test_unknown_integrity_error_is_internal_error(self):
+        with self.assertLogs('apps.generics.exceptions', level='ERROR'):
+            response = custom_exception_handler(IntegrityError('unknown'), {})
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)

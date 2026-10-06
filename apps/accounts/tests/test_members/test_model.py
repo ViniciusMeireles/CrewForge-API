@@ -19,6 +19,18 @@ class MemberModelTestCase(TestCase):
         queryset = Member.objects.filter(id=member.id).annotate(label=expr)
         self.assertIsNotNone(queryset.first().label)
 
+    def test_role_label_expression_uses_translated_label(self):
+        for role in MemberRoleChoices:
+            with self.subTest(role=role):
+                member = MemberFactory(role=role)
+                label = (
+                    Member.objects.filter(id=member.id)
+                    .annotate(role_label=Member.role_label_expression())
+                    .values_list('role_label', flat=True)
+                    .get()
+                )
+                self.assertEqual(label, str(role.label))
+
     def test_is_owner_true(self):
         member = MemberFactory(role=MemberRoleChoices.OWNER)
         self.assertTrue(member.is_owner)

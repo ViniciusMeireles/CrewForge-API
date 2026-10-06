@@ -1,7 +1,4 @@
-import tempfile
-
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -12,13 +9,17 @@ from apps.accounts.models.organization import OrganizationImage
 from apps.accounts.tests.mixins import APITestCaseMixin
 
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class OrganizationImageCRUDTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
         self.profile = self.organization.get_profile()
         self.list_url = reverse(viewname='accounts:organization_images-list')
-        self.choices_url = reverse(viewname='accounts:organization_images-choices')
+        self.form_options_create_url = reverse(
+            viewname='accounts:organization_images-form-options-create'
+        )
+        self.form_options_update_url = reverse(
+            viewname='accounts:organization_images-form-options-update'
+        )
 
     def _detail_url(self, image):
         return reverse(viewname='accounts:organization_images-detail', args=[image.id])
@@ -199,28 +200,28 @@ class OrganizationImageCRUDTestCase(APITestCaseMixin, APITestCase):
             )
             self.assertEqual(response.data['image_type'], image_type)
 
-    def test_choices_endpoint(self):
-        OrganizationImageFactory(
-            profile=self.profile, image_type=OrganizationImageTypeChoices.LOGO
-        )
-        OrganizationImageFactory(
-            profile=self.profile, image_type=OrganizationImageTypeChoices.COVER
-        )
-        OrganizationImageFactory(
-            profile=self.profile, image_type=OrganizationImageTypeChoices.FAVICON
-        )
-        response = self.client.get(self.choices_url)
+    def test_form_options_create(self):
+        response = self.client.get(self.form_options_create_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertIn('count', response.data)
-        self.assertIn('results', response.data)
+        self.assertEqual(set(response.data), {'image_type'})
 
-    def test_choices_values(self):
-        OrganizationImageFactory(
-            profile=self.profile, image_type=OrganizationImageTypeChoices.LOGO
-        )
-        response = self.client.get(self.choices_url)
+    def test_form_options_update(self):
+        response = self.client.get(self.form_options_update_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        result = response.data['results'][0]
-        self.assertIn('value', result)
-        self.assertIn('label', result)
-        self.assertEqual(result['label'], OrganizationImageTypeChoices.LOGO)
+        self.assertEqual(set(response.data), {'image_type'})
+
+    def test_form_options_search_is_disabled(self):
+        response = self.client.get(self.form_options_create_url, {'image_type': 'logo'})
+        self.assertEqual(
+            len(response.data['image_type']), len(OrganizationImageTypeChoices)
+        )
+
+    def test_form_options_image_type_values(self):
+        response = self.client.get(self.form_options_create_url)
+        self.assertEqual(
+            response.data['image_type'],
+            [
+                {'value': value, 'label': str(label)}
+                for value, label in OrganizationImageTypeChoices.choices
+            ],
+        )

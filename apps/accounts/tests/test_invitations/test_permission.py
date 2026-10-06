@@ -327,3 +327,47 @@ class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
         url = self._send_email_url(invitation)
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    # --- Form options ---
+
+    def _form_options_urls(self):
+        return (
+            reverse('accounts:invitations-form-options-create'),
+            reverse('accounts:invitations-form-options-update'),
+        )
+
+    def _assert_form_options_status(self, expected_status):
+        for url in self._form_options_urls():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, expected_status)
+
+    def test_not_authenticated_form_options(self):
+        self.client.logout()
+        self._assert_form_options_status(http_status.HTTP_401_UNAUTHORIZED)
+
+    def test_without_organization_session_form_options(self):
+        self.client.logout()
+        self.client.force_authenticate(user=self.organization.owner.user)
+        self._assert_form_options_status(http_status.HTTP_403_FORBIDDEN)
+
+    def test_not_active_member_form_options(self):
+        for url in self._form_options_urls():
+            with self.subTest(url=url):
+                self._assert_inactive_forbidden('get', url)
+
+    def test_member_and_manager_cannot_read_form_options(self):
+        for role in (MemberRoleChoices.MEMBER, MemberRoleChoices.MANAGER):
+            with self.subTest(role=role):
+                member = MemberFactory(organization=self.organization, role=role)
+                self.client.force_authenticate(member=member)
+                self._assert_form_options_status(http_status.HTTP_403_FORBIDDEN)
+
+    def test_admin_and_owner_can_read_form_options(self):
+        admin = MemberFactory(
+            organization=self.organization, role=MemberRoleChoices.ADMIN
+        )
+        for member in (admin, self.organization.owner):
+            with self.subTest(role=member.role):
+                self.client.force_authenticate(member=member)
+                self._assert_form_options_status(http_status.HTTP_200_OK)

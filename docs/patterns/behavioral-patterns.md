@@ -464,7 +464,7 @@ class UserTokenMixin:
         refresh = RefreshToken.for_user(user)
         self._refresh_token = str(refresh)
         self._access_token = str(refresh.access_token)
-        if api_settings.UPDATE_LAST_LOGIN:
+        if jwt_settings.UPDATE_LAST_LOGIN:
             update_last_login(None, user)
 
 

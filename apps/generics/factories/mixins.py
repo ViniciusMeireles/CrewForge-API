@@ -1,10 +1,8 @@
-import factory
+from factory.django import DjangoModelFactory
 
 
-class ModelFactoryMixin:
-    """
-    A mixin class that provides a factory method for creating instances of a model.
-    """
-
-    id = factory.Faker('id')
+class ModelFactoryMixin(DjangoModelFactory):
     is_active = True
+
+    class Meta:
+        abstract = True

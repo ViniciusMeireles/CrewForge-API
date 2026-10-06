@@ -8,6 +8,7 @@ from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.organization import Organization
 from apps.accounts.serializers.mixins import ValidateRoleSerializerMixin
+from apps.accounts.serializers.options import assignable_role_choices
 
 User = get_user_model()
 
@@ -67,6 +68,9 @@ class InvitationSerializer(
         ]
         extra_kwargs = {
             'role_label': {'read_only': True, 'source': 'get_role_display'},
+        }
+        options_extra_kwargs = {
+            'role': {'choices_filter': assignable_role_choices},
         }
 
     def validate_email(self, value):

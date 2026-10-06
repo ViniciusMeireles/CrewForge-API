@@ -23,5 +23,4 @@ class {Resource}ViewSet(
     filterset_class = {Resource}Filter
     filter_backends = [backends.DjangoFilterBackend]
     base_filters = {'is_active': True}
-    label_expression = '{label_field}'
     auto_orderable_filter = True

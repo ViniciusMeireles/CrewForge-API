@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.fields import empty
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
+from apps.accounts.models.member import Member
 from apps.teams.models.team_member import TeamMember
 
 
@@ -13,6 +14,10 @@ class TeamMemberSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         model = TeamMember
         fields = '__all__'
         read_only_fields = ModelSerializerMixin._default_read_only_fields
+        options_extra_kwargs = {
+            'team': {'label_field_name': 'name'},
+            'member': {'label_field_name': Member.label_expression()},
+        }
 
     def validate_team(self, value):
         """Validate that the team is not already associated with the member."""

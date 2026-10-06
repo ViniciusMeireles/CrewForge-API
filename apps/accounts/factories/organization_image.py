@@ -1,5 +1,4 @@
 import factory
-from factory.django import DjangoModelFactory
 
 from apps.accounts.choices import OrganizationImageTypeChoices
 from apps.accounts.factories.files import StoredFileFactory
@@ -7,7 +6,7 @@ from apps.accounts.models.organization import OrganizationImage
 from apps.generics.factories.mixins import ModelFactoryMixin
 
 
-class OrganizationImageFactory(ModelFactoryMixin, DjangoModelFactory):
+class OrganizationImageFactory(ModelFactoryMixin):
     profile = factory.SubFactory(
         'apps.accounts.factories.organizations.OrganizationProfileFactory',
     )
