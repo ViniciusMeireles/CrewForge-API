@@ -48,6 +48,16 @@ def strip_accents(value: str) -> str:
     return ''.join(char for char in normalized if not unicodedata.combining(char))
 
 
+def cast_option_value(value, output_type):
+    """
+    Cast an option value to ``output_type``. Union types such as ``dict | list``
+    (JSONField) are not callable, so the value is kept as is.
+    """
+    if not isinstance(output_type, type) or type(value) is output_type:
+        return value
+    return output_type(value)
+
+
 class OptionBaseSerializer[T](serializers.Serializer):
     """
     Serialize a single ``{value, label}`` option.
@@ -92,11 +102,7 @@ class OptionBaseSerializer[T](serializers.Serializer):
             log.warning('Output type is None for %s', self.__class__.__name__)
             return value
 
-        # Union types such as ``dict | list`` (JSONField) are not callable.
-        if not isinstance(self.output_type, type) or type(value) is self.output_type:
-            return value
-
-        return self.output_type(value)
+        return cast_option_value(value, self.output_type)
 
     def get_label_option(self, obj) -> str:
         if isinstance(obj, dict):

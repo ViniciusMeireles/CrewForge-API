@@ -241,9 +241,9 @@ class FilterOptionsRouteTestCase(SimpleTestCase):
             serializer_class = TeamMemberSerializer
             filterset_class = _TeamMemberFilter
 
-            def get_options_filterset_class(self):
+            def get_options_filterset_class(self, filterset_class=None):
                 if getattr(self, 'request', None) is None:
-                    return super().get_options_filterset_class()
+                    return super().get_options_filterset_class(filterset_class)
                 return None
 
         response = TV.as_view({'get': 'filter_options'})(APIRequestFactory().get('/'))
