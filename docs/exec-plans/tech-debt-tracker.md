@@ -25,7 +25,7 @@ Known technical debt, prioritized by impact and effort.
 
 | ID | Description | Priority | Effort | Identified | Module | PR/Issue |
 |----|-------------|----------|--------|------------|--------|----------|
-| — | *No active debt* | — | — | — | — | — |
+| TD-012 | Choice labels (roles, image types) and messages are English only: no `LocaleMiddleware` and no `pt_BR` `.po`. The frontend already sends `Accept-Language` with its locale. Enabling the middleware also switches Django/DRF built-in messages to the client language. | low | m | 2026-10-05 | config, accounts | — |
 
 ---
 

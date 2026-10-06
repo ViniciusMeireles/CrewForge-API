@@ -701,16 +701,27 @@ with exactly the values the write endpoint accepts.
 | `GET /api/accounts/invitations/form-options-{create,update}/` | `role` | `role` |
 | `GET /api/accounts/organization-images/form-options-{create,update}/` | `image_type` | `image_type` |
 | `GET /api/teams/team-members/form-options-{create,update}/` | `role`, `team`, `member` | `role` |
+| `GET /api/accounts/members/form-options-update-role/` | — | `role` (form of `PATCH .../members/{id}/update-role/`) |
 
-Organizations, organization profiles, members, teams and stored files have **no**
-form-options endpoint. Use the regular list endpoints when a picker is needed.
+Organizations, organization profiles, teams and stored files have **no**
+form-options endpoint, and members only have the update-role one. Use the regular
+list endpoints when a picker is needed.
 For the dropdowns of **list filters**, use `filter-options/` (see 15.5).
 
 Permissions are the same as the resource's read permission (see
 [Authentication](#3-authentication-flow)): invitations require an admin,
-team-members an active member of the session organization, and organization-images
-also answer anonymous requests. Search is **disabled** on the organization-images
+team-members and members update-role an active member of the session organization,
+and organization-images also answer anonymous requests. Search is **disabled** on the organization-images
 routes (`?image_type=<value>` only selects the field).
+
+**Roles depend on the caller.** The `role` options of invitations (create/update)
+and members update-role list only the roles the caller may assign — the same rule the
+write endpoint validates: owner → `owner`, `admin`, `manager`, `member`; admin →
+`manager`, `member`; manager → `member`; member → none (empty array). The frontend
+does not need to filter roles by permission.
+
+Labels are rendered in the request language. The API is English-only today (TD-012);
+send `Accept-Language` with the app locale so labels follow it once translations land.
 
 ### 15.1. Response shapes
 
@@ -799,6 +810,12 @@ Otherwise the API refuses to start, unless the field is explicitly marked global
 organization, relation options are always empty. A key of `options_extra_kwargs`
 that is not a field/filter, or an unknown kwarg, also makes the API refuse to start.
 
+Choice fields accept `choices_filter`, a callable `(choices, context) -> choices`
+that narrows the options per request before the `?<field>=` search (e.g.
+`assignable_role_choices` for roles). Custom `@action`s named in the ViewSet
+`options_actions` get their own route: `form-options-<url_path>/` for write actions,
+`<url_path>/filter-options/` for `GET` actions (with the action permissions).
+
 ### 15.4. Migration from `/choices/`
 
 The legacy `GET /api/<resource>/choices/` endpoints were removed (no alias).
@@ -807,6 +824,7 @@ The legacy `GET /api/<resource>/choices/` endpoints were removed (no alias).
 |---|---|
 | `GET /api/accounts/invitations/choices/` | `GET /api/accounts/invitations/form-options-create/` (`role`) |
 | `GET /api/teams/team-members/choices/` | `GET /api/teams/team-members/form-options-create/` (`team`, `member`, `role`) |
+| Hardcoded role list of the member role editor | `GET /api/accounts/members/form-options-update-role/` (`role`) |
 | `GET /api/accounts/{organizations,members}/choices/`, `GET /api/teams/teams/choices/`, ... | List endpoint of the resource |
 | Response `{count, next, previous, results}` | Object keyed by field; array for choices, `{count, num_pages, page_number, results}` for relations |
 
@@ -827,6 +845,7 @@ parameter**, so the value of an option can be sent as-is to the list:
 | `GET /api/accounts/organization-profiles/filter-options/` | `order_by` |
 | `GET /api/teams/teams/filter-options/` | `organization`, `order_by` |
 | `GET /api/teams/team-members/filter-options/` | `team`, `member`, `role`, `role__in`, `order_by` |
+| `GET /api/accounts/invitations/received/filter-options/` | `role`, `role__in`, `order_by` (filters of `GET .../invitations/received/`) |
 
 Stored files have no filter-options endpoint.
 
@@ -843,8 +862,12 @@ Stored files have no filter-options endpoint.
   no options and are not returned; neither are custom (`method=`) filters unless
   they declare their own choices.
 - Permissions are the same as the list of the resource (the route answers with the
-  same status code as `GET .../`). Options do not depend on the caller role: for
-  invitations every role is listed even when the list hides some of them.
+  same status code as `GET .../`); `received/filter-options/` only requires an
+  authenticated user (no session organization needed), like `received/`.
+- Options do not depend on the caller role, except invitations `role`/`role__in`:
+  the invitation list only holds invitations with a role the caller may assign, so
+  the filter lists only those (same rule as the form options, 15). Members and
+  received invitations list every role.
 - Label/search of relation filters:
 
 | Route field | Label / search |
