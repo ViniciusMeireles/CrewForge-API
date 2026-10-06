@@ -4,11 +4,34 @@ from rest_framework.fields import empty
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
+from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.models.team_member import TeamMember
+from apps.teams.serializers.options import (
+    assignable_team_role_choices,
+    exclude_team_members,
+)
+
+LAST_OWNER_MESSAGE = _('The team must keep at least one owner.')
+
+
+class TeamMemberDetailSerializer(serializers.ModelSerializer):
+    """Organization member data shown in team member lists."""
+
+    full_name = serializers.CharField(source='user.full_name', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    role_label = serializers.CharField(source='get_role_display', read_only=True)
+
+    class Meta:
+        model = Member
+        fields = ['id', 'full_name', 'email', 'nickname', 'role', 'role_label']
+        read_only_fields = fields
 
 
 class TeamMemberSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     """Serializer for the TeamMember model."""
+
+    member_detail = TeamMemberDetailSerializer(source='member', read_only=True)
+    role_label = serializers.CharField(source='get_role_display', read_only=True)
 
     class Meta:
         model = TeamMember
@@ -16,19 +39,24 @@ class TeamMemberSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         read_only_fields = ModelSerializerMixin._default_read_only_fields
         options_extra_kwargs = {
             'team': {'label_field_name': 'name'},
-            'member': {'label_field_name': Member.label_expression()},
+            'member': {
+                'label_field_name': Member.label_expression(),
+                'queryset_filter': exclude_team_members,
+            },
+            'role': {'choices_filter': assignable_team_role_choices},
         }
 
+    @property
+    def is_adding(self) -> bool:
+        """Creating a team member or reactivating a removed one."""
+        return self.instance is None or not self.instance.is_active
+
     def validate_team(self, value):
-        """Validate that the team is not already associated with the member."""
+        """Only who manages the team may add members to it."""
         if value:
             if self.instance and value != self.instance.team:
                 raise serializers.ValidationError(_('Not allowed to change the team.'))
-            if (
-                self.auth_member
-                and not value.is_team_member(self.auth_member)
-                and not self.auth_member.has_manager_permission
-            ):
+            if self.is_adding and not value.can_manage_members(self.auth_member):
                 raise serializers.ValidationError(
                     _('You are not allowed to add a member to this team.')
                 )
@@ -59,8 +87,22 @@ class TeamMemberSerializer(ModelSerializerMixin, serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
+        team = attrs.get('team') or self.instance.team
+        if self.is_adding:
+            attrs.setdefault('role', TeamMemberRoleChoices.MEMBER)
+        role = attrs.get('role', self.instance and self.instance.role)
+        if role not in TeamMemberRoleChoices.assignable_by(self.auth_member, team):
+            raise serializers.ValidationError(
+                {'role': [_('Not allowed to set the %(role)s role.') % {'role': role}]}
+            )
+        if (
+            not self.is_adding
+            and role != TeamMemberRoleChoices.OWNER
+            and self.instance.is_last_owner
+        ):
+            raise serializers.ValidationError({'role': [LAST_OWNER_MESSAGE]})
         team_member = TeamMember.objects.filter(
-            team=attrs.get('team'),
+            team=team,
             member=attrs.get('member'),
         ).first()
         if team_member and (self.instance is None or team_member != self.instance):

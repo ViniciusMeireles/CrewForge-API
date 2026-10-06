@@ -79,6 +79,21 @@ class TeamMember(BaseModel):
     def has_member_permission(self) -> bool:
         return self.is_member or self.has_manager_permission
 
+    @property
+    def is_last_owner(self) -> bool:
+        """Whether this is the only active owner of its team."""
+        if not (self.is_active and self.is_owner):
+            return False
+        return not (
+            self.team.members.filter(
+                is_active=True,
+                member__is_active=True,
+                role=TeamMemberRoleChoices.OWNER,
+            )
+            .exclude(pk=self.pk)
+            .exists()
+        )
+
     @classmethod
     def label_expression(cls) -> models.expressions.Combinable:
         """
