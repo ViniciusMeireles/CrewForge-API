@@ -14,6 +14,20 @@ class MemberRoleChoices(models.TextChoices):
     MANAGER = 'manager', _('Manager')
     MEMBER = 'member', _('Member')
 
+    @classmethod
+    def assignable_by(cls, member: 'Member | None') -> list[str]:
+        """Roles the given member may assign (invite with or set on a member)."""
+        if member is None:
+            return []
+        roles = []
+        if member.has_owner_permission:
+            roles.extend([cls.OWNER, cls.ADMIN])
+        if member.has_admin_permission:
+            roles.append(cls.MANAGER)
+        if member.has_manager_permission:
+            roles.append(cls.MEMBER)
+        return roles
+
 
 class OrganizationImageTypeChoices(models.TextChoices):
     LOGO = 'logo', _('Logo')
