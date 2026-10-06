@@ -343,6 +343,7 @@ class InvitationViewSet(
     filterset_class = InvitationFilter
     filter_backends = [backends.DjangoFilterBackend]
     auto_orderable_filter = True
+    options_actions = ('create', 'update', 'list', 'received')
 
     def get_queryset(self):
         queryset = super().get_queryset()

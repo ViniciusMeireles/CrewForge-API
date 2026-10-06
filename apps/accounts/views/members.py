@@ -132,9 +132,9 @@ class MemberViewSet(
     filterset_class = MemberFilter
     filter_backends = [backends.DjangoFilterBackend]
     auto_orderable_filter = True
-    # Only filter options: ``create`` is deprecated and ``user`` is a nested
-    # serializer.
-    options_actions = ('list',)
+    # No create/update form options: ``create`` is deprecated and ``user`` is a
+    # nested serializer. ``update_role`` gets ``form-options-update-role/``.
+    options_actions = ('list', 'update_role')
 
     base_filters = {'is_active': True}
 

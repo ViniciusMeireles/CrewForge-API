@@ -1,3 +1,5 @@
+import re
+
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
@@ -68,6 +70,8 @@ class OrderableModelViewSetMetaclass(type):
         )
 
 
+OPTIONS_CRUD_ACTIONS = frozenset({'create', 'update', 'list'})
+
 OPTIONS_SERIALIZER_DESCRIPTIONS = {
     'create': (_('Form options to create a {name}.'), get_verbose_name),
     'update': (_('Form options to update a {name}.'), get_verbose_name),
@@ -90,6 +94,10 @@ class OptionsBaseModelMixin:
 
     - ``options_actions``: CRUD actions that get an options route; ``()`` disables
       them (use it when a relation points to a model without organization scope).
+      It also accepts the name of a custom ``@action``: a ``GET`` action gets
+      ``<url_path>/filter-options/`` (from the action ``filterset_class``), any
+      other gets ``form-options-<url_path>/`` (from the serializer the action
+      uses). The route keeps the action ``permission_classes``.
     - ``options_serializer_class``: base class of the generated form options
       serializer; defines how relation querysets are scoped.
     - ``options_filterset_serializer_class``: same for the filter options.
@@ -116,12 +124,35 @@ class OptionsBaseModelMixin:
 
     @classmethod
     def get_options_actions_map(cls) -> dict[str, str]:
-        """Map each CRUD action to its options action name."""
-        return {
+        """Map each source action (see ``options_actions``) to its options action."""
+        actions_map = {
             'create': cls.action_options_create,
             'update': cls.action_options_update,
             'list': cls.action_options_list,
         }
+        for source_action in cls.options_actions:
+            if source_action not in OPTIONS_CRUD_ACTIONS:
+                kind = cls.get_custom_options_kind(source_action)
+                prefix = 'filter_options' if kind == 'list' else 'form_options'
+                actions_map[source_action] = f'{prefix}_{source_action}'
+        return actions_map
+
+    @classmethod
+    def get_custom_action(cls, source_action: str):
+        """The ``@action`` function named in ``options_actions``."""
+        func = getattr(cls, source_action, None)
+        if getattr(func, 'mapping', None) is None:
+            raise ImproperlyConfigured(
+                f'{cls.__name__}.options_actions: {source_action!r} is neither a CRUD '
+                'action nor an @action of the ViewSet.'
+            )
+        return func
+
+    @classmethod
+    def get_custom_options_kind(cls, source_action: str) -> str:
+        """``'list'`` (filter options) for a ``GET`` action, else ``'update'``."""
+        mapping = cls.get_custom_action(source_action).mapping
+        return 'list' if 'get' in mapping else 'update'
 
     @classmethod
     def get_options_actions_inverse_map(cls) -> dict[str, str]:
@@ -135,7 +166,7 @@ class OptionsBaseModelMixin:
         return cls._options_serializer_class_cache
 
     @classmethod
-    def _get_options_serializer_class(cls, serializer_class, view_action):
+    def _get_options_serializer_class(cls, serializer_class, view_action, kind=None):
         """
         Build (once per ViewSet) the options serializer for a source serializer.
 
@@ -163,19 +194,19 @@ class OptionsBaseModelMixin:
                 },
             )
             cache[key] = cls._describe_options_serializer_class(
-                options_class, model, view_action
+                options_class, model, kind or view_action
             )
         return cache[key]
 
     @classmethod
-    def _get_filter_options_serializer_class(cls, filterset_class):
+    def _get_filter_options_serializer_class(cls, filterset_class, view_action='List'):
         """Build (once per ViewSet) the options serializer for a filterset."""
         cache = cls._get_options_cache()
-        key = (filterset_class, cls.options_filterset_serializer_class, 'List')
+        key = (filterset_class, cls.options_filterset_serializer_class, view_action)
         if key not in cache:
             model = filterset_class._meta.model
             options_class = type(
-                f'OptionsList{model.__name__}',
+                f'Options{view_action}{model.__name__}',
                 (cls.options_filterset_serializer_class,),
                 {
                     'Meta': type(
@@ -186,7 +217,7 @@ class OptionsBaseModelMixin:
                 },
             )
             cache[key] = cls._describe_options_serializer_class(
-                options_class, model, 'List'
+                options_class, model, 'list'
             )
         return cache[key]
 
@@ -200,10 +231,11 @@ class OptionsBaseModelMixin:
             description=format_lazy(message, name=get_name(model))
         )(options_class)
 
-    def get_options_filterset_class(self):
+    def get_options_filterset_class(self, filterset_class=None):
         """
         Filterset whose filters are described by ``filter-options/``: the
-        ``filterset_class`` of a ViewSet that filters with ``DjangoFilterBackend``.
+        ``filterset_class`` of a ViewSet that filters with ``DjangoFilterBackend``
+        (or the given one, e.g. from a custom action).
         """
         filter_backends = getattr(self, 'filter_backends', None) or ()
         if not any(
@@ -211,7 +243,8 @@ class OptionsBaseModelMixin:
             for backend in filter_backends
         ):
             return None
-        filterset_class = getattr(self, 'filterset_class', None)
+        if filterset_class is None:
+            filterset_class = getattr(self, 'filterset_class', None)
         if filterset_class is None or getattr(filterset_class, '_meta', None) is None:
             return None
         if filterset_class._meta.model is None:
@@ -228,6 +261,8 @@ class OptionsBaseModelMixin:
         """
         options_action = self.action
         source_action = self.get_options_actions_inverse_map()[options_action]
+        if source_action not in OPTIONS_CRUD_ACTIONS:
+            return self.get_custom_options_serializer_class(source_action)
         if source_action == 'list':
             if (filterset_class := self.get_options_filterset_class()) is None:
                 return None
@@ -240,6 +275,32 @@ class OptionsBaseModelMixin:
         return self._get_options_serializer_class(
             serializer_class=serializer_class,
             view_action=source_action.title(),
+        )
+
+    def get_custom_options_serializer_class(self, source_action):
+        """Options serializer of a custom action named in ``options_actions``."""
+        func = self.get_custom_action(source_action)
+        kind = self.get_custom_options_kind(source_action)
+        view_action = ''.join(part.title() for part in source_action.split('_'))
+        if kind == 'list':
+            filterset_class = self.get_options_filterset_class(
+                func.kwargs.get('filterset_class')
+            )
+            if filterset_class is None:
+                return None
+            return self._get_filter_options_serializer_class(
+                filterset_class, view_action=view_action
+            )
+        serializer_class = func.kwargs.get('serializer_class')
+        if serializer_class is None:
+            options_action = self.action
+            self.action = source_action
+            try:
+                serializer_class = self.get_serializer_class()
+            finally:
+                self.action = options_action
+        return self._get_options_serializer_class(
+            serializer_class=serializer_class, view_action=view_action, kind=kind
         )
 
     def form_options(self, request, *args, **kwargs):
@@ -258,6 +319,9 @@ class OptionsBaseModelMixin:
         return self.form_options(request, *args, **kwargs)
 
     def _form_options_list(self, request, *args, **kwargs):
+        return self.form_options(request, *args, **kwargs)
+
+    def _form_options_custom(self, request, *args, **kwargs):
         return self.form_options(request, *args, **kwargs)
 
 
@@ -307,7 +371,19 @@ class OptionsModelViewSetMetaclass(type):
                 extend_schema_options_list,
             ),
         )
-        for source_action, action_name, url_path, handler, schema in options_routes:
+        custom_routes = cls._get_custom_options_routes(klass)
+        options_routes += custom_routes
+        cls._remove_inherited_custom_actions(
+            klass, attrs, {route[1] for route in custom_routes}
+        )
+        for (
+            source_action,
+            action_name,
+            url_path,
+            handler,
+            schema,
+            *action_kwargs,
+        ) in options_routes:
             serializer_class = None
             if source_action in klass.options_actions:
                 serializer_class = cls._get_options_class(klass, action_name)
@@ -317,9 +393,12 @@ class OptionsModelViewSetMetaclass(type):
             # The action is built here (not declared on the mixin) so that the
             # route only exists when there are fields and uses the class paths.
             view_func = cls._make_options_view(handler, action_name)
-            view_func = action(detail=False, methods=['get'], url_path=url_path)(
-                view_func
-            )
+            view_func = action(
+                detail=False,
+                methods=['get'],
+                url_path=url_path,
+                **(action_kwargs[0] if action_kwargs else {}),
+            )(view_func)
             view_func = schema(
                 model=serializer_class.Meta.model,
                 responses=serializer_class,
@@ -330,6 +409,56 @@ class OptionsModelViewSetMetaclass(type):
             setattr(klass, action_name, view_func)
 
         return klass
+
+    @staticmethod
+    def _get_custom_options_routes(klass) -> tuple:
+        """Routes of the custom actions named in ``options_actions``."""
+        routes = []
+        actions_map = klass.get_options_actions_map()
+        for source_action in klass.options_actions:
+            if source_action in OPTIONS_CRUD_ACTIONS:
+                continue
+            func = klass.get_custom_action(source_action)
+            if re.compile(func.url_path).groups:
+                raise ImproperlyConfigured(
+                    f'{klass.__name__}.options_actions: {source_action!r} has URL '
+                    f'parameters in its url_path ({func.url_path!r}); its options '
+                    'route would require them. Declare the options action manually.'
+                )
+            if klass.get_custom_options_kind(source_action) == 'list':
+                url_path = f'{func.url_path}/{klass.url_path_options_list}'
+                schema = extend_schema_options_list
+            else:
+                url_path = f'form-options-{func.url_path}'
+                schema = extend_schema_options_update
+            action_kwargs = {}
+            permission_classes = func.kwargs.get('permission_classes')
+            if permission_classes is not None:
+                action_kwargs['permission_classes'] = permission_classes
+            routes.append(
+                (
+                    source_action,
+                    actions_map[source_action],
+                    url_path,
+                    klass._form_options_custom,
+                    schema,
+                    action_kwargs,
+                )
+            )
+        return tuple(routes)
+
+    @classmethod
+    def _remove_inherited_custom_actions(cls, klass, attrs, action_names):
+        """
+        Record the custom options actions of this class and hide the ones inherited
+        from a parent ViewSet that this class no longer lists in ``options_actions``.
+        """
+        inherited = set()
+        for base in klass.__mro__[1:]:
+            inherited |= base.__dict__.get('_options_custom_action_names', set())
+        for action_name in inherited - action_names:
+            cls._remove_inherited_action(klass, attrs, action_name)
+        klass._options_custom_action_names = frozenset(action_names)
 
     @staticmethod
     def _remove_inherited_action(klass, attrs, action_name):

@@ -738,6 +738,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReceivedDetailNotFound'
           description: Invitation not found.
+  /api/accounts/invitations/received/filter-options/:
+    get:
+      operationId: accounts_invitations_received_filter_options_retrieve
+      description: Filter options for listing Invitations.
+      summary: Filter options for listing Invitations.
+      parameters:
+      - in: query
+        name: order_by
+        schema:
+          type: string
+        description: Return only `order_by`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: role
+        schema:
+          type: string
+        description: Return only `role`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: role__in
+        schema:
+          type: string
+        description: Return only `role__in`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      tags:
+      - Invitations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsReceivedInvitation'
+          description: ''
   /api/accounts/members/:
     get:
       operationId: accounts_members_list
@@ -1166,6 +1204,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OptionsListMember'
+          description: ''
+  /api/accounts/members/form-options-update-role/:
+    get:
+      operationId: accounts_members_form_options_update_role_retrieve
+      description: Update options for a Member.
+      summary: Update options for a Member.
+      parameters:
+      - in: query
+        name: role
+        schema:
+          type: string
+        description: Return only `role`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      tags:
+      - Members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsUpdateRoleMember'
           description: ''
   /api/accounts/organization-images/:
     get:
@@ -4169,6 +4231,24 @@ components:
           items:
             $ref: '#/components/schemas/ChoiceOptionStr'
           title: Ordering
+    OptionsReceivedInvitation:
+      type: object
+      description: Filter options for listing Invitations.
+      properties:
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+        role__in:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Multiple values may be separated by commas.
+        order_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          title: Ordering
     OptionsUpdateInvitation:
       type: object
       description: Form options to update a Invitation.
@@ -4187,6 +4267,15 @@ components:
           items:
             $ref: '#/components/schemas/ChoiceOptionStr'
           description: Type of organization image
+    OptionsUpdateRoleMember:
+      type: object
+      description: Form options to update a Member.
+      properties:
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: User role in the organization
     OptionsUpdateTeamMember:
       type: object
       description: Form options to update a Team Member.
