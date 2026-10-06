@@ -1,12 +1,28 @@
 from django.core.exceptions import FieldError, ImproperlyConfigured
 
+from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.fields import PaginatedOptionsActiveOrganizationSerializer
+from apps.accounts.utils.requests import get_member
 from apps.generics.fields.options import PaginatedOptionsBaseSerializer
 from apps.generics.serializers.options import (
     OPTIONS_FIELD_KWARGS,
     OptionsFilterSetSerializer,
     OptionsModelSerializer,
 )
+
+
+def assignable_role_choices(choices: list, context: dict) -> list:
+    """
+    ``choices_filter`` that keeps the roles the requester may assign (see
+    ``MemberRoleChoices.assignable_by``). The allowed roles are kept in the
+    serializer context, so the member is looked up once per response.
+    """
+    if (allowed := context.get('_assignable_roles')) is None:
+        member = get_member(context.get('request'))
+        allowed = context['_assignable_roles'] = set(
+            MemberRoleChoices.assignable_by(member)
+        )
+    return [choice for choice in choices if choice['value'] in allowed]
 
 
 class OrganizationScopedOptionsSerializerMixin:

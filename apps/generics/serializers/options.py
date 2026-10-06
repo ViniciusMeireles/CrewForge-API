@@ -43,6 +43,7 @@ OPTIONS_FIELD_KWARGS = frozenset(
         'validators',
         'allow_null',
         'choices',
+        'choices_filter',
         'queryset',
         'value_field_name',
         'label_field_name',

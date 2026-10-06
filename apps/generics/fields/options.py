@@ -522,10 +522,21 @@ class ListChoicesOptionsSerializer(serializers.ListSerializer):
     accents; an invalid expression is matched as plain text. Matching runs with the
     ``regex`` package under ``CHOICES_SEARCH_TIMEOUT``, so a catastrophic expression
     cannot hold the worker.
+
+    ``choices_filter`` (a callable ``(choices, context) -> choices``) narrows the
+    options per request before the search, e.g. to the roles the requester may
+    assign.
     """
 
+    def __init__(self, *args, choices_filter=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.choices_filter = choices_filter
+
     def get_attribute(self, instance):
-        return self.filter_choices(self.initial_data)
+        choices = self.initial_data
+        if self.choices_filter is not None:
+            choices = self.choices_filter(choices, self.context)
+        return self.filter_choices(choices)
 
     def get_search_pattern(self) -> regex.Pattern | None:
         if self.context.get('options_search') is False:
@@ -580,6 +591,7 @@ class ChoicesOptionsSerializer(OptionBaseSerializer):
         list_serializer_class = ListChoicesOptionsSerializer
 
     def __new__(cls, *args, **kwargs):
+        choices_filter = kwargs.pop('choices_filter', None)
         if choices := kwargs.pop('choices', None):
             list_kwargs = kwargs.copy()
             if isinstance(choices, enums.ChoicesType):
@@ -592,7 +604,11 @@ class ChoicesOptionsSerializer(OptionBaseSerializer):
                     'output_type': output_type,
                 }
             )
-            return cls.many_init(*args, **list_kwargs)
+            list_serializer = cls.many_init(*args, **list_kwargs)
+            if choices_filter is not None:
+                list_serializer.choices_filter = choices_filter
+                list_serializer._kwargs['choices_filter'] = choices_filter
+            return list_serializer
         if output_type := kwargs.pop('output_type', None):
             klass = _create_option_serializer_class(
                 output_type=output_type,

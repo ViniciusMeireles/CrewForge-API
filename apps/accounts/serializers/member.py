@@ -11,6 +11,7 @@ from apps.accounts.serializers.auth import UserTokenSerializer
 from apps.accounts.serializers.mixins import (
     ValidateRoleSerializerMixin,
 )
+from apps.accounts.serializers.options import assignable_role_choices
 from apps.accounts.serializers.user import UserSerializer
 from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 
@@ -174,3 +175,6 @@ class MemberRoleUpdateSerializer(
     class Meta:
         model = Member
         fields = ['role']
+        options_extra_kwargs = {
+            'role': {'choices_filter': assignable_role_choices},
+        }
