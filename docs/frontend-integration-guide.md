@@ -575,7 +575,10 @@ Assignable team roles (per team):
   `email`, `nickname`, `role`, `role_label` of the organization member). `member` stays the
   writable id.
 - The list is paginated (10 by default): a drawer listing a whole team should send
-  `page_size` (max 100) and follow `next`.
+  `page_size` (max 100) and request the next `page`.
+- Ordering (`?order_by=`, prefix `-` for descending): `member_name`, `member_email`,
+  `role` (hierarchy: owner, admin, manager, member), `created_at` (joined at), `id`.
+  `filter-options/?order_by` lists them.
 
 ---
 

@@ -74,3 +74,71 @@ class TeamMemberFilterTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         for r in response.data['results']:
             self.assertEqual(r['role'], TeamMemberRoleChoices.ADMIN)
+
+
+class TeamMemberOrderingTestCase(APITestCaseMixin, APITestCase):
+    def setUp(self):
+        self.organization = self.new_account()
+        self.team = TeamFactory(organization=self.organization)
+        self.list_url = reverse('teams:team_members-list')
+        self.rows = {}
+        for role, first_name, email in (
+            (TeamMemberRoleChoices.MEMBER, 'Ana', 'zoe@example.com'),
+            (TeamMemberRoleChoices.OWNER, 'Carla', 'bia@example.com'),
+            (TeamMemberRoleChoices.MANAGER, 'Bruno', 'xavier@example.com'),
+            (TeamMemberRoleChoices.ADMIN, 'Daniel', 'alice@example.com'),
+        ):
+            member = MemberFactory(organization=self.organization)
+            member.user.first_name = first_name
+            member.user.last_name = 'Silva'
+            member.user.email = email
+            member.user.save()
+            self.rows[role] = TeamMemberFactory(
+                team=self.team, member=member, role=role
+            )
+
+    def _ordered(self, order_by):
+        response = self.client.get(
+            self.list_url, {'team': self.team.pk, 'order_by': order_by}
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        return response.data['results']
+
+    def test_order_by_member_name(self):
+        names = [r['member_detail']['full_name'] for r in self._ordered('member_name')]
+        self.assertEqual(names, sorted(names))
+        names = [r['member_detail']['full_name'] for r in self._ordered('-member_name')]
+        self.assertEqual(names, sorted(names, reverse=True))
+
+    def test_order_by_member_email(self):
+        emails = [r['member_detail']['email'] for r in self._ordered('member_email')]
+        self.assertEqual(emails, sorted(emails))
+        emails = [r['member_detail']['email'] for r in self._ordered('-member_email')]
+        self.assertEqual(emails, sorted(emails, reverse=True))
+
+    def test_order_by_role_follows_hierarchy(self):
+        hierarchy = [
+            TeamMemberRoleChoices.OWNER,
+            TeamMemberRoleChoices.ADMIN,
+            TeamMemberRoleChoices.MANAGER,
+            TeamMemberRoleChoices.MEMBER,
+        ]
+        self.assertEqual([r['role'] for r in self._ordered('role')], hierarchy)
+        self.assertEqual([r['role'] for r in self._ordered('-role')], hierarchy[::-1])
+
+    def test_order_by_created_at(self):
+        ids = [r['id'] for r in self._ordered('created_at')]
+        expected = [
+            tm.pk for tm in sorted(self.rows.values(), key=lambda tm: tm.created_at)
+        ]
+        self.assertEqual(ids, expected)
+
+    def test_filter_options_list_ordering_values(self):
+        response = self.client.get(
+            reverse('teams:team_members-filter-options'), {'order_by': ''}
+        )
+        values = [option['value'] for option in response.data['order_by']]
+        for value in ('member_name', 'member_email', 'role', 'created_at'):
+            with self.subTest(value=value):
+                self.assertIn(value, values)
+                self.assertIn(f'-{value}', values)

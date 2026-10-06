@@ -2708,44 +2708,28 @@ paths:
             type: string
             enum:
             - -created_at
-            - -created_by
             - -id
-            - -is_active
-            - -member
+            - -member_email
+            - -member_name
             - -role
-            - -team
-            - -updated_at
-            - -updated_by
             - created_at
-            - created_by
             - id
-            - is_active
-            - member
+            - member_email
+            - member_name
             - role
-            - team
-            - updated_at
-            - updated_by
         description: |-
           Ordering
 
-          * `created_at` - Created At
-          * `-created_at` - Descending Created At
-          * `created_by` - Created By
-          * `-created_by` - Descending Created By
-          * `id` - ID
-          * `-id` - Descending ID
-          * `is_active` - Is Active
-          * `-is_active` - Descending Is Active
-          * `member` - Member
-          * `-member` - Descending Member
+          * `member_name` - Member name
+          * `-member_name` - Member name (descending)
+          * `member_email` - Member email
+          * `-member_email` - Member email (descending)
           * `role` - Role
-          * `-role` - Descending Role
-          * `team` - Team
-          * `-team` - Descending Team
-          * `updated_at` - Updated At
-          * `-updated_at` - Descending Updated At
-          * `updated_by` - Updated By
-          * `-updated_by` - Descending Updated By
+          * `-role` - Role (descending)
+          * `created_at` - Joined at
+          * `-created_at` - Joined at (descending)
+          * `id` - ID
+          * `-id` - ID (descending)
         explode: false
         style: form
       - name: page
