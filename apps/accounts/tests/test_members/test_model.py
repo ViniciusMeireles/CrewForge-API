@@ -99,6 +99,43 @@ class MemberModelTestCase(TestCase):
         self.assertFalse(member.has_manager_permission)
         self.assertFalse(member.has_member_permission)
 
+    def test_access_matrix_by_role(self):
+        expected = {
+            MemberRoleChoices.OWNER: (True, True, True, True),
+            MemberRoleChoices.ADMIN: (True, True, True, False),
+            MemberRoleChoices.MANAGER: (True, False, True, False),
+            MemberRoleChoices.MEMBER: (True, False, True, False),
+        }
+        for role, values in expected.items():
+            with self.subTest(role=role):
+                member = MemberFactory(role=role)
+                self.assertEqual(
+                    (
+                        member.has_members_access,
+                        member.has_invitations_access,
+                        member.has_teams_access,
+                        member.has_organization_settings_access,
+                    ),
+                    values,
+                )
+
+    def test_access_superuser_has_all(self):
+        user = UserFactory(is_superuser=True)
+        member = MemberFactory(user=user, role=MemberRoleChoices.MEMBER)
+        self.assertTrue(member.has_members_access)
+        self.assertTrue(member.has_invitations_access)
+        self.assertTrue(member.has_teams_access)
+        self.assertTrue(member.has_organization_settings_access)
+
+    def test_access_inactive_has_none(self):
+        for role in MemberRoleChoices:
+            with self.subTest(role=role):
+                member = MemberFactory(role=role, is_active=False)
+                self.assertFalse(member.has_members_access)
+                self.assertFalse(member.has_invitations_access)
+                self.assertFalse(member.has_teams_access)
+                self.assertFalse(member.has_organization_settings_access)
+
     def test_unique_constraint_user_organization(self):
         member = MemberFactory()
         with self.assertRaises(IntegrityError):

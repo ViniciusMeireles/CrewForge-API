@@ -91,6 +91,22 @@ class Member(BaseModel):
     def has_member_permission(self) -> bool:
         return self.is_member or self.has_manager_permission
 
+    @property
+    def has_members_access(self) -> bool:
+        return self.is_active
+
+    @property
+    def has_invitations_access(self) -> bool:
+        return self.has_admin_permission
+
+    @property
+    def has_teams_access(self) -> bool:
+        return self.is_active
+
+    @property
+    def has_organization_settings_access(self) -> bool:
+        return self.has_owner_permission
+
     @classmethod
     def label_expression(
         cls, outer_ref: str | None = None

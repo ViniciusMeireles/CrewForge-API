@@ -10,11 +10,12 @@ class TeamPermission(OrganizationScopedPermission):
     """
 
     def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
         auth_member = get_member(request)
-        return super().has_permission(request, view) and (
-            request.method in permissions.SAFE_METHODS
-            or (auth_member and auth_member.has_manager_permission)
-        )
+        if request.method in permissions.SAFE_METHODS:
+            return auth_member.has_teams_access
+        return auth_member.has_manager_permission
 
     def has_object_permission(self, request, view, obj):
         if not super().has_object_permission(request, view, obj):

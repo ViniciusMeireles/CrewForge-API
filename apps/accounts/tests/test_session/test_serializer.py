@@ -54,7 +54,7 @@ class SessionSerializerTestCase(APITestCaseMixin, APITestCase):
         member_data = response.data['member']
         self.assertEqual(
             set(member_data.keys()),
-            {'id', 'role', 'nickname', 'permissions', 'last_login_at'},
+            {'id', 'role', 'nickname', 'permissions', 'access', 'last_login_at'},
         )
 
     def test_permissions_sub_fields(self):
@@ -75,6 +75,24 @@ class SessionSerializerTestCase(APITestCaseMixin, APITestCase):
                 'has_member_permission',
             },
         )
+
+    def test_access_sub_fields(self):
+        self.new_account(organization_login=True)
+        response = self.client.get(self.session_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        access = response.data['member']['access']
+        self.assertEqual(
+            set(access.keys()),
+            {'members', 'invitations', 'teams', 'organization_settings'},
+        )
+        for value in access.values():
+            self.assertIsInstance(value, bool)
+
+    def test_owner_access_is_true(self):
+        self.new_account(organization_login=True)
+        response = self.client.get(self.session_url)
+        access = response.data['member']['access']
+        self.assertTrue(all(access.values()))
 
     def test_owner_permissions_are_true(self):
         self.new_account(organization_login=True)

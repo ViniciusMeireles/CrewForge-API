@@ -3770,6 +3770,26 @@ components:
           type: string
       required:
       - refresh
+    MemberAccess:
+      type: object
+      properties:
+        members:
+          type: boolean
+          readOnly: true
+        invitations:
+          type: boolean
+          readOnly: true
+        teams:
+          type: boolean
+          readOnly: true
+        organization_settings:
+          type: boolean
+          readOnly: true
+      required:
+      - invitations
+      - members
+      - organization_settings
+      - teams
     MemberModel:
       type: object
       description: Serializer for the Member model.
@@ -3917,12 +3937,17 @@ components:
           allOf:
           - $ref: '#/components/schemas/MemberPermissions'
           readOnly: true
+        access:
+          allOf:
+          - $ref: '#/components/schemas/MemberAccess'
+          readOnly: true
         last_login_at:
           type: string
           format: date-time
           nullable: true
           description: Last time the member logged into the organization
       required:
+      - access
       - id
       - permissions
     MemberUpdate:
