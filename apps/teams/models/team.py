@@ -49,14 +49,6 @@ class Team(BaseModel):
     def __str__(self):
         return self.name
 
-    def is_team_member(self, member) -> bool:
-        """Check if a member is part of the team."""
-        return self.members.filter(
-            member_id=member.id,
-            is_active=True,
-            member__is_active=True,
-        ).exists()
-
     def get_active_team_member(self, member):
         """Active membership of ``member`` in this team, or ``None``."""
         if member is None:
