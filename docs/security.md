@@ -102,8 +102,10 @@ These rules are non-negotiable:
 
 1. **Never commit secrets.** Use environment variables via `.env`.
 2. **`SECRET_KEY`** must be set via `DJANGO_SECRET_KEY` env var. There is no
-   fallback outside `config.settings.local`/`testing`: `production.py` refuses to
+   fallback outside development: `production.py` — and `local.py` when
+   `ENVIRONMENT` is not `local_development`/`devcontainer`/`test` — refuse to
    start without a key of at least 50 characters (`config/settings/checks.py`).
+   `run.sh` exports `ENVIRONMENT=production` by default.
    JWTs are signed with `JWT_SIGNING_KEY` when set (same rules), else with the
    secret key.
 3. **`ALLOWED_HOSTS`** must be restricted in production.
@@ -184,8 +186,13 @@ returns cookie, CORS and debug diagnostics when `DEBUG=True`.
 
 ### Stored Files
 
-- Uploads are limited by `STORED_FILE_MAX_SIZE` and the type is detected from
-  the file bytes (`apps/accounts/utils/files.py`); the extension must match.
+- Uploads are limited by `STORED_FILE_MAX_SIZE`: `UploadSizeLimitMixin` rejects
+  an oversized `Content-Length` before parsing, and `MaxSizeUploadHandler`
+  (first in `FILE_UPLOAD_HANDLERS`) stops storing a file as soon as it passes
+  the limit. The type is detected from the file bytes
+  (`apps/accounts/utils/files.py`); the extension must match.
+- `StoredFile.save()` recomputes `content_type` from the bytes whenever the file
+  is replaced, so the stored type never goes stale.
   Allowed types: `STORED_FILE_ALLOWED_CONTENT_TYPES`; organization images only
   accept `STORED_FILE_IMAGE_CONTENT_TYPES` (raster images).
 - Downloads are attachments unless the type is in

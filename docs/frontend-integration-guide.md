@@ -620,8 +620,8 @@ updating_permission: "MANAGER"
 
 **Upload rules** (`400` on the `file` field when violated):
 
-- Maximum size: `STORED_FILE_MAX_SIZE` (default 10 MB).
-- The type is detected from the file **content**, not the name. Allowed by default: PNG, JPEG, GIF, WebP, PDF, plain text and CSV.
+- Maximum size: `STORED_FILE_MAX_SIZE` (default 10 MB). Requests whose `Content-Length` exceeds it (plus 1 MB for the other form fields) are rejected before the body is read. Proxies in front of the API must allow at least this size (the Frontend nginx sets `client_max_body_size 11m`).
+- The type is detected from the file **content**, not the name. Allowed by default: PNG, JPEG, GIF, WebP, PDF, plain text and CSV (UTF-8 or Windows-1252).
 - A known extension must match the detected type (`fake.png` containing HTML is rejected). Files without extension take the detected type.
 - HTML, SVG, scripts and executables are always rejected.
 
