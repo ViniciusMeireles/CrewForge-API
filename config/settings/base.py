@@ -180,6 +180,17 @@ STORED_FILE_ALLOWED_CONTENT_TYPES = [
     'application/pdf',
     'text/plain',
     'text/csv',
+    'application/json',
+    'application/zip',
+    'application/msword',
+    'application/vnd.ms-excel',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.oasis.opendocument.text',
+    'application/vnd.oasis.opendocument.spreadsheet',
+    'application/vnd.oasis.opendocument.presentation',
 ]
 STORED_FILE_INLINE_CONTENT_TYPES = STORED_FILE_IMAGE_CONTENT_TYPES
 FILE_UPLOAD_HANDLERS = [

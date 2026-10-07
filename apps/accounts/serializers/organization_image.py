@@ -10,6 +10,7 @@ from apps.accounts.models.files import StoredFile
 from apps.accounts.models.organization import OrganizationImage, OrganizationProfile
 from apps.accounts.serializers.files import (
     StoredFileListModelSerializer,
+    UploadTooLargeMixin,
     upload_metadata,
 )
 
@@ -59,7 +60,11 @@ class StoredFileOrgImageSerializer(
         return instance
 
 
-class OrganizationImageSerializer(ModelSerializerMixin, serializers.ModelSerializer):
+class OrganizationImageSerializer(
+    UploadTooLargeMixin, ModelSerializerMixin, serializers.ModelSerializer
+):
+    upload_error_path = ('image', 'file')
+
     image = StoredFileOrgImageSerializer(required=True)
 
     class Meta:

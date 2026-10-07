@@ -15,6 +15,7 @@ class OrganizationImageViewSet(
     UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelViewSet
 ):
     serializer_class = OrganizationImageSerializer
+    upload_error_path = ('image', 'file')
     queryset = OrganizationImage.objects.select_related(
         'profile', 'image'
     ).filter_actives()

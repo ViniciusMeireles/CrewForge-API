@@ -69,11 +69,13 @@ class OrganizationScopedViewSetMixin(OrganizationScopedRequestMixin):
 class UploadSizeLimitMixin:
     """Reject oversized uploads from ``Content-Length`` before parsing the body."""
 
+    upload_error_path = ('file',)
+
     def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
         try:
             content_length = int(request.META.get('CONTENT_LENGTH') or 0)
         except ValueError:
             content_length = 0
         if content_length > max_upload_request_size():
-            raise file_too_large_error()
-        super().initial(request, *args, **kwargs)
+            raise file_too_large_error(path=self.upload_error_path)

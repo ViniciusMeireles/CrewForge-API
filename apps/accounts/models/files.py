@@ -43,6 +43,7 @@ class StoredFile(BaseModel):
     )
     file = models.FileField(
         upload_to=upload_to_storage_files,
+        max_length=255,
         verbose_name=_('File'),
         help_text=_('File to be stored'),
     )

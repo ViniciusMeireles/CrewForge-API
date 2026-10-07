@@ -12,7 +12,22 @@ from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.files import StoredFile
 from apps.accounts.serializers.organization import OrganizationReadySerializer
 from apps.accounts.serializers.user import UserReadySerializer
-from apps.accounts.utils.files import detect_upload_content_type
+from apps.accounts.utils.files import (
+    detect_upload_content_type,
+    file_too_large_error,
+    upload_too_large,
+)
+
+
+class UploadTooLargeMixin:
+    """Report an upload dropped by ``MaxSizeUploadHandler`` as too large."""
+
+    upload_error_path = ('file',)
+
+    def to_internal_value(self, data):
+        if upload_too_large(self.context.get('request')):
+            raise file_too_large_error(path=self.upload_error_path)
+        return super().to_internal_value(data)
 
 
 def upload_metadata(file, allowed_types) -> dict[str, Any]:
@@ -74,6 +89,7 @@ class StoredFileDetailModelSerializer(
 
 
 class StoredFileCreateUpdateModelSerializer(
+    UploadTooLargeMixin,
     StoredFileListModelSerializer,
     metaclass=SerializerMetaclass,
 ):

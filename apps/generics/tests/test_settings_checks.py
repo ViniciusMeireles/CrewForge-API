@@ -4,6 +4,7 @@ from django.test import SimpleTestCase
 from config.settings.checks import (
     DEVELOPMENT_ENVIRONMENTS,
     MIN_SECRET_LENGTH,
+    require_production_secrets,
     require_secret,
 )
 
@@ -29,3 +30,13 @@ class DevelopmentEnvironmentsTestCase(SimpleTestCase):
     def test_production_is_not_a_development_environment(self):
         self.assertNotIn('production', DEVELOPMENT_ENVIRONMENTS)
         self.assertNotIn(None, DEVELOPMENT_ENVIRONMENTS)
+
+
+class RequireProductionSecretsTestCase(SimpleTestCase):
+    def test_validates_jwt_signing_key_when_set(self):
+        with self.assertRaises(ImproperlyConfigured):
+            require_production_secrets('k' * MIN_SECRET_LENGTH, {'SIGNING_KEY': 'weak'})
+
+    def test_jwt_signing_key_is_optional(self):
+        key = 'k' * MIN_SECRET_LENGTH
+        self.assertEqual(require_production_secrets(key, {}), key)

@@ -16,7 +16,27 @@ BINARY_SIGNATURES = (
     (b'GIF87a', 'image/gif'),
     (b'GIF89a', 'image/gif'),
     (b'%PDF-', 'application/pdf'),
+    (b'PK\x03\x04', 'application/zip'),
+    (b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1', 'application/x-ole-storage'),
 )
+
+CONTAINER_TYPES = {
+    'application/zip': {
+        'application/zip',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.oasis.opendocument.text',
+        'application/vnd.oasis.opendocument.spreadsheet',
+        'application/vnd.oasis.opendocument.presentation',
+    },
+    'application/x-ole-storage': {
+        'application/msword',
+        'application/vnd.ms-excel',
+        'application/vnd.ms-powerpoint',
+    },
+}
+TEXT_DATA_TYPES = frozenset({'application/json'})
 
 
 def sniff_content_type(file) -> str | None:
@@ -44,6 +64,21 @@ def sniff_content_type(file) -> str | None:
     return TEXT
 
 
+def _resolve(sniffed: str | None, guessed: str | None) -> str | None:
+    """Combine the sniffed and guessed types; ``None`` when they disagree."""
+    if sniffed == TEXT:
+        if guessed is None:
+            return 'text/plain'
+        if guessed.startswith('text/') or guessed in TEXT_DATA_TYPES:
+            return guessed
+        return None
+    if sniffed in CONTAINER_TYPES:
+        return guessed if guessed in CONTAINER_TYPES[sniffed] else None
+    if sniffed and guessed in (None, sniffed):
+        return sniffed
+    return None
+
+
 def content_type_for(file) -> str:
     """Best-effort type of a stored file: bytes first, then the file name."""
     guessed, __ = mimetypes.guess_type(file.name.split('/')[-1])
@@ -51,29 +86,18 @@ def content_type_for(file) -> str:
         sniffed = sniff_content_type(file)
     except OSError, ValueError:
         sniffed = None
-    if sniffed == TEXT:
-        return guessed or 'text/plain'
-    return sniffed or guessed or 'application/octet-stream'
+    return _resolve(sniffed, guessed) or guessed or 'application/octet-stream'
 
 
 def detect_upload_content_type(file, allowed_types) -> str:
     """Return the validated content type of an upload or raise ``ValidationError``."""
     if file.size > settings.STORED_FILE_MAX_SIZE:
         raise serializers.ValidationError(
-            file_too_large_error().detail['file'], code='file_too_large'
+            file_too_large_error(path=()).detail, code='file_too_large'
         )
 
-    sniffed = sniff_content_type(file)
     guessed, __ = mimetypes.guess_type(file.name.split('/')[-1])
-    if sniffed == TEXT:
-        content_type = guessed or 'text/plain'
-        if not content_type.startswith('text/'):
-            content_type = None
-    elif sniffed and guessed in (None, sniffed):
-        content_type = sniffed
-    else:
-        content_type = None
-
+    content_type = _resolve(sniff_content_type(file), guessed)
     if content_type not in allowed_types:
         raise serializers.ValidationError(
             _('This file type is not allowed.'),
@@ -90,16 +114,18 @@ def max_upload_request_size() -> int:
     return settings.STORED_FILE_MAX_SIZE + UPLOAD_REQUEST_OVERHEAD
 
 
-def file_too_large_error() -> serializers.ValidationError:
-    return serializers.ValidationError(
-        {
-            'file': [
-                _('The file is too large. Maximum size is %(size)s MB.')
-                % {'size': settings.STORED_FILE_MAX_SIZE // (1024 * 1024)}
-            ]
-        },
-        code='file_too_large',
-    )
+def file_too_large_error(path=('file',)) -> serializers.ValidationError:
+    detail = [
+        _('The file is too large. Maximum size is %(size)s MB.')
+        % {'size': settings.STORED_FILE_MAX_SIZE // (1024 * 1024)}
+    ]
+    for key in reversed(path):
+        detail = {key: detail}
+    return serializers.ValidationError(detail, code='file_too_large')
+
+
+def upload_too_large(request) -> bool:
+    return bool(getattr(request, 'upload_too_large', False))
 
 
 class MaxSizeUploadHandler(FileUploadHandler):
@@ -112,6 +138,8 @@ class MaxSizeUploadHandler(FileUploadHandler):
     def receive_data_chunk(self, raw_data, start):
         self.received += len(raw_data)
         if self.received > settings.STORED_FILE_MAX_SIZE:
+            if self.request is not None:
+                self.request.upload_too_large = True
             raise StopUpload(connection_reset=False)
         return raw_data
 
