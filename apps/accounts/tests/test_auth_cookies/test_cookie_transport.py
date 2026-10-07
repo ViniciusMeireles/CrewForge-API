@@ -254,6 +254,35 @@ class CookieIssuersTestCase(CookieTransportTestCase):
         self.assertEqual(token_keys_in(response.data), set())
         self.assert_auth_cookie(response, ACCESS, '/')
 
+    def test_signup_and_create_with_invite_require_csrf_in_cookie_mode(self):
+        organization = OrganizationFactory.build()
+        user = self.user_payload()
+        invitation = InvitationFactory(
+            organization=self.organization, email=user['email'], expired_at=None
+        )
+        requests = {
+            'signup': (
+                reverse('accounts:signup-list'),
+                {
+                    'user': self.user_payload(),
+                    'organization': {
+                        'name': organization.name,
+                        'slug': organization.slug,
+                    },
+                    'nickname': MemberFactory.build().nickname,
+                },
+            ),
+            'create-with-invite': (
+                reverse('accounts:members-create-with-invite', args=[invitation.key]),
+                {'user': user, 'nickname': MemberFactory.build().nickname},
+            ),
+        }
+        for name, (url, payload) in requests.items():
+            with self.subTest(name=name):
+                response = self.post(url, payload, csrf=False)
+                self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+                self.assertNotIn(ACCESS, response.cookies)
+
     def test_signup_body_tokens_belong_to_the_new_user(self):
         MemberFactory.create_batch(3)
         organization = OrganizationFactory.build()
