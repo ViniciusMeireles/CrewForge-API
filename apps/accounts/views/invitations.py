@@ -438,7 +438,7 @@ class InvitationViewSet(
         serializer_class=InvitationByKeySerializer,
     )
     def by_key(self, request, *args, **kwargs):
-        if self.auth_user:
+        if self.auth_user and self.auth_user.email_verified:
             queryset = Invitation.objects.filter_actives().filter_received_by_user(
                 user=self.auth_user,
             )

@@ -28,6 +28,11 @@ class InvitationPermission(OrganizationScopedPermission):
 class InvitationAcceptDeclinePermission(IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         return super().has_object_permission(request=request, view=view, obj=obj) and (
-            (obj.email and request.user.email == obj.email and obj.member_id is None)
+            (
+                obj.email
+                and request.user.email_verified
+                and request.user.email == obj.email
+                and obj.member_id is None
+            )
             or (obj.member_id and obj.member == get_member(request))
         )

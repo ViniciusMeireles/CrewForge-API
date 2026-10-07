@@ -1,5 +1,6 @@
 import factory
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from factory.django import DjangoModelFactory
 
 User = get_user_model()
@@ -12,6 +13,7 @@ class UserFactory(DjangoModelFactory):
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
     is_active = True
+    email_verified_at = factory.LazyFunction(timezone.now)
 
     class Params:
         base_username = factory.Faker('user_name')

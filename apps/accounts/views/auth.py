@@ -9,7 +9,7 @@ from drf_spectacular.utils import (
 from rest_framework import serializers
 from rest_framework import status as http_status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
@@ -22,6 +22,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from apps.accounts.serializers.auth import (
+    EmailVerificationConfirmSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
 )
@@ -34,6 +35,10 @@ from apps.accounts.utils.auth_cookies import (
     refresh_cookie,
     set_auth_cookies,
     wants_cookie_transport,
+)
+from apps.accounts.utils.email_verification import (
+    mark_email_verified,
+    send_verification_email,
 )
 
 
@@ -113,21 +118,20 @@ class PasswordResetRequestView(AuthThrottleMixin, APIView):
     def post(cls, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.data.get('email')
 
-        uid = serializer.data.get('uid')
-        token = serializer.data.get('token')
+        if serializer.user:
+            from apps.accounts.tasks import send_password_reset_email
 
-        from apps.accounts.tasks import send_password_reset_email
-
-        reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
-        send_password_reset_email(reset_link, [email])
+            uid = serializer.data.get('uid')
+            token = serializer.data.get('token')
+            reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
+            send_password_reset_email(reset_link, [serializer.user.email])
 
         return Response(
             data={
                 'detail': _(
-                    'Password reset link has been sent to your email. Please check '
-                    'your inbox.'
+                    'If an account exists for this email, a password reset link has '
+                    'been sent to it. Please check your inbox.'
                 ),
             },
             status=http_status.HTTP_200_OK,
@@ -237,3 +241,45 @@ class LogoutView(APIView):
         request.session.flush()
         response = Response(status=http_status.HTTP_204_NO_CONTENT)
         return clear_auth_cookies(response) if cookie_mode else response
+
+
+@extend_schema(
+    request=EmailVerificationConfirmSerializer,
+    responses={
+        200: OpenApiResponse(response=None, description=_('Email verified.')),
+    },
+    description=_(
+        'Confirm the email address with the `uid` and `token` from the verification '
+        'link.'
+    ),
+)
+class EmailVerificationConfirmView(AuthThrottleMixin, APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = EmailVerificationConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mark_email_verified(serializer.user)
+        return Response(
+            data={'detail': _('Your email has been verified.')},
+            status=http_status.HTTP_200_OK,
+        )
+
+
+@extend_schema(
+    request=None,
+    responses={
+        200: OpenApiResponse(response=None, description=_('Verification email sent.')),
+    },
+    description=_('Send a new verification link to the authenticated user email.'),
+)
+class EmailVerificationResendView(AuthThrottleMixin, APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.email_verified:
+            detail = _('Your email is already verified.')
+        else:
+            send_verification_email(request.user)
+            detail = _('A new verification link has been sent to your email.')
+        return Response(data={'detail': detail}, status=http_status.HTTP_200_OK)

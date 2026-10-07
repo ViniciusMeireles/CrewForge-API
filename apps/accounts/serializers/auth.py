@@ -13,6 +13,7 @@ from rest_framework_simplejwt.serializers import (
 
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.user import UserReadySerializer
+from apps.accounts.utils.email_verification import email_verification_token
 
 User = get_user_model()
 
@@ -55,6 +56,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.user = None
         self._uid = None
         self._token = None
 
@@ -67,19 +69,13 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         return self._token
 
     def validate(self, attrs):
-        """Validate that the email is associated with a user."""
-        email = attrs.get('email')
-
-        try:
-            user = User.objects.get(email=email, is_active=True)
-        except User.DoesNotExist as err:
-            raise serializers.ValidationError(
-                _('No user found with this email address.')
-            ) from err
-
-        self._uid = urlsafe_base64_encode(force_bytes(user.pk))
-        self._token = default_token_generator.make_token(user)
-
+        """Find the active user of the email without revealing whether it exists."""
+        self.user = User.objects.filter(
+            email=attrs.get('email'), is_active=True
+        ).first()
+        if self.user:
+            self._uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+            self._token = default_token_generator.make_token(self.user)
         return attrs
 
 
@@ -105,5 +101,26 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         if not default_token_generator.check_token(user, token):
             raise serializers.ValidationError(_('Invalid token.'))
+        self.user = user
+        return attrs
+
+
+class EmailVerificationConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(required=True, write_only=True)
+    token = serializers.CharField(required=True, write_only=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = None
+
+    def validate(self, attrs):
+        try:
+            user_pk = force_str(urlsafe_base64_decode(attrs.get('uid')))
+            user = User.objects.get(pk=user_pk, is_active=True)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist) as err:
+            raise serializers.ValidationError(_('Invalid verification link.')) from err
+
+        if not email_verification_token.check_token(user, attrs.get('token')):
+            raise serializers.ValidationError(_('Invalid verification link.'))
         self.user = user
         return attrs

@@ -21,3 +21,14 @@ def send_invitation_email(invitation_id: int, recipient_list: list[str]):
         ),
         countdown=1,
     )
+
+
+def send_email_verification_email(verify_url: str, recipient_list: list[str]):
+    send_email_task.apply_async(
+        kwargs=dict(
+            email_class_path='apps.accounts.emails.EmailVerificationEmail',
+            recipient_list=recipient_list,
+            kwargs={'verify_url': verify_url},
+        ),
+        countdown=1,
+    )

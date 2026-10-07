@@ -67,8 +67,18 @@ class User(AbstractUser, BaseModel):
         verbose_name=_('Full Name'),
         help_text=_('Full name of the user'),
     )
+    email_verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Email Verified At'),
+        help_text=_('When the user proved access to the email address'),
+    )
 
     objects = UserManager()
+
+    @property
+    def email_verified(self) -> bool:
+        return self.email_verified_at is not None
 
     @property
     def active_organizations(self):

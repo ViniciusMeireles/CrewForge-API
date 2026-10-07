@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 
@@ -57,7 +58,7 @@ class UserCreateWithInviteSerializer(UserSerializer):
     @transaction.atomic
     def save(self, **kwargs):
         invitation = self._get_invitation()
-        kwargs.update({'email': invitation.email})
+        kwargs.update({'email': invitation.email, 'email_verified_at': timezone.now()})
         instance = super().save(**kwargs)
         return instance
 

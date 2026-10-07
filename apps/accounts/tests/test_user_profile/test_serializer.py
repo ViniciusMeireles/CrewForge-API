@@ -25,7 +25,14 @@ class UserProfileSerializerTestCase(APITestCase):
             instance=self.user,
             context=self._get_serializer_context(),
         )
-        expected_fields = {'id', 'username', 'email', 'first_name', 'last_name'}
+        expected_fields = {
+            'id',
+            'username',
+            'email',
+            'email_verified',
+            'first_name',
+            'last_name',
+        }
         self.assertEqual(set(serializer.data.keys()), expected_fields)
 
     def test_username_is_read_only(self):
