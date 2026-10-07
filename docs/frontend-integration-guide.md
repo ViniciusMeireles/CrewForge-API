@@ -218,6 +218,12 @@ Authorization: Bearer eyJhbGciOiJI...
       "has_manager_permission": true,
       "has_member_permission": true
     },
+    "access": {
+      "members": true,
+      "invitations": true,
+      "teams": true,
+      "organization_settings": true
+    },
     "last_login_at": "2026-07-10T12:00:00Z"
   }
 }
@@ -241,6 +247,19 @@ GET /api/accounts/session/
 ```
 
 Returns the same shape as the login response (user, organizations, organization, member). If the user is authenticated but has no active organization, `organization` and `member` are `null`.
+
+#### Member access (`member.access`)
+
+`member.access` tells which management areas the member can open. Use it to build the menu and route guards — do **not** derive area access from `role` or `permissions`.
+
+| Key | Area | Granted to |
+|-----|------|------------|
+| `members` | Members screen | Any active member |
+| `invitations` | Invitations screen | Members with OWNER or ADMIN role |
+| `teams` | Teams screen | Any active member |
+| `organization_settings` | Organization settings screen | Members with OWNER role |
+
+Superusers get every key as `true`. `access` is computed on every request (never cached server-side), so re-read the session after a `403` or after a role change to get fresh values. Action-level checks inside a screen (e.g., showing an "Invite" button) still use `member.permissions`.
 
 ### 3.7. Token Refresh
 
