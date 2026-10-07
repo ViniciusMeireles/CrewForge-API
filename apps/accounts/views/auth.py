@@ -8,6 +8,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers
 from rest_framework import status as http_status
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -76,8 +77,9 @@ class TokenRefreshView(AuthRefreshThrottleMixin, TokenRefreshViewBase):
         serializer = self.get_serializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
-        except TokenError as err:
-            response = self.handle_exception(InvalidToken(err.args[0]))
+        except (TokenError, AuthenticationFailed) as err:
+            exc = InvalidToken(err.args[0]) if isinstance(err, TokenError) else err
+            response = self.handle_exception(exc)
             return clear_auth_cookies(response) if cookie_mode else response
 
         response = Response(serializer.validated_data, status=http_status.HTTP_200_OK)

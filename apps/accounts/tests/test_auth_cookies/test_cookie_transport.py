@@ -182,6 +182,13 @@ class CookieRefreshTestCase(CookieTransportTestCase):
         self.assert_cleared(response, ACCESS)
         self.assert_cleared(response, REFRESH)
 
+    def test_refresh_for_inactive_user_clears_cookies(self):
+        get_user_model().objects.filter(pk=self.user.pk).update(is_active=False)
+        response = self.post(self.refresh_url, cookie_mode=False)
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
+        self.assert_cleared(response, ACCESS)
+        self.assert_cleared(response, REFRESH)
+
     def test_body_refresh_keeps_tokens_in_body(self):
         refresh = str(RefreshToken.for_user(self.user))
         response = APIClient().post(
