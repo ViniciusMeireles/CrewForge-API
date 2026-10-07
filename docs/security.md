@@ -152,6 +152,9 @@ These rules are non-negotiable:
   cookie never does either. Cookies: `__Host-access` (path `/`) and
   `__Secure-refresh` (path `/api/auth/`), HttpOnly, Secure, `SameSite=Lax`.
 - Access tokens live 15 minutes by default (`ACCESS_TOKEN_LIFETIME`).
+- Behind a TLS-terminating proxy, cookie-mode CSRF needs Django to see HTTPS:
+  set `SECURE_PROXY_SSL_HEADER=True` and forward the original
+  `X-Forwarded-Proto`, or set `CSRF_TRUSTED_ORIGINS` to the public origin.
 - Changing the password blacklists every outstanding refresh token of the user
   (`apps/accounts/utils/tokens.py`).
 - Organization login rotates the session key (`cycle_key`) to prevent session

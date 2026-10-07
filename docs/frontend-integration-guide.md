@@ -112,11 +112,9 @@ Content-Type: application/json
 }
 ```
 
-Store both tokens. Attach the access token to all subsequent requests:
+This body shape is for **non-browser (Bearer) clients**: store both tokens and send `Authorization: Bearer <access>`.
 
-```
-Authorization: Bearer eyJhbGciOiJI...
-```
+> **Browsers (SPA) must not do this.** Send `X-Auth-Transport: cookie` (and `X-CSRFToken`): the tokens arrive as HttpOnly cookies and the body only has `auth_user`. Never keep tokens in `localStorage`/`sessionStorage`. See [3.9](#39-browser-sessions-httponly-cookies).
 
 ### 3.3. Step 2 — List Organizations
 
@@ -232,12 +230,12 @@ Authorization: Bearer eyJhbGciOiJI...
 
 ### 3.5. After Authentication
 
-All subsequent requests need both:
+All subsequent requests need the user authentication **and** the organization session cookie:
 
-```
-Authorization: Bearer eyJhbGciOiJI...
-Cookie: sessionid=<value>   ← sent automatically with withCredentials
-```
+| Client | User authentication | Organization context |
+|---|---|---|
+| Browser (SPA) | access cookie (HttpOnly, sent automatically) + `X-CSRFToken` on unsafe methods | `sessionid` cookie (automatic) |
+| Bearer client | `Authorization: Bearer <access>` | `sessionid` cookie (keep the cookie jar) |
 
 ### 3.6. Session State
 
@@ -316,6 +314,7 @@ Browsers must never handle tokens in JavaScript. Send `X-Auth-Transport: cookie`
 Rules:
 
 - **CSRF:** every unsafe request authenticated by the access cookie, and every cookie-mode login/signup/refresh/logout, needs `X-CSRFToken: <csrftoken cookie>`. Get the `csrftoken` cookie from `GET /api/accounts/session/config/` before the first `POST`. Bearer requests do not need CSRF.
+- **HTTPS behind a proxy:** Django's CSRF check compares the browser `Origin` with the scheme it sees. When TLS terminates in a proxy, set `SECURE_PROXY_SSL_HEADER=True` and make every proxy forward the original `X-Forwarded-Proto: https` (the Frontend nginx forwards the incoming header), or list the public origin in `CSRF_TRUSTED_ORIGINS`. Otherwise every cookie-mode `POST` fails with 403 "Origin checking failed".
 - **Issuers** (`/auth/token/`, signup, `create-with-invite`, invitation `accept`, change password): in cookie mode the response sets both cookies and **omits** `access`/`refresh` (and `user.auth_token`) from the body.
 - **Refresh:** `POST /api/auth/token/refresh/` with an empty body uses the refresh cookie, rotates it and answers `{}` plus new cookies — never tokens in the body. An invalid/expired refresh cookie answers 401 and clears both cookies.
 - **Logout:** `POST /api/auth/logout/` without body blacklists the refresh cookie, clears both cookies and flushes the session (204).
