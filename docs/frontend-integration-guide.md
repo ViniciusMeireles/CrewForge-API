@@ -25,7 +25,7 @@
 
 CrewForge is a Django REST API that uses a **two-layer authentication model**:
 
-1. **JWT tokens** (`Authorization: Bearer <access>`) for API authentication.
+1. **JWT tokens** for API authentication. Browsers receive them as **HttpOnly cookies** (see [3.9](#39-browser-sessions-httponly-cookies)); other clients use `Authorization: Bearer <access>`.
 2. **Django session cookie** (`sessionid`) for organization context.
 
 All endpoints are prefixed with `/api/`.
@@ -67,10 +67,11 @@ Cookie settings differ between development and production:
 
 | Setting | Development (HTTP) | Production (HTTPS) |
 |---|---|---|
-| `SESSION_COOKIE_SAMESITE` | `Lax` | `None` |
-| `CSRF_COOKIE_SAMESITE` | `Lax` | `None` |
-| `SESSION_COOKIE_SECURE` | `False` | `True` |
-| `CSRF_COOKIE_SECURE` | `False` | `True` |
+| `SESSION_COOKIE_SAMESITE` / `CSRF_COOKIE_SAMESITE` | `Lax` | `Lax` (default; `None` only for cross-site setups) |
+| `SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE` | `False` | `True` |
+| Access / refresh cookie names | `access` / `refresh` | `__Host-access` / `__Secure-refresh` |
+| `AUTH_COOKIE_SECURE` | `False` | `True` |
+| `CSRF_TRUSTED_ORIGINS` | `http://localhost:4200,http://127.0.0.1:4200` | — (same origin behind the proxy) |
 
 > **Warning:** `SameSite=None` + `Secure=False` is invalid. Modern browsers silently reject such cookies. Development must use `Lax` because HTTP cannot set Secure cookies.
 
@@ -302,6 +303,26 @@ Authorization: Bearer eyJhbGciOiJI...
 
 The server blacklists the refresh token and flushes the session. The frontend should discard stored tokens and clear any cached state.
 
+### 3.9. Browser Sessions (HttpOnly Cookies)
+
+Browsers must never handle tokens in JavaScript. Send `X-Auth-Transport: cookie` on every same-origin API request and the API moves the tokens into cookies:
+
+| Cookie | Flags | Path | Lifetime |
+|---|---|---|---|
+| access (`__Host-access`; `access` in development) | HttpOnly, Secure (prod), `SameSite=Lax` | `/` | `ACCESS_TOKEN_LIFETIME` (15 min) |
+| refresh (`__Secure-refresh`; `refresh` in development) | HttpOnly, Secure (prod), `SameSite=Lax` | `/api/auth/` | `REFRESH_TOKEN_LIFETIME` (7 days) |
+| `csrftoken` (readable by JS) | Secure (prod), `SameSite=Lax` | `/` | Django default |
+
+Rules:
+
+- **CSRF:** every unsafe request authenticated by the access cookie, and every cookie-mode login/signup/refresh/logout, needs `X-CSRFToken: <csrftoken cookie>`. Get the `csrftoken` cookie from `GET /api/accounts/session/config/` before the first `POST`. Bearer requests do not need CSRF.
+- **Issuers** (`/auth/token/`, signup, `create-with-invite`, invitation `accept`, change password): in cookie mode the response sets both cookies and **omits** `access`/`refresh` (and `user.auth_token`) from the body.
+- **Refresh:** `POST /api/auth/token/refresh/` with an empty body uses the refresh cookie, rotates it and answers `{}` plus new cookies — never tokens in the body. An invalid/expired refresh cookie answers 401 and clears both cookies.
+- **Logout:** `POST /api/auth/logout/` without body blacklists the refresh cookie, clears both cookies and flushes the session (204).
+- **Restoring the session on page load:** call `GET /api/accounts/session/`; on 401 call the refresh endpoint once and retry. Do not read tokens from storage.
+- An invalid or expired access cookie is ignored (the request is anonymous), so public endpoints such as login keep working.
+- Login, signup and password reset are rate limited (`AUTH_THROTTLE_RATE`, default `10/min`); refresh has its own limit (`AUTH_REFRESH_THROTTLE_RATE`, default `60/min`). Throttled requests get 429.
+
 ---
 
 ## 4. Password Reset
@@ -460,6 +481,8 @@ Content-Type: application/json
 **Response (200):** `{"detail": "Password changed successfully."}`
 
 Validates that the new password differs from the current one and is at least 8 characters long.
+
+Changing the password **revokes every refresh token** of the user (all devices are logged out at their next refresh). In cookie mode the response sets a fresh pair of cookies so the current browser stays logged in; Bearer clients must log in again.
 
 ---
 

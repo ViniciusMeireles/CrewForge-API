@@ -58,9 +58,13 @@ to the API. This requires explicit CORS and SameSite configuration.
 
 ```python
 CORS_ALLOW_CREDENTIALS = True
-SESSION_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = True
+AUTH_COOKIE_ACCESS_NAME = '__Host-access'
+AUTH_COOKIE_REFRESH_NAME = '__Secure-refresh'
+AUTH_COOKIE_SECURE = True
+AUTH_COOKIE_SAMESITE = 'Lax'
 ```
 
 ### Local Development (`config/settings/local.py`)
@@ -70,7 +74,14 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+AUTH_COOKIE_ACCESS_NAME = 'access'
+AUTH_COOKIE_REFRESH_NAME = 'refresh'
+AUTH_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = ['http://localhost:4200', 'http://127.0.0.1:4200']
 ```
+
+The `__Host-`/`__Secure-` prefixes require HTTPS, so development uses plain
+names.
 
 ### Configuration Matrix
 
@@ -85,8 +96,8 @@ CSRF_COOKIE_SECURE = False
 | Variable | Purpose | Default |
 |---|---|---|
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins | — |
-| `SESSION_COOKIE_SAMESITE` | `Lax` or `None` | `None` |
-| `CSRF_COOKIE_SAMESITE` | `Lax` or `None` | `None` |
+| `SESSION_COOKIE_SAMESITE` | `Lax` or `None` | `Lax` |
+| `CSRF_COOKIE_SAMESITE` | `Lax` or `None` | `Lax` |
 | `SESSION_COOKIE_DOMAIN` | Shared cookie domain | — |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated CSRF origins | — |
 
@@ -133,6 +144,20 @@ These rules are non-negotiable:
 ## Token Management
 
 - JWT access tokens are used for API authentication.
+- Browsers use **HttpOnly cookies** (`JWTCookieAuthentication`,
+  `apps/accounts/authentication.py`): an `Authorization` header wins; otherwise
+  the access cookie authenticates and Django CSRF is enforced for unsafe
+  methods. Cookie mode (`X-Auth-Transport: cookie`, or a request authenticated
+  by cookie) never returns tokens in response bodies; a refresh read from the
+  cookie never does either. Cookies: `__Host-access` (path `/`) and
+  `__Secure-refresh` (path `/api/auth/`), HttpOnly, Secure, `SameSite=Lax`.
+- Access tokens live 15 minutes by default (`ACCESS_TOKEN_LIFETIME`).
+- Changing the password blacklists every outstanding refresh token of the user
+  (`apps/accounts/utils/tokens.py`).
+- Organization login rotates the session key (`cycle_key`) to prevent session
+  fixation.
+- Login, signup and password reset use the `auth` throttle scope; refresh uses
+  `auth_refresh`.
 - Refresh tokens are rotated on every refresh (`ROTATE_REFRESH_TOKENS=True`).
 - Old refresh tokens are blacklisted after rotation.
 - Logout blacklists the current refresh token and flushes the session.
