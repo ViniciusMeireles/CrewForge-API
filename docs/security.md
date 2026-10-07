@@ -187,9 +187,10 @@ returns cookie, CORS and debug diagnostics when `DEBUG=True`.
 ### Stored Files
 
 - Uploads are limited by `STORED_FILE_MAX_SIZE`: `UploadSizeLimitMixin` rejects
-  an oversized `Content-Length` before parsing, and `MaxSizeUploadHandler`
-  (first in `FILE_UPLOAD_HANDLERS`) stops storing a file as soon as it passes
-  the limit. The type is detected from the file bytes
+  an oversized `Content-Length` after authentication and before parsing, and
+  `MaxSizeUploadHandler` (first in `FILE_UPLOAD_HANDLERS`, so it also covers
+  the admin) stops storing a file as soon as it passes the limit; the
+  serializers then report it as too large (`UploadTooLargeMixin`). The type is detected from the file bytes
   (`apps/accounts/utils/files.py`); the extension must match.
 - `StoredFile.save()` recomputes `content_type` from the bytes whenever the file
   is replaced, so the stored type never goes stale.
