@@ -14,9 +14,9 @@
 
 ## Status
 
-- [x] Active
+- [ ] Active
 - [x] Completed
-- [x] Cancelled
+- [ ] Cancelled
 
 ---
 
@@ -67,6 +67,8 @@ The frontend decides which management areas a Member sees from a static menu, wh
 |------|--------|
 | 2026-10-06 | Plan created |
 | 2026-10-06 | Phases 1–4 implemented; 1214 tests pass; schema regenerated; docs synced to Frontend |
+| 2026-10-07 | Review fixes: `MemberPermission` and `TeamPermission` reuse `has_members_access` / `has_teams_access` on reads |
+| 2026-10-07 | Merged in #22; plan completed |
 
 ---
 
