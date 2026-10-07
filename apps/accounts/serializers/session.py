@@ -59,8 +59,10 @@ class CookieSettingsSerializer(serializers.Serializer):
 
 
 class SessionConfigSerializer(serializers.Serializer):
-    cookie_settings = CookieSettingsSerializer()
-    cors_allowed_origins = serializers.ListField(child=serializers.CharField())
-    cors_allow_credentials = serializers.BooleanField()
     session_configured = serializers.BooleanField()
-    debug = serializers.BooleanField()
+    cookie_settings = CookieSettingsSerializer(required=False)
+    cors_allowed_origins = serializers.ListField(
+        child=serializers.CharField(), required=False
+    )
+    cors_allow_credentials = serializers.BooleanField(required=False)
+    debug = serializers.BooleanField(required=False)

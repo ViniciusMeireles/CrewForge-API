@@ -44,22 +44,9 @@ class SignupPermissionTestCase(APITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_no_retrieve(self):
-        detail_url = reverse('accounts:signup-detail', args=[1])
-        response = self.client.get(detail_url)
-        self.assertEqual(response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def test_no_update(self):
-        detail_url = reverse('accounts:signup-detail', args=[1])
-        response = self.client.put(detail_url, data={}, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def test_no_partial_update(self):
-        detail_url = reverse('accounts:signup-detail', args=[1])
-        response = self.client.patch(detail_url, data={}, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def test_no_delete(self):
-        detail_url = reverse('accounts:signup-detail', args=[1])
-        response = self.client.delete(detail_url)
-        self.assertEqual(response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED)
+    def test_no_detail_route(self):
+        detail_url = f'{self.url}1/'
+        for method in ['get', 'put', 'patch', 'delete']:
+            with self.subTest(method=method):
+                response = getattr(self.client, method)(detail_url)
+                self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)

@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.choices import OrganizationImageTypeChoices, StoredFileAccess
 from apps.accounts.factories.organization_image import OrganizationImageFactory
 from apps.accounts.models.organization import OrganizationImage
-from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.mixins import PNG_SIGNATURE, APITestCaseMixin
 
 
 class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
@@ -19,7 +19,7 @@ class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
         payload = {
             'image.file': SimpleUploadedFile(
                 name='logo.png',
-                content=b'fake-png-content',
+                content=PNG_SIGNATURE + b'fake-png-content',
                 content_type='image/png',
             ),
             'image_type': OrganizationImageTypeChoices.LOGO,
@@ -149,7 +149,7 @@ class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
         payload = {
             'image.file': SimpleUploadedFile(
                 name='new_logo.png',
-                content=b'new-content',
+                content=PNG_SIGNATURE + b'new-content',
                 content_type='image/png',
             ),
         }
@@ -157,7 +157,7 @@ class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         image.refresh_from_db()
         self.assertEqual(image.image.uuid, old_uuid)
-        self.assertEqual(image.image.file.read(), b'new-content')
+        self.assertEqual(image.image.file.read(), PNG_SIGNATURE + b'new-content')
 
     def test_partial_update_both_fields(self):
         image = OrganizationImageFactory(
@@ -168,7 +168,7 @@ class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
             'image_type': OrganizationImageTypeChoices.COVER,
             'image.file': SimpleUploadedFile(
                 name='cover.png',
-                content=b'cover-content',
+                content=PNG_SIGNATURE + b'cover-content',
                 content_type='image/png',
             ),
         }
@@ -186,7 +186,7 @@ class OrganizationImageSerializerTestCase(APITestCaseMixin, APITestCase):
             'image_type': OrganizationImageTypeChoices.COVER,
             'image.file': SimpleUploadedFile(
                 name='cover.png',
-                content=b'cover-content',
+                content=PNG_SIGNATURE + b'cover-content',
                 content_type='image/png',
             ),
         }

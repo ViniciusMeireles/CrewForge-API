@@ -1,3 +1,4 @@
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -13,6 +14,17 @@ class SessionConfigCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.config_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
+    @override_settings(DEBUG=False)
+    def test_diagnostics_hidden_without_debug(self):
+        response = self.client.get(self.config_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(set(response.data), {'session_configured'})
+
+    def test_sets_csrf_cookie(self):
+        response = self.client.get(self.config_url)
+        self.assertIn('csrftoken', response.cookies)
+
+    @override_settings(DEBUG=True)
     def test_response_contains_expected_keys(self):
         response = self.client.get(self.config_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
@@ -22,6 +34,7 @@ class SessionConfigCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertIn('session_configured', response.data)
         self.assertIn('debug', response.data)
 
+    @override_settings(DEBUG=True)
     def test_cookie_settings_contains_expected_keys(self):
         response = self.client.get(self.config_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
@@ -48,16 +61,19 @@ class SessionConfigCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertFalse(response.data['session_configured'])
 
+    @override_settings(DEBUG=True)
     def test_cors_allow_credentials_is_boolean(self):
         response = self.client.get(self.config_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertIsInstance(response.data['cors_allow_credentials'], bool)
 
+    @override_settings(DEBUG=True)
     def test_debug_is_boolean(self):
         response = self.client.get(self.config_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertIsInstance(response.data['debug'], bool)
 
+    @override_settings(DEBUG=True)
     def test_cors_allowed_origins_is_list(self):
         response = self.client.get(self.config_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)

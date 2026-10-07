@@ -3,6 +3,7 @@ from django.db import IntegrityError, transaction
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import path, reverse
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.settings import api_settings
 from rest_framework.test import APITestCase
 from rest_framework.throttling import SimpleRateThrottle
@@ -23,6 +24,8 @@ from apps.teams.factories.teams import TeamFactory
 
 
 class _InternalErrorView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         raise RuntimeError('Intentional test error')
 

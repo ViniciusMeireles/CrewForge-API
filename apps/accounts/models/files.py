@@ -173,12 +173,9 @@ class StoredFile(BaseModel):
             if not self.original_name:
                 self.original_name = self.file.name.split('/')[-1]
 
-            guessed_type, _ = mimetypes.guess_type(self.file.name)
-            content_type = guessed_type or 'application/octet-stream'
-            if content_type and (
-                not self.content_type or self.content_type != content_type
-            ):
-                self.content_type = content_type
+            if not self.content_type:
+                guessed_type, _ = mimetypes.guess_type(self.file.name)
+                self.content_type = guessed_type or 'application/octet-stream'
 
             try:
                 size = self.file.size

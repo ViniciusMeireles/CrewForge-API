@@ -4,6 +4,7 @@ from django.utils.functional import Promise
 from django_filters.rest_framework import filters, filterset
 from drf_spectacular.generators import SchemaGenerator
 from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
@@ -237,6 +238,7 @@ class FilterOptionsRouteTestCase(SimpleTestCase):
 
     def test_runtime_without_options_serializer_is_not_found(self):
         class TV(OptionsModelMixin, viewsets.ModelViewSet):
+            permission_classes = [AllowAny]
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
             filterset_class = _TeamMemberFilter

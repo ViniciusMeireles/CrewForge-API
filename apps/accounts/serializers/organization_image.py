@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
@@ -7,7 +8,10 @@ from apps.accounts.choices import StoredFileAccess
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.files import StoredFile
 from apps.accounts.models.organization import OrganizationImage, OrganizationProfile
-from apps.accounts.serializers.files import StoredFileListModelSerializer
+from apps.accounts.serializers.files import (
+    StoredFileListModelSerializer,
+    upload_metadata,
+)
 
 
 class StoredFileOrgImageSerializer(
@@ -33,6 +37,14 @@ class StoredFileOrgImageSerializer(
         extra_kwargs = {
             'file': {'write_only': True, 'required': True},
         }
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if file := attrs.get('file'):
+            attrs.update(
+                upload_metadata(file, settings.STORED_FILE_IMAGE_CONTENT_TYPES)
+            )
+        return attrs
 
     def save(self, **kwargs):
         kwargs.update(

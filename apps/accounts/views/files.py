@@ -21,6 +21,7 @@ from apps.accounts.serializers.files import (
     StoredFileDetailModelSerializer,
     StoredFileListModelSerializer,
 )
+from apps.accounts.utils.files import is_inline_content_type
 from apps.generics.utils.schema import (
     extend_schema_create,
     extend_schema_model_view_set,
@@ -50,7 +51,10 @@ logger = logging.getLogger(__name__)
             OpenApiParameter(
                 name='download',
                 type=OpenApiTypes.BOOL,
-                description=_('Whether to download the file as an attachment or not.'),
+                description=_(
+                    'Download as an attachment. Only raster images are ever served '
+                    'inline; every other type is always an attachment.'
+                ),
             ),
         ],
     ),
@@ -134,9 +138,15 @@ class StoredFileViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
             )
             raise Http404(_('File object not found.')) from err
 
-        return FileResponse(
+        inline = is_inline_content_type(obj.content_type) and not str_to_bool(
+            request.GET.get('download', 'false')
+        )
+        response = FileResponse(
             obj.file,
-            as_attachment=str_to_bool(request.GET.get('download', 'false')),
+            as_attachment=not inline,
             filename=obj.download_name,
             content_type=obj.content_type or 'application/octet-stream',
         )
+        response['X-Content-Type-Options'] = 'nosniff'
+        response['Content-Security-Policy'] = "sandbox; default-src 'none'"
+        return response

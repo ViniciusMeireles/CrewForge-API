@@ -1,7 +1,7 @@
-import mimetypes
 from collections import defaultdict
 from typing import Any
 
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.fields import ChoiceField
@@ -12,6 +12,19 @@ from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.files import StoredFile
 from apps.accounts.serializers.organization import OrganizationReadySerializer
 from apps.accounts.serializers.user import UserReadySerializer
+from apps.accounts.utils.files import detect_upload_content_type
+
+
+def upload_metadata(file, allowed_types) -> dict[str, Any]:
+    try:
+        content_type = detect_upload_content_type(file, allowed_types)
+    except serializers.ValidationError as err:
+        raise serializers.ValidationError({'file': err.detail}) from err
+    return {
+        'content_type': content_type,
+        'original_name': file.name.split('/')[-1],
+        'size': file.size,
+    }
 
 
 class StoredFileListModelSerializer(
@@ -228,16 +241,9 @@ class StoredFileCreateUpdateModelSerializer(
             and self.context.get('request')
         ):
             file = self.context.get('request').FILES.get('file')
-        if file and (original_name := file.name.split('/')[-1]):
-            guessed_type, __ = mimetypes.guess_type(original_name)
-            content_type = guessed_type or 'application/octet-stream'
-            size = file.size
+        if file:
             attrs.update(
-                {
-                    'content_type': content_type,
-                    'original_name': original_name,
-                    'size': size,
-                }
+                upload_metadata(file, settings.STORED_FILE_ALLOWED_CONTENT_TYPES)
             )
         return attrs
 
