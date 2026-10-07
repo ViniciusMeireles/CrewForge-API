@@ -547,15 +547,38 @@ Creating a team auto-creates a `TeamMember` record with `OWNER` role for the cre
 | Action | Endpoint | Permission |
 |---|---|---|
 | List | `GET /api/teams/team-members/` | Member of the org |
-| Create | `POST /api/teams/team-members/` | Manager+ |
+| Create | `POST /api/teams/team-members/` | Org manager+ or team owner/admin (role must be assignable) |
 | Retrieve | `GET /api/teams/team-members/{id}/` | Member of the org |
-| Update role | `PATCH /api/teams/team-members/{id}/` | Sufficient role |
-| Delete | `DELETE /api/teams/team-members/{id}/` | Admin+ |
-| Form options (create) | `GET /api/teams/team-members/form-options-create/` | Member of the org |
-| Form options (update) | `GET /api/teams/team-members/form-options-update/` | Member of the org |
+| Update role | `PUT /api/teams/team-members/{id}/` (`{"role": ...}`) | Org manager+ or team owner/admin; not your own record; target role and new role assignable |
+| Delete | `DELETE /api/teams/team-members/{id}/` | Yourself (leave the team), or org manager+ / team owner/admin with the target role assignable |
+| Form options (create) | `GET /api/teams/team-members/form-options-create/?team_id=<id>` | Member of the org |
+| Form options (update) | `GET /api/teams/team-members/form-options-update/?team_id=<id>` | Member of the org |
 | Filter options | `GET /api/teams/team-members/filter-options/` | Member of the org |
 
-Re-adding a previously removed (soft-deleted) team member reactivates their membership.
+Assignable team roles (per team):
+
+| Caller | Roles |
+|---|---|
+| Organization manager+ (any team) | `owner`, `admin`, `manager`, `member` |
+| Team owner | `owner`, `admin`, `manager`, `member` |
+| Team admin | `manager`, `member` |
+| Others | none |
+
+- Adding without permission on the team answers **400** on `team`; an unassignable role
+  answers **400** on `role`; editing or removing a record you may not touch answers **403**.
+- The team must keep at least one active owner: removing or demoting the last owner answers
+  **400** on `role` ("The team must keep at least one owner.").
+- Re-adding a previously removed (soft-deleted) team member reactivates their membership
+  (same permission as adding); without `role` it comes back as `member`, never with the
+  old role.
+- Responses include `role_label` and a read-only `member_detail` (`id`, `full_name`,
+  `email`, `nickname`, `role`, `role_label` of the organization member). `member` stays the
+  writable id.
+- The list is paginated (10 by default): a drawer listing a whole team should send
+  `page_size` (max 100) and request the next `page`.
+- Ordering (`?order_by=`, prefix `-` for descending): `member_name`, `member_email`,
+  `role` (hierarchy: owner, admin, manager, member), `created_at` (joined at), `id`.
+  `filter-options/?order_by` lists them.
 
 ---
 
@@ -687,6 +710,10 @@ GET /api/accounts/members/?page=2&page_size=25
 
 The `next` and `previous` URLs automatically preserve the `page_size` parameter.
 
+Ordered lists (`?order_by=`) add the primary key as a tiebreaker, so rows with the same
+value (same role, same name) keep a stable order across pages. A page past the end answers
+**404**: after removing the last row of the last page, go back one page.
+
 ---
 
 ## 15. Form Options Endpoints
@@ -719,6 +746,12 @@ and members update-role list only the roles the caller may assign — the same r
 write endpoint validates: owner → `owner`, `admin`, `manager`, `member`; admin →
 `manager`, `member`; manager → `member`; member → none (empty array). The frontend
 does not need to filter roles by permission.
+
+**Team members need the team.** Send `?team_id=<id>` to the team-members form options:
+`role` lists the team roles the caller may assign in that team (see 11) and `member` hides
+members already active in it (removed members are listed, re-adding reactivates them).
+Without a valid `team_id` (missing, another organization's or inactive team) only
+organization managers get roles and `member` is not narrowed.
 
 Labels are rendered in the request language. The API is English-only today (TD-012);
 send `Accept-Language` with the app locale so labels follow it once translations land.

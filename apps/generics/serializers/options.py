@@ -50,6 +50,7 @@ OPTIONS_FIELD_KWARGS = frozenset(
         'option_serializer_class',
         'filter_field_name',
         'filter_lookup_expr',
+        'queryset_filter',
     }
 )
 

@@ -116,13 +116,13 @@ class FormOptionsSchemaTestCase(SimpleTestCase):
     def test_team_members_create_parameters(self):
         self.assertEqual(
             self._parameter_names('/api/teams/team-members/form-options-create/'),
-            {'role', 'team', 'member', 'page', 'page_size'},
+            {'role', 'team', 'member', 'page', 'page_size', 'team_id'},
         )
 
     def test_team_members_update_parameters(self):
         self.assertEqual(
             self._parameter_names('/api/teams/team-members/form-options-update/'),
-            {'role'},
+            {'role', 'team_id'},
         )
 
     def test_search_disabled_route_description(self):

@@ -2708,44 +2708,28 @@ paths:
             type: string
             enum:
             - -created_at
-            - -created_by
             - -id
-            - -is_active
-            - -member
+            - -member_email
+            - -member_name
             - -role
-            - -team
-            - -updated_at
-            - -updated_by
             - created_at
-            - created_by
             - id
-            - is_active
-            - member
+            - member_email
+            - member_name
             - role
-            - team
-            - updated_at
-            - updated_by
         description: |-
           Ordering
 
-          * `created_at` - Created At
-          * `-created_at` - Descending Created At
-          * `created_by` - Created By
-          * `-created_by` - Descending Created By
-          * `id` - ID
-          * `-id` - Descending ID
-          * `is_active` - Is Active
-          * `-is_active` - Descending Is Active
-          * `member` - Member
-          * `-member` - Descending Member
+          * `member_name` - Member name
+          * `-member_name` - Member name (descending)
+          * `member_email` - Member email
+          * `-member_email` - Member email (descending)
           * `role` - Role
-          * `-role` - Descending Role
-          * `team` - Team
-          * `-team` - Descending Team
-          * `updated_at` - Updated At
-          * `-updated_at` - Descending Updated At
-          * `updated_by` - Updated By
-          * `-updated_by` - Descending Updated By
+          * `-role` - Role (descending)
+          * `created_at` - Joined at
+          * `-created_at` - Joined at (descending)
+          * `id` - ID
+          * `-id` - ID (descending)
         explode: false
         style: form
       - name: page
@@ -3024,6 +3008,13 @@ paths:
           type: string
         description: Return only `team` (paginated). A non-empty value filters its
           options by label (`unaccent__icontains`).
+      - in: query
+        name: team_id
+        schema:
+          type: integer
+        description: 'Team the form is for: `role` lists only the roles the caller
+          may assign in it and `member` hides members already in it. Without a valid
+          team only organization managers get roles.'
       tags:
       - Team members
       security:
@@ -3048,6 +3039,13 @@ paths:
         description: Return only `role`. A non-empty value is a regular expression
           matched against the label or the value of each option, ignoring case and
           accents.
+      - in: query
+        name: team_id
+        schema:
+          type: integer
+        description: 'Team the form is for: `role` lists only the roles the caller
+          may assign in it and `member` hides members already in it. Without a valid
+          team only organization managers get roles.'
       tags:
       - Team members
       security:
@@ -5687,6 +5685,13 @@ components:
         id:
           type: integer
           readOnly: true
+        member_detail:
+          allOf:
+          - $ref: '#/components/schemas/TeamMemberDetail'
+          readOnly: true
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -5734,9 +5739,51 @@ components:
       - id
       - is_active
       - member
+      - member_detail
+      - role_label
       - team
       - updated_at
       - updated_by
+    TeamMemberDetail:
+      type: object
+      description: Organization member data shown in team member lists.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        nickname:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Nickname of the user in the organization
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
+      required:
+      - email
+      - full_name
+      - id
+      - nickname
+      - role
+      - role_label
     TeamMemberUpdate:
       type: object
       description: Serializer for updating a TeamMember.
@@ -5744,6 +5791,13 @@ components:
         id:
           type: integer
           readOnly: true
+        member_detail:
+          allOf:
+          - $ref: '#/components/schemas/TeamMemberDetail'
+          readOnly: true
+        role_label:
+          type: string
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -5793,6 +5847,8 @@ components:
       - id
       - is_active
       - member
+      - member_detail
+      - role_label
       - team
       - updated_at
       - updated_by

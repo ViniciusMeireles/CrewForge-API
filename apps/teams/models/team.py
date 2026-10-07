@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.generics.models.abstracts import BaseModel
+from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.managers.team import TeamManager
 
 
@@ -48,10 +49,16 @@ class Team(BaseModel):
     def __str__(self):
         return self.name
 
-    def is_team_member(self, member) -> bool:
-        """Check if a member is part of the team."""
+    def get_active_team_member(self, member):
+        """Active membership of ``member`` in this team, or ``None``."""
+        if member is None:
+            return None
         return self.members.filter(
             member_id=member.id,
             is_active=True,
             member__is_active=True,
-        ).exists()
+        ).first()
+
+    def can_manage_members(self, member) -> bool:
+        """Organization manager+ or the team owner/admin."""
+        return bool(TeamMemberRoleChoices.assignable_by(member, self))

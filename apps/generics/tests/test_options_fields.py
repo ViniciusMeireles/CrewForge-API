@@ -62,6 +62,24 @@ class _GroupPermissionsSerializer(serializers.ModelSerializer):
         fields = ['permissions']
 
 
+def _exclude_beta(queryset, context):
+    return queryset.exclude(name__startswith='Beta')
+
+
+class _TeamQuerysetFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeamMember
+        fields = ['team']
+        options_extra_kwargs = {
+            'team': {
+                'label_field_name': 'name',
+                'filter_field_name': 'name',
+                'filter_lookup_expr': 'icontains',
+                'queryset_filter': _exclude_beta,
+            },
+        }
+
+
 def _render_options(serializer_class, params=None):
     request = Request(APIRequestFactory().get('/', params or {}))
     options_class = OptionsBaseModelMixin._get_options_serializer_class(
@@ -224,6 +242,32 @@ class PaginatedOptionsFilterTestCase(TestCase):
         data = _render_options(_TeamSlugValueSerializer)
         result = next(r for r in data['team']['results'] if r['value'] == team.slug)
         self.assertEqual(result['label'], str(team))
+
+
+class PaginatedQuerysetFilterTestCase(TestCase):
+    def setUp(self):
+        organization = OrganizationFactory()
+        TeamFactory(organization=organization, name='Alpha squad')
+        TeamFactory(organization=organization, name='Beta squad')
+
+    def _labels(self, params=None):
+        data = _render_options(_TeamQuerysetFilterSerializer, params)
+        return [result['label'] for result in data['team']['results']]
+
+    def test_filter_applies_before_search_and_count(self):
+        data = _render_options(_TeamQuerysetFilterSerializer, {'team': 'squad'})
+        self.assertEqual(
+            [result['label'] for result in data['team']['results']], ['Alpha squad']
+        )
+        self.assertEqual(data['team']['count'], 1)
+        self.assertEqual(self._labels({'team': 'beta'}), [])
+
+    def test_deepcopy_keeps_filter(self):
+        options_class = OptionsBaseModelMixin._get_options_serializer_class(
+            serializer_class=_TeamQuerysetFilterSerializer, view_action='Create'
+        )
+        field = copy.deepcopy(options_class({}).get_fields()['team'])
+        self.assertIs(field.queryset_filter, _exclude_beta)
 
 
 class ToManyRelationOptionsTestCase(TestCase):

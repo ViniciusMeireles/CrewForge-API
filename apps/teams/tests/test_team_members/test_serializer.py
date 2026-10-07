@@ -49,6 +49,8 @@ class TeamMemberSerializerTestCase(APITestCaseMixin, APITestCase):
             'updated_at',
             'created_by',
             'updated_by',
+            'member_detail',
+            'role_label',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
 
@@ -67,6 +69,8 @@ class TeamMemberSerializerTestCase(APITestCaseMixin, APITestCase):
             'updated_at',
             'created_by',
             'updated_by',
+            'member_detail',
+            'role_label',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
 
@@ -85,6 +89,8 @@ class TeamMemberSerializerTestCase(APITestCaseMixin, APITestCase):
             'updated_at',
             'created_by',
             'updated_by',
+            'member_detail',
+            'role_label',
         }
         self.assertEqual(set(result.keys()), expected_fields)
 
