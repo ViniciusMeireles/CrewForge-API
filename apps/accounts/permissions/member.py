@@ -13,7 +13,10 @@ class MemberPermission(OrganizationScopedPermission):
     def has_permission(self, request, view):
         if view.action == 'create_with_invite':
             return True
-        return super().has_permission(request, view)
+        return (
+            super().has_permission(request, view)
+            and get_member(request).has_members_access
+        )
 
     def has_object_permission(self, request, view, obj):
         if not super().has_object_permission(request, view, obj):
