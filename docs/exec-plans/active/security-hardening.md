@@ -50,7 +50,8 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 
 - [x] `JWTCookieAuthentication` + CSRF, cookie issuers, refresh/logout via cookie
 - [x] Auth throttling, revocation on password change, `SameSite=Lax`, session key rotation
-- [ ] Frontend + nginx headers (Frontend repo)
+- [x] Frontend + nginx headers (Frontend repo)
+- [x] Review loop until zero findings (3 rounds: 3 + 2 findings fixed, then clean)
 
 ### Delivery 3: Identity and invitations (R5, R7)
 
@@ -70,6 +71,7 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 | 2026-10-07 | Plan created; Delivery 1 implemented |
 | 2026-10-07 | Delivery 1 released after 4 review rounds (PR #24 + Frontend #25) |
 | 2026-10-07 | Delivery 2 API implemented (cookie transport); 1265 tests pass |
+| 2026-10-07 | Delivery 2 released after 3 review rounds (API #26, Frontend #26, root #4); end-to-end browser check found and fixed signup body tokens |
 
 ---
 
