@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
@@ -7,7 +8,11 @@ from apps.accounts.choices import StoredFileAccess
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.files import StoredFile
 from apps.accounts.models.organization import OrganizationImage, OrganizationProfile
-from apps.accounts.serializers.files import StoredFileListModelSerializer
+from apps.accounts.serializers.files import (
+    StoredFileListModelSerializer,
+    UploadTooLargeMixin,
+    upload_metadata,
+)
 
 
 class StoredFileOrgImageSerializer(
@@ -34,6 +39,14 @@ class StoredFileOrgImageSerializer(
             'file': {'write_only': True, 'required': True},
         }
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if file := attrs.get('file'):
+            attrs.update(
+                upload_metadata(file, settings.STORED_FILE_IMAGE_CONTENT_TYPES)
+            )
+        return attrs
+
     def save(self, **kwargs):
         kwargs.update(
             {
@@ -47,7 +60,11 @@ class StoredFileOrgImageSerializer(
         return instance
 
 
-class OrganizationImageSerializer(ModelSerializerMixin, serializers.ModelSerializer):
+class OrganizationImageSerializer(
+    UploadTooLargeMixin, ModelSerializerMixin, serializers.ModelSerializer
+):
+    upload_error_path = ('image', 'file')
+
     image = StoredFileOrgImageSerializer(required=True)
 
     class Meta:

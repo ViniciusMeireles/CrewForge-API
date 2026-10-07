@@ -2,6 +2,7 @@ from django import forms
 
 from apps.accounts.models.files import StoredFile
 from apps.accounts.serializers.files import StoredFileCreateUpdateModelSerializer
+from apps.accounts.utils.files import upload_too_large
 
 
 class StoredFileModelForm(forms.ModelForm):
@@ -41,7 +42,9 @@ class StoredFileModelForm(forms.ModelForm):
         not_validate_file = False
         if not data.get('file'):
             data.pop('file', None)
-            not_validate_file = bool(self.instance)
+            not_validate_file = bool(self.instance) and not upload_too_large(
+                self.request
+            )
         serializer = StoredFileCreateUpdateModelSerializer(
             instance=self.instance,
             data=data,

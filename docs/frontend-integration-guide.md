@@ -74,7 +74,7 @@ Cookie settings differ between development and production:
 
 > **Warning:** `SameSite=None` + `Secure=False` is invalid. Modern browsers silently reject such cookies. Development must use `Lax` because HTTP cannot set Secure cookies.
 
-The public endpoint `GET /api/accounts/session/config/` returns the current cookie and CORS settings. Use it for debugging connectivity issues.
+The public endpoint `GET /api/accounts/session/config/` returns `session_configured` and sets the `csrftoken` cookie. When the API runs with `DEBUG=True` it also returns the cookie and CORS settings (`cookie_settings`, `cors_allowed_origins`, `cors_allow_credentials`, `debug`) for debugging connectivity; in production these diagnostics are omitted.
 
 ---
 
@@ -618,6 +618,13 @@ updating_permission: "MANAGER"
 
 `viewing_permission` and `updating_permission` control access at the org-role level.
 
+**Upload rules** (`400` on the `file` field when violated):
+
+- Maximum size: `STORED_FILE_MAX_SIZE` (default 10 MB). Authenticated requests whose `Content-Length` exceeds it (plus 1 MB for the other form fields) are rejected before the body is read; the error is on `file` (`image.file` for organization images). Proxies in front of the API must allow at least this size (the Frontend nginx sets `client_max_body_size 11m`).
+- The type is detected from the file **content**, not the name. Allowed by default (`STORED_FILE_ALLOWED_CONTENT_TYPES`): PNG, JPEG, GIF, WebP, PDF, plain text, CSV and JSON (UTF-8 or Windows-1252), ZIP, Word/Excel/PowerPoint (`.doc`/`.xls`/`.ppt` and `.docx`/`.xlsx`/`.pptx`) and OpenDocument (`.odt`/`.ods`/`.odp`). Organization images accept only PNG, JPEG, GIF and WebP.
+- A known extension must match the detected type (`fake.png` containing HTML is rejected). Files without extension take the detected type.
+- HTML, SVG, scripts and executables are always rejected.
+
 ### 12.2. Download
 
 ```
@@ -627,7 +634,7 @@ Authorization: Bearer eyJhbGciOiJI...
 
 Requires the `Authorization` header. Cannot use a plain `<a href>` tag — the frontend must fetch via `HttpClient` with `responseType: 'blob'`.
 
-When `?download=true`, the server sets `Content-Disposition: attachment`. When omitted or `false`, the file is served inline.
+Only raster images (PNG, JPEG, GIF, WebP) are served inline, and only when `download` is omitted or `false`; `?download=true` forces an attachment. **Every other type is always an attachment**, whatever `download` says. All file responses carry `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox; default-src 'none'`.
 
 ### 12.3. Organization Images
 
@@ -939,14 +946,14 @@ The backend declares these per filter in the filterset `Meta.options_extra_kwarg
 ### 16.1. Cookies Not Being Sent
 
 - Check that `withCredentials: true` (Angular) or `credentials: 'include'` (Fetch) is set on all requests that need the session.
-- Verify the SameSite + Secure configuration via `GET /api/accounts/session/config/` (public endpoint, no auth required).
+- Verify the SameSite + Secure configuration via `GET /api/accounts/session/config/` (public endpoint, no auth required; the diagnostics are only returned with `DEBUG=True`).
 - In development (HTTP), both `SameSite=Lax` and `Secure=False` are required. In production (HTTPS), `SameSite=None` and `Secure=True`.
 
 ### 16.2. CORS Errors
 
 - Verify `CORS_ALLOWED_ORIGINS` in `.env` includes the frontend origin (e.g., `http://localhost:4200`).
 - Check the browser console for `Access-Control-Allow-Origin` headers.
-- The `/api/accounts/session/config/` endpoint returns the current `cors_allowed_origins` setting.
+- With `DEBUG=True`, the `/api/accounts/session/config/` endpoint returns the current `cors_allowed_origins` setting.
 
 ### 16.3. 404 on Org-Scoped Endpoints
 

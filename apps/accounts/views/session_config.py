@@ -12,9 +12,10 @@ from apps.accounts.serializers.session import SessionConfigSerializer
 @extend_schema(
     tags=[str(_('Session'))],
     description=_(
-        'Return current cookie and CORS configuration for frontend debugging. '
-        'This endpoint is intentionally public so the frontend can verify '
-        'connectivity before authentication is established.'
+        'Return whether the organization session is configured and set the CSRF '
+        'cookie. This endpoint is intentionally public so the frontend can verify '
+        'connectivity before authentication is established. Cookie, CORS and '
+        'debug diagnostics are only included when DEBUG is enabled.'
     ),
     responses={200: SessionConfigSerializer},
 )
@@ -24,20 +25,25 @@ def session_config(request):
     get_token(request)
 
     data = {
-        'cookie_settings': {
-            'session_cookie_samesite': settings.SESSION_COOKIE_SAMESITE,
-            'session_cookie_secure': settings.SESSION_COOKIE_SECURE,
-            'csrf_cookie_samesite': settings.CSRF_COOKIE_SAMESITE,
-            'csrf_cookie_secure': settings.CSRF_COOKIE_SECURE,
-        },
-        'cors_allowed_origins': settings.CORS_ALLOWED_ORIGINS,
-        'cors_allow_credentials': settings.CORS_ALLOW_CREDENTIALS,
         'session_configured': (
             request.session.get('organization_id') is not None
             and request.user.is_authenticated
         ),
-        'debug': settings.DEBUG,
     }
+    if settings.DEBUG:
+        data.update(
+            {
+                'cookie_settings': {
+                    'session_cookie_samesite': settings.SESSION_COOKIE_SAMESITE,
+                    'session_cookie_secure': settings.SESSION_COOKIE_SECURE,
+                    'csrf_cookie_samesite': settings.CSRF_COOKIE_SAMESITE,
+                    'csrf_cookie_secure': settings.CSRF_COOKIE_SECURE,
+                },
+                'cors_allowed_origins': settings.CORS_ALLOWED_ORIGINS,
+                'cors_allow_credentials': settings.CORS_ALLOW_CREDENTIALS,
+                'debug': settings.DEBUG,
+            }
+        )
 
     serializer = SessionConfigSerializer(instance=data)
     return Response(serializer.data)

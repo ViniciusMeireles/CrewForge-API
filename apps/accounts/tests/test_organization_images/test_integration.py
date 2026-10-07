@@ -7,7 +7,7 @@ from apps.accounts.choices import MemberRoleChoices, OrganizationImageTypeChoice
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organization_image import OrganizationImageFactory
 from apps.accounts.models.organization import OrganizationImage
-from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.mixins import PNG_SIGNATURE, APITestCaseMixin
 
 
 class OrganizationImageIntegrationTestCase(APITestCaseMixin, APITestCase):
@@ -23,7 +23,7 @@ class OrganizationImageIntegrationTestCase(APITestCaseMixin, APITestCase):
         payload = {
             'image.file': SimpleUploadedFile(
                 name='logo.png',
-                content=b'fake-png-content',
+                content=PNG_SIGNATURE + b'fake-png-content',
                 content_type='image/png',
             ),
             'image_type': OrganizationImageTypeChoices.LOGO,

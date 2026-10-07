@@ -239,7 +239,7 @@ class StoredFileFactory(ModelFactoryMixin):
         no_ext = factory.Trait(
             file=factory.django.FileField(
                 filename='test',
-                data=b'binary content without file extension',
+                data=b'\x00\x01binary content without file extension',
             ),
         )
         bin_ = factory.Trait(

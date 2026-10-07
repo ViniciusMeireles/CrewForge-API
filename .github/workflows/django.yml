@@ -63,6 +63,7 @@ jobs:
     - name: Check OpenAPI schema
       env:
         DJANGO_SETTINGS_MODULE: config.settings.local
+        ENVIRONMENT: test
       run: |
         uv run python manage.py spectacular --file /tmp/schema.yml
         diff schema.yml /tmp/schema.yml
@@ -70,6 +71,7 @@ jobs:
     - name: Collect static files
       env:
         DJANGO_SETTINGS_MODULE: config.settings.local
+        ENVIRONMENT: test
       run: uv run python manage.py collectstatic --noinput
 
     - name: Run Tests

@@ -3,6 +3,7 @@ from apps.accounts.serializers.options import (
     OptionsOrganizationFilterSetSerializer,
     OptionsOrganizationModelSerializer,
 )
+from apps.accounts.utils.files import file_too_large_error, max_upload_request_size
 from apps.generics.mixins.views import (
     OptionsModelMixin,
     OptionsModelViewSetMetaclass,
@@ -63,3 +64,16 @@ class OrganizationScopedViewSetMixin(OrganizationScopedRequestMixin):
                 **self.get_base_queryset_filters(),
             )
         )
+
+
+class UploadSizeLimitMixin:
+    upload_error_path = ('file',)
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        try:
+            content_length = int(request.META.get('CONTENT_LENGTH') or 0)
+        except ValueError:
+            content_length = 0
+        if content_length > max_upload_request_size():
+            raise file_too_large_error(path=self.upload_error_path)

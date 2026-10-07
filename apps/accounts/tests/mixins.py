@@ -4,6 +4,8 @@ from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.models.organization import Organization
 from apps.accounts.tests.client import CustomAPIClient
 
+PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+
 
 class APITestCaseMixin:
     client_class = CustomAPIClient

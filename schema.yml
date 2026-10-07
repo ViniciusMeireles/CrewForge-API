@@ -2068,9 +2068,10 @@ paths:
   /api/accounts/session/config/:
     get:
       operationId: accounts_session_config_retrieve
-      description: Return current cookie and CORS configuration for frontend debugging.
-        This endpoint is intentionally public so the frontend can verify connectivity
-        before authentication is established.
+      description: Return whether the organization session is configured and set the
+        CSRF cookie. This endpoint is intentionally public so the frontend can verify
+        connectivity before authentication is established. Cookie, CORS and debug
+        diagnostics are only included when DEBUG is enabled.
       tags:
       - Session
       security:
@@ -2421,7 +2422,8 @@ paths:
         name: download
         schema:
           type: boolean
-        description: Whether to download the file as an attachment or not.
+        description: Download as an attachment. Only raster images are ever served
+          inline; every other type is always an attachment.
       - in: path
         name: uuid
         schema:
@@ -5193,6 +5195,8 @@ components:
     SessionConfig:
       type: object
       properties:
+        session_configured:
+          type: boolean
         cookie_settings:
           $ref: '#/components/schemas/CookieSettings'
         cors_allowed_origins:
@@ -5201,15 +5205,9 @@ components:
             type: string
         cors_allow_credentials:
           type: boolean
-        session_configured:
-          type: boolean
         debug:
           type: boolean
       required:
-      - cookie_settings
-      - cors_allow_credentials
-      - cors_allowed_origins
-      - debug
       - session_configured
     Signup:
       type: object

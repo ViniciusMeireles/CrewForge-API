@@ -101,8 +101,13 @@ session cookie.
 These rules are non-negotiable:
 
 1. **Never commit secrets.** Use environment variables via `.env`.
-2. **`SECRET_KEY`** must be set via `DJANGO_SECRET_KEY` env var. The fallback
-   in `base.py` is a development placeholder only.
+2. **`SECRET_KEY`** must be set via `DJANGO_SECRET_KEY` env var. There is no
+   fallback outside development: `production.py` — and `local.py` when
+   `ENVIRONMENT` is not `local_development`/`devcontainer`/`test` — refuse to
+   start without a key of at least 50 characters (`config/settings/checks.py`).
+   `run.sh` exports `ENVIRONMENT=production` by default.
+   JWTs are signed with `JWT_SIGNING_KEY` when set (same rules), else with the
+   secret key.
 3. **`ALLOWED_HOSTS`** must be restricted in production.
 4. **`CSRF_COOKIE_SECURE`** and **`SESSION_COOKIE_SECURE`** are `True` by
    default. Only `local.py` relaxes these.
@@ -167,11 +172,35 @@ Accessing another organization's resources returns **404** (not 403) because
 `OrganizationScopedViewSetMixin` filters the queryset before the view executes.
 This prevents resource enumeration.
 
+### Default Permission
+
+`DEFAULT_PERMISSION_CLASSES` is `IsAuthenticated`: a view without explicit
+`permission_classes` is closed. Public endpoints must declare `AllowAny`, and
+`apps/generics/tests/test_default_permissions.py` pins the list of public
+routes — adding one requires updating that allowlist on purpose.
+
 ### Diagnostics Endpoint
 
-`GET /api/accounts/session/config/` is a public endpoint that returns current
-cookie and CORS settings. Useful for frontend teams to verify connectivity
-before authentication.
+`GET /api/accounts/session/config/` is public and sets the CSRF cookie. It only
+returns cookie, CORS and debug diagnostics when `DEBUG=True`.
+
+### Stored Files
+
+- Uploads are limited by `STORED_FILE_MAX_SIZE`: `UploadSizeLimitMixin` rejects
+  an oversized `Content-Length` after authentication and before parsing, and
+  `MaxSizeUploadHandler` (first in `FILE_UPLOAD_HANDLERS`, so it also covers
+  the admin) stops storing a file as soon as it passes the limit; the
+  serializers then report it as too large (`UploadTooLargeMixin`). The type is detected from the file bytes
+  (`apps/accounts/utils/files.py`); the extension must match.
+- `StoredFile.save()` recomputes `content_type` from the bytes whenever the file
+  is replaced, so the stored type never goes stale.
+  Allowed types: `STORED_FILE_ALLOWED_CONTENT_TYPES`; organization images only
+  accept `STORED_FILE_IMAGE_CONTENT_TYPES` (raster images).
+- Downloads are attachments unless the type is in
+  `STORED_FILE_INLINE_CONTENT_TYPES` (raster images). Every file response sets
+  `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox;
+  default-src 'none'`, so an uploaded file can never run script on the API
+  origin.
 
 ---
 
@@ -179,7 +208,8 @@ before authentication.
 
 | Secret | Storage | Notes |
 |---|---|---|
-| `DJANGO_SECRET_KEY` | `.env` file | Never commit real value |
+| `DJANGO_SECRET_KEY` | `.env` file | Never commit real value; required (50+ chars) outside local/test |
+| `JWT_SIGNING_KEY` | `.env` file | Optional; signs JWTs (50+ chars) |
 | `POSTGRES_PASSWORD` | `.env` file | Docker compose reads from `.env` |
 | `SENTRY_DSN` | `.env` file | Empty = disabled |
 | `FROM_MAIL` | `.env` file | Email sender address |

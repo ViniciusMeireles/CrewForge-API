@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'BLA_BLA_BLA_BLA_BLA_BLA_BLA_BLA_BLA')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -173,6 +173,32 @@ STATICFILES_DIRS = [
 MEDIA_URL = os.environ.get('MEDIA_URL', '/media/')
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', '/media/')
 
+STORED_FILE_MAX_SIZE = int(os.environ.get('STORED_FILE_MAX_SIZE', 10 * 1024 * 1024))
+STORED_FILE_IMAGE_CONTENT_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+STORED_FILE_ALLOWED_CONTENT_TYPES = [
+    *STORED_FILE_IMAGE_CONTENT_TYPES,
+    'application/pdf',
+    'text/plain',
+    'text/csv',
+    'application/json',
+    'application/zip',
+    'application/msword',
+    'application/vnd.ms-excel',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.oasis.opendocument.text',
+    'application/vnd.oasis.opendocument.spreadsheet',
+    'application/vnd.oasis.opendocument.presentation',
+]
+STORED_FILE_INLINE_CONTENT_TYPES = STORED_FILE_IMAGE_CONTENT_TYPES
+FILE_UPLOAD_HANDLERS = [
+    'apps.accounts.utils.files.MaxSizeUploadHandler',
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -206,12 +232,10 @@ SELF_URL = os.environ.get('SELF_URL')
 
 # Rest Framework
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
     'DEFAULT_PAGINATION_CLASS': 'apps.generics.pagination.CustomPageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -240,6 +264,8 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+if jwt_signing_key := os.environ.get('JWT_SIGNING_KEY'):
+    SIMPLE_JWT['SIGNING_KEY'] = jwt_signing_key
 
 # Drf Spectacular
 SPECTACULAR_SETTINGS = {
