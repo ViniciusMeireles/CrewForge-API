@@ -338,9 +338,9 @@ Content-Type: application/json
 }
 ```
 
-**Response (200):** `{"detail": "Password reset email sent."}`
+**Response (200):** `{"detail": "If an account exists for this email, a password reset link has been sent to it. Please check your inbox."}`
 
-Returns 200 whether the email exists or not (security measure). The email contains a link with `uid` and `token` query parameters.
+The response is **identical whether the email exists or not** (no user enumeration), and the email is sent asynchronously. The email contains a link with `uid` and `token` query parameters.
 
 ### 4.2. Confirm Reset
 
@@ -359,6 +359,19 @@ Content-Type: application/json
 ```
 
 **Response (200):** `{"detail": "Password has been reset successfully."}`
+
+### 4.3. Email Verification
+
+Users created by signup start **unverified** and receive an email with a link to `FRONTEND_VERIFY_EMAIL_URL?uid=...&token=...` (default `FRONTEND_URL/auth/verify-email`). Users created through an invitation link (`create-with-invite`) are verified on creation, because the link proves access to the mailbox. Changing the email in the profile makes the user unverified again and sends a new link.
+
+| Action | Endpoint | Auth |
+|---|---|---|
+| Confirm | `POST /api/auth/email/verify/` with `{"uid", "token"}` → 200 / 400 (`Invalid verification link.`) | Public |
+| Resend link | `POST /api/auth/email/verify/resend/` → 200 (no email if already verified) | Authenticated |
+
+Links expire after `PASSWORD_RESET_TIMEOUT` and stop working once used or when the email changes. `user.email_verified` is returned in the session (`user`), token obtain (`auth_user`) and profile responses.
+
+**Unverified users do not see or accept invitations addressed to their email** (received list is empty, accept/decline → 403). Opening an invitation link by key still works.
 
 ---
 
@@ -545,6 +558,8 @@ Email and role are taken from the invitation itself (not from the request body).
 | Form options (create) | `GET /api/accounts/invitations/form-options-create/` | Admin+ |
 | Form options (update) | `GET /api/accounts/invitations/form-options-update/` | Admin+ |
 | Filter options | `GET /api/accounts/invitations/filter-options/` | Admin+ |
+
+Received invitations (`/api/accounts/invitations/received/`, `accept`, `decline`) match the invitation email only for users with a **verified** email (see [4.3](#43-email-verification)).
 
 ### Send Email Cooldown
 

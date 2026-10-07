@@ -138,6 +138,20 @@ These rules are non-negotiable:
   1. `POST /api/auth/password/reset/` — sends email with `uid` + `token`
   2. `POST /api/auth/password/reset/confirm/` — with `uid`, `token`, `new_password`
 - Password validation follows Django's `AUTH_PASSWORD_VALIDATORS`.
+- The reset request answers the same message whether or not the email exists
+  (no user enumeration); the email is sent asynchronously.
+
+## Email Verification
+
+- `User.email_verified_at` records when the user proved access to the email.
+  Signup users start unverified and get a link
+  (`apps/accounts/utils/email_verification.py`; token hash includes the email
+  and the verification date, so links die after use or email change).
+  Invitation-link signups are verified on creation; changing the email resets it.
+- Invitations are matched by email **only for verified users**
+  (`filter_received_by_user`, `InvitationAcceptDeclinePermission`), so
+  registering someone else's address does not expose or accept their
+  invitations.
 
 ---
 
