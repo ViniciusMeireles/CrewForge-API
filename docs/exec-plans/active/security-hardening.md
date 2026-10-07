@@ -44,7 +44,7 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 - [x] Upload size limit and content detection by signature
 - [x] `IsAuthenticated` default + public routes allowlist test
 - [x] `session/config` diagnostics only with `DEBUG`
-- [ ] Review loop until zero findings
+- [x] Review loop until zero findings (4 rounds: 5 + 5 + 1 findings fixed, then clean)
 
 ### Delivery 2: Browser session in HttpOnly cookies (R2, R6, R11, R12, R13)
 
@@ -68,6 +68,7 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 | Date | Update |
 |------|--------|
 | 2026-10-07 | Plan created; Delivery 1 implemented |
+| 2026-10-07 | Delivery 1 released after 4 review rounds (PR #24 + Frontend #25) |
 
 ---
 
