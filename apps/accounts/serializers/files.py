@@ -20,8 +20,6 @@ from apps.accounts.utils.files import (
 
 
 class UploadTooLargeMixin:
-    """Report an upload dropped by ``MaxSizeUploadHandler`` as too large."""
-
     upload_error_path = ('file',)
 
     def to_internal_value(self, data):

@@ -67,8 +67,6 @@ class OrganizationScopedViewSetMixin(OrganizationScopedRequestMixin):
 
 
 class UploadSizeLimitMixin:
-    """Reject oversized uploads from ``Content-Length`` before parsing the body."""
-
     upload_error_path = ('file',)
 
     def initial(self, request, *args, **kwargs):

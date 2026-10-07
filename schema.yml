@@ -4422,7 +4422,8 @@ components:
       - updated_at
     OrganizationImage:
       type: object
-      description: Report an upload dropped by ``MaxSizeUploadHandler`` as too large.
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
       properties:
         id:
           type: integer
@@ -4973,7 +4974,8 @@ components:
           description: Owner of the organization
     PatchedOrganizationImage:
       type: object
-      description: Report an upload dropped by ``MaxSizeUploadHandler`` as too large.
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
       properties:
         id:
           type: integer
@@ -5021,7 +5023,8 @@ components:
           description: Organization to which this profile belongs
     PatchedStoredFileCreateUpdateModel:
       type: object
-      description: Report an upload dropped by ``MaxSizeUploadHandler`` as too large.
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
       properties:
         file:
           type: string
@@ -5302,7 +5305,8 @@ components:
         * `public` - Public
     StoredFileCreateUpdateModel:
       type: object
-      description: Report an upload dropped by ``MaxSizeUploadHandler`` as too large.
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
       properties:
         file:
           type: string
