@@ -10,7 +10,7 @@ class InvitationPermission(OrganizationScopedPermission):
         """Check if the user has permission to access the view."""
         return (
             super().has_permission(request, view)
-            and get_member(request).has_admin_permission
+            and get_member(request).has_invitations_access
         )
 
     def has_object_permission(self, request, view, obj):

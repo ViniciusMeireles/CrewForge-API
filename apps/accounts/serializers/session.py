@@ -20,12 +20,28 @@ class MemberPermissionsSerializer(serializers.ModelSerializer):
         ]
 
 
-class MemberSessionSerializer(serializers.ModelSerializer):
-    permissions = MemberPermissionsSerializer(source='*', read_only=True)
+class MemberAccessSerializer(serializers.ModelSerializer):
+    members = serializers.BooleanField(source='has_members_access', read_only=True)
+    invitations = serializers.BooleanField(
+        source='has_invitations_access', read_only=True
+    )
+    teams = serializers.BooleanField(source='has_teams_access', read_only=True)
+    organization_settings = serializers.BooleanField(
+        source='has_organization_settings_access', read_only=True
+    )
 
     class Meta:
         model = Member
-        fields = ['id', 'role', 'nickname', 'permissions', 'last_login_at']
+        fields = ['members', 'invitations', 'teams', 'organization_settings']
+
+
+class MemberSessionSerializer(serializers.ModelSerializer):
+    permissions = MemberPermissionsSerializer(source='*', read_only=True)
+    access = MemberAccessSerializer(source='*', read_only=True)
+
+    class Meta:
+        model = Member
+        fields = ['id', 'role', 'nickname', 'permissions', 'access', 'last_login_at']
 
 
 class SessionSerializer(serializers.Serializer):
