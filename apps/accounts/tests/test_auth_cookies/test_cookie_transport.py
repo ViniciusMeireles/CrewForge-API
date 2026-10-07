@@ -19,6 +19,18 @@ USERNAME_FIELD = get_user_model().USERNAME_FIELD
 ACCESS = 'access'
 REFRESH = 'refresh'
 COOKIE_HEADER = {'HTTP_X_AUTH_TRANSPORT': 'cookie'}
+TOKEN_KEYS = {'access', 'refresh', 'auth_token'}
+
+
+def token_keys_in(data) -> set[str]:
+    if isinstance(data, dict):
+        found = TOKEN_KEYS & set(data)
+        for value in data.values():
+            found |= token_keys_in(value)
+        return found
+    if isinstance(data, list):
+        return set().union(*(token_keys_in(item) for item in data))
+    return set()
 
 
 class CookieTransportTestCase(APITestCase):
@@ -66,8 +78,7 @@ class CookieLoginTestCase(CookieTransportTestCase):
         response = self.login()
         self.assert_auth_cookie(response, ACCESS, '/')
         self.assert_auth_cookie(response, REFRESH, '/api/auth/')
-        self.assertNotIn('access', response.data)
-        self.assertNotIn('refresh', response.data)
+        self.assertEqual(token_keys_in(response.data), set())
         self.assertEqual(response.data['auth_user']['id'], self.user.id)
 
     def test_login_in_cookie_mode_requires_csrf(self):
@@ -153,7 +164,7 @@ class CookieRefreshTestCase(CookieTransportTestCase):
         old_refresh = self.client.cookies[REFRESH].value
         response = self.post(self.refresh_url, cookie_mode=False)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data, {})
+        self.assertEqual(token_keys_in(response.data), set())
         self.assert_auth_cookie(response, ACCESS, '/')
         self.assert_auth_cookie(response, REFRESH, '/api/auth/')
         self.assertNotEqual(response.cookies[REFRESH].value, old_refresh)
@@ -233,8 +244,32 @@ class CookieIssuersTestCase(CookieTransportTestCase):
             },
         )
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-        self.assertNotIn('auth_token', response.data['user'])
+        self.assertEqual(token_keys_in(response.data), set())
         self.assert_auth_cookie(response, ACCESS, '/')
+
+    def test_signup_body_tokens_belong_to_the_new_user(self):
+        MemberFactory.create_batch(3)
+        organization = OrganizationFactory.build()
+        response = APIClient().post(
+            reverse('accounts:signup-list'),
+            {
+                'user': self.user_payload(),
+                'organization': {
+                    'name': organization.name,
+                    'slug': organization.slug,
+                },
+                'nickname': MemberFactory.build().nickname,
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertNotEqual(response.data['id'], response.data['user']['id'])
+        user_id = str(response.data['user']['id'])
+        self.assertEqual(RefreshToken(response.data['refresh'])['user_id'], user_id)
+        self.assertEqual(
+            RefreshToken(response.data['user']['auth_token']['refresh'])['user_id'],
+            user_id,
+        )
 
     def test_create_with_invite_sets_cookies_without_body_tokens(self):
         user = self.user_payload()
@@ -246,7 +281,7 @@ class CookieIssuersTestCase(CookieTransportTestCase):
             {'user': user, 'nickname': MemberFactory.build().nickname},
         )
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-        self.assertNotIn('auth_token', response.data['user'])
+        self.assertEqual(token_keys_in(response.data), set())
         self.assert_auth_cookie(response, REFRESH, '/api/auth/')
 
     def test_accept_invitation_by_cookie_sets_cookies(self):
@@ -261,7 +296,7 @@ class CookieIssuersTestCase(CookieTransportTestCase):
             cookie_mode=False,
         )
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertNotIn('access', response.data)
+        self.assertEqual(token_keys_in(response.data), set())
         self.assertIn('member_id', response.data)
         self.assert_auth_cookie(response, ACCESS, '/')
 

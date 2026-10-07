@@ -9,6 +9,7 @@ from apps.accounts.throttles import AuthThrottleMixin
 from apps.accounts.utils.auth_cookies import (
     enforce_csrf,
     move_auth_token_to_cookies,
+    pop_tokens,
     wants_cookie_transport,
 )
 
@@ -29,4 +30,6 @@ class SignupViewSet(
         if wants_cookie_transport(request):
             enforce_csrf(request)
         response = super().create(request, *args, **kwargs)
+        if wants_cookie_transport(request):
+            pop_tokens(response.data)
         return move_auth_token_to_cookies(request, response, response.data.get('user'))

@@ -65,13 +65,15 @@ def refresh_cookie(request) -> str | None:
     return request.COOKIES.get(settings.AUTH_COOKIE_REFRESH_NAME) or None
 
 
+def pop_tokens(container: dict) -> tuple[str | None, str | None]:
+    return container.pop('access', None), container.pop('refresh', None)
+
+
 def move_tokens_to_cookies(request, response, container: dict | None):
     """In cookie transport, move ``access`` and ``refresh`` into cookies."""
     if container is None or not wants_cookie_transport(request):
         return response
-    access = container.pop('access', None)
-    refresh = container.pop('refresh', None)
-    return set_auth_cookies(response, access, refresh)
+    return set_auth_cookies(response, *pop_tokens(container))
 
 
 def move_auth_token_to_cookies(request, response, user_data: dict | None):
