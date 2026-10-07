@@ -139,7 +139,7 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
                 status=http_status.HTTP_404_NOT_FOUND,
             )
 
-        # Set the organization in the session
+        request.session.cycle_key()
         request.session['organization_id'] = organization.id
 
         if member := get_member(request):

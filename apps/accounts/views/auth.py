@@ -11,10 +11,13 @@ from rest_framework import status as http_status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as TokenObtainPairViewBase,
+)
+from rest_framework_simplejwt.views import (
+    TokenRefreshView as TokenRefreshViewBase,
 )
 
 from apps.accounts.serializers.auth import (
@@ -22,10 +25,70 @@ from apps.accounts.serializers.auth import (
     PasswordResetRequestSerializer,
 )
 from apps.accounts.settings import jwt_settings
+from apps.accounts.throttles import AuthRefreshThrottleMixin, AuthThrottleMixin
+from apps.accounts.utils.auth_cookies import (
+    clear_auth_cookies,
+    enforce_csrf,
+    move_tokens_to_cookies,
+    refresh_cookie,
+    set_auth_cookies,
+    wants_cookie_transport,
+)
 
 
-class TokenObtainPairView(TokenObtainPairViewBase):
+@extend_schema(
+    description=_(
+        'Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` '
+        'header (browsers) the tokens are set as HttpOnly cookies and omitted from '
+        'the body, and a CSRF token is required.'
+    ),
+)
+class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
     _serializer_class = jwt_settings.TOKEN_OBTAIN_SERIALIZER
+
+    def post(self, request, *args, **kwargs):
+        if wants_cookie_transport(request):
+            enforce_csrf(request)
+        response = super().post(request, *args, **kwargs)
+        return move_tokens_to_cookies(request, response, response.data)
+
+
+@extend_schema(
+    request=inline_serializer(
+        name='TokenRefreshRequest',
+        fields={'refresh': serializers.CharField(required=False)},
+    ),
+    description=_(
+        'Rotate the refresh token. Send `refresh` in the body (Bearer clients) or '
+        'rely on the refresh cookie (browsers). A refresh read from the cookie is '
+        'answered with new cookies and never with tokens in the body; it requires a '
+        'CSRF token.'
+    ),
+)
+class TokenRefreshView(AuthRefreshThrottleMixin, TokenRefreshViewBase):
+    def post(self, request, *args, **kwargs):
+        cookie_token = None if 'refresh' in request.data else refresh_cookie(request)
+        cookie_mode = cookie_token is not None or wants_cookie_transport(request)
+        if cookie_mode:
+            enforce_csrf(request)
+
+        data = {'refresh': cookie_token} if cookie_token else request.data
+        serializer = self.get_serializer(data=data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as err:
+            response = self.handle_exception(InvalidToken(err.args[0]))
+            return clear_auth_cookies(response) if cookie_mode else response
+
+        response = Response(serializer.validated_data, status=http_status.HTTP_200_OK)
+        if cookie_mode:
+            response.data = {}
+            set_auth_cookies(
+                response,
+                serializer.validated_data.get('access'),
+                serializer.validated_data.get('refresh'),
+            )
+        return response
 
 
 @extend_schema(
@@ -41,7 +104,7 @@ class TokenObtainPairView(TokenObtainPairViewBase):
     },
     description=_("Request a password reset link to be sent to the user's email."),
 )
-class PasswordResetRequestView(APIView):
+class PasswordResetRequestView(AuthThrottleMixin, APIView):
     permission_classes = [AllowAny]
 
     @classmethod
@@ -84,7 +147,7 @@ class PasswordResetRequestView(APIView):
         'Confirm the password reset using the provided token and new password.'
     ),
 )
-class PasswordResetConfirmView(APIView):
+class PasswordResetConfirmView(AuthThrottleMixin, APIView):
     permission_classes = [AllowAny]
 
     @classmethod
@@ -112,7 +175,7 @@ class PasswordResetConfirmView(APIView):
     request=inline_serializer(
         name='LogoutRequest',
         fields={
-            'refresh': serializers.CharField(),
+            'refresh': serializers.CharField(required=False),
         },
     ),
     responses={
@@ -142,27 +205,33 @@ class PasswordResetConfirmView(APIView):
             description=_('Invalid request.'),
         ),
     },
-    description=_('Blacklist the refresh token and clear the organization session.'),
+    description=_(
+        'Blacklist the refresh token and clear the organization session. Browsers '
+        '(refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`; the auth '
+        'cookies are always cleared and a CSRF token is required.'
+    ),
 )
 class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        refresh_token = request.data.get('refresh')
-        if not refresh_token:
-            return Response(
-                {'detail': _('Refresh token is required.')},
-                status=http_status.HTTP_400_BAD_REQUEST,
-            )
+        cookie_token = refresh_cookie(request)
+        cookie_mode = cookie_token is not None or wants_cookie_transport(request)
+        if cookie_mode:
+            enforce_csrf(request)
 
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-        except TokenError:
-            return Response(
-                {'detail': _('Token is invalid or expired.')},
-                status=http_status.HTTP_400_BAD_REQUEST,
-            )
+        error = None
+        if refresh_token := request.data.get('refresh') or cookie_token:
+            try:
+                RefreshToken(refresh_token).blacklist()
+            except TokenError:
+                error = _('Token is invalid or expired.')
+        else:
+            error = _('Refresh token is required.')
+
+        if error and not cookie_mode:
+            return Response({'detail': error}, status=http_status.HTTP_400_BAD_REQUEST)
 
         request.session.flush()
-        return Response(status=http_status.HTTP_204_NO_CONTENT)
+        response = Response(status=http_status.HTTP_204_NO_CONTENT)
+        return clear_auth_cookies(response) if cookie_mode else response

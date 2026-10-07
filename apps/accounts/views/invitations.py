@@ -38,6 +38,7 @@ from apps.accounts.serializers.invitation import (
     InvitationReceivedSerializer,
     InvitationSerializer,
 )
+from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
 from apps.generics.decorators import action_custom
 from apps.generics.utils.schema import extend_schema_model_view_set
 
@@ -483,13 +484,14 @@ class InvitationViewSet(
         from rest_framework_simplejwt.tokens import RefreshToken
 
         refresh = RefreshToken.for_user(request.user)
-        return Response(
+        response = Response(
             data={
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
                 'member_id': member.id,
             }
         )
+        return move_tokens_to_cookies(request, response, response.data)
 
     @action(
         detail=False,

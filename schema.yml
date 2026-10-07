@@ -146,6 +146,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -173,6 +174,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -206,6 +208,7 @@ paths:
               $ref: '#/components/schemas/InvitationAccept'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -262,6 +265,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -320,6 +324,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -354,6 +359,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -376,6 +382,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -394,6 +401,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -452,6 +460,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       - {}
       responses:
         '200':
@@ -502,6 +511,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -526,6 +536,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -550,6 +561,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -703,6 +715,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -725,6 +738,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -769,6 +783,7 @@ paths:
       - Invitations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -923,6 +938,7 @@ paths:
       - Members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -946,6 +962,7 @@ paths:
       - Members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -979,6 +996,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1017,6 +1035,7 @@ paths:
               $ref: '#/components/schemas/PatchedMemberUpdate'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1039,6 +1058,7 @@ paths:
       - Members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -1068,6 +1088,7 @@ paths:
               $ref: '#/components/schemas/PatchedMemberRoleUpdate'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1108,6 +1129,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1198,6 +1220,7 @@ paths:
       - Members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1222,6 +1245,7 @@ paths:
       - Members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1324,6 +1348,7 @@ paths:
       - Organization images
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1348,6 +1373,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -1371,6 +1397,7 @@ paths:
       - Organization images
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1402,6 +1429,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1432,6 +1460,7 @@ paths:
               $ref: '#/components/schemas/PatchedOrganizationImage'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1454,6 +1483,7 @@ paths:
       - Organization images
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -1499,6 +1529,7 @@ paths:
       - Organization images
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1522,6 +1553,7 @@ paths:
       - Organization images
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1545,6 +1577,7 @@ paths:
       - Organization images
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1618,6 +1651,7 @@ paths:
       - Organization profiles
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1641,6 +1675,7 @@ paths:
       - Organization profiles
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1674,6 +1709,7 @@ paths:
               $ref: '#/components/schemas/OrganizationProfile'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1707,6 +1743,7 @@ paths:
               $ref: '#/components/schemas/PatchedOrganizationProfile'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1729,6 +1766,7 @@ paths:
       - Organization profiles
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -1749,6 +1787,7 @@ paths:
       - Organization profiles
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1835,6 +1874,7 @@ paths:
       - Organizations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1862,6 +1902,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -1890,6 +1931,7 @@ paths:
       - Organizations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1924,6 +1966,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1957,6 +2000,7 @@ paths:
               $ref: '#/components/schemas/PatchedOrganization'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -1979,6 +2023,7 @@ paths:
       - Organizations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -1997,6 +2042,7 @@ paths:
       - Organizations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2043,6 +2089,7 @@ paths:
       - Organizations
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2058,6 +2105,7 @@ paths:
       - Sessions
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2076,6 +2124,7 @@ paths:
       - Session
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       - {}
       responses:
         '200':
@@ -2104,6 +2153,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       - {}
       responses:
         '201':
@@ -2276,6 +2326,7 @@ paths:
       - Stored files
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2300,6 +2351,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -2324,6 +2376,7 @@ paths:
       - Stored files
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2356,6 +2409,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2387,6 +2441,7 @@ paths:
               $ref: '#/components/schemas/PatchedStoredFileCreateUpdateModel'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2410,6 +2465,7 @@ paths:
       - Stored files
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -2435,6 +2491,7 @@ paths:
       - Stored files
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2454,6 +2511,7 @@ paths:
       - Users
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2480,6 +2538,7 @@ paths:
               $ref: '#/components/schemas/PatchedUserProfile'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2507,13 +2566,16 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           description: Password changed successfully.
   /api/auth/logout/:
     post:
       operationId: auth_logout_create
-      description: Blacklist the refresh token and clear the organization session.
+      description: 'Blacklist the refresh token and clear the organization session.
+        Browsers (refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`;
+        the auth cookies are always cleared and a CSRF token is required.'
       tags:
       - auth
       requestBody:
@@ -2527,9 +2589,9 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/LogoutRequest'
-        required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       - {}
       responses:
         '204':
@@ -2569,6 +2631,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       - {}
       responses:
         '200':
@@ -2594,6 +2657,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       - {}
       responses:
         '200':
@@ -2602,9 +2666,9 @@ paths:
   /api/auth/token/:
     post:
       operationId: auth_token_create
-      description: |-
-        Takes a set of user credentials and returns an access and refresh JSON web
-        token pair to prove the authentication of those credentials.
+      description: 'Obtain an access/refresh token pair. With the `X-Auth-Transport:
+        cookie` header (browsers) the tokens are set as HttpOnly cookies and omitted
+        from the body, and a CSRF token is required.'
       tags:
       - auth
       requestBody:
@@ -2629,23 +2693,23 @@ paths:
   /api/auth/token/refresh/:
     post:
       operationId: auth_token_refresh_create
-      description: |-
-        Takes a refresh type JSON web token and returns an access type JSON web
-        token if the refresh token is valid.
+      description: Rotate the refresh token. Send `refresh` in the body (Bearer clients)
+        or rely on the refresh cookie (browsers). A refresh read from the cookie is
+        answered with new cookies and never with tokens in the body; it requires a
+        CSRF token.
       tags:
       - auth
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
-        required: true
+              $ref: '#/components/schemas/TokenRefreshRequest'
       responses:
         '200':
           content:
@@ -2795,6 +2859,7 @@ paths:
       - Team members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2822,6 +2887,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -2845,6 +2911,7 @@ paths:
       - Team members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2877,6 +2944,7 @@ paths:
               $ref: '#/components/schemas/TeamMemberUpdate'
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -2904,6 +2972,7 @@ paths:
       - Team members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -2964,6 +3033,7 @@ paths:
       - Team members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -3021,6 +3091,7 @@ paths:
       - Team members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -3052,6 +3123,7 @@ paths:
       - Team members
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -3157,6 +3229,7 @@ paths:
       - Teams
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -3184,6 +3257,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -3207,6 +3281,7 @@ paths:
       - Teams
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -3241,6 +3316,7 @@ paths:
         required: true
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -3263,6 +3339,7 @@ paths:
       - Teams
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '204':
           description: No response body
@@ -3303,6 +3380,7 @@ paths:
       - Teams
       security:
       - jwtAuth: []
+        jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -3770,8 +3848,6 @@ components:
       properties:
         refresh:
           type: string
-      required:
-      - refresh
     MemberAccess:
       type: object
       properties:
@@ -5916,6 +5992,11 @@ components:
       required:
       - access
       - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
     TokenVerify:
       type: object
       properties:
@@ -6144,3 +6225,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    jwtCookieAuth:
+      type: apiKey
+      in: cookie
+      name: access

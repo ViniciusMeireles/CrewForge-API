@@ -5,6 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from corsheaders.defaults import default_headers as default_cors_headers
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy
 from dotenv import load_dotenv
@@ -240,7 +241,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'apps.accounts.authentication.JWTCookieAuthentication',
     ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
@@ -249,6 +250,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '1000/hour',
         'user': '10000/hour',
+        'auth': os.environ.get('AUTH_THROTTLE_RATE', '10/min'),
+        'auth_refresh': os.environ.get('AUTH_REFRESH_THROTTLE_RATE', '60/min'),
     },
     'EXCEPTION_HANDLER': 'apps.generics.exceptions.custom_exception_handler',
 }
@@ -256,7 +259,7 @@ REST_FRAMEWORK = {
 # JWT Authentication settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(
-        minutes=int(os.environ.get('ACCESS_TOKEN_LIFETIME', 30)),
+        minutes=int(os.environ.get('ACCESS_TOKEN_LIFETIME', 15)),
     ),
     'REFRESH_TOKEN_LIFETIME': timedelta(
         minutes=int(os.environ.get('REFRESH_TOKEN_LIFETIME', 10080)),
@@ -266,6 +269,13 @@ SIMPLE_JWT = {
 }
 if jwt_signing_key := os.environ.get('JWT_SIGNING_KEY'):
     SIMPLE_JWT['SIGNING_KEY'] = jwt_signing_key
+
+AUTH_TRANSPORT_HEADER = 'X-Auth-Transport'
+AUTH_COOKIE_ACCESS_NAME = '__Host-access'
+AUTH_COOKIE_REFRESH_NAME = '__Secure-refresh'
+AUTH_COOKIE_REFRESH_PATH = '/api/auth/'
+AUTH_COOKIE_SECURE = True
+AUTH_COOKIE_SAMESITE = 'Lax'
 
 # Drf Spectacular
 SPECTACULAR_SETTINGS = {
@@ -297,9 +307,10 @@ if cors_origins := os.environ.get('CORS_ALLOWED_ORIGINS'):
     CORS_ALLOWED_ORIGINS = cors_origins.split(',')
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = (*default_cors_headers, AUTH_TRANSPORT_HEADER.lower())
 
-SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'None')
-CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'None')
+SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
+CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'Lax')
 
 if session_domain := os.environ.get('SESSION_COOKIE_DOMAIN'):
     SESSION_COOKIE_DOMAIN = session_domain

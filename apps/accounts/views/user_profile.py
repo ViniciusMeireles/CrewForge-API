@@ -5,11 +5,14 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.serializers.user_profile import (
     ChangePasswordSerializer,
     UserProfileSerializer,
 )
+from apps.accounts.utils.auth_cookies import set_auth_cookies, wants_cookie_transport
+from apps.accounts.utils.tokens import revoke_refresh_tokens
 from apps.generics.utils.schema import (
     extend_schema_partial_update,
     extend_schema_retrieve,
@@ -77,7 +80,12 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(
+        revoke_refresh_tokens(request.user)
+        response = Response(
             data={'detail': _('Password changed successfully.')},
             status=status.HTTP_200_OK,
         )
+        if wants_cookie_transport(request):
+            refresh = RefreshToken.for_user(request.user)
+            set_auth_cookies(response, str(refresh.access_token), str(refresh))
+        return response
