@@ -710,6 +710,10 @@ GET /api/accounts/members/?page=2&page_size=25
 
 The `next` and `previous` URLs automatically preserve the `page_size` parameter.
 
+Ordered lists (`?order_by=`) add the primary key as a tiebreaker, so rows with the same
+value (same role, same name) keep a stable order across pages. A page past the end answers
+**404**: after removing the last row of the last page, go back one page.
+
 ---
 
 ## 15. Form Options Endpoints

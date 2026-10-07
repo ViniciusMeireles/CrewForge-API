@@ -133,6 +133,24 @@ class TeamMemberOrderingTestCase(APITestCaseMixin, APITestCase):
         ]
         self.assertEqual(ids, expected)
 
+    def test_pages_are_stable_when_ordered_values_repeat(self):
+        for _ in range(4):
+            TeamMemberFactory(team=self.team, role=TeamMemberRoleChoices.MEMBER)
+        seen = []
+        for page in (1, 2, 3, 4):
+            response = self.client.get(
+                self.list_url,
+                {
+                    'team': self.team.pk,
+                    'order_by': 'role',
+                    'page_size': 2,
+                    'page': page,
+                },
+            )
+            seen.extend(r['id'] for r in response.data['results'])
+        self.assertEqual(len(seen), len(set(seen)))
+        self.assertEqual(len(seen), 8)
+
     def test_filter_options_list_ordering_values(self):
         response = self.client.get(
             reverse('teams:team_members-filter-options'), {'order_by': ''}

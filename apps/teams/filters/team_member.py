@@ -4,6 +4,7 @@ from django_filters.rest_framework import filters, filterset
 
 from apps.accounts.mixins.filters import FilterSetMixin
 from apps.accounts.models.member import Member
+from apps.generics.utils.filters import StableOrderingFilter
 from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.models.team_member import TeamMember
 
@@ -17,7 +18,7 @@ ROLE_RANK = Case(
 )
 
 
-class TeamMemberOrderingFilter(filters.OrderingFilter):
+class TeamMemberOrderingFilter(StableOrderingFilter):
     """Ordering by member name/email, joining date and role hierarchy (owner first)."""
 
     def filter(self, qs, value):
