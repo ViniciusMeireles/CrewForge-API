@@ -9,12 +9,15 @@ from apps.generics.factories.mixins import ModelFactoryMixin
 class MemberFactory(ModelFactoryMixin):
     """Factory for creating Member instances."""
 
-    nickname = factory.Faker('user_name')
+    nickname = factory.LazyAttributeSequence(lambda o, n: f'{o.base_nickname}{n}')
     user = factory.SubFactory(UserFactory)
     organization = factory.SubFactory(
         factory='apps.accounts.factories.organizations.OrganizationFactory',
     )
     role = MemberRoleChoices.MEMBER
+
+    class Params:
+        base_nickname = factory.Faker('user_name')
 
     class Meta:
         model = Member

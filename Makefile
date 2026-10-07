@@ -95,7 +95,7 @@ l_uv_upgrade:  ## Upgrade all libraries in the uv project
 	uv sync --upgrade
 
 l_makemigrations:  ## Make migrations for the Django project
-	uv run python manage.py makemigrations
+	POSTGRES_HOST=localhost uv run python manage.py makemigrations
 
 l_migrate:  ## Apply migrations for the Django project
 	POSTGRES_HOST=localhost uv run python manage.py migrate
