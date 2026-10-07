@@ -48,9 +48,10 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 
 ### Delivery 2: Browser session in HttpOnly cookies (R2, R6, R11, R12, R13)
 
-- [ ] `JWTCookieAuthentication` + CSRF, cookie issuers, refresh/logout via cookie
-- [ ] Auth throttling, revocation on password change, `SameSite=Lax`, session key rotation
-- [ ] Frontend + nginx headers (Frontend repo)
+- [x] `JWTCookieAuthentication` + CSRF, cookie issuers, refresh/logout via cookie
+- [x] Auth throttling, revocation on password change, `SameSite=Lax`, session key rotation
+- [x] Frontend + nginx headers (Frontend repo)
+- [x] Review loop until zero findings (3 rounds: 3 + 2 findings fixed, then clean)
 
 ### Delivery 3: Identity and invitations (R5, R7)
 
@@ -69,6 +70,8 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 |------|--------|
 | 2026-10-07 | Plan created; Delivery 1 implemented |
 | 2026-10-07 | Delivery 1 released after 4 review rounds (PR #24 + Frontend #25) |
+| 2026-10-07 | Delivery 2 API implemented (cookie transport); 1265 tests pass |
+| 2026-10-07 | Delivery 2 released after 3 review rounds (API #26, Frontend #26, root #4); end-to-end browser check found and fixed signup body tokens |
 
 ---
 
@@ -78,7 +81,9 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 |----------|-----------|------------------------|
 | Signature sniffing in Python | Small allowlist, no native dependency | `python-magic` |
 | Raster images are the only inline types | SVG/HTML can run script on the API origin | Inline by `download` flag |
-| `StoredFile.save()` keeps an existing `content_type` | The validated (sniffed) type must not be replaced by a filename guess | Recompute on every save |
+| `StoredFile.save()` recomputes the type from the bytes when the file changes | The stored type must match the content | Recompute on every save |
+| Cookie transport opt-in via `X-Auth-Transport: cookie` | Keeps Bearer clients unchanged | Separate browser-only endpoints |
+| Invalid access cookie → anonymous | Public endpoints (login) keep working with a stale cookie | 401 on any invalid cookie |
 
 ---
 

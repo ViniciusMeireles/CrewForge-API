@@ -11,3 +11,12 @@ STORAGES = {
     **STORAGES,  # noqa: F405
     'default': {'BACKEND': 'django.core.files.storage.InMemoryStorage'},
 }
+
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # noqa: F405
+    'DEFAULT_THROTTLE_RATES': {
+        **REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'],  # noqa: F405
+        'auth': '10000/min',
+        'auth_refresh': '10000/min',
+    },
+}
