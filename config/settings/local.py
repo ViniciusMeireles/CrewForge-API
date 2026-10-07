@@ -3,13 +3,20 @@ import os
 from .base import *  # noqa
 from .base import (
     BASE_DIR,
+    ENVIRONMENT,
     INSTALLED_APPS,
 )
+from .checks import DEVELOPMENT_ENVIRONMENTS, require_secret
 
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or (
-    'django-insecure-local-development-only-never-use-in-production'
-)
+if ENVIRONMENT in DEVELOPMENT_ENVIRONMENTS:
+    SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or (
+        'django-insecure-local-development-only-never-use-in-production'
+    )
+else:
+    SECRET_KEY = require_secret(
+        'DJANGO_SECRET_KEY', os.environ.get('DJANGO_SECRET_KEY')
+    )
 ALLOWED_HOSTS = ['*']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'media'

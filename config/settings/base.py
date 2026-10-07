@@ -182,6 +182,11 @@ STORED_FILE_ALLOWED_CONTENT_TYPES = [
     'text/csv',
 ]
 STORED_FILE_INLINE_CONTENT_TYPES = STORED_FILE_IMAGE_CONTENT_TYPES
+FILE_UPLOAD_HANDLERS = [
+    'apps.accounts.utils.files.MaxSizeUploadHandler',
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

@@ -1,6 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 MIN_SECRET_LENGTH = 50
+DEVELOPMENT_ENVIRONMENTS = frozenset({'local_development', 'devcontainer', 'test'})
 INSECURE_PREFIX = 'django-insecure'
 
 

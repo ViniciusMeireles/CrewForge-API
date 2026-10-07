@@ -13,7 +13,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 
 from apps.accounts.choices import StoredFileAccess
 from apps.accounts.filters.files import StoredFileFilter
-from apps.accounts.mixins.views import ModelViewSetMixin
+from apps.accounts.mixins.views import ModelViewSetMixin, UploadSizeLimitMixin
 from apps.accounts.models.files import StoredFile
 from apps.accounts.permissions.files import StoredFilePermission
 from apps.accounts.serializers.files import (
@@ -71,7 +71,7 @@ logger = logging.getLogger(__name__)
         responses={http_status.HTTP_200_OK: StoredFileDetailModelSerializer},
     ),
 )
-class StoredFileViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
+class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelViewSet):
     serializer_class = StoredFileListModelSerializer
     permission_classes = [StoredFilePermission]
     filterset_class = StoredFileFilter

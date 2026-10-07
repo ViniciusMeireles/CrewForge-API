@@ -1,15 +1,18 @@
 import io
 
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import SimpleTestCase, override_settings
+from django.core.files.uploadhandler import StopUpload
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
 from apps.accounts.choices import OrganizationImageTypeChoices, StoredFileAccess
+from apps.accounts.factories.files import StoredFileFactory
 from apps.accounts.models.files import StoredFile
 from apps.accounts.tests.mixins import PNG_SIGNATURE, APITestCaseMixin
-from apps.accounts.utils.files import TEXT, sniff_content_type
+from apps.accounts.utils.files import TEXT, MaxSizeUploadHandler, sniff_content_type
 
 JPEG = b'\xff\xd8\xff\xe0' + b'jpeg'
 GIF = b'GIF89a' + b'gif'
@@ -30,7 +33,9 @@ class SniffContentTypeTestCase(SimpleTestCase):
             b'hello': TEXT,
             'olá'.encode(): TEXT,
             b'\x00\x01binary': None,
-            b'\xff\xfe\xfd invalid utf-8': None,
+            b'MZ\x90\x03 executable': None,
+            'relatório;ação'.encode('cp1252'): TEXT,
+            b'tabs\tand\r\nnewlines': TEXT,
         }
         for content, expected in cases.items():
             with self.subTest(content=content[:12]):
@@ -93,6 +98,22 @@ class StoredFileUploadValidationTestCase(APITestCaseMixin, APITestCase):
                 self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
                 self.assertIn('file', response.data['error']['details'])
 
+    def test_accepts_windows_1252_csv(self):
+        response = self.upload('relatorio.csv', 'nome;ação\nJoão;1'.encode('cp1252'))
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        stored = StoredFile.objects.get(uuid=response.data['uuid'])
+        self.assertEqual(stored.content_type, 'text/csv')
+
+    @override_settings(STORED_FILE_MAX_SIZE=10)
+    def test_rejects_request_over_content_length_limit(self):
+        response = self.client.post(
+            self.url,
+            {'file': SimpleUploadedFile('notes.txt', b'x' * (2 * 1024 * 1024))},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('file', response.data['error']['details'])
+
     @override_settings(STORED_FILE_MAX_SIZE=10)
     def test_rejects_files_over_the_size_limit(self):
         response = self.upload('notes.txt', b'more than ten bytes')
@@ -129,3 +150,43 @@ class OrganizationImageUploadValidationTestCase(APITestCaseMixin, APITestCase):
             with self.subTest(name=name):
                 response = self.upload(name, content)
                 self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+
+class MaxSizeUploadHandlerTestCase(SimpleTestCase):
+    @override_settings(STORED_FILE_MAX_SIZE=10)
+    def test_stops_when_file_exceeds_limit(self):
+        handler = MaxSizeUploadHandler()
+        handler.new_file('file', 'big.txt', 'text/plain', 20)
+        self.assertEqual(handler.receive_data_chunk(b'x' * 10, 0), b'x' * 10)
+        with self.assertRaises(StopUpload):
+            handler.receive_data_chunk(b'x', 10)
+
+    @override_settings(STORED_FILE_MAX_SIZE=10)
+    def test_counts_each_file_separately(self):
+        handler = MaxSizeUploadHandler()
+        handler.new_file('file', 'a.txt', 'text/plain', 8)
+        handler.receive_data_chunk(b'x' * 8, 0)
+        handler.new_file('file', 'b.txt', 'text/plain', 8)
+        self.assertEqual(handler.receive_data_chunk(b'x' * 8, 0), b'x' * 8)
+
+
+class StoredFileContentTypeOnSaveTestCase(TestCase):
+    def test_replacing_the_file_recomputes_the_type_from_bytes(self):
+        stored = StoredFileFactory(
+            file=ContentFile(PNG_SIGNATURE + b'x', name='logo.png'),
+        )
+        self.assertEqual(stored.content_type, 'image/png')
+
+        stored = StoredFile.objects.get(pk=stored.pk)
+        stored.file = ContentFile(PDF, name='report')
+        stored.save()
+        self.assertEqual(stored.content_type, 'application/pdf')
+
+    def test_keeps_type_when_file_is_unchanged(self):
+        stored = StoredFileFactory(
+            file=ContentFile(PNG_SIGNATURE + b'x', name='logo.png'),
+        )
+        stored = StoredFile.objects.get(pk=stored.pk)
+        stored.name = 'renamed'
+        stored.save()
+        self.assertEqual(stored.content_type, 'image/png')

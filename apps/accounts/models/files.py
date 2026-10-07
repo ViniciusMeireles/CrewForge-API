@@ -12,6 +12,7 @@ from rest_framework.reverse import reverse
 
 from apps.accounts.choices import StoredFileAccess
 from apps.accounts.managers.files import StoredFileManager
+from apps.accounts.utils.files import content_type_for
 from apps.generics.models.abstracts import BaseModel
 
 
@@ -168,14 +169,25 @@ class StoredFile(BaseModel):
         )
         return label_expression
 
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        loaded = dict(zip(field_names, values, strict=True))
+        if 'file' in loaded:
+            instance._loaded_file = loaded['file']
+        return instance
+
+    def _file_replaced(self) -> bool:
+        loaded_file = getattr(self, '_loaded_file', None)
+        return loaded_file is not None and self.file.name != loaded_file
+
     def save(self, *args, **kwargs):
         if self.file:
             if not self.original_name:
                 self.original_name = self.file.name.split('/')[-1]
 
-            if not self.content_type:
-                guessed_type, _ = mimetypes.guess_type(self.file.name)
-                self.content_type = guessed_type or 'application/octet-stream'
+            if not self.content_type or self._file_replaced():
+                self.content_type = content_type_for(self.file)
 
             try:
                 size = self.file.size
@@ -185,3 +197,4 @@ class StoredFile(BaseModel):
                 self.size = size
 
         super().save(*args, **kwargs)
+        self._loaded_file = self.file.name

@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 
 
-ENVIRONMENT="${ENVIRONMENT:-production}"
+export ENVIRONMENT="${ENVIRONMENT:-production}"
 
 if [ "$ENVIRONMENT" = "production" ]; then
   echo ">>> Running production startup tasks"

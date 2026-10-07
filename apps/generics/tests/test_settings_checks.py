@@ -1,7 +1,11 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase
 
-from config.settings.checks import MIN_SECRET_LENGTH, require_secret
+from config.settings.checks import (
+    DEVELOPMENT_ENVIRONMENTS,
+    MIN_SECRET_LENGTH,
+    require_secret,
+)
 
 
 class RequireSecretTestCase(SimpleTestCase):
@@ -19,3 +23,9 @@ class RequireSecretTestCase(SimpleTestCase):
     def test_accepts_long_random_key(self):
         value = 'k' * MIN_SECRET_LENGTH
         self.assertEqual(require_secret('DJANGO_SECRET_KEY', value), value)
+
+
+class DevelopmentEnvironmentsTestCase(SimpleTestCase):
+    def test_production_is_not_a_development_environment(self):
+        self.assertNotIn('production', DEVELOPMENT_ENVIRONMENTS)
+        self.assertNotIn(None, DEVELOPMENT_ENVIRONMENTS)
