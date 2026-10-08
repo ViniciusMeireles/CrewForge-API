@@ -14,7 +14,7 @@ from apps.accounts.factories.files import StoredFileFactory
 from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
-from apps.accounts.factories.users import UserFactory
+from apps.accounts.factories.users import DEFAULT_PASSWORD, UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.accounts.utils.email_verification import verification_url
 
@@ -46,7 +46,7 @@ class EmailVerificationTestCase(APITestCaseMixin, APITestCase):
                         'email': user.email,
                         'first_name': user.first_name,
                         'last_name': user.last_name,
-                        'password': 'Passw0rd*123',
+                        'password': DEFAULT_PASSWORD,
                     },
                     'organization': {
                         'name': organization.name,
@@ -83,7 +83,7 @@ class EmailVerificationTestCase(APITestCaseMixin, APITestCase):
                         'email': user.email,
                         'first_name': user.first_name,
                         'last_name': user.last_name,
-                        'password': 'Passw0rd*123',
+                        'password': DEFAULT_PASSWORD,
                     },
                     'organization': {
                         'name': organization.name,
@@ -111,7 +111,7 @@ class EmailVerificationTestCase(APITestCaseMixin, APITestCase):
         user = self.unverified_user()
         params = link_params(verification_url(user))
         cases = {
-            'bad token': {**params, 'token': 'invalid-token'},
+            'bad token': {**params, 'token': params['token'][::-1]},
             'bad uid': {**params, 'uid': 'invalid'},
             'missing': {},
         }
@@ -212,7 +212,7 @@ class EmailVerificationTestCase(APITestCaseMixin, APITestCase):
                     'username': user.username,
                     'first_name': user.first_name,
                     'last_name': user.last_name,
-                    'password': 'Passw0rd*123',
+                    'password': DEFAULT_PASSWORD,
                 },
                 'nickname': MemberFactory.build().nickname,
             },
