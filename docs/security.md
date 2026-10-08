@@ -310,9 +310,10 @@ on `127.0.0.1`. A production deployment must:
   without one) and keep it internal.
 - Use strong, unique credentials for PostgreSQL, Redis and SMTP.
 
-Dependencies are checked by Dependabot (`.github/dependabot.yml`: uv, GitHub
-Actions, Docker) and by `pip-audit` in CI, which fails the build on a known
-vulnerability.
+Dependencies are checked by Dependabot (`.github/dependabot.yml`: uv and GitHub
+Actions) and by `pip-audit` in CI, which fails the build on a known
+vulnerability. The Dockerfile base images use floating tags, so they get updates
+on rebuild rather than through Dependabot.
 
 ---
 
