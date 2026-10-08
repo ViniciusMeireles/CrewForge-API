@@ -13,6 +13,9 @@ updates:
     commit-message:
       prefix: ':arrow_up: build'
       include: scope
+    ignore:
+      - dependency-name: django
+        versions: ['>=5.3']
     groups:
       django:
         patterns:
