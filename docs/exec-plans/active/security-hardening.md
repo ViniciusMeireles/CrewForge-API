@@ -63,7 +63,7 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 
 - [x] API docs/admin restrictions, HSTS, dependency scanning, security logging, infra guidance
 - [x] Extra: `NUM_PROXIES`, refresh revocation on password reset, plain-string error payloads
-- [ ] Review loop until zero findings
+- [x] Review loop until zero findings (3 rounds: 3 + 1 findings fixed, then clean)
 
 ---
 
