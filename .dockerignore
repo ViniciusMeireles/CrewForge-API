@@ -20,3 +20,15 @@
 **/dist
 **/wheels
 **/*.egg-info
+**/.ruff_cache
+**/media
+**/specs
+**/.mailpit-data
+.agents
+.codacy
+.aiignore
+test.env
+celerybeat-schedule*
+coverage.xml
+coverage.json
+pytest.xml
