@@ -130,6 +130,8 @@ Caching is planned for future implementation. When implemented, follow:
 - Use `logging.getLogger(__name__)` for all loggers.
 - Never log passwords, tokens, or sensitive data.
 - Add `request_id` or `correlation_id` to API request logs for tracing.
+- Authentication events use `log_security_event()` (`security` logger); see
+  [`security.md`](./security.md#security-logging).
 
 ### Log Levels
 

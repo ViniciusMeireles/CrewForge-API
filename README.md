@@ -163,7 +163,8 @@ Additional authentication-related actions:
 
 
 ## API Documentation :books:
-Interactive API documentation is available at `http://localhost:8000/api/schema/swagger-ui/` providing:
+Interactive API documentation is available at `http://localhost:8000/api/schema/swagger-ui/` (public with
+`DEBUG=True`; otherwise staff only, see [`docs/security.md`](./docs/security.md#api-docs-and-admin)) providing:
 
 - Complete endpoint documentation with parameters and schemas.
 - Interactive testing capabilities.
