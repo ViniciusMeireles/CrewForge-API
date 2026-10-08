@@ -14,8 +14,8 @@
 
 ## Status
 
-- [x] Active
-- [ ] Completed
+- [ ] Active
+- [x] Completed
 - [ ] Cancelled
 
 ---
@@ -78,6 +78,8 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 | 2026-10-07 | Delivery 3 API implemented (email verification, uniform password reset) |
 | 2026-10-08 | Delivery 3 released after 3 review rounds (API #27, Frontend #27, root #5); end-to-end check: banner, link, invitation visible after verification, link reuse rejected |
 | 2026-10-08 | Delivery 4 implemented (spec `specs/security-hardening-operational.md`); 1312 tests pass |
+| 2026-10-08 | Deployment guide validated end to end (root `docs/deployment.md`); fixed image media/static permissions and the reset link path |
+| 2026-10-08 | Delivery 4 released (API #28, Frontend #28, root #6); plan completed |
 
 ---
 
@@ -98,8 +100,8 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 
 ## Done Criteria
 
-- [ ] All four deliveries merged
-- [ ] Tests pass (`make l_test`)
-- [ ] Lint passes (`make l_format_code`)
-- [ ] Schema regenerated if API changed (`make l_spectacular`)
-- [ ] `docs/frontend-integration-guide.md` updated if request/response changed
+- [x] All four deliveries merged
+- [x] Tests pass (`make l_test`)
+- [x] Lint passes (`make l_format_code`)
+- [x] Schema regenerated if API changed (`make l_spectacular`)
+- [x] `docs/frontend-integration-guide.md` updated if request/response changed
