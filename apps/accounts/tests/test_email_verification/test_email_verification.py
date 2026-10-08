@@ -1,5 +1,6 @@
 import importlib
 import re
+from unittest.mock import patch
 
 from django.apps import apps as django_apps
 from django.core import mail
@@ -60,6 +61,37 @@ class EmailVerificationTestCase(APITestCaseMixin, APITestCase):
         self.assertIn(
             VERIFY_URL, mail.outbox[0].body + str(mail.outbox[0].alternatives)
         )
+
+    def test_signup_succeeds_when_the_email_cannot_be_queued(self):
+        user = UserFactory.build()
+        organization = OrganizationFactory.build()
+        with (
+            patch(
+                'apps.accounts.tasks.send_email_verification_email',
+                side_effect=ConnectionError('broker down'),
+            ),
+            self.assertLogs('apps.accounts.utils.email_verification', 'ERROR'),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            response = self.client.post(
+                reverse('accounts:signup-list'),
+                {
+                    'user': {
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'password': 'Passw0rd*123',
+                    },
+                    'organization': {
+                        'name': organization.name,
+                        'slug': organization.slug,
+                    },
+                    'nickname': MemberFactory.build().nickname,
+                },
+                format='json',
+            )
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
 
     def test_confirm_verifies_and_link_cannot_be_reused(self):
         user = self.unverified_user()

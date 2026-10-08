@@ -1,9 +1,13 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.db import transaction
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
+logger = logging.getLogger(__name__)
 
 
 class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
@@ -27,7 +31,16 @@ def send_verification_email(user) -> None:
 
     url = verification_url(user)
     email = user.email
-    transaction.on_commit(lambda: send_email_verification_email(url, [email]))
+
+    def send():
+        try:
+            send_email_verification_email(url, [email])
+        except Exception:
+            logger.exception(
+                'Could not queue the email verification for user %s', user.pk
+            )
+
+    transaction.on_commit(send)
 
 
 def mark_email_verified(user) -> None:
