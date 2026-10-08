@@ -9,6 +9,8 @@ from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.choices import StoredFileAccess
+from apps.accounts.factories.files import StoredFileFactory
 from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
@@ -143,6 +145,31 @@ class EmailVerificationTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_resend_is_limited_by_a_cooldown(self):
+        user = self.unverified_user()
+        self.client.force_authenticate(user=user)
+        with self.captureOnCommitCallbacks(execute=True):
+            first = self.client.post(self.resend_url)
+            second = self.client.post(self.resend_url)
+        self.assertEqual(first.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(second.status_code, http_status.HTTP_429_TOO_MANY_REQUESTS)
+        self.assertGreater(second.data['retry_after_seconds'], 0)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_profile_email_changes_within_cooldown_send_one_email(self):
+        user = UserFactory()
+        self.client.force_authenticate(user=user)
+        with self.captureOnCommitCallbacks(execute=True):
+            for index in range(3):
+                response = self.client.patch(
+                    reverse('accounts:users-me'),
+                    {'email': f'target{index}@example.test'},
+                    format='json',
+                )
+                self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['target0@example.test'])
+
     def test_resend_requires_authentication(self):
         response = self.client.post(self.resend_url)
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
@@ -245,6 +272,18 @@ class UnverifiedInvitationsTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=member)
         response = self.client.get(reverse('accounts:session'))
         self.assertFalse(response.data['user']['email_verified'])
+
+
+class StoredFileOwnerPrivacyTestCase(APITestCaseMixin, APITestCase):
+    def test_public_file_detail_does_not_expose_owner_email(self):
+        stored_file = StoredFileFactory(viewing_permission=StoredFileAccess.PUBLIC)
+        response = self.client.get(
+            reverse('accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid})
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.data['owner']['id'], stored_file.owner_id)
+        self.assertNotIn('email', response.data['owner'])
+        self.assertNotIn('email_verified', response.data['owner'])
 
 
 class MarkExistingUsersVerifiedMigrationTestCase(TestCase):

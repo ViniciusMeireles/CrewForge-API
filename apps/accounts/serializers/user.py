@@ -23,6 +23,13 @@ class UserReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class StoredFileOwnerSerializer(ModelSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name']
+        read_only_fields = fields
+
+
 class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     """Serializer for creating a user."""
 

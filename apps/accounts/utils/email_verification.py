@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from apps.accounts.consts import EMAIL_VERIFICATION_COOLDOWN_SECONDS
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,9 +28,21 @@ def verification_url(user) -> str:
     return f'{settings.FRONTEND_VERIFY_EMAIL_URL}?uid={uid}&token={token}'
 
 
-def send_verification_email(user) -> None:
+def verification_cooldown_remaining(user) -> int:
+    if not user.email_verification_sent_at:
+        return 0
+    elapsed = (timezone.now() - user.email_verification_sent_at).total_seconds()
+    return max(0, int(EMAIL_VERIFICATION_COOLDOWN_SECONDS - elapsed))
+
+
+def send_verification_email(user) -> bool:
+    """Queue a verification link unless one was sent within the cooldown."""
     from apps.accounts.tasks import send_email_verification_email
 
+    if verification_cooldown_remaining(user):
+        return False
+    user.email_verification_sent_at = timezone.now()
+    user.save(update_fields=['email_verification_sent_at', 'updated_at'])
     url = verification_url(user)
     email = user.email
 
@@ -41,6 +55,7 @@ def send_verification_email(user) -> None:
             )
 
     transaction.on_commit(send)
+    return True
 
 
 def mark_email_verified(user) -> None:

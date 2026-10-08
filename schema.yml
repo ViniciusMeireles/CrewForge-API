@@ -2608,6 +2608,8 @@ paths:
       responses:
         '200':
           description: Verification email sent.
+        '429':
+          description: A link was sent recently; retry after the cooldown.
   /api/auth/logout/:
     post:
       operationId: auth_logout_create
@@ -5586,7 +5588,7 @@ components:
             * `public` - Public
         owner:
           allOf:
-          - $ref: '#/components/schemas/UserReady'
+          - $ref: '#/components/schemas/StoredFileOwner'
           nullable: true
         organization:
           allOf:
@@ -5706,6 +5708,30 @@ components:
       - original_name
       - size
       - uuid
+    StoredFileOwner:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+      required:
+      - first_name
+      - id
+      - last_name
+      - username
     Team:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization

@@ -27,5 +27,15 @@ class Migration(migrations.Migration):
                 verbose_name='Email Verified At',
             ),
         ),
+        migrations.AddField(
+            model_name='user',
+            name='email_verification_sent_at',
+            field=models.DateTimeField(
+                blank=True,
+                help_text='When the last verification link was sent',
+                null=True,
+                verbose_name='Email Verification Sent At',
+            ),
+        ),
         migrations.RunPython(mark_existing_users_verified, migrations.RunPython.noop),
     ]

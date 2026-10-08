@@ -73,6 +73,12 @@ class User(AbstractUser, BaseModel):
         verbose_name=_('Email Verified At'),
         help_text=_('When the user proved access to the email address'),
     )
+    email_verification_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Email Verification Sent At'),
+        help_text=_('When the last verification link was sent'),
+    )
 
     objects = UserManager()
 

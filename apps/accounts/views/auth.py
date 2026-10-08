@@ -39,6 +39,7 @@ from apps.accounts.utils.auth_cookies import (
 from apps.accounts.utils.email_verification import (
     mark_email_verified,
     send_verification_email,
+    verification_cooldown_remaining,
 )
 
 
@@ -270,6 +271,10 @@ class EmailVerificationConfirmView(AuthThrottleMixin, APIView):
     request=None,
     responses={
         200: OpenApiResponse(response=None, description=_('Verification email sent.')),
+        429: OpenApiResponse(
+            response=None,
+            description=_('A link was sent recently; retry after the cooldown.'),
+        ),
     },
     description=_('Send a new verification link to the authenticated user email.'),
 )
@@ -279,7 +284,16 @@ class EmailVerificationResendView(AuthThrottleMixin, APIView):
     def post(self, request):
         if request.user.email_verified:
             detail = _('Your email is already verified.')
+        elif not send_verification_email(request.user):
+            return Response(
+                data={
+                    'detail': _('Please wait before requesting a new link.'),
+                    'retry_after_seconds': verification_cooldown_remaining(
+                        request.user
+                    ),
+                },
+                status=http_status.HTTP_429_TOO_MANY_REQUESTS,
+            )
         else:
-            send_verification_email(request.user)
             detail = _('A new verification link has been sent to your email.')
         return Response(data={'detail': detail}, status=http_status.HTTP_200_OK)
