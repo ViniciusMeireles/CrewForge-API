@@ -12,6 +12,7 @@ from apps.accounts.utils.auth_cookies import (
     pop_tokens,
     wants_cookie_transport,
 )
+from apps.accounts.utils.security_log import log_security_event
 
 
 @extend_schema_view(
@@ -30,6 +31,9 @@ class SignupViewSet(
         if wants_cookie_transport(request):
             enforce_csrf(request)
         response = super().create(request, *args, **kwargs)
+        log_security_event(
+            'auth.signup', request, user_id=(response.data.get('user') or {}).get('id')
+        )
         if wants_cookie_transport(request):
             pop_tokens(response.data)
         return move_auth_token_to_cookies(request, response, response.data.get('user'))

@@ -1,8 +1,11 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -12,6 +15,7 @@ from apps.accounts.serializers.user_profile import (
     UserProfileSerializer,
 )
 from apps.accounts.utils.auth_cookies import set_auth_cookies, wants_cookie_transport
+from apps.accounts.utils.security_log import log_security_event
 from apps.accounts.utils.tokens import revoke_refresh_tokens
 from apps.generics.utils.schema import (
     extend_schema_partial_update,
@@ -78,9 +82,16 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             data=request.data,
             context={'request': request},
         )
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError:
+            log_security_event(
+                'auth.password_change.failed', request, level=logging.WARNING
+            )
+            raise
         serializer.save()
         revoke_refresh_tokens(request.user)
+        log_security_event('auth.password.changed', request)
         response = Response(
             data={'detail': _('Password changed successfully.')},
             status=status.HTTP_200_OK,

@@ -61,7 +61,9 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 
 ### Delivery 4: Operational hardening (R10, R14–R17)
 
-- [ ] API docs/admin restrictions, HSTS, dependency scanning, security logging, infra guidance
+- [x] API docs/admin restrictions, HSTS, dependency scanning, security logging, infra guidance
+- [x] Extra: `NUM_PROXIES`, refresh revocation on password reset, plain-string error payloads
+- [x] Review loop until zero findings (3 rounds: 3 + 1 findings fixed, then clean)
 
 ---
 
@@ -75,6 +77,7 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 | 2026-10-07 | Delivery 2 released after 3 review rounds (API #26, Frontend #26, root #4); end-to-end browser check found and fixed signup body tokens |
 | 2026-10-07 | Delivery 3 API implemented (email verification, uniform password reset) |
 | 2026-10-08 | Delivery 3 released after 3 review rounds (API #27, Frontend #27, root #5); end-to-end check: banner, link, invitation visible after verification, link reuse rejected |
+| 2026-10-08 | Delivery 4 implemented (spec `specs/security-hardening-operational.md`); 1312 tests pass |
 
 ---
 
@@ -87,6 +90,9 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 | `StoredFile.save()` recomputes the type from the bytes when the file changes | The stored type must match the content | Recompute on every save |
 | Cookie transport opt-in via `X-Auth-Transport: cookie` | Keeps Bearer clients unchanged | Separate browser-only endpoints |
 | Invalid access cookie → anonymous | Public endpoints (login) keep working with a stale cookie | 401 on any invalid cookie |
+| API docs: public only with `DEBUG`/`API_DOCS_PUBLIC`, else staff | Developers keep docs locally; production hides the API map | Remove docs in production |
+| HSTS preload opt-in | Preload is hard to undo; needs an explicit decision | Keep `preload` on |
+| Security events logged without emails | Ids + IP are enough to investigate; emails are personal data | Log the attempted email |
 
 ---
 

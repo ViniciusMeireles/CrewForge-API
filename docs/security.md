@@ -14,6 +14,8 @@ exception.
 - [Password Handling](#password-handling)
 - [Token Management](#token-management)
 - [Endpoint Security Model](#endpoint-security-model)
+- [Security Logging](#security-logging)
+- [Production Infrastructure](#production-infrastructure)
 - [Secrets Management](#secrets-management)
 
 ---
@@ -173,8 +175,8 @@ These rules are non-negotiable:
 - Behind a TLS-terminating proxy, cookie-mode CSRF needs Django to see HTTPS:
   set `SECURE_PROXY_SSL_HEADER=True` and forward the original
   `X-Forwarded-Proto`, or set `CSRF_TRUSTED_ORIGINS` to the public origin.
-- Changing the password blacklists every outstanding refresh token of the user
-  (`apps/accounts/utils/tokens.py`).
+- Changing or resetting the password blacklists every outstanding refresh
+  token of the user (`apps/accounts/utils/tokens.py`).
 - Organization login rotates the session key (`cycle_key`) to prevent session
   fixation.
 - Login, signup and password reset use the `auth` throttle scope; refresh uses
@@ -230,6 +232,16 @@ routes — adding one requires updating that allowlist on purpose.
 `GET /api/accounts/session/config/` is public and sets the CSRF cookie. It only
 returns cookie, CORS and debug diagnostics when `DEBUG=True`.
 
+### API Docs and Admin
+
+- `/api/schema/`, `/api/schema/swagger-ui/` and `/api/schema/redoc/` use
+  `ApiDocsPermission` (`apps/generics/permissions.py`): public when
+  `API_DOCS_PUBLIC=True`, or when it is unset and `DEBUG=True`; otherwise only
+  staff users (Django admin session or JWT) can read them.
+- The Django admin is served at `ADMIN_URL` (default `admin/`). The Frontend
+  nginx only forwards `/api/`, so the admin is not reachable through the public
+  proxy; expose it only on an internal network or VPN.
+
 ### Stored Files
 
 - Uploads are limited by `STORED_FILE_MAX_SIZE`: `UploadSizeLimitMixin` rejects
@@ -250,6 +262,61 @@ returns cookie, CORS and debug diagnostics when `DEBUG=True`.
 
 ---
 
+## Security Logging
+
+Authentication events go to the `security` logger
+(`apps/accounts/utils/security_log.py`), one line per event in `key=value`
+form, also attached to the record as `security_event` for structured handlers.
+Records carry the event, `user_id` (when known), the client `ip` and
+event-specific ids — never emails, passwords or tokens.
+
+| Event | Level |
+|---|---|
+| `auth.login.succeeded` / `auth.login.failed` | INFO / WARNING |
+| `auth.throttled` (with `scope`) | WARNING |
+| `auth.refresh.rejected` | WARNING |
+| `auth.logout`, `auth.signup` | INFO |
+| `auth.password.changed` / `auth.password_change.failed` | INFO / WARNING |
+| `auth.password_reset.requested` / `.completed` / `.failed` | INFO / INFO / WARNING |
+| `auth.email.verified` / `auth.email_verification.failed` | INFO / WARNING |
+| `organization.login`, `invitation.accepted` | INFO |
+
+The level is set by `SECURITY_LOG_LEVEL` (default `INFO`); the handler writes to
+stderr, so the container logs collect it.
+
+The client IP is resolved like the throttles (DRF `get_ident`): set
+`NUM_PROXIES` to the number of trusted proxies in front of the API (1 behind
+the Frontend nginx). Without it, a client-supplied `X-Forwarded-For` is
+trusted, which lets a client dodge the `auth` throttle and fake its logged IP.
+
+---
+
+## Production Infrastructure
+
+The `docker-compose.yml` of this repository is for development only: it
+mounts the source code, runs `runserver`, starts Mailpit and publishes ports
+on `127.0.0.1`. A production deployment must:
+
+- Expose only the Frontend nginx (HTTPS at the edge). PostgreSQL, Redis,
+  Flower and the API port stay on a private network with no published ports.
+- Run with `DJANGO_SETTINGS_MODULE=config.settings.production`,
+  `ENVIRONMENT=production`, a 50+ character `DJANGO_SECRET_KEY`, a restricted
+  `ALLOWED_HOSTS`, `SECURE_PROXY_SSL_HEADER=True` and `NUM_PROXIES` matching
+  the proxy chain (`production.py` refuses to start without `NUM_PROXIES`).
+- Keep HSTS at one year (`SECURE_HSTS_SECONDS=31536000`, the default) once
+  HTTPS works on every subdomain; enable `SECURE_HSTS_PRELOAD` only after
+  deciding to submit the domain to the preload list.
+- Protect Flower with `FLOWER_BASIC_AUTH` (the compose refuses to start it
+  without one) and keep it internal.
+- Use strong, unique credentials for PostgreSQL, Redis and SMTP.
+
+Dependencies are checked by Dependabot (`.github/dependabot.yml`: uv and GitHub
+Actions) and by `pip-audit` in CI, which fails the build on a known
+vulnerability. The Dockerfile base images use floating tags, so they get updates
+on rebuild rather than through Dependabot.
+
+---
+
 ## Secrets Management
 
 | Secret | Storage | Notes |
@@ -257,6 +324,7 @@ returns cookie, CORS and debug diagnostics when `DEBUG=True`.
 | `DJANGO_SECRET_KEY` | `.env` file | Never commit real value; required (50+ chars) outside local/test |
 | `JWT_SIGNING_KEY` | `.env` file | Optional; signs JWTs (50+ chars) |
 | `POSTGRES_PASSWORD` | `.env` file | Docker compose reads from `.env` |
+| `FLOWER_BASIC_AUTH` | `.env` file | `user:password` for Flower; required to start it |
 | `SENTRY_DSN` | `.env` file | Empty = disabled |
 | `FROM_MAIL` | `.env` file | Email sender address |
 | `SELF_URL` | `.env` file | Required for file download URLs |

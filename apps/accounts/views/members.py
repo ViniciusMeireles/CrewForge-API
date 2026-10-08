@@ -33,6 +33,7 @@ from apps.accounts.utils.auth_cookies import (
     move_auth_token_to_cookies,
     wants_cookie_transport,
 )
+from apps.accounts.utils.security_log import log_security_event
 from apps.generics.utils.models import get_verbose_name
 from apps.generics.utils.schema import extend_schema_model_view_set
 
@@ -202,6 +203,12 @@ class MemberViewSet(
         if wants_cookie_transport(request):
             enforce_csrf(request)
         response = super().create(request, *args, **kwargs)
+        log_security_event(
+            'auth.signup',
+            request,
+            user_id=(response.data.get('user') or {}).get('id'),
+            invitation_id=invitation.pk,
+        )
         return move_auth_token_to_cookies(request, response, response.data.get('user'))
 
     @action(detail=True, methods=['patch'], url_path='update-role')

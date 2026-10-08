@@ -50,7 +50,7 @@ Required variables in `.env` for frontend integration:
 |---|---|---|
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` | Browser CORS policy |
 | `FRONTEND_URL` | `http://localhost:4200` | Base URL for invitation accept links |
-| `FRONTEND_RESET_URL` | `http://localhost:4200/reset-password` | Base URL for password reset links |
+| `FRONTEND_RESET_URL` | `http://localhost:4200/auth/reset-password` | Base URL for password reset links |
 | `SELF_URL` | `http://localhost:8000` | Absolute file download URLs |
 
 ### 2.2. API Base URL

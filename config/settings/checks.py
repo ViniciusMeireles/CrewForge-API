@@ -22,3 +22,19 @@ def require_production_secrets(secret_key: str | None, simple_jwt: dict) -> str:
     if 'SIGNING_KEY' in simple_jwt:
         require_secret('JWT_SIGNING_KEY', simple_jwt['SIGNING_KEY'])
     return secret_key
+
+
+def require_num_proxies(rest_framework: dict) -> int:
+    num_proxies = rest_framework.get('NUM_PROXIES')
+    if num_proxies is None:
+        raise ImproperlyConfigured(
+            'NUM_PROXIES must be set (0 without a reverse proxy, 1 behind nginx).'
+        )
+    return num_proxies
+
+
+def normalize_admin_url(value: str) -> str:
+    path = value.strip().strip('/')
+    if not path:
+        raise ImproperlyConfigured('ADMIN_URL must not be empty.')
+    return f'{path}/'

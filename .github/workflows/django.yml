@@ -47,6 +47,11 @@ jobs:
     - name: Install the project
       run: uv sync --locked --all-extras --dev
 
+    - name: Audit dependencies
+      run: |
+        uv export --frozen --no-emit-project --format requirements-txt -o /tmp/requirements.txt
+        uvx pip-audit@2.10.1 --disable-pip -r /tmp/requirements.txt
+
     - name: Run ruff format
       run: uv run ruff format --check .
 

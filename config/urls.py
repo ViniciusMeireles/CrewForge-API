@@ -10,7 +10,7 @@ from drf_spectacular.views import (
 )
 
 django_urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     path('_nested_admin/', include('nested_admin.urls')),
 ]
 
@@ -18,7 +18,7 @@ third_party_urlpatterns = [
     # Redirect root to API documentation
     path(
         '',
-        RedirectView.as_view(url='/api/schema/swagger-ui/', permanent=True),
+        RedirectView.as_view(url='/api/schema/swagger-ui/', permanent=False),
         name='home',
     ),
     # API Documentation (Spectacular)
