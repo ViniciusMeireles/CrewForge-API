@@ -367,9 +367,9 @@ Users created by signup start **unverified** and receive an email with a link to
 | Action | Endpoint | Auth |
 |---|---|---|
 | Confirm | `POST /api/auth/email/verify/` with `{"uid", "token"}` → 200 / 400 (`Invalid verification link.`) | Public |
-| Resend link | `POST /api/auth/email/verify/resend/` → 200 (no email if already verified) | Authenticated |
+| Resend link | `POST /api/auth/email/verify/resend/` → 200 (no email if already verified), 429 with `retry_after_seconds` during the cooldown | Authenticated |
 
-Links expire after `PASSWORD_RESET_TIMEOUT` and stop working once used or when the email changes. `user.email_verified` is returned in the session (`user`), token obtain (`auth_user`) and profile responses.
+At most one link is sent per user every 5 minutes (`EMAIL_VERIFICATION_COOLDOWN_SECONDS`); an email change inside the cooldown updates the email without sending, and the user can resend afterwards. Links expire after `PASSWORD_RESET_TIMEOUT` and stop working once used or when the email changes. `user.email_verified` is returned in the session (`user`), token obtain (`auth_user`) and profile responses.
 
 **Unverified users do not see or accept invitations addressed to their email** (received list is empty, accept/decline → 403). Opening an invitation link by key still works.
 

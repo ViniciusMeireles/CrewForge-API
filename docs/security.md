@@ -148,6 +148,10 @@ These rules are non-negotiable:
   (`apps/accounts/utils/email_verification.py`; token hash includes the email
   and the verification date, so links die after use or email change).
   Invitation-link signups are verified on creation; changing the email resets it.
+- Verification emails are limited to one per user every 5 minutes
+  (`EMAIL_VERIFICATION_COOLDOWN_SECONDS`, `User.email_verification_sent_at`), so
+  resend and email changes cannot be used to spam inboxes.
+- Stored file responses expose the owner as id/username/name only (no email).
 - Invitations are matched by email **only for verified users**
   (`filter_received_by_user`, `InvitationAcceptDeclinePermission`), so
   registering someone else's address does not expose or accept their
