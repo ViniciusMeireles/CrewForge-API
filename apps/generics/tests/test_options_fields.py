@@ -392,6 +392,12 @@ class TeamMemberFormOptionsTestCase(APITestCaseMixin, APITestCase):
 class TeamMemberSearchTestCase(TestCase):
     def setUp(self):
         self.organization = OrganizationFactory()
+        owner = self.organization.owner
+        User.objects.filter(pk=owner.user_id).update(
+            username='owner', first_name='Ada', last_name='Owner'
+        )
+        owner.nickname = 'owner'
+        owner.save(update_fields=['nickname'])
         self.view = TeamMemberViewSet.as_view({'get': 'form_options_create'})
 
     def _get(self, params):
