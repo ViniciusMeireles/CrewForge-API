@@ -25,6 +25,7 @@ from apps.accounts.serializers.organization import (
 )
 from apps.accounts.serializers.session import SessionSerializer
 from apps.accounts.utils.requests import get_member
+from apps.accounts.utils.security_log import log_security_event
 from apps.generics.utils.schema import (
     extend_schema_list,
     extend_schema_model_view_set,
@@ -141,6 +142,9 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
 
         request.session.cycle_key()
         request.session['organization_id'] = organization.id
+        log_security_event(
+            'organization.login', request, organization_id=organization.id
+        )
 
         if member := get_member(request):
             member.last_login_at = timezone.now()

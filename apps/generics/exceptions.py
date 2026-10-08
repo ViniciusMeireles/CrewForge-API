@@ -87,8 +87,8 @@ def custom_exception_handler(exc, context):
         return Response(
             {
                 'error': {
-                    'code': ErrorCode.INTERNAL_ERROR,
-                    'message': _('An unexpected error occurred.'),
+                    'code': str(ErrorCode.INTERNAL_ERROR),
+                    'message': str(_('An unexpected error occurred.')),
                     'details': None,
                 },
             },
@@ -102,8 +102,8 @@ def custom_exception_handler(exc, context):
 
     response.data = {
         'error': {
-            'code': code,
-            'message': message,
+            'code': str(code),
+            'message': str(message),
             'details': details,
         },
     }

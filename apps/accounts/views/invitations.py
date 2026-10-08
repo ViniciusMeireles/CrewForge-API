@@ -39,6 +39,7 @@ from apps.accounts.serializers.invitation import (
     InvitationSerializer,
 )
 from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
+from apps.accounts.utils.security_log import log_security_event
 from apps.generics.decorators import action_custom
 from apps.generics.utils.schema import extend_schema_model_view_set
 
@@ -480,6 +481,12 @@ class InvitationViewSet(
             nickname=nickname if nickname else None,
         )
         invitation.accept(member=member, check=False)
+        log_security_event(
+            'invitation.accepted',
+            request,
+            invitation_id=invitation.pk,
+            organization_id=invitation.organization_id,
+        )
 
         from rest_framework_simplejwt.tokens import RefreshToken
 

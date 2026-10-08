@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.utils.translation import gettext as _
 from drf_spectacular.utils import (
@@ -8,7 +10,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers
 from rest_framework import status as http_status
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -41,6 +43,8 @@ from apps.accounts.utils.email_verification import (
     send_verification_email,
     verification_cooldown_remaining,
 )
+from apps.accounts.utils.security_log import log_security_event
+from apps.accounts.utils.tokens import revoke_refresh_tokens
 
 
 @extend_schema(
@@ -56,7 +60,16 @@ class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
     def post(self, request, *args, **kwargs):
         if wants_cookie_transport(request):
             enforce_csrf(request)
-        response = super().post(request, *args, **kwargs)
+        try:
+            response = super().post(request, *args, **kwargs)
+        except AuthenticationFailed:
+            log_security_event('auth.login.failed', request, level=logging.WARNING)
+            raise
+        log_security_event(
+            'auth.login.succeeded',
+            request,
+            user_id=(response.data.get('auth_user') or {}).get('id'),
+        )
         return move_tokens_to_cookies(request, response, response.data)
 
 
@@ -85,6 +98,7 @@ class TokenRefreshView(AuthRefreshThrottleMixin, TokenRefreshViewBase):
             serializer.is_valid(raise_exception=True)
         except (TokenError, AuthenticationFailed) as err:
             exc = InvalidToken(err.args[0]) if isinstance(err, TokenError) else err
+            log_security_event('auth.refresh.rejected', request, level=logging.WARNING)
             response = self.handle_exception(exc)
             return clear_auth_cookies(response) if cookie_mode else response
 
@@ -128,6 +142,11 @@ class PasswordResetRequestView(AuthThrottleMixin, APIView):
             reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
             send_password_reset_email(reset_link, [serializer.user.email])
 
+        log_security_event(
+            'auth.password_reset.requested',
+            request,
+            user_id=serializer.user.pk if serializer.user else None,
+        )
         return Response(
             data={
                 'detail': _(
@@ -160,12 +179,20 @@ class PasswordResetConfirmView(AuthThrottleMixin, APIView):
     @classmethod
     def post(cls, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError:
+            log_security_event(
+                'auth.password_reset.failed', request, level=logging.WARNING
+            )
+            raise
         user = serializer.user
         new_password = serializer.validated_data.get('new_password')
 
         user.set_password(new_password)
         user.save()
+        revoke_refresh_tokens(user)
+        log_security_event('auth.password_reset.completed', request, user_id=user.pk)
 
         return Response(
             data={
@@ -239,6 +266,7 @@ class LogoutView(APIView):
         if error and not cookie_mode:
             return Response({'detail': error}, status=http_status.HTTP_400_BAD_REQUEST)
 
+        log_security_event('auth.logout', request)
         request.session.flush()
         response = Response(status=http_status.HTTP_204_NO_CONTENT)
         return clear_auth_cookies(response) if cookie_mode else response
@@ -259,8 +287,15 @@ class EmailVerificationConfirmView(AuthThrottleMixin, APIView):
 
     def post(self, request):
         serializer = EmailVerificationConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError:
+            log_security_event(
+                'auth.email_verification.failed', request, level=logging.WARNING
+            )
+            raise
         mark_email_verified(serializer.user)
+        log_security_event('auth.email.verified', request, user_id=serializer.user.pk)
         return Response(
             data={'detail': _('Your email has been verified.')},
             status=http_status.HTTP_200_OK,

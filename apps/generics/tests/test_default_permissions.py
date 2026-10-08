@@ -6,9 +6,6 @@ from rest_framework.settings import api_settings
 from rest_framework.test import APITestCase
 
 PUBLIC_ROUTES = {
-    'schema',
-    'swagger-ui',
-    'redoc',
     'accounts:token_obtain_pair',
     'accounts:token_refresh',
     'accounts:token_verify',

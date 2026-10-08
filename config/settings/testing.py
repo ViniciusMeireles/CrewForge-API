@@ -20,3 +20,8 @@ REST_FRAMEWORK = {
         'auth_refresh': '10000/min',
     },
 }
+
+LOGGING = {
+    **LOGGING,  # noqa: F405
+    'handlers': {'security': {'class': 'logging.NullHandler'}},
+}

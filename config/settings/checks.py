@@ -22,3 +22,10 @@ def require_production_secrets(secret_key: str | None, simple_jwt: dict) -> str:
     if 'SIGNING_KEY' in simple_jwt:
         require_secret('JWT_SIGNING_KEY', simple_jwt['SIGNING_KEY'])
     return secret_key
+
+
+def normalize_admin_url(value: str) -> str:
+    path = value.strip().strip('/')
+    if not path:
+        raise ImproperlyConfigured('ADMIN_URL must not be empty.')
+    return f'{path}/'

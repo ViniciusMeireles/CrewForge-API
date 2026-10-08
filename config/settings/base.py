@@ -10,6 +10,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy
 from dotenv import load_dotenv
 
+from .checks import normalize_admin_url
+
 load_dotenv()
 
 
@@ -112,9 +114,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 3600
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', 31536000))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = (
+    os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True').lower() == 'true'
+)
+SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'False').lower() == 'true'
 SECURE_SSL_REDIRECT = True
 
 if os.environ.get('SECURE_PROXY_SSL_HEADER', 'False').lower() == 'true':
@@ -257,6 +261,9 @@ REST_FRAMEWORK = {
         'auth_refresh': os.environ.get('AUTH_REFRESH_THROTTLE_RATE', '60/min'),
     },
     'EXCEPTION_HANDLER': 'apps.generics.exceptions.custom_exception_handler',
+    'NUM_PROXIES': (
+        int(num_proxies) if (num_proxies := os.environ.get('NUM_PROXIES')) else None
+    ),
 }
 
 # JWT Authentication settings
@@ -302,6 +309,43 @@ SPECTACULAR_SETTINGS = {
     ],
     'ENUM_NAME_OVERRIDES': {
         'StoredFileAccess': 'apps.accounts.choices.StoredFileAccess',
+    },
+    'SERVE_PERMISSIONS': ['apps.generics.permissions.ApiDocsPermission'],
+    'SERVE_AUTHENTICATION': [
+        'apps.accounts.authentication.JWTCookieAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}
+
+API_DOCS_PUBLIC = (
+    api_docs_public.lower() == 'true'
+    if (api_docs_public := os.environ.get('API_DOCS_PUBLIC'))
+    else None
+)
+
+ADMIN_URL = normalize_admin_url(os.environ.get('ADMIN_URL', 'admin/'))
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'security': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'security': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'security',
+        },
+    },
+    'loggers': {
+        'security': {
+            'handlers': ['security'],
+            'level': os.environ.get('SECURITY_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
     },
 }
 
