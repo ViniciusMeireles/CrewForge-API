@@ -57,6 +57,7 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 
 - [x] Email verification; invitations by email require a verified email (existing users marked verified)
 - [x] Uniform, asynchronous password reset
+- [x] Review loop until zero findings (3 rounds: 3 + 1 findings fixed, then clean)
 
 ### Delivery 4: Operational hardening (R10, R14–R17)
 
@@ -73,6 +74,7 @@ Every risk R1–R17 of the PO spec is fixed or explicitly accepted, each deliver
 | 2026-10-07 | Delivery 2 API implemented (cookie transport); 1265 tests pass |
 | 2026-10-07 | Delivery 2 released after 3 review rounds (API #26, Frontend #26, root #4); end-to-end browser check found and fixed signup body tokens |
 | 2026-10-07 | Delivery 3 API implemented (email verification, uniform password reset) |
+| 2026-10-08 | Delivery 3 released after 3 review rounds (API #27, Frontend #27, root #5); end-to-end check: banner, link, invitation visible after verification, link reuse rejected |
 
 ---
 
