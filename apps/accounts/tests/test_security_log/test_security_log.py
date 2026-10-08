@@ -80,8 +80,7 @@ class SecurityLogTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
         self.assert_event(logs, 'auth.refresh.rejected', level='WARNING')
 
-    def test_logout(self):
-        self.client.force_authenticate(user=self.user)
+    def test_logout_identifies_the_user_by_the_refresh_token(self):
         response, logs = self.security_logs(
             self.client.post,
             reverse('accounts:logout'),

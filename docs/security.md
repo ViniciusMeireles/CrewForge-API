@@ -302,7 +302,7 @@ on `127.0.0.1`. A production deployment must:
 - Run with `DJANGO_SETTINGS_MODULE=config.settings.production`,
   `ENVIRONMENT=production`, a 50+ character `DJANGO_SECRET_KEY`, a restricted
   `ALLOWED_HOSTS`, `SECURE_PROXY_SSL_HEADER=True` and `NUM_PROXIES` matching
-  the proxy chain.
+  the proxy chain (`production.py` refuses to start without `NUM_PROXIES`).
 - Keep HSTS at one year (`SECURE_HSTS_SECONDS=31536000`, the default) once
   HTTPS works on every subdomain; enable `SECURE_HSTS_PRELOAD` only after
   deciding to submit the domain to the preload list.

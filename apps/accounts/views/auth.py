@@ -255,9 +255,13 @@ class LogoutView(APIView):
             enforce_csrf(request)
 
         error = None
+        user_id = None
         if refresh_token := request.data.get('refresh') or cookie_token:
             try:
-                RefreshToken(refresh_token).blacklist()
+                token = RefreshToken(refresh_token)
+                if (claim := token.get(jwt_settings.USER_ID_CLAIM)) is not None:
+                    user_id = int(claim)
+                token.blacklist()
             except TokenError:
                 error = _('Token is invalid or expired.')
         else:
@@ -266,7 +270,7 @@ class LogoutView(APIView):
         if error and not cookie_mode:
             return Response({'detail': error}, status=http_status.HTTP_400_BAD_REQUEST)
 
-        log_security_event('auth.logout', request)
+        log_security_event('auth.logout', request, user_id=user_id)
         request.session.flush()
         response = Response(status=http_status.HTTP_204_NO_CONTENT)
         return clear_auth_cookies(response) if cookie_mode else response

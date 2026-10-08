@@ -8,7 +8,7 @@ from apps.accounts.factories.users import UserFactory
 from apps.generics.permissions import ApiDocsPermission
 from apps.generics.tests.test_default_permissions import iter_api_views
 from config.settings import base
-from config.settings.checks import normalize_admin_url
+from config.settings.checks import normalize_admin_url, require_num_proxies
 
 DOCS_ROUTES = ['schema', 'swagger-ui', 'redoc']
 
@@ -74,3 +74,9 @@ class SecuritySettingsTestCase(SimpleTestCase):
         for value in ['', '/', '  ']:
             with self.subTest(value=value), self.assertRaises(ImproperlyConfigured):
                 normalize_admin_url(value)
+
+    def test_production_requires_num_proxies(self):
+        with self.assertRaises(ImproperlyConfigured):
+            require_num_proxies({'NUM_PROXIES': None})
+        self.assertEqual(require_num_proxies({'NUM_PROXIES': 0}), 0)
+        self.assertEqual(require_num_proxies({'NUM_PROXIES': 1}), 1)
