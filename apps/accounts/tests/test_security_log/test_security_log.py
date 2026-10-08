@@ -224,6 +224,34 @@ class SecurityLogTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertNotIn(user.email, record.getMessage())
 
+    def test_signup_with_invitation(self):
+        invitation = InvitationFactory(
+            organization=OrganizationFactory(), email='invitee@example.test'
+        )
+        user = UserFactory.build()
+        response, logs = self.security_logs(
+            self.client.post,
+            reverse('accounts:members-create-with-invite', args=[invitation.key]),
+            {
+                'user': {
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'password': DEFAULT_PASSWORD,
+                },
+                'nickname': MemberFactory.build().nickname,
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        record = self.assert_event(
+            logs,
+            'auth.signup',
+            user_id=response.data['user']['id'],
+            invitation_id=invitation.pk,
+        )
+        self.assertNotIn(invitation.email, record.getMessage())
+
 
 class ClientIpTestCase(APITestCase):
     def ip_for(self, num_proxies):
