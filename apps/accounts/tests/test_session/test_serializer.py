@@ -34,7 +34,7 @@ class SessionSerializerTestCase(APITestCaseMixin, APITestCase):
         user_data = response.data['user']
         self.assertEqual(
             set(user_data.keys()),
-            {'id', 'username', 'email', 'first_name', 'last_name'},
+            {'id', 'username', 'email', 'email_verified', 'first_name', 'last_name'},
         )
 
     def test_organization_sub_fields(self):

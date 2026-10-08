@@ -7,6 +7,7 @@ from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
 from apps.accounts.factories.users import DEFAULT_PASSWORD
+from apps.accounts.serializers.auth import PasswordResetRequestSerializer
 from apps.accounts.tests.mixins import APITestCaseMixin
 
 username_field = get_user_model().USERNAME_FIELD
@@ -170,12 +171,11 @@ class AuthSerializerTestCase(APITestCaseMixin, APITestCase):
         )
 
     def test_validate_nonexistent_email_password_reset(self):
-        payload = {'email': 'nonexistent@example.com'}
-        response = self.client.post(
-            self.password_reset_url, data=payload, format='json'
+        serializer = PasswordResetRequestSerializer(
+            data={'email': 'nonexistent@example.com'}
         )
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('non_field_errors', response.data['error']['details'])
+        self.assertTrue(serializer.is_valid())
+        self.assertIsNone(serializer.user)
 
     def test_token_obtain_pair_serializer_fields(self):
         member = self.organization.owner

@@ -227,6 +227,9 @@ except ValueError:
 # Frontend URLs
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
 FRONTEND_RESET_URL = os.environ.get('FRONTEND_RESET_URL')
+FRONTEND_VERIFY_EMAIL_URL = os.environ.get('FRONTEND_VERIFY_EMAIL_URL') or (
+    f'{FRONTEND_URL.rstrip("/")}/auth/verify-email' if FRONTEND_URL else None
+)
 
 # API URLs
 SELF_URL = os.environ.get('SELF_URL')

@@ -11,7 +11,7 @@ from apps.accounts.choices import StoredFileAccess
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.files import StoredFile
 from apps.accounts.serializers.organization import OrganizationReadySerializer
-from apps.accounts.serializers.user import UserReadySerializer
+from apps.accounts.serializers.user import StoredFileOwnerSerializer
 from apps.accounts.utils.files import (
     detect_upload_content_type,
     file_too_large_error,
@@ -72,7 +72,7 @@ class StoredFileDetailModelSerializer(
     StoredFileListModelSerializer,
     metaclass=SerializerMetaclass,
 ):
-    owner = UserReadySerializer(required=False, allow_null=True)
+    owner = StoredFileOwnerSerializer(required=False, allow_null=True)
     organization = OrganizationReadySerializer(required=False, allow_null=True)
 
     class Meta:

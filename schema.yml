@@ -2570,6 +2570,46 @@ paths:
       responses:
         '200':
           description: Password changed successfully.
+  /api/auth/email/verify/:
+    post:
+      operationId: auth_email_verify_create
+      description: Confirm the email address with the `uid` and `token` from the verification
+        link.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationConfirm'
+        required: true
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Email verified.
+  /api/auth/email/verify/resend/:
+    post:
+      operationId: auth_email_verify_resend_create
+      description: Send a new verification link to the authenticated user email.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          description: Verification email sent.
+        '429':
+          description: A link was sent recently; retry after the cooldown.
   /api/auth/logout/:
     post:
       operationId: auth_logout_create
@@ -3453,6 +3493,18 @@ components:
           type: string
       required:
       - detail
+    EmailVerificationConfirm:
+      type: object
+      properties:
+        uid:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+      - uid
     ImageTypeEnum:
       enum:
       - logo
@@ -5195,6 +5247,9 @@ components:
             maxLength: 254
           - type: string
             maxLength: 0
+        email_verified:
+          type: boolean
+          readOnly: true
         first_name:
           type: string
           maxLength: 150
@@ -5533,7 +5588,7 @@ components:
             * `public` - Public
         owner:
           allOf:
-          - $ref: '#/components/schemas/UserReady'
+          - $ref: '#/components/schemas/StoredFileOwner'
           nullable: true
         organization:
           allOf:
@@ -5653,6 +5708,30 @@ components:
       - original_name
       - size
       - uuid
+    StoredFileOwner:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+      required:
+      - first_name
+      - id
+      - last_name
+      - username
     Team:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -6136,6 +6215,9 @@ components:
             maxLength: 254
           - type: string
             maxLength: 0
+        email_verified:
+          type: boolean
+          readOnly: true
         first_name:
           type: string
           maxLength: 150
@@ -6143,6 +6225,7 @@ components:
           type: string
           maxLength: 150
       required:
+      - email_verified
       - id
       - username
     UserReady:
@@ -6163,6 +6246,9 @@ components:
           format: email
           readOnly: true
           title: Email address
+        email_verified:
+          type: boolean
+          readOnly: true
         first_name:
           type: string
           readOnly: true
@@ -6171,6 +6257,7 @@ components:
           readOnly: true
       required:
       - email
+      - email_verified
       - first_name
       - id
       - last_name

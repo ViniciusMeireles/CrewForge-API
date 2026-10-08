@@ -13,9 +13,10 @@ if TYPE_CHECKING:
 
 class InvitationQuerySet(BaseQuerySet):
     def filter_received_by_user(self, user: 'User'):
-        return self.filter(
-            Q(email=user.email, member__isnull=True) | Q(member__user=user),
-        )
+        condition = Q(member__user=user)
+        if user.email_verified:
+            condition |= Q(email=user.email, member__isnull=True)
+        return self.filter(condition)
 
     def filter_acceptable(self):
         return (

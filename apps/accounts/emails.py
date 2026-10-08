@@ -38,6 +38,35 @@ class PasswordResetRequestEmail(EmailBase):
         return kwargs
 
 
+class EmailVerificationEmail(EmailBase):
+    template_name = 'accounts/emails/base.html'
+
+    subject = _('Verify your email')
+    preheader = _('Confirm your email address to finish setting up your account.')
+    title = _('Verify your email address')
+    content = _(
+        'Click the button below to confirm that this email address is yours. '
+        'Invitations sent to it will only appear after you confirm. If you did not '
+        'create an account, please ignore this email.'
+    )
+
+    def __init__(self, *, verify_url: str, **kwargs):
+        super().__init__(**kwargs)
+        self.cta = CTAEmail(url=verify_url, text=_('Verify Email'))
+
+    @classmethod
+    def get_preview_kwargs(cls, **kwargs) -> dict:
+        kwargs = super().get_preview_kwargs(**kwargs)
+        kwargs.update(
+            {
+                'verify_url': (
+                    f'{settings.FRONTEND_VERIFY_EMAIL_URL}?uid=abc123&token=def456'
+                ),
+            }
+        )
+        return kwargs
+
+
 class InvitationEmail(EmailBase):
     template_name = 'accounts/emails/base.html'
 

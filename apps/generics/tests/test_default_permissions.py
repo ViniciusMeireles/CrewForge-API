@@ -15,6 +15,7 @@ PUBLIC_ROUTES = {
     'accounts:logout',
     'accounts:password_reset',
     'accounts:password_reset_confirm',
+    'accounts:email_verify',
     'accounts:signup-list',
     'accounts:invitations-by-key',
     'accounts:session-config',

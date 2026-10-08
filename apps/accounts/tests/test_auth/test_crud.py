@@ -102,13 +102,21 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertIn('detail', response.data)
 
-    def test_password_reset_request_invalid_email(self):
-        payload = {'email': 'invalid@invalid.com'}
-        response = self.client.post(
-            self.password_reset_url, data=payload, format='json'
+    def test_password_reset_request_unknown_email_looks_the_same(self):
+        known = self.client.post(
+            self.password_reset_url,
+            data={'email': self.organization.owner.user.email},
+            format='json',
         )
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-        self.assertIn('non_field_errors', response.data['error']['details'])
+        with patch('apps.accounts.tasks.send_password_reset_email') as send:
+            unknown = self.client.post(
+                self.password_reset_url,
+                data={'email': 'invalid@invalid.com'},
+                format='json',
+            )
+        send.assert_not_called()
+        self.assertEqual(unknown.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(unknown.data, known.data)
 
     def test_password_reset_confirm_success(self):
         member = self.organization.owner

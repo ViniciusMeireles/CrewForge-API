@@ -10,6 +10,7 @@ from apps.accounts.serializers.auth import UserTokenSerializer
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.organization import OrganizationSerializer
 from apps.accounts.serializers.user import UserSerializer
+from apps.accounts.utils.email_verification import send_verification_email
 
 User = get_user_model()
 
@@ -65,6 +66,7 @@ class SignupSerializer(
 
         user = self._create_user(user_data)
         self.set_tokens_for_user(user)
+        send_verification_email(user)
 
         organization = Organization.objects.create(
             created_by=user,

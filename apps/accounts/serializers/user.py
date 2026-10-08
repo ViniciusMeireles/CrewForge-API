@@ -8,9 +8,25 @@ User = get_user_model()
 
 
 class UserReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
+    email_verified = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = [
+            'id',
+            'username',
+            'email',
+            'email_verified',
+            'first_name',
+            'last_name',
+        ]
+        read_only_fields = fields
+
+
+class StoredFileOwnerSerializer(ModelSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name']
         read_only_fields = fields
 
 

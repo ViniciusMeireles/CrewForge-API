@@ -3,21 +3,34 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
+from apps.accounts.utils.email_verification import send_verification_email
 
 User = get_user_model()
 
 
 class UserProfileSerializer(ModelSerializerMixin, serializers.ModelSerializer):
+    email_verified = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = User
         fields = [
             'id',
             'username',
             'email',
+            'email_verified',
             'first_name',
             'last_name',
         ]
         read_only_fields = ['id', 'username']
+
+    def update(self, instance, validated_data):
+        email_changed = validated_data.get('email', instance.email) != instance.email
+        if email_changed:
+            validated_data['email_verified_at'] = None
+        instance = super().update(instance, validated_data)
+        if email_changed:
+            send_verification_email(instance)
+        return instance
 
 
 class ChangePasswordSerializer(serializers.Serializer):

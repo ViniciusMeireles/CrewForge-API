@@ -56,6 +56,16 @@ authentication_urlpatterns = [
         auth.PasswordResetConfirmView.as_view(),
         name='password_reset_confirm',
     ),
+    path(
+        'api/auth/email/verify/',
+        auth.EmailVerificationConfirmView.as_view(),
+        name='email_verify',
+    ),
+    path(
+        'api/auth/email/verify/resend/',
+        auth.EmailVerificationResendView.as_view(),
+        name='email_verify_resend',
+    ),
 ]
 
 user_profile = UserProfileViewSet.as_view(
@@ -84,7 +94,11 @@ accounts_urlpatterns = [
 urlpatterns = authentication_urlpatterns + accounts_urlpatterns
 
 if settings.ENVIRONMENT in ['local_development', 'test']:
-    from apps.accounts.emails import InvitationEmail, PasswordResetRequestEmail
+    from apps.accounts.emails import (
+        EmailVerificationEmail,
+        InvitationEmail,
+        PasswordResetRequestEmail,
+    )
 
     urlpatterns += [
         path(
@@ -96,5 +110,10 @@ if settings.ENVIRONMENT in ['local_development', 'test']:
             route='email-preview/accounts/invitation/',
             view=InvitationEmail.as_view(),
             name='invitation_email_preview',
+        ),
+        path(
+            route='email-preview/auth/email/verify/',
+            view=EmailVerificationEmail.as_view(),
+            name='email_verification_email_preview',
         ),
     ]
