@@ -25,7 +25,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 ADD . /app
 
 RUN groupadd -g ${GROUP_ID} ${USER_NAME} \
-    && useradd -u ${USER_ID} -g ${GROUP_ID} -d /app -s /bin/sh -m ${USER_NAME}
+    && useradd -u ${USER_ID} -g ${GROUP_ID} -d /app -s /bin/sh -m ${USER_NAME} \
+    && mkdir -p /media /staticfiles \
+    && chown ${USER_NAME}:${USER_NAME} /media /staticfiles
 
 RUN chown -R ${USER_NAME}:${USER_NAME} /app /uv /uvx /bin || true
 USER ${USER_NAME}
