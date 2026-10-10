@@ -7,6 +7,7 @@ ARG GROUP_ID=1000
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     postgresql-client \
+    gettext \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/
 
@@ -23,6 +24,10 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-install-project --no-dev --no-editable
 
 ADD . /app
+
+RUN for po in locale/*/LC_MESSAGES/*.po; do \
+        msgfmt -c --check-format -o "${po%.po}.mo" "$po"; \
+    done
 
 RUN groupadd -g ${GROUP_ID} ${USER_NAME} \
     && useradd -u ${USER_ID} -g ${GROUP_ID} -d /app -s /bin/sh -m ${USER_NAME} \

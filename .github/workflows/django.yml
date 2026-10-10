@@ -58,6 +58,18 @@ jobs:
     - name: Run ruff check
       run: uv run ruff check .
 
+    - name: Install gettext
+      run: sudo apt-get update && sudo apt-get install -y gettext
+
+    - name: Compile translations
+      env:
+        DJANGO_SETTINGS_MODULE: config.settings.local
+        ENVIRONMENT: test
+      run: >
+        uv run python manage.py compilemessages --ignore ".*"
+        --ignore "htmlcov" --ignore "media" --ignore "node_modules"
+        --ignore "staticfiles"
+
     - name: Check migrations
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres

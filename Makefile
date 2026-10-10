@@ -1,8 +1,11 @@
 # Makefile for Django/Docker operations
 
-.PHONY: help build up down logs uv_add uv_upgrade makemigrations migrate createsuperuser shell_plus spectacular format_code test precommit
+.PHONY: help build up down logs uv_add uv_upgrade makemigrations migrate createsuperuser shell_plus spectacular format_code test precommit makemessages compilemessages l_makemessages l_compilemessages
 
 DEFAULT_GOAL := help
+
+I18N_SETTINGS = DJANGO_SETTINGS_MODULE=config.settings.local ENVIRONMENT=test
+I18N_IGNORES = --ignore ".*" --ignore "htmlcov" --ignore "media" --ignore "node_modules" --ignore "staticfiles"
 
 help:  ## Display this help message
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
@@ -78,11 +81,17 @@ shell_plus:  ## Open Django shell with all models imported
 spectacular:  ## Generate OpenAPI schema for the Django project
 	docker compose exec django_api uv run python manage.py spectacular --color --file schema.yml
 
+makemessages:  ## Extract translatable strings into locale/pt_BR
+	docker compose exec django_api env $(I18N_SETTINGS) uv run python manage.py makemessages -l pt_BR $(I18N_IGNORES)
+
+compilemessages:  ## Compile translation catalogs to .mo
+	docker compose exec django_api env $(I18N_SETTINGS) uv run python manage.py compilemessages $(I18N_IGNORES)
+
 format_code:  ## Format code with ruff
 	docker compose exec django_api uv run ruff check . --fix
 	docker compose exec django_api uv run ruff format .
 
-test:  ## Run tests for the Django project
+test: compilemessages  ## Run tests for the Django project
 	docker compose exec django_api env DJANGO_SETTINGS_MODULE=config.settings.testing uv run pytest --reuse-db
 
 precommit: format_code spectacular test  ## Run code formatting and tests
@@ -109,20 +118,26 @@ l_shell_plus:  ## Open Django shell with all models imported
 l_spectacular:  ## Generate OpenAPI schema for the Django project
 	uv run python manage.py spectacular --color --file schema.yml
 
+l_makemessages:  ## Extract translatable strings into locale/pt_BR (local)
+	$(I18N_SETTINGS) uv run python manage.py makemessages -l pt_BR $(I18N_IGNORES)
+
+l_compilemessages:  ## Compile translation catalogs to .mo (local)
+	$(I18N_SETTINGS) uv run python manage.py compilemessages $(I18N_IGNORES)
+
 l_format_code:  ## Format code with ruff
 	uv run ruff check . --fix
 	uv run ruff format .
 
-l_test:  ## Run tests with coverage (sequential, for CI)
+l_test: l_compilemessages  ## Run tests with coverage (sequential, for CI)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db
 
-l_test_fast:  ## Run tests without coverage (faster for local iteration)
+l_test_fast: l_compilemessages  ## Run tests without coverage (faster for local iteration)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db --no-cov -x
 
-l_test_parallel:  ## Run tests in parallel (fastest)
+l_test_parallel: l_compilemessages  ## Run tests in parallel (fastest)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto
 
-l_test_parallel_nocov:  ## Run tests in parallel without coverage (fastest)
+l_test_parallel_nocov: l_compilemessages  ## Run tests in parallel without coverage (fastest)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto --no-cov -x
 
 l_precommit: l_format_code l_spectacular l_test  ## Run code formatting and tests (sequential with coverage)

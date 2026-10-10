@@ -12,6 +12,7 @@
 **/*.pyc
 **/*.pyo
 **/*.pyd
+**/*.mo
 **/.pytest_cache
 **/staticfiles
 **/htmlcov
