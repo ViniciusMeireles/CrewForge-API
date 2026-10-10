@@ -20,6 +20,7 @@ class UserProfileSerializer(ModelSerializerMixin, serializers.ModelSerializer):
             'email_verified',
             'first_name',
             'last_name',
+            'preferred_language',
         ]
         read_only_fields = ['id', 'username']
 

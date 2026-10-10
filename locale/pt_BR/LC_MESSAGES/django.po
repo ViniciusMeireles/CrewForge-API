@@ -1,0 +1,1316 @@
+# Tradução pt-BR da API CrewForge.
+# Copyright (C) 2026 CrewForge
+# This file is distributed under the same license as the CrewForge package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CrewForge API\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-09 15:30+0000\n"
+"PO-Revision-Date: 2026-10-08 22:30+0000\n"
+"Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
+"Language-Team: Portuguese (Brazil)\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: apps/accounts/admin.py:124
+msgid "file"
+msgstr "arquivo"
+
+#: apps/accounts/choices.py:12 apps/accounts/choices.py:48
+#: apps/accounts/models/files.py:92 apps/accounts/models/organization.py:24
+#: apps/accounts/tests/test_i18n.py:61 apps/accounts/tests/test_i18n.py:69
+#: apps/teams/choices.py:6
+msgid "Owner"
+msgstr "Proprietário"
+
+#: apps/accounts/choices.py:13 apps/teams/choices.py:7
+msgid "Admin"
+msgstr "Administrador"
+
+#: apps/accounts/choices.py:14 apps/teams/choices.py:8
+msgid "Manager"
+msgstr "Gerente"
+
+#: apps/accounts/choices.py:15 apps/accounts/models/invitation.py:79
+#: apps/accounts/models/member.py:53 apps/teams/choices.py:9
+#: apps/teams/models/team_member.py:21
+msgid "Member"
+msgstr "Membro"
+
+#: apps/accounts/choices.py:33
+msgid "Logo"
+msgstr "Logo"
+
+#: apps/accounts/choices.py:34
+msgid "Cover"
+msgstr "Capa"
+
+#: apps/accounts/choices.py:35
+msgid "Favicon"
+msgstr "Favicon"
+
+#: apps/accounts/choices.py:36
+msgid "Open Graph Image"
+msgstr "Imagem Open Graph"
+
+#: apps/accounts/choices.py:37
+msgid "Logo Horizontal"
+msgstr "Logo horizontal"
+
+#: apps/accounts/choices.py:38
+msgid "Logo Vertical"
+msgstr "Logo vertical"
+
+#: apps/accounts/choices.py:39
+msgid "Logo Dark"
+msgstr "Logo escuro"
+
+#: apps/accounts/choices.py:40
+msgid "Logo Light"
+msgstr "Logo claro"
+
+#: apps/accounts/choices.py:44
+msgid "Owners of Organization"
+msgstr "Proprietários da Organização"
+
+#: apps/accounts/choices.py:45
+msgid "Admins of Organization"
+msgstr "Administradores da Organização"
+
+#: apps/accounts/choices.py:46
+msgid "Managers of Organization"
+msgstr "Gerentes da Organização"
+
+#: apps/accounts/choices.py:47
+msgid "Members of Organization"
+msgstr "Membros da Organização"
+
+#: apps/accounts/choices.py:49
+msgid "Public"
+msgstr "Público"
+
+#: apps/accounts/choices.py:173
+msgid "Invitation is expired"
+msgstr "O convite expirou"
+
+#: apps/accounts/choices.py:174
+msgid "Invitation not found or expired"
+msgstr "Convite não encontrado ou expirado"
+
+#: apps/accounts/choices.py:175
+msgid "Invitation already accepted"
+msgstr "Convite já aceito"
+
+#: apps/accounts/choices.py:178
+msgid "The invitation has already been declined."
+msgstr "O convite já foi recusado."
+
+#: apps/accounts/choices.py:180
+msgid "User is already a member"
+msgstr "O usuário já é membro"
+
+#: apps/accounts/choices.py:186
+msgid "An invitation email was recently sent. Please wait before resending."
+msgstr ""
+"Um e-mail de convite foi enviado recentemente. Aguarde antes de reenviar."
+
+#: apps/accounts/choices.py:188
+msgid "Invitation email sent successfully."
+msgstr "E-mail de convite enviado com sucesso."
+
+#: apps/accounts/choices.py:191
+msgid "The invitation is no longer valid."
+msgstr "O convite não é mais válido."
+
+#: apps/accounts/emails.py:18
+msgid "Password Reset"
+msgstr "Recuperação de senha"
+
+#: apps/accounts/emails.py:19
+msgid "Use the link below to reset your password."
+msgstr "Use o link abaixo para redefinir sua senha."
+
+#: apps/accounts/emails.py:20
+msgid "Password Reset Request"
+msgstr "Solicitação de recuperação de senha"
+
+#: apps/accounts/emails.py:22
+msgid ""
+"We received a request to reset your password. Click the button below to set "
+"a new password. If you did not request this, please ignore this email."
+msgstr ""
+"Recebemos uma solicitação para redefinir sua senha. Clique no botão abaixo "
+"para definir uma nova senha. Se você não solicitou isso, ignore este e-mail."
+
+#: apps/accounts/emails.py:28
+msgid "Reset Password"
+msgstr "Redefinir senha"
+
+#: apps/accounts/emails.py:44
+msgid "Verify your email"
+msgstr "Verifique seu e-mail"
+
+#: apps/accounts/emails.py:45
+msgid "Confirm your email address to finish setting up your account."
+msgstr ""
+"Confirme seu endereço de e-mail para concluir a configuração da sua conta."
+
+#: apps/accounts/emails.py:46
+msgid "Verify your email address"
+msgstr "Verifique seu endereço de e-mail"
+
+#: apps/accounts/emails.py:48
+msgid ""
+"Click the button below to confirm that this email address is yours. "
+"Invitations sent to it will only appear after you confirm. If you did not "
+"create an account, please ignore this email."
+msgstr ""
+"Clique no botão abaixo para confirmar que este endereço de e-mail é seu. "
+"Convites enviados para ele só aparecerão após a confirmação. Se você não "
+"criou uma conta, ignore este e-mail."
+
+#: apps/accounts/emails.py:55
+msgid "Verify Email"
+msgstr "Verificar e-mail"
+
+#: apps/accounts/emails.py:73
+#, python-brace-format
+msgid "You have been invited to join {organization_name}"
+msgstr "Você foi convidado a participar de {organization_name}"
+
+#: apps/accounts/emails.py:74
+msgid "Click the button below to accept the invitation."
+msgstr "Clique no botão abaixo para aceitar o convite."
+
+#: apps/accounts/emails.py:75
+#, python-brace-format
+msgid "Invitation to join {organization_name}"
+msgstr "Convite para participar de {organization_name}"
+
+#: apps/accounts/emails.py:77
+#, python-brace-format
+msgid ""
+"You have been invited to join <strong>{organization_name}</strong>. Click "
+"the button below to accept the invitation and get started."
+msgstr ""
+"Você foi convidado a participar de <strong>{organization_name}</strong>. "
+"Clique no botão abaixo para aceitar o convite e começar."
+
+#: apps/accounts/emails.py:113
+msgid "Accept Invitation"
+msgstr "Aceitar convite"
+
+#: apps/accounts/filters/organization_image.py:12
+#: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:67
+#: apps/accounts/models/member.py:31 apps/accounts/models/organization.py:34
+#: apps/accounts/models/organization.py:60 apps/teams/models/team.py:24
+msgid "Organization"
+msgstr "Organização"
+
+#: apps/accounts/filters/organization_image.py:13
+msgid "Filter by organization"
+msgstr "Filtrar por organização"
+
+#: apps/accounts/models/files.py:41
+msgid "UUID"
+msgstr "UUID"
+
+#: apps/accounts/models/files.py:42
+msgid "Unique identifier for the file"
+msgstr "Identificador único do arquivo"
+
+#: apps/accounts/models/files.py:47
+msgid "File"
+msgstr "Arquivo"
+
+#: apps/accounts/models/files.py:48
+msgid "File to be stored"
+msgstr "Arquivo a ser armazenado"
+
+#: apps/accounts/models/files.py:54 apps/accounts/models/organization.py:15
+#: apps/teams/models/team.py:11
+msgid "Name"
+msgstr "Nome"
+
+#: apps/accounts/models/files.py:55
+msgid "Name of the file"
+msgstr "Nome do arquivo"
+
+#: apps/accounts/models/files.py:60
+msgid "Original Name"
+msgstr "Nome original"
+
+#: apps/accounts/models/files.py:61
+msgid "Original name of the file"
+msgstr "Nome original do arquivo"
+
+#: apps/accounts/models/files.py:65
+msgid "Content Type"
+msgstr "Tipo de conteúdo"
+
+#: apps/accounts/models/files.py:66
+msgid "Content type of the file"
+msgstr "Tipo de conteúdo do arquivo"
+
+#: apps/accounts/models/files.py:71
+msgid "Size"
+msgstr "Tamanho"
+
+#: apps/accounts/models/files.py:72
+msgid "Size of the file"
+msgstr "Tamanho do arquivo"
+
+#: apps/accounts/models/files.py:78
+msgid "Viewing Permission"
+msgstr "Permissão de visualização"
+
+#: apps/accounts/models/files.py:79
+msgid "Access level for viewing the file"
+msgstr "Nível de acesso para visualizar o arquivo"
+
+#: apps/accounts/models/files.py:85
+msgid "Updating Permission"
+msgstr "Permissão de atualização"
+
+#: apps/accounts/models/files.py:86
+msgid "Access level for updating the file"
+msgstr "Nível de acesso para atualizar o arquivo"
+
+#: apps/accounts/models/files.py:93
+msgid "Owner of the file"
+msgstr "Proprietário do arquivo"
+
+#: apps/accounts/models/files.py:104
+msgid "Organization to which the file belongs"
+msgstr "Organização à qual o arquivo pertence"
+
+#: apps/accounts/models/files.py:111
+msgid "Stored File"
+msgstr "Arquivo armazenado"
+
+#: apps/accounts/models/files.py:112
+msgid "Stored Files"
+msgstr "Arquivos armazenados"
+
+#: apps/accounts/models/invitation.py:18
+msgid "Email"
+msgstr "E-mail"
+
+#: apps/accounts/models/invitation.py:19
+msgid "Email of the user to invite"
+msgstr "E-mail do usuário a convidar"
+
+#: apps/accounts/models/invitation.py:25
+msgid "Is Accepted"
+msgstr "Foi aceito"
+
+#: apps/accounts/models/invitation.py:26
+msgid "Is the invitation accepted by the user"
+msgstr "Se o convite foi aceito pelo usuário"
+
+#: apps/accounts/models/invitation.py:30
+msgid "Is Expired"
+msgstr "Está expirado"
+
+#: apps/accounts/models/invitation.py:31
+msgid "Is the invitation expired"
+msgstr "Se o convite está expirado"
+
+#: apps/accounts/models/invitation.py:35
+msgid "Is Declined"
+msgstr "Foi recusado"
+
+#: apps/accounts/models/invitation.py:36
+msgid "Whether the invitation was declined by the user"
+msgstr "Se o convite foi recusado pelo usuário"
+
+#: apps/accounts/models/invitation.py:39
+msgid "Expired At"
+msgstr "Expira em"
+
+#: apps/accounts/models/invitation.py:40
+msgid "Date and time when the invitation will expire"
+msgstr "Data e hora em que o convite expirará"
+
+#: apps/accounts/models/invitation.py:45
+msgid "Declined At"
+msgstr "Recusado em"
+
+#: apps/accounts/models/invitation.py:46
+msgid "When the invitation was declined"
+msgstr "Quando o convite foi recusado"
+
+#: apps/accounts/models/invitation.py:51
+msgid "Accepted At"
+msgstr "Aceito em"
+
+#: apps/accounts/models/invitation.py:52
+msgid "When the invitation was accepted"
+msgstr "Quando o convite foi aceito"
+
+#: apps/accounts/models/invitation.py:60 apps/accounts/models/member.py:38
+#: apps/teams/filters/team_member.py:68 apps/teams/models/team_member.py:26
+msgid "Role"
+msgstr "Função"
+
+#: apps/accounts/models/invitation.py:61 apps/accounts/models/member.py:39
+msgid "User role in the organization"
+msgstr "Função do usuário na organização"
+
+#: apps/accounts/models/invitation.py:68
+msgid "Organization to which the user is invited"
+msgstr "Organização para a qual o usuário é convidado"
+
+#: apps/accounts/models/invitation.py:73
+msgid "Key"
+msgstr "Chave"
+
+#: apps/accounts/models/invitation.py:74
+msgid "Key for the invitation"
+msgstr "Chave do convite"
+
+#: apps/accounts/models/invitation.py:80
+msgid "Member associated with the invitation"
+msgstr "Membro associado ao convite"
+
+#: apps/accounts/models/invitation.py:87 apps/accounts/models/member.py:24
+msgid "User"
+msgstr "Usuário"
+
+#: apps/accounts/models/invitation.py:88
+msgid "User associated with the invitation"
+msgstr "Usuário associado ao convite"
+
+#: apps/accounts/models/invitation.py:93
+msgid "Last Email Sent At"
+msgstr "Último e-mail enviado em"
+
+#: apps/accounts/models/invitation.py:94
+msgid "Date and time when the last invitation email was sent"
+msgstr "Data e hora em que o último e-mail de convite foi enviado"
+
+#: apps/accounts/models/invitation.py:103
+msgid "Invitation"
+msgstr "Convite"
+
+#: apps/accounts/models/invitation.py:104
+msgid "Invitations"
+msgstr "Convites"
+
+#: apps/accounts/models/invitation.py:195
+msgid "Expired date must be greater than now"
+msgstr "A data de expiração deve ser posterior ao momento atual"
+
+#: apps/accounts/models/member.py:15
+msgid "Nickname"
+msgstr "Apelido"
+
+#: apps/accounts/models/member.py:16
+msgid "Nickname of the user in the organization"
+msgstr "Apelido do usuário na organização"
+
+#: apps/accounts/models/member.py:25
+msgid "User that is a member of the team"
+msgstr "Usuário que é membro da equipe"
+
+#: apps/accounts/models/member.py:32
+msgid "Organization to which the user belongs"
+msgstr "Organização à qual o usuário pertence"
+
+#: apps/accounts/models/member.py:45
+msgid "Last login at"
+msgstr "Último acesso em"
+
+#: apps/accounts/models/member.py:46
+msgid "Last time the member logged into the organization"
+msgstr "Última vez em que o membro acessou a organização"
+
+#: apps/accounts/models/member.py:54
+msgid "Members"
+msgstr "Membros"
+
+#: apps/accounts/models/organization.py:15
+msgid "Organization name"
+msgstr "Nome da organização"
+
+#: apps/accounts/models/organization.py:18 apps/teams/models/team.py:13
+msgid "Slug"
+msgstr "Slug"
+
+#: apps/accounts/models/organization.py:18
+msgid "Organization slug"
+msgstr "Slug da organização"
+
+#: apps/accounts/models/organization.py:25
+msgid "Owner of the organization"
+msgstr "Proprietário da organização"
+
+#: apps/accounts/models/organization.py:35 apps/accounts/models/user.py:59
+msgid "Organizations"
+msgstr "Organizações"
+
+#: apps/accounts/models/organization.py:61
+msgid "Organization to which this profile belongs"
+msgstr "Organização à qual este perfil pertence"
+
+#: apps/accounts/models/organization.py:66
+msgid "Website"
+msgstr "Site"
+
+#: apps/accounts/models/organization.py:67
+msgid "Organization website"
+msgstr "Site da organização"
+
+#: apps/accounts/models/organization.py:72 apps/teams/models/team.py:17
+msgid "Description"
+msgstr "Descrição"
+
+#: apps/accounts/models/organization.py:73
+msgid "Organization description"
+msgstr "Descrição da organização"
+
+#: apps/accounts/models/organization.py:80
+msgid "Organization Profile"
+msgstr "Perfil da Organização"
+
+#: apps/accounts/models/organization.py:81
+msgid "Organization Profiles"
+msgstr "Perfis da Organização"
+
+#: apps/accounts/models/organization.py:124
+msgid "Profile"
+msgstr "Perfil"
+
+#: apps/accounts/models/organization.py:125
+msgid "Organization profile"
+msgstr "Perfil da organização"
+
+#: apps/accounts/models/organization.py:131
+msgid "Image type"
+msgstr "Tipo de imagem"
+
+#: apps/accounts/models/organization.py:132
+msgid "Type of organization image"
+msgstr "Tipo de imagem da organização"
+
+#: apps/accounts/models/organization.py:138
+msgid "Image"
+msgstr "Imagem"
+
+#: apps/accounts/models/organization.py:139
+msgid "Organization image"
+msgstr "Imagem da organização"
+
+#: apps/accounts/models/organization.py:145
+msgid "Organization Image"
+msgstr "Imagem da Organização"
+
+#: apps/accounts/models/organization.py:146
+msgid "Organization Images"
+msgstr "Imagens da Organização"
+
+#: apps/accounts/models/organization.py:154
+#: apps/accounts/serializers/organization_image.py:91
+msgid "An image of this type already exists for this profile."
+msgstr "Já existe uma imagem deste tipo para este perfil."
+
+#: apps/accounts/models/user.py:60
+msgid "Organizations to which the user belongs"
+msgstr "Organizações às quais o usuário pertence"
+
+#: apps/accounts/models/user.py:68
+msgid "Full Name"
+msgstr "Nome completo"
+
+#: apps/accounts/models/user.py:69
+msgid "Full name of the user"
+msgstr "Nome completo do usuário"
+
+#: apps/accounts/models/user.py:74
+msgid "Email Verified At"
+msgstr "E-mail verificado em"
+
+#: apps/accounts/models/user.py:75
+msgid "When the user proved access to the email address"
+msgstr "Quando o usuário comprovou o acesso ao endereço de e-mail"
+
+#: apps/accounts/models/user.py:80
+msgid "Email Verification Sent At"
+msgstr "Verificação de e-mail enviada em"
+
+#: apps/accounts/models/user.py:81
+msgid "When the last verification link was sent"
+msgstr "Quando o último link de verificação foi enviado"
+
+#: apps/accounts/models/user.py:87
+msgid "Preferred Language"
+msgstr "Idioma preferido"
+
+#: apps/accounts/models/user.py:88
+msgid "Language used to render this user's emails."
+msgstr "Idioma usado para renderizar os e-mails deste usuário."
+
+#: apps/accounts/serializers/auth.py:100
+msgid "Invalid UID."
+msgstr "UID inválido."
+
+#: apps/accounts/serializers/auth.py:103
+msgid "Invalid token."
+msgstr "Token inválido."
+
+#: apps/accounts/serializers/auth.py:121 apps/accounts/serializers/auth.py:124
+msgid "Invalid verification link."
+msgstr "Link de verificação inválido."
+
+#: apps/accounts/serializers/files.py:123
+msgid "You are not authorized to change the organization."
+msgstr "Você não está autorizado a alterar a organização."
+
+#: apps/accounts/serializers/files.py:220
+msgid "Owner is not active."
+msgstr "O proprietário não está ativo."
+
+#: apps/accounts/serializers/files.py:229
+msgid "Organization is not active."
+msgstr "A organização não está ativa."
+
+#: apps/accounts/serializers/invitation.py:90
+msgid "An invitation with this email already exists."
+msgstr "Já existe um convite com este e-mail."
+
+#: apps/accounts/serializers/member.py:97
+msgid "User is already a member of the organization."
+msgstr "O usuário já é membro da organização."
+
+#: apps/accounts/serializers/member.py:165
+msgid "User data to update, if not provided, will not update the user."
+msgstr ""
+"Dados do usuário a atualizar; se não fornecidos, o usuário não será "
+"atualizado."
+
+#: apps/accounts/serializers/mixins.py:23
+msgid "Not allowed to change your own role."
+msgstr "Não é permitido alterar sua própria função."
+
+#: apps/accounts/serializers/mixins.py:26 apps/accounts/tests/test_i18n.py:73
+#: apps/teams/serializers/team_member.py:96
+#, python-format
+msgid "Not allowed to set the %(role)s role."
+msgstr "Não é permitido definir a função %(role)s."
+
+#: apps/accounts/serializers/user.py:48
+msgid "Password cannot be empty."
+msgstr "A senha não pode ficar vazia."
+
+#: apps/accounts/serializers/user.py:50
+msgid "Not allowed to change the password."
+msgstr "Não é permitido alterar a senha."
+
+#: apps/accounts/serializers/user_profile.py:51
+msgid "Current password is incorrect."
+msgstr "A senha atual está incorreta."
+
+#: apps/accounts/serializers/user_profile.py:52
+msgid "New password must be different from current password."
+msgstr "A nova senha deve ser diferente da senha atual."
+
+#: apps/accounts/tests/test_i18n.py:59 apps/accounts/tests/test_i18n.py:67
+#: apps/generics/choices.py:7
+msgid "Permission denied"
+msgstr "Permissão negada"
+
+#: apps/accounts/tests/test_i18n.py:62 apps/teams/models/team.py:32
+#: apps/teams/models/team_member.py:14
+msgid "Team"
+msgstr "Equipe"
+
+#: apps/accounts/utils/auth_cookies.py:22
+#, python-brace-format
+msgid "CSRF Failed: {reason}"
+msgstr "Falha de CSRF: {reason}"
+
+#: apps/accounts/utils/files.py:103
+msgid "This file type is not allowed."
+msgstr "Este tipo de arquivo não é permitido."
+
+#: apps/accounts/utils/files.py:119
+#, python-format
+msgid "The file is too large. Maximum size is %(size)s MB."
+msgstr "O arquivo é muito grande. O tamanho máximo é %(size)s MB."
+
+#: apps/accounts/views/auth.py:53
+msgid ""
+"Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` "
+"header (browsers) the tokens are set as HttpOnly cookies and omitted from "
+"the body, and a CSRF token is required."
+msgstr ""
+"Obtém um par de tokens de acesso/refresh. Com o cabeçalho `X-Auth-Transport: "
+"cookie` (navegadores), os tokens são definidos como cookies HttpOnly e "
+"omitidos do corpo, e um token CSRF é obrigatório."
+
+#: apps/accounts/views/auth.py:83
+msgid ""
+"Rotate the refresh token. Send `refresh` in the body (Bearer clients) or "
+"rely on the refresh cookie (browsers). A refresh read from the cookie is "
+"answered with new cookies and never with tokens in the body; it requires a "
+"CSRF token."
+msgstr ""
+"Rotaciona o token de refresh. Envie `refresh` no corpo (clientes Bearer) ou "
+"use o cookie de refresh (navegadores). Uma leitura do refresh pelo cookie é "
+"respondida com novos cookies e nunca com tokens no corpo; requer um token "
+"CSRF."
+
+#: apps/accounts/views/auth.py:123
+msgid ""
+"Password reset link has been sent to your email. Please check your inbox."
+msgstr ""
+"O link de redefinição de senha foi enviado para o seu e-mail. Verifique sua "
+"caixa de entrada."
+
+#: apps/accounts/views/auth.py:128
+msgid "Request a password reset link to be sent to the user's email."
+msgstr ""
+"Solicita o envio de um link de redefinição de senha para o e-mail do usuário."
+
+#: apps/accounts/views/auth.py:158
+msgid ""
+"If an account exists for this email, a password reset link has been sent to "
+"it. Please check your inbox."
+msgstr ""
+"Se existir uma conta para este e-mail, um link de redefinição de senha foi "
+"enviado para ela. Verifique sua caixa de entrada."
+
+#: apps/accounts/views/auth.py:172 apps/accounts/views/auth.py:205
+msgid ""
+"Your password has been successfully reset. You can now log in with your new "
+"password."
+msgstr ""
+"Sua senha foi redefinida com sucesso. Agora você pode entrar com sua nova "
+"senha."
+
+#: apps/accounts/views/auth.py:178
+msgid "Confirm the password reset using the provided token and new password."
+msgstr ""
+"Confirma a redefinição de senha usando o token fornecido e a nova senha."
+
+#: apps/accounts/views/auth.py:223
+msgid "Logout successful."
+msgstr "Sessão encerrada com sucesso."
+
+#: apps/accounts/views/auth.py:234
+msgid "Missing refresh token"
+msgstr "Token de refresh ausente"
+
+#: apps/accounts/views/auth.py:235 apps/accounts/views/auth.py:273
+msgid "Refresh token is required."
+msgstr "O token de refresh é obrigatório."
+
+#: apps/accounts/views/auth.py:239
+msgid "Invalid or expired token"
+msgstr "Token inválido ou expirado"
+
+#: apps/accounts/views/auth.py:240 apps/accounts/views/auth.py:271
+msgid "Token is invalid or expired."
+msgstr "O token é inválido ou expirou."
+
+#: apps/accounts/views/auth.py:244
+msgid "Invalid request."
+msgstr "Requisição inválida."
+
+#: apps/accounts/views/auth.py:248
+msgid ""
+"Blacklist the refresh token and clear the organization session. Browsers "
+"(refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`; the auth "
+"cookies are always cleared and a CSRF token is required."
+msgstr ""
+"Coloca o token de refresh na blacklist e limpa a sessão da organização. Os "
+"navegadores (cookie de refresh ou `X-Auth-Transport: cookie`) podem omitir "
+"`refresh`; os cookies de autenticação são sempre limpos e um token CSRF é "
+"obrigatório."
+
+#: apps/accounts/views/auth.py:287
+msgid "Email verified."
+msgstr "E-mail verificado."
+
+#: apps/accounts/views/auth.py:290
+msgid ""
+"Confirm the email address with the `uid` and `token` from the verification "
+"link."
+msgstr ""
+"Confirma o endereço de e-mail com o `uid` e o `token` do link de verificação."
+
+#: apps/accounts/views/auth.py:309
+msgid "Your email has been verified."
+msgstr "Seu e-mail foi verificado."
+
+#: apps/accounts/views/auth.py:317
+msgid "Verification email sent."
+msgstr "E-mail de verificação enviado."
+
+#: apps/accounts/views/auth.py:320
+msgid "A link was sent recently; retry after the cooldown."
+msgstr ""
+"Um link foi enviado recentemente; tente novamente após o intervalo de "
+"reenvio."
+
+#: apps/accounts/views/auth.py:323
+msgid "Send a new verification link to the authenticated user email."
+msgstr ""
+"Envia um novo link de verificação para o e-mail do usuário autenticado."
+
+#: apps/accounts/views/auth.py:330
+msgid "Your email is already verified."
+msgstr "Seu e-mail já está verificado."
+
+#: apps/accounts/views/auth.py:334
+msgid "Please wait before requesting a new link."
+msgstr "Aguarde antes de solicitar um novo link."
+
+#: apps/accounts/views/auth.py:342
+msgid "A new verification link has been sent to your email."
+msgstr "Um novo link de verificação foi enviado para o seu e-mail."
+
+#: apps/accounts/views/files.py:40
+msgid "Download a file."
+msgstr "Baixa um arquivo."
+
+#: apps/accounts/views/files.py:44
+msgid "The file content."
+msgstr "O conteúdo do arquivo."
+
+#: apps/accounts/views/files.py:47
+msgid "File not found."
+msgstr "Arquivo não encontrado."
+
+#: apps/accounts/views/files.py:55
+msgid ""
+"Download as an attachment. Only raster images are ever served inline; every "
+"other type is always an attachment."
+msgstr ""
+"Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
+"tipo é sempre um anexo."
+
+#: apps/accounts/views/files.py:135
+msgid "Error when trying to open file"
+msgstr "Erro ao tentar abrir o arquivo"
+
+#: apps/accounts/views/files.py:139
+msgid "File object not found."
+msgstr "Objeto de arquivo não encontrado."
+
+#: apps/accounts/views/invitations.py:52
+msgid "Send an invitation email."
+msgstr "Envia um e-mail de convite."
+
+#: apps/accounts/views/invitations.py:70
+msgid "The invitation email has been sent successfully."
+msgstr "O e-mail de convite foi enviado com sucesso."
+
+#: apps/accounts/views/invitations.py:98 apps/accounts/views/members.py:86
+msgid "The invitation is expired or the user is already a member."
+msgstr "O convite expirou ou o usuário já é membro."
+
+#: apps/accounts/views/invitations.py:125
+msgid "The invitation email cooldown is active."
+msgstr "O intervalo de reenvio do e-mail de convite está ativo."
+
+#: apps/accounts/views/invitations.py:131
+msgid "List received invitations for the authenticated user."
+msgstr "Lista os convites recebidos pelo usuário autenticado."
+
+#: apps/accounts/views/invitations.py:138
+msgid "Retrieve a received invitation detail."
+msgstr "Obtém os detalhes de um convite recebido."
+
+#: apps/accounts/views/invitations.py:146
+#: apps/accounts/views/invitations.py:180
+#: apps/accounts/views/invitations.py:258
+#: apps/accounts/views/invitations.py:333
+msgid "Invitation not found."
+msgstr "Convite não encontrado."
+
+#: apps/accounts/views/invitations.py:156 apps/accounts/views/members.py:50
+msgid "The secret key of the invitation."
+msgstr "A chave secreta do convite."
+
+#: apps/accounts/views/invitations.py:161
+msgid "Retrieve an invitation by its secret key."
+msgstr "Obtém um convite pela sua chave secreta."
+
+#: apps/accounts/views/invitations.py:187
+msgid "Accept an invitation and create a member record."
+msgstr "Aceita um convite e cria um registro de membro."
+
+#: apps/accounts/views/invitations.py:240
+msgid "The invitation is no longer acceptable."
+msgstr "O convite não pode mais ser aceito."
+
+#: apps/accounts/views/invitations.py:265
+msgid "Decline an invitation."
+msgstr "Recusa um convite."
+
+#: apps/accounts/views/invitations.py:279
+msgid "The invitation has been declined successfully."
+msgstr "O convite foi recusado com sucesso."
+
+#: apps/accounts/views/invitations.py:315
+msgid "The invitation is not in a pending state."
+msgstr "O convite não está pendente."
+
+#: apps/accounts/views/invitations.py:522
+msgid "Invitation declined successfully."
+msgstr "Convite recusado com sucesso."
+
+#: apps/accounts/views/members.py:56
+#, python-brace-format
+msgid "Create a new {name} with an invitation."
+msgstr "Cria um novo {name} com um convite."
+
+#: apps/accounts/views/members.py:105
+msgid "Invitation not found or already accepted/expired."
+msgstr "Convite não encontrado, já aceito ou expirado."
+
+#: apps/accounts/views/members.py:119
+#, python-brace-format
+msgid "Update the role of a {name}."
+msgstr "Atualiza a função de um {name}."
+
+#: apps/accounts/views/members.py:129 apps/generics/utils/schema.py:50
+#: apps/teams/views/team_members.py:28
+#, python-brace-format
+msgid "Update a {name}."
+msgstr "Atualiza uma instância de {name}."
+
+#: apps/accounts/views/members.py:177
+msgid ""
+"This route is not available anymore. Use the `create_with_invite` route "
+"instead."
+msgstr "Esta rota não está mais disponível. Use a rota `create_with_invite`."
+
+#: apps/accounts/views/organizations.py:38
+msgid "Whether to show the dark logo or not."
+msgstr "Se deve exibir o logo escuro ou não."
+
+#: apps/accounts/views/organizations.py:46
+msgid "Login to the organization."
+msgstr "Realiza login na organização."
+
+#: apps/accounts/views/organizations.py:59
+msgid "Organization not found"
+msgstr "Organização não encontrada"
+
+#: apps/accounts/views/organizations.py:60
+#: apps/accounts/views/organizations.py:64
+#: apps/accounts/views/organizations.py:139
+msgid "Organization not found."
+msgstr "Organização não encontrada."
+
+#: apps/accounts/views/organizations.py:75
+msgid "User not authenticated"
+msgstr "Usuário não autenticado"
+
+#: apps/accounts/views/organizations.py:76
+#: apps/accounts/views/organizations.py:80
+#: apps/accounts/views/organizations.py:134
+msgid "User not authenticated."
+msgstr "Usuário não autenticado."
+
+#: apps/accounts/views/session.py:13
+msgid "Sessions"
+msgstr "Sessões"
+
+#: apps/accounts/views/session.py:14
+msgid "Get current session data."
+msgstr "Obtém os dados da sessão atual."
+
+#: apps/accounts/views/session_config.py:13
+msgid "Session"
+msgstr "Sessão"
+
+#: apps/accounts/views/session_config.py:15
+msgid ""
+"Return whether the organization session is configured and set the CSRF "
+"cookie. This endpoint is intentionally public so the frontend can verify "
+"connectivity before authentication is established. Cookie, CORS and debug "
+"diagnostics are only included when DEBUG is enabled."
+msgstr ""
+"Retorna se a sessão da organização está configurada e define o cookie CSRF. "
+"Este endpoint é intencionalmente público para que o frontend possa verificar "
+"a conectividade antes da autenticação. Diagnósticos de cookie, CORS e debug "
+"só são incluídos quando DEBUG está habilitado."
+
+#: apps/accounts/views/signup.py:20
+msgid "Signup"
+msgstr "Cadastro"
+
+#: apps/accounts/views/signup.py:20
+msgid "Create a new account."
+msgstr "Cria uma nova conta."
+
+#: apps/accounts/views/user_profile.py:31
+msgid "Retrieve the authenticated user profile."
+msgstr "Obtém o perfil do usuário autenticado."
+
+#: apps/accounts/views/user_profile.py:35
+msgid "Partially update the authenticated user profile."
+msgstr "Atualiza parcialmente o perfil do usuário autenticado."
+
+#: apps/accounts/views/user_profile.py:63
+msgid "Change the authenticated user password."
+msgstr "Altera a senha do usuário autenticado."
+
+#: apps/accounts/views/user_profile.py:68
+#: apps/accounts/views/user_profile.py:96
+msgid "Password changed successfully."
+msgstr "Senha alterada com sucesso."
+
+#: apps/generics/choices.py:6
+msgid "Authentication error"
+msgstr "Erro de autenticação"
+
+#: apps/generics/choices.py:8
+msgid "Not found"
+msgstr "Não encontrado"
+
+#: apps/generics/choices.py:9
+msgid "Method not allowed"
+msgstr "Método não permitido"
+
+#: apps/generics/choices.py:10
+msgid "Not acceptable"
+msgstr "Não aceitável"
+
+#: apps/generics/choices.py:11
+msgid "Throttled"
+msgstr "Limite de requisições excedido"
+
+#: apps/generics/choices.py:12
+msgid "Validation error"
+msgstr "Erro de validação"
+
+#: apps/generics/choices.py:13
+msgid "Internal error"
+msgstr "Erro interno"
+
+#: apps/generics/exceptions.py:43
+msgid "One or more fields are invalid."
+msgstr "Um ou mais campos são inválidos."
+
+#: apps/generics/exceptions.py:91
+msgid "An unexpected error occurred."
+msgstr "Ocorreu um erro inesperado."
+
+#: apps/generics/fields/options.py:175
+msgid "Value/label option."
+msgstr "Opção de valor/rótulo."
+
+#: apps/generics/fields/options.py:471
+msgid "Paginated value/label options."
+msgstr "Opções de valor/rótulo paginadas."
+
+#: apps/generics/mails/bases.py:61
+msgid "Click Here"
+msgstr "Clique aqui"
+
+#: apps/generics/mixins/serializers.py:115
+#, python-format
+msgid "Descending %(label)s"
+msgstr "%(label)s (decrescente)"
+
+#: apps/generics/mixins/views.py:76
+#, python-brace-format
+msgid "Form options to create a {name}."
+msgstr "Opções de formulário para criar {name}."
+
+#: apps/generics/mixins/views.py:77
+#, python-brace-format
+msgid "Form options to update a {name}."
+msgstr "Opções de formulário para atualizar {name}."
+
+#: apps/generics/mixins/views.py:78 apps/generics/utils/schema.py:83
+#, python-brace-format
+msgid "Filter options for listing {name}."
+msgstr "Opções de filtro para listar {name}."
+
+#: apps/generics/models/abstracts.py:11
+msgid "Is Active"
+msgstr "Está ativo"
+
+#: apps/generics/models/abstracts.py:12
+msgid "Is this record active or not"
+msgstr "Se este registro está ativo ou não"
+
+#: apps/generics/models/abstracts.py:16
+msgid "Created At"
+msgstr "Criado em"
+
+#: apps/generics/models/abstracts.py:17
+msgid "When the record was initially created"
+msgstr "Quando o registro foi criado"
+
+#: apps/generics/models/abstracts.py:21
+msgid "Updated At"
+msgstr "Atualizado em"
+
+#: apps/generics/models/abstracts.py:22
+msgid "When the record was last updated"
+msgstr "Quando o registro foi atualizado pela última vez"
+
+#: apps/generics/models/abstracts.py:28
+msgid "Created By"
+msgstr "Criado por"
+
+#: apps/generics/models/abstracts.py:29
+msgid "User who created the record"
+msgstr "Usuário que criou o registro"
+
+#: apps/generics/models/abstracts.py:37
+msgid "Updated By"
+msgstr "Atualizado por"
+
+#: apps/generics/models/abstracts.py:38
+msgid "User who last updated the record"
+msgstr "Usuário que atualizou o registro pela última vez"
+
+#: apps/generics/utils/schema.py:18
+#, python-brace-format
+msgid "Retrieve a specific {name}."
+msgstr "Obtém uma instância específica de {name}."
+
+#: apps/generics/utils/schema.py:26
+#, python-brace-format
+msgid "List all {name}."
+msgstr "Lista todas as instâncias de {name}."
+
+#: apps/generics/utils/schema.py:34
+#, python-brace-format
+msgid "Create a new {name}."
+msgstr "Cria uma nova instância de {name}."
+
+#: apps/generics/utils/schema.py:42
+#, python-brace-format
+msgid "Delete a {name}."
+msgstr "Exclui uma instância de {name}."
+
+#: apps/generics/utils/schema.py:58
+#, python-brace-format
+msgid "Partially update a {name}."
+msgstr "Atualiza parcialmente uma instância de {name}."
+
+#: apps/generics/utils/schema.py:66
+#, python-brace-format
+msgid "Create options for a {name}."
+msgstr "Cria opções para {name}."
+
+#: apps/generics/utils/schema.py:74
+#, python-brace-format
+msgid "Update options for a {name}."
+msgstr "Atualiza opções para {name}."
+
+#: apps/generics/utils/schema.py:96
+#, python-brace-format
+msgid ""
+"Return only `{field}`. Search is disabled on this route: the value is "
+"ignored."
+msgstr ""
+"Retorna apenas `{field}`. A busca está desativada nesta rota: o valor é "
+"ignorado."
+
+#: apps/generics/utils/schema.py:104
+#, python-brace-format
+msgid ""
+"Return only `{field}`. A non-empty value is a regular expression matched "
+"against the label or the value of each option, ignoring case and accents."
+msgstr ""
+"Retorna apenas `{field}`. Um valor não vazio é uma expressão regular "
+"comparada com o rótulo ou o valor de cada opção, sem diferenciar maiúsculas "
+"e acentos."
+
+#: apps/generics/utils/schema.py:113
+#, python-brace-format
+msgid ""
+"Return only `{field}` (paginated). A non-empty value filters its options by "
+"label (`{lookup}`)."
+msgstr ""
+"Retorna apenas `{field}` (paginado). Um valor não vazio filtra as opções "
+"pelo rótulo (`{lookup}`)."
+
+#: apps/generics/utils/schema.py:121
+#, python-brace-format
+msgid ""
+"Return only `{field}` (paginated). Search is not enabled for this field: the "
+"value is ignored."
+msgstr ""
+"Retorna apenas `{field}` (paginado). A busca não está habilitada para este "
+"campo: o valor é ignorado."
+
+#: apps/generics/utils/schema.py:133
+msgid ""
+"Applies to every paginated field in the response; combine with `?<field>` to "
+"paginate a single one."
+msgstr ""
+"Aplica-se a todos os campos paginados da resposta; combine com `?<field>` "
+"para paginar apenas um."
+
+#: apps/generics/utils/schema.py:141
+#, python-brace-format
+msgid "Maximum: {max}."
+msgstr "Máximo: {max}."
+
+#: apps/teams/filters/team_member.py:66
+msgid "Member name"
+msgstr "Nome do membro"
+
+#: apps/teams/filters/team_member.py:67
+msgid "Member email"
+msgstr "E-mail do membro"
+
+#: apps/teams/filters/team_member.py:69
+msgid "Joined at"
+msgstr "Entrou em"
+
+#: apps/teams/filters/team_member.py:70
+msgid "ID"
+msgstr "ID"
+
+#: apps/teams/models/team.py:11
+msgid "Name of the team"
+msgstr "Nome da equipe"
+
+#: apps/teams/models/team.py:13
+msgid "Team slug"
+msgstr "Slug da equipe"
+
+#: apps/teams/models/team.py:18
+msgid "Description of the team"
+msgstr "Descrição da equipe"
+
+#: apps/teams/models/team.py:25
+msgid "Organization to which the team belongs"
+msgstr "Organização à qual a equipe pertence"
+
+#: apps/teams/models/team.py:33
+msgid "Teams"
+msgstr "Equipes"
+
+#: apps/teams/models/team.py:39 apps/teams/models/team.py:45
+#: apps/teams/serializers/team.py:38
+msgid "This team already exists."
+msgstr "Esta equipe já existe."
+
+#: apps/teams/models/team_member.py:15
+msgid "Team to which this member belongs"
+msgstr "Equipe à qual este membro pertence"
+
+#: apps/teams/models/team_member.py:22
+msgid "Member of the team"
+msgstr "Membro pertencente à equipe"
+
+#: apps/teams/models/team_member.py:27
+msgid "Role of the member in the team"
+msgstr "Função do membro na equipe"
+
+#: apps/teams/models/team_member.py:36
+msgid "Team Member"
+msgstr "Membro da equipe"
+
+#: apps/teams/models/team_member.py:37
+msgid "Team Members"
+msgstr "Membros da equipe"
+
+#: apps/teams/models/team_member.py:43
+#: apps/teams/serializers/team_member.py:110
+msgid "This member is already part of the team."
+msgstr "Este membro já faz parte da equipe."
+
+#: apps/teams/serializers/team.py:27
+msgid "The name must contain at least one letter or number."
+msgstr "O nome deve conter pelo menos uma letra ou um número."
+
+#: apps/teams/serializers/team_member.py:14
+msgid "The team must keep at least one owner."
+msgstr "A equipe deve manter pelo menos um proprietário."
+
+#: apps/teams/serializers/team_member.py:58
+msgid "Not allowed to change the team."
+msgstr "Não é permitido alterar a equipe."
+
+#: apps/teams/serializers/team_member.py:61
+msgid "You are not allowed to add a member to this team."
+msgstr "Você não tem permissão para adicionar um membro a esta equipe."
+
+#: apps/teams/serializers/team_member.py:68
+msgid "Not allowed to change the member."
+msgstr "Não é permitido alterar o membro."
+
+#: apps/teams/views/team_members.py:54
+msgid ""
+"Team the form is for: `role` lists only the roles the caller may assign in "
+"it and `member` hides members already in it. Without a valid team only "
+"organization managers get roles."
+msgstr ""
+"Equipe à qual o formulário se destina: `role` lista apenas as funções que o "
+"chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
+"uma equipe válida, apenas gerentes da organização recebem funções."
+
+#: config/settings/base.py:294
+msgid "CrewForge API"
+msgstr "CrewForge API"
+
+#: config/settings/base.py:296
+msgid ""
+"API service for managing accounts, teams, and permissions with "
+"comprehensive\n"
+"        organizational hierarchy support.\n"
+"        CrewForge provides a comprehensive foundation for building "
+"applications\n"
+"        requiring sophisticated organizational structures, team management, "
+"and\n"
+"        permission systems with enterprise-grade security and scalability.\n"
+"    "
+msgstr ""
+"API de serviço para gerenciar contas, equipes e permissões com suporte\n"
+"        abrangente à hierarquia organizacional.\n"
+"        O CrewForge fornece uma base completa para construir aplicações\n"
+"        que exigem estruturas organizacionais sofisticadas, gestão de "
+"equipes e\n"
+"        sistemas de permissão com segurança e escalabilidade de nível "
+"corporativo.\n"
+"    "
+
+#: config/settings/base.py:407
+msgid "CrewForge"
+msgstr "CrewForge"
+
+#: templates/drf_spectacular/swagger_ui.html:4
+msgid "Swagger"
+msgstr "Swagger"
+
+#: templates/drf_spectacular/swagger_ui.html:5
+msgid "API documentation"
+msgstr "Documentação da API"
+
+#: templates/emails/base.html:110
+msgid "All rights reserved"
+msgstr "Todos os direitos reservados"
+
+#: templates/emails/base.html:118
+#, python-format
+msgid ""
+"\n"
+"                      If you no longer want to receive these emails, <a "
+"href=\"%(unsubscribe_url)s\" style=\"color:"
+"%(theme_color|default:'#002180')s; text-decoration:none;\">click here to "
+"unsubscribe</a>.\n"
+"                    "
+msgstr ""
+"\n"
+"                      Se você não quiser mais receber estes e-mails, <a "
+"href=\"%(unsubscribe_url)s\" style=\"color:"
+"%(theme_color|default:'#002180')s; text-decoration:none;\">clique aqui para "
+"cancelar a inscrição</a>.\n"
+"                    "

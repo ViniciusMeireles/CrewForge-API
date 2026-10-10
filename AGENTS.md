@@ -15,7 +15,8 @@ See [`docs/product-sense.md`](./docs/product-sense.md) for domain model and desi
 ## Stack
 
 Python ≥3.14, Django, DRF, django-filter, simplejwt, drf-spectacular,
-PostgreSQL, uv, Docker, Gunicorn, Ruff, pytest + factory-boy.
+PostgreSQL, uv, Docker, Gunicorn, Ruff, pytest + factory-boy, gettext
+(`makemessages`/`compilemessages`; `make l_test` compiles `locale/pt_BR` first).
 
 ---
 

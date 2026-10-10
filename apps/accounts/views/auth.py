@@ -43,6 +43,7 @@ from apps.accounts.utils.email_verification import (
     send_verification_email,
     verification_cooldown_remaining,
 )
+from apps.accounts.utils.language import resolve_recipient_language
 from apps.accounts.utils.security_log import log_security_event
 from apps.accounts.utils.tokens import revoke_refresh_tokens
 
@@ -140,7 +141,11 @@ class PasswordResetRequestView(AuthThrottleMixin, APIView):
             uid = serializer.data.get('uid')
             token = serializer.data.get('token')
             reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
-            send_password_reset_email(reset_link, [serializer.user.email])
+            send_password_reset_email(
+                reset_link,
+                [serializer.user.email],
+                language=resolve_recipient_language(serializer.user),
+            )
 
         log_security_event(
             'auth.password_reset.requested',

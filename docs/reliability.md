@@ -49,6 +49,9 @@ All API errors use a standardized JSON envelope implemented by
 }
 ```
 
+`message` and `details` values follow the request `Accept-Language`
+(`pt-BR`/`en`, default `en`); `code` and `details` keys are never translated.
+
 ### Error Codes
 
 | Error code | HTTP status | `details` |

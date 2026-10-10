@@ -32,6 +32,7 @@ class UserProfileSerializerTestCase(APITestCase):
             'email_verified',
             'first_name',
             'last_name',
+            'preferred_language',
         }
         self.assertEqual(set(serializer.data.keys()), expected_fields)
 
@@ -66,6 +67,29 @@ class UserProfileSerializerTestCase(APITestCase):
         serializer.save()
         self.user.refresh_from_db()
         self.assertEqual(self.user.first_name, 'Updated')
+
+    def test_preferred_language_is_writable(self):
+        serializer = UserProfileSerializer(
+            instance=self.user,
+            data={'preferred_language': 'pt-br'},
+            partial=True,
+            context=self._get_serializer_context(),
+        )
+        serializer.is_valid(raise_exception=True)
+        self.assertEqual(serializer.validated_data['preferred_language'], 'pt-br')
+        serializer.save()
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.preferred_language, 'pt-br')
+
+    def test_preferred_language_invalid_value_is_rejected(self):
+        serializer = UserProfileSerializer(
+            instance=self.user,
+            data={'preferred_language': 'fr'},
+            partial=True,
+            context=self._get_serializer_context(),
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('preferred_language', serializer.errors)
 
 
 class ChangePasswordSerializerTestCase(APITestCase):

@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
+from apps.accounts.utils.language import current_language
 
 User = get_user_model()
 
@@ -50,6 +51,7 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        validated_data.setdefault('preferred_language', current_language())
         password = validated_data.pop('password', None)
         instance = super().create(validated_data)
         if password:

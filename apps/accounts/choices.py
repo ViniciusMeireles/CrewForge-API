@@ -164,6 +164,11 @@ class StoredFileAccess(models.TextChoices):
         return None
 
 
+class PreferredLanguageChoices(models.TextChoices):
+    EN = 'en', 'English'
+    PT_BR = 'pt-br', 'Português (Brasil)'
+
+
 class InvitationErrorMessages(models.TextChoices):
     INVITATION_EXPIRED = 'invitation_expired', _('Invitation is expired')
     INVITATION_NOT_FOUND = 'invitation_not_found', _('Invitation not found or expired')

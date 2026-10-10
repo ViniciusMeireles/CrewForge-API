@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.utils import timezone
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.choices import OrganizationImageTypeChoices
 from apps.generics.mails.bases import CTAEmail, EmailBase

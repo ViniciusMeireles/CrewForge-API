@@ -25,7 +25,8 @@ Known technical debt, prioritized by impact and effort.
 
 | ID | Description | Priority | Effort | Identified | Module | PR/Issue |
 |----|-------------|----------|--------|------------|--------|----------|
-| TD-012 | Choice labels (roles, image types) and messages are English only: no `LocaleMiddleware` and no `pt_BR` `.po`. The frontend already sends `Accept-Language` with its locale. Enabling the middleware also switches Django/DRF built-in messages to the client language. | low | m | 2026-10-05 | config, accounts | — |
+
+_No active debt._
 
 ---
 
@@ -44,3 +45,4 @@ Known technical debt, prioritized by impact and effort.
 | TD-009 | Relations scoped through a path declare `organization_lookup` (options via `Meta.options_extra_kwargs`, write fields via `extra_kwargs`); the options startup check accepts and validates it (and `organization_filters`, applied in the same `filter()`) | 2026-10-02 | — |
 | TD-010 | `apps/accounts/serializers/user.py` covered by unit tests (password validation, `is_valid`, create/update with password) | 2026-10-02 | — |
 | TD-011 | Removed the dead `UserGetOrCreateSerializer` and the unreachable "user already exists" block of `UserSerializer.is_valid` (the model `UniqueValidator` always ran first); members join through invitations | 2026-10-02 | — |
+| TD-012 | i18n enabled: `LocaleMiddleware` negotiates `Accept-Language` (pt-BR/en), `locale/pt_BR` catalog covers the API surface, choice labels and user-facing strings (errors, emails, Swagger) render in the request language, and Django/DRF built-in messages follow it | 2026-10-08 | — |

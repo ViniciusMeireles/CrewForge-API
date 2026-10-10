@@ -1,4 +1,5 @@
 from django.test import SimpleTestCase
+from django.utils import translation
 from django_filters.rest_framework import filters, filterset
 from rest_framework import serializers
 
@@ -36,6 +37,30 @@ class OrderableFilterMetaclassTestCase(SimpleTestCase):
                 return self.serializer_class
 
         self.assertIn('order_by', TV.filterset_class.declared_filters)
+
+    def test_ordering_filter_choices_are_static_with_lazy_labels(self):
+        class TV(metaclass=OrderableModelViewSetMetaclass):
+            filterset_class = _BaseFilterSet
+            http_method_names = ['get']
+            auto_orderable_filter = True
+            serializer_class = _SerWithMixin
+
+            def get_serializer_class(self):
+                return self.serializer_class
+
+        order_by = TV.filterset_class.declared_filters['order_by']
+        choices = order_by.extra['choices']
+        self.assertIsInstance(choices, list)
+        with translation.override('en'):
+            self.assertEqual(
+                [(value, str(label)) for value, label in choices],
+                [('name', 'Name'), ('-name', 'Descending Name')],
+            )
+        with translation.override('pt-br'):
+            self.assertEqual(
+                [(value, str(label)) for value, label in choices],
+                [('name', 'Nome'), ('-name', 'Nome (decrescente)')],
+            )
 
     def test_skipped_when_flag_false(self):
         class TV(metaclass=OrderableModelViewSetMetaclass):

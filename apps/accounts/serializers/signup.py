@@ -11,6 +11,7 @@ from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.organization import OrganizationSerializer
 from apps.accounts.serializers.user import UserSerializer
 from apps.accounts.utils.email_verification import send_verification_email
+from apps.accounts.utils.language import current_language
 
 User = get_user_model()
 
@@ -51,6 +52,7 @@ class SignupSerializer(
     @classmethod
     def _create_user(cls, user_data):
         """Create a user instance."""
+        user_data.setdefault('preferred_language', current_language())
         user = User(**user_data)
         user.set_password(user_data.get('password'))
         user.save()

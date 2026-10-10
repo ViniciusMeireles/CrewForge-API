@@ -8,6 +8,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from apps.accounts.consts import EMAIL_VERIFICATION_COOLDOWN_SECONDS
+from apps.accounts.utils.language import resolve_recipient_language
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +46,11 @@ def send_verification_email(user) -> bool:
     user.save(update_fields=['email_verification_sent_at', 'updated_at'])
     url = verification_url(user)
     email = user.email
+    language = resolve_recipient_language(user)
 
     def send():
         try:
-            send_email_verification_email(url, [email])
+            send_email_verification_email(url, [email], language=language)
         except Exception:
             logger.exception(
                 'Could not queue the email verification for user %s', user.pk

@@ -1,6 +1,8 @@
 {% load i18n %}
 {% load static %}
 {% get_current_language as LANGUAGE_CODE %}
+{% trans "Swagger" as default_title %}
+{% trans "API documentation" as default_description %}
 
 <!doctype html> <!-- Important: must specify -->
   <html lang="{{ LANGUAGE_CODE }}">
@@ -9,11 +11,11 @@
     <script type="module" src="{% static 'js/rapidoc/rapidoc-min.js' %}"></script>
 
     {% block head %}
-      <title>{{ title|default:"Swagger" }}</title>
-      <meta name="description" content="{{ description|default:'API documentation' }}" data-rh="true">
-      <meta property="og:title" content="{{ title|default:'Swagger' }}" data-rh="true">
-      <meta property="og:description" content="{{ description|default:'API documentation' }}" data-rh="true">
-      <meta property="og:site_name" content="{{ title|default:'Swagger' }}">
+      <title>{{ title|default:default_title }}</title>
+      <meta name="description" content="{{ description|default:default_description }}" data-rh="true">
+      <meta property="og:title" content="{{ title|default:default_title }}" data-rh="true">
+      <meta property="og:description" content="{{ description|default:default_description }}" data-rh="true">
+      <meta property="og:site_name" content="{{ title|default:default_title }}">
 
       <meta name="viewport" content="width=device-width, initial-scale=1">
       {% include 'includes/favicon.html' %}

@@ -2210,10 +2210,10 @@ paths:
           * `-original_name` - Descending Original Name
           * `size` - Size
           * `-size` - Descending Size
-          * `uuid` - UUID
-          * `-uuid` - Descending UUID
           * `updated_at` - Updated At
           * `-updated_at` - Descending Updated At
+          * `uuid` - UUID
+          * `-uuid` - Descending UUID
         explode: false
         style: form
       - in: query
@@ -5256,6 +5256,22 @@ components:
         last_name:
           type: string
           maxLength: 150
+        preferred_language:
+          allOf:
+          - $ref: '#/components/schemas/PreferredLanguageEnum'
+          description: |-
+            Language used to render this user's emails.
+
+            * `en` - English
+            * `pt-br` - Português (Brasil)
+    PreferredLanguageEnum:
+      enum:
+      - en
+      - pt-br
+      type: string
+      description: |-
+        * `en` - English
+        * `pt-br` - Português (Brasil)
     ReceivedDetailNotFound:
       type: object
       properties:
@@ -6224,6 +6240,14 @@ components:
         last_name:
           type: string
           maxLength: 150
+        preferred_language:
+          allOf:
+          - $ref: '#/components/schemas/PreferredLanguageEnum'
+          description: |-
+            Language used to render this user's emails.
+
+            * `en` - English
+            * `pt-br` - Português (Brasil)
       required:
       - email_verified
       - id
