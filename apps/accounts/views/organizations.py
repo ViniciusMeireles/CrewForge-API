@@ -56,7 +56,7 @@ _dark_logo_parameter = OpenApiParameter(
                 ),
                 examples=[
                     OpenApiExample(
-                        name=str(_('Organization not found')),
+                        name=_('Organization not found'),
                         value={'detail': _('Organization not found.')},
                         response_only=True,
                     )
@@ -72,7 +72,7 @@ _dark_logo_parameter = OpenApiParameter(
                 ),
                 examples=[
                     OpenApiExample(
-                        name=str(_('User not authenticated')),
+                        name=_('User not authenticated'),
                         value={'detail': _('User not authenticated.')},
                         response_only=True,
                     )

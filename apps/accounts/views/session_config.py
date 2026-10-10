@@ -10,7 +10,7 @@ from apps.accounts.serializers.session import SessionConfigSerializer
 
 
 @extend_schema(
-    tags=[str(_('Session'))],
+    tags=[_('Session')],
     description=_(
         'Return whether the organization session is configured and set the CSRF '
         'cookie. This endpoint is intentionally public so the frontend can verify '

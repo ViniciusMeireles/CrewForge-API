@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 15:30+0000\n"
+"POT-Creation-Date: 2026-10-10 02:38+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -19,6 +19,10 @@ msgstr ""
 #: apps/accounts/admin.py:124
 msgid "file"
 msgstr "arquivo"
+
+#: apps/accounts/apps.py:8
+msgid "Accounts"
+msgstr "Contas"
 
 #: apps/accounts/choices.py:12 apps/accounts/choices.py:48
 #: apps/accounts/models/files.py:92 apps/accounts/models/organization.py:24
@@ -582,11 +586,11 @@ msgstr "A organização não está ativa."
 msgid "An invitation with this email already exists."
 msgstr "Já existe um convite com este e-mail."
 
-#: apps/accounts/serializers/member.py:97
+#: apps/accounts/serializers/member.py:98
 msgid "User is already a member of the organization."
 msgstr "O usuário já é membro da organização."
 
-#: apps/accounts/serializers/member.py:165
+#: apps/accounts/serializers/member.py:166
 msgid "User data to update, if not provided, will not update the user."
 msgstr ""
 "Dados do usuário a atualizar; se não fornecidos, o usuário não será "
@@ -643,6 +647,10 @@ msgid "The file is too large. Maximum size is %(size)s MB."
 msgstr "O arquivo é muito grande. O tamanho máximo é %(size)s MB."
 
 #: apps/accounts/views/auth.py:53
+msgid "Authentication"
+msgstr "Autenticação"
+
+#: apps/accounts/views/auth.py:59
 msgid ""
 "Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` "
 "header (browsers) the tokens are set as HttpOnly cookies and omitted from "
@@ -652,7 +660,7 @@ msgstr ""
 "cookie` (navegadores), os tokens são definidos como cookies HttpOnly e "
 "omitidos do corpo, e um token CSRF é obrigatório."
 
-#: apps/accounts/views/auth.py:83
+#: apps/accounts/views/auth.py:90
 msgid ""
 "Rotate the refresh token. Send `refresh` in the body (Bearer clients) or "
 "rely on the refresh cookie (browsers). A refresh read from the cookie is "
@@ -664,19 +672,19 @@ msgstr ""
 "respondida com novos cookies e nunca com tokens no corpo; requer um token "
 "CSRF."
 
-#: apps/accounts/views/auth.py:123
+#: apps/accounts/views/auth.py:131
 msgid ""
 "Password reset link has been sent to your email. Please check your inbox."
 msgstr ""
 "O link de redefinição de senha foi enviado para o seu e-mail. Verifique sua "
 "caixa de entrada."
 
-#: apps/accounts/views/auth.py:128
+#: apps/accounts/views/auth.py:136
 msgid "Request a password reset link to be sent to the user's email."
 msgstr ""
 "Solicita o envio de um link de redefinição de senha para o e-mail do usuário."
 
-#: apps/accounts/views/auth.py:158
+#: apps/accounts/views/auth.py:166
 msgid ""
 "If an account exists for this email, a password reset link has been sent to "
 "it. Please check your inbox."
@@ -684,7 +692,7 @@ msgstr ""
 "Se existir uma conta para este e-mail, um link de redefinição de senha foi "
 "enviado para ela. Verifique sua caixa de entrada."
 
-#: apps/accounts/views/auth.py:172 apps/accounts/views/auth.py:205
+#: apps/accounts/views/auth.py:181 apps/accounts/views/auth.py:214
 msgid ""
 "Your password has been successfully reset. You can now log in with your new "
 "password."
@@ -692,36 +700,36 @@ msgstr ""
 "Sua senha foi redefinida com sucesso. Agora você pode entrar com sua nova "
 "senha."
 
-#: apps/accounts/views/auth.py:178
+#: apps/accounts/views/auth.py:187
 msgid "Confirm the password reset using the provided token and new password."
 msgstr ""
 "Confirma a redefinição de senha usando o token fornecido e a nova senha."
 
-#: apps/accounts/views/auth.py:223
+#: apps/accounts/views/auth.py:233
 msgid "Logout successful."
 msgstr "Sessão encerrada com sucesso."
 
-#: apps/accounts/views/auth.py:234
+#: apps/accounts/views/auth.py:244
 msgid "Missing refresh token"
 msgstr "Token de refresh ausente"
 
-#: apps/accounts/views/auth.py:235 apps/accounts/views/auth.py:273
+#: apps/accounts/views/auth.py:245 apps/accounts/views/auth.py:283
 msgid "Refresh token is required."
 msgstr "O token de refresh é obrigatório."
 
-#: apps/accounts/views/auth.py:239
+#: apps/accounts/views/auth.py:249
 msgid "Invalid or expired token"
 msgstr "Token inválido ou expirado"
 
-#: apps/accounts/views/auth.py:240 apps/accounts/views/auth.py:271
+#: apps/accounts/views/auth.py:250 apps/accounts/views/auth.py:281
 msgid "Token is invalid or expired."
 msgstr "O token é inválido ou expirou."
 
-#: apps/accounts/views/auth.py:244
+#: apps/accounts/views/auth.py:254
 msgid "Invalid request."
 msgstr "Requisição inválida."
 
-#: apps/accounts/views/auth.py:248
+#: apps/accounts/views/auth.py:258
 msgid ""
 "Blacklist the refresh token and clear the organization session. Browsers "
 "(refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`; the auth "
@@ -732,45 +740,45 @@ msgstr ""
 "`refresh`; os cookies de autenticação são sempre limpos e um token CSRF é "
 "obrigatório."
 
-#: apps/accounts/views/auth.py:287
+#: apps/accounts/views/auth.py:298
 msgid "Email verified."
 msgstr "E-mail verificado."
 
-#: apps/accounts/views/auth.py:290
+#: apps/accounts/views/auth.py:301
 msgid ""
 "Confirm the email address with the `uid` and `token` from the verification "
 "link."
 msgstr ""
 "Confirma o endereço de e-mail com o `uid` e o `token` do link de verificação."
 
-#: apps/accounts/views/auth.py:309
+#: apps/accounts/views/auth.py:320
 msgid "Your email has been verified."
 msgstr "Seu e-mail foi verificado."
 
-#: apps/accounts/views/auth.py:317
+#: apps/accounts/views/auth.py:329
 msgid "Verification email sent."
 msgstr "E-mail de verificação enviado."
 
-#: apps/accounts/views/auth.py:320
+#: apps/accounts/views/auth.py:332
 msgid "A link was sent recently; retry after the cooldown."
 msgstr ""
 "Um link foi enviado recentemente; tente novamente após o intervalo de "
 "reenvio."
 
-#: apps/accounts/views/auth.py:323
+#: apps/accounts/views/auth.py:335
 msgid "Send a new verification link to the authenticated user email."
 msgstr ""
 "Envia um novo link de verificação para o e-mail do usuário autenticado."
 
-#: apps/accounts/views/auth.py:330
+#: apps/accounts/views/auth.py:342
 msgid "Your email is already verified."
 msgstr "Seu e-mail já está verificado."
 
-#: apps/accounts/views/auth.py:334
+#: apps/accounts/views/auth.py:346
 msgid "Please wait before requesting a new link."
 msgstr "Aguarde antes de solicitar um novo link."
 
-#: apps/accounts/views/auth.py:342
+#: apps/accounts/views/auth.py:354
 msgid "A new verification link has been sent to your email."
 msgstr "Um novo link de verificação foi enviado para o seu e-mail."
 
@@ -943,11 +951,11 @@ msgstr ""
 "a conectividade antes da autenticação. Diagnósticos de cookie, CORS e debug "
 "só são incluídos quando DEBUG está habilitado."
 
-#: apps/accounts/views/signup.py:20
+#: apps/accounts/views/signup.py:19
 msgid "Signup"
 msgstr "Cadastro"
 
-#: apps/accounts/views/signup.py:20
+#: apps/accounts/views/signup.py:19
 msgid "Create a new account."
 msgstr "Cria uma nova conta."
 
@@ -1016,7 +1024,7 @@ msgstr "Opções de valor/rótulo paginadas."
 msgid "Click Here"
 msgstr "Clique aqui"
 
-#: apps/generics/mixins/serializers.py:115
+#: apps/generics/mixins/serializers.py:116
 #, python-format
 msgid "Descending %(label)s"
 msgstr "%(label)s (decrescente)"
@@ -1036,43 +1044,43 @@ msgstr "Opções de formulário para atualizar {name}."
 msgid "Filter options for listing {name}."
 msgstr "Opções de filtro para listar {name}."
 
-#: apps/generics/models/abstracts.py:11
+#: apps/generics/models/abstracts.py:14
 msgid "Is Active"
 msgstr "Está ativo"
 
-#: apps/generics/models/abstracts.py:12
+#: apps/generics/models/abstracts.py:15
 msgid "Is this record active or not"
 msgstr "Se este registro está ativo ou não"
 
-#: apps/generics/models/abstracts.py:16
+#: apps/generics/models/abstracts.py:19
 msgid "Created At"
 msgstr "Criado em"
 
-#: apps/generics/models/abstracts.py:17
+#: apps/generics/models/abstracts.py:20
 msgid "When the record was initially created"
 msgstr "Quando o registro foi criado"
 
-#: apps/generics/models/abstracts.py:21
+#: apps/generics/models/abstracts.py:24
 msgid "Updated At"
 msgstr "Atualizado em"
 
-#: apps/generics/models/abstracts.py:22
+#: apps/generics/models/abstracts.py:25
 msgid "When the record was last updated"
 msgstr "Quando o registro foi atualizado pela última vez"
 
-#: apps/generics/models/abstracts.py:28
+#: apps/generics/models/abstracts.py:31
 msgid "Created By"
 msgstr "Criado por"
 
-#: apps/generics/models/abstracts.py:29
+#: apps/generics/models/abstracts.py:32
 msgid "User who created the record"
 msgstr "Usuário que criou o registro"
 
-#: apps/generics/models/abstracts.py:37
+#: apps/generics/models/abstracts.py:40
 msgid "Updated By"
 msgstr "Atualizado por"
 
-#: apps/generics/models/abstracts.py:38
+#: apps/generics/models/abstracts.py:41
 msgid "User who last updated the record"
 msgstr "Usuário que atualizou o registro pela última vez"
 
@@ -1161,6 +1169,10 @@ msgstr ""
 msgid "Maximum: {max}."
 msgstr "Máximo: {max}."
 
+#: apps/teams/apps.py:8 apps/teams/models/team.py:33
+msgid "Teams"
+msgstr "Equipes"
+
 #: apps/teams/filters/team_member.py:66
 msgid "Member name"
 msgstr "Nome do membro"
@@ -1192,10 +1204,6 @@ msgstr "Descrição da equipe"
 #: apps/teams/models/team.py:25
 msgid "Organization to which the team belongs"
 msgstr "Organização à qual a equipe pertence"
-
-#: apps/teams/models/team.py:33
-msgid "Teams"
-msgstr "Equipes"
 
 #: apps/teams/models/team.py:39 apps/teams/models/team.py:45
 #: apps/teams/serializers/team.py:38

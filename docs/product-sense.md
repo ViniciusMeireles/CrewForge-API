@@ -130,6 +130,14 @@ aspirational: `LocaleMiddleware` negotiates the language from `Accept-Language`
 project-wide convention — every new user-facing string goes through
 `gettext`/`gettext_lazy` so it is extractable by `makemessages`.
 
+Anything evaluated at import time — class attributes, `Meta`, `AppConfig`,
+`@extend_schema(...)` arguments (tags, descriptions, example names) — must use
+`gettext_lazy` and must not be forced with `str()`, `.capitalize()`, f-strings
+or `%`: forcing it freezes the text in whatever language is active when the
+module is imported (the first request's), not the request's. Use
+`django.utils.functional.lazy` or a lazy-aware helper (`capfirst`,
+`format_lazy`) when the text needs transforming.
+
 ---
 
 ## Non-Goals

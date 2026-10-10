@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.urls import include, path
 from rest_framework import routers
-from rest_framework_simplejwt.views import TokenVerifyView
 
 from apps.accounts.views import auth
 from apps.accounts.views.files import StoredFileViewSet
@@ -42,7 +41,7 @@ authentication_urlpatterns = [
     path(
         'api/auth/token/refresh/', auth.TokenRefreshView.as_view(), name='token_refresh'
     ),
-    path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/auth/token/verify/', auth.TokenVerifyView.as_view(), name='token_verify'),
     # Logout
     path('api/auth/logout/', auth.LogoutView.as_view(), name='logout'),
     # Password reset
