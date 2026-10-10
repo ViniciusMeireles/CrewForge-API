@@ -23,6 +23,14 @@ class UserProfilePermissionTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
+    def test_not_authenticated_update_preferred_language(self):
+        response = self.client.patch(
+            self.profile_url,
+            data={'preferred_language': 'pt-br'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
+
     def test_not_authenticated_change_password(self):
         response = self.client.post(
             self.change_password_url,

@@ -67,6 +67,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE_DJANGO = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -155,9 +156,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 LANGUAGES = [
-    ('en', gettext_lazy('English')),
-    ('pt-br', gettext_lazy('Portuguese')),
+    ('en', 'English'),
+    ('pt-br', 'Português (Brasil)'),
 ]
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 TIME_ZONE = 'UTC'
 
@@ -354,7 +356,11 @@ if cors_origins := os.environ.get('CORS_ALLOWED_ORIGINS'):
     CORS_ALLOWED_ORIGINS = cors_origins.split(',')
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = (*default_cors_headers, AUTH_TRANSPORT_HEADER.lower())
+CORS_ALLOW_HEADERS = (
+    *default_cors_headers,
+    AUTH_TRANSPORT_HEADER.lower(),
+    'accept-language',
+)
 
 SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
 CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'Lax')

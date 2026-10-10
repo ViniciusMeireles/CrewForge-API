@@ -196,8 +196,13 @@ class Invitation(BaseModel):
 
     def send_email(self) -> None:
         from apps.accounts.tasks import send_invitation_email
+        from apps.accounts.utils.language import resolve_invitation_language
 
-        send_invitation_email(self.id, [self.email])
+        send_invitation_email(
+            self.id,
+            [self.email],
+            language=resolve_invitation_language(self.email),
+        )
 
     def save(self, *args, **kwargs):
         if not self.key:

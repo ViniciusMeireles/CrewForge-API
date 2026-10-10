@@ -5,6 +5,7 @@ from django.db.models.fields.generated import GeneratedField
 from django.db.models.functions import Concat
 from django.utils.translation import gettext_lazy as _
 
+from apps.accounts.choices import PreferredLanguageChoices
 from apps.accounts.managers.user import UserManager
 from apps.generics.models.abstracts import BaseModel
 
@@ -78,6 +79,13 @@ class User(AbstractUser, BaseModel):
         blank=True,
         verbose_name=_('Email Verification Sent At'),
         help_text=_('When the last verification link was sent'),
+    )
+    preferred_language = models.CharField(
+        max_length=8,
+        choices=PreferredLanguageChoices.choices,
+        default=PreferredLanguageChoices.EN,
+        verbose_name=_('Preferred Language'),
+        help_text=_("Language used to render this user's emails."),
     )
 
     objects = UserManager()

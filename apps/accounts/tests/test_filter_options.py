@@ -102,6 +102,36 @@ class FilterOptionsContentTestCase(
         self.assertIn('email', values)
         self.assertIn('-email', values)
 
+    def test_order_by_labels_translated_to_portuguese(self):
+        response = self.client.get(
+            self.filter_options_url('invitations'),
+            {'order_by': ''},
+            HTTP_ACCEPT_LANGUAGE='pt-BR',
+        )
+        data = response.data['order_by']
+        if isinstance(data, dict):
+            data = data['results']
+        labels = {option['value']: option['label'] for option in data}
+        self.assertEqual(labels['email'], 'E-mail')
+        self.assertEqual(labels['-email'], 'E-mail (decrescente)')
+
+    def test_order_by_labels_sorted_in_request_language(self):
+        for language, first_labels in (
+            ('en', ['Accepted At', 'Descending Accepted At', 'Declined At']),
+            ('pt-BR', ['Aceito em', 'Aceito em (decrescente)', 'E-mail']),
+        ):
+            with self.subTest(language=language):
+                response = self.client.get(
+                    self.filter_options_url('invitations'),
+                    {'order_by': ''},
+                    HTTP_ACCEPT_LANGUAGE=language,
+                )
+                data = response.data['order_by']
+                if isinstance(data, dict):
+                    data = data['results']
+                labels = [option['label'] for option in data]
+                self.assertEqual(labels[:3], first_labels)
+
     def test_field_selection(self):
         response = self.client.get(self.filter_options_url('members'), {'role': ''})
         self.assertEqual(set(response.data), {'role'})

@@ -1,11 +1,11 @@
 import copy
+import unicodedata
 from functools import lru_cache
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import ForeignObjectRel
 from django.forms.utils import pretty_name
-from django.utils.functional import classproperty
-from django.utils.text import capfirst
+from django.utils.functional import classproperty, lazy
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.utils import model_meta
@@ -97,16 +97,62 @@ def _ensure_orderable_serializer_class(
     )
 
 
+def _lazy_capfirst(value: str) -> str:
+    return lazy(lambda x: x and x[0].upper() + x[1:], str)(value)
+
+
+def _lazy_descending_label(pattern: str, label: str) -> str:
+    return lazy(lambda p, lab: p % {'label': lab}, str)(pattern, label)
+
+
+def _lazy_combined_label(prefix: str, label: str) -> str:
+    return lazy(lambda a, b: f'{a} - {b}', str)(prefix, label)
+
+
 def _interleave_descending(
     ascending: list[tuple[str, str]],
 ) -> list[tuple[str, str]]:
     """Interleave ascending choices with their descending counterparts."""
     descending_label = _('Descending %(label)s')
     descending = [
-        (f'{DESCENDING_PREFIX}{field}', descending_label % {'label': label})
+        (
+            f'{DESCENDING_PREFIX}{field}',
+            _lazy_descending_label(descending_label, label),
+        )
         for field, label in ascending
     ]
     return [val for pair in zip(ascending, descending, strict=False) for val in pair]
+
+
+def _label_sort_key(choice: tuple[str, str]) -> str:
+    decomposed = unicodedata.normalize('NFKD', str(choice[1]))
+    return ''.join(c for c in decomposed if not unicodedata.combining(c)).casefold()
+
+
+class OrderingChoices(list):
+    """Ordering choices sorted by label in the active language on every iteration.
+
+    Own fields are sorted and interleaved with their descending counterparts;
+    nested choices keep their ascending/descending pairs and follow as a block.
+    """
+
+    def __init__(
+        self,
+        own_choices: list[tuple[str, str]],
+        nested_choices: list[tuple[str, str]],
+    ):
+        self._own_choices = own_choices
+        self._nested_choices = nested_choices
+        super().__init__(self._ordered())
+
+    def _ordered(self) -> list[tuple[str, str]]:
+        own = _interleave_descending(sorted(self._own_choices, key=_label_sort_key))
+        pairs = zip(self._nested_choices[::2], self._nested_choices[1::2], strict=True)
+        nested = sorted(pairs, key=lambda pair: _label_sort_key(pair[0]))
+        return own + [choice for pair in nested for choice in pair]
+
+    def __iter__(self):
+        return iter(self._ordered())
 
 
 class ModelSerializerFieldsMixin(serializers.ModelSerializer):
@@ -141,7 +187,7 @@ class ModelSerializerFieldsMixin(serializers.ModelSerializer):
         if isinstance(field, ForeignObjectRel):
             return None
         if field.verbose_name:
-            return capfirst(field.verbose_name)
+            return _lazy_capfirst(field.verbose_name)
         return verbose_name
 
     @classmethod
@@ -164,7 +210,7 @@ class ModelSerializerFieldsMixin(serializers.ModelSerializer):
         except FieldDoesNotExist:
             return []
         if verbose_name is None:
-            verbose_name = capfirst(_(pretty_name(field_name)))
+            verbose_name = _lazy_capfirst(_(pretty_name(field_name)))
 
         field = cls._declared_fields.get(field_name)
         if field is None:
@@ -190,7 +236,7 @@ class ModelSerializerFieldsMixin(serializers.ModelSerializer):
                 )
             else:
                 value = f'{field_name}{ORDERING_SEPARATOR}{sub_field}'
-            label = f'{verbose_name} - {sub_label}'
+            label = _lazy_combined_label(verbose_name, sub_label)
             choices.append((value, label))
         return choices
 
@@ -225,6 +271,4 @@ class ModelSerializerFieldsMixin(serializers.ModelSerializer):
             elif verbose_name:
                 own_choices.append((field_name, verbose_name))
 
-        ascending = sorted(own_choices, key=lambda x: x[1])
-        interleaved = _interleave_descending(ascending)
-        return interleaved + nested_choices
+        return OrderingChoices(own_choices, nested_choices)

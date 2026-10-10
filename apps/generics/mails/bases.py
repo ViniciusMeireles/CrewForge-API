@@ -8,7 +8,7 @@ from django.core.files.storage import default_storage
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import TemplateView
 
 
@@ -131,7 +131,7 @@ class EmailBase:
                 logging.warning('Subject is not defined in preview mode')
             else:
                 raise ValueError('Subject is not defined')
-        return self.subject
+        return str(self.subject)
 
     def get_recipient_list(self) -> list[str]:
         if not self.recipient_list:
@@ -148,10 +148,10 @@ class EmailBase:
         return self.theme_color or '#002180'
 
     def get_title(self) -> str:
-        return self.title or ''
+        return str(self.title or '')
 
     def get_content(self) -> str:
-        return self.content or ''
+        return str(self.content or '')
 
     def get_logo(self) -> str:
         return self.logo or ''
