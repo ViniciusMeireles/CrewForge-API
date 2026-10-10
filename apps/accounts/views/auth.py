@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
@@ -21,6 +21,9 @@ from rest_framework_simplejwt.views import (
 )
 from rest_framework_simplejwt.views import (
     TokenRefreshView as TokenRefreshViewBase,
+)
+from rest_framework_simplejwt.views import (
+    TokenVerifyView as TokenVerifyViewBase,
 )
 
 from apps.accounts.serializers.auth import (
@@ -47,8 +50,11 @@ from apps.accounts.utils.language import resolve_recipient_language
 from apps.accounts.utils.security_log import log_security_event
 from apps.accounts.utils.tokens import revoke_refresh_tokens
 
+AUTH_SCHEMA_TAGS = [_('Authentication')]
+
 
 @extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
     description=_(
         'Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` '
         'header (browsers) the tokens are set as HttpOnly cookies and omitted from '
@@ -75,6 +81,7 @@ class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
 
 
 @extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
     request=inline_serializer(
         name='TokenRefreshRequest',
         fields={'refresh': serializers.CharField(required=False)},
@@ -115,6 +122,7 @@ class TokenRefreshView(AuthRefreshThrottleMixin, TokenRefreshViewBase):
 
 
 @extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
     request=PasswordResetRequestSerializer,
     responses={
         200: OpenApiResponse(
@@ -164,6 +172,7 @@ class PasswordResetRequestView(AuthThrottleMixin, APIView):
 
 
 @extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
     request=PasswordResetConfirmSerializer,
     responses={
         200: OpenApiResponse(
@@ -211,6 +220,7 @@ class PasswordResetConfirmView(AuthThrottleMixin, APIView):
 
 
 @extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
     request=inline_serializer(
         name='LogoutRequest',
         fields={
@@ -231,12 +241,12 @@ class PasswordResetConfirmView(AuthThrottleMixin, APIView):
             ),
             examples=[
                 OpenApiExample(
-                    name=str(_('Missing refresh token')),
+                    name=_('Missing refresh token'),
                     value={'detail': _('Refresh token is required.')},
                     response_only=True,
                 ),
                 OpenApiExample(
-                    name=str(_('Invalid or expired token')),
+                    name=_('Invalid or expired token'),
                     value={'detail': _('Token is invalid or expired.')},
                     response_only=True,
                 ),
@@ -282,6 +292,7 @@ class LogoutView(APIView):
 
 
 @extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
     request=EmailVerificationConfirmSerializer,
     responses={
         200: OpenApiResponse(response=None, description=_('Email verified.')),
@@ -312,6 +323,7 @@ class EmailVerificationConfirmView(AuthThrottleMixin, APIView):
 
 
 @extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
     request=None,
     responses={
         200: OpenApiResponse(response=None, description=_('Verification email sent.')),
@@ -341,3 +353,8 @@ class EmailVerificationResendView(AuthThrottleMixin, APIView):
         else:
             detail = _('A new verification link has been sent to your email.')
         return Response(data={'detail': detail}, status=http_status.HTTP_200_OK)
+
+
+@extend_schema(tags=AUTH_SCHEMA_TAGS)
+class TokenVerifyView(TokenVerifyViewBase):
+    pass

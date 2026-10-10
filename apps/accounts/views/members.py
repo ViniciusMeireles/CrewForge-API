@@ -64,7 +64,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
                 ),
                 examples=[
                     OpenApiExample(
-                        name=str(InvitationErrorMessages.INVITATION_EXPIRED.label),
+                        name=InvitationErrorMessages.INVITATION_EXPIRED.label,
                         value={
                             'detail': str(
                                 InvitationErrorMessages.INVITATION_EXPIRED.label
@@ -73,7 +73,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
                         response_only=True,
                     ),
                     OpenApiExample(
-                        name=str(InvitationErrorMessages.USER_ALREADY_MEMBER.label),
+                        name=InvitationErrorMessages.USER_ALREADY_MEMBER.label,
                         value={
                             'detail': str(
                                 InvitationErrorMessages.USER_ALREADY_MEMBER.label
@@ -93,7 +93,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
                 ),
                 examples=[
                     OpenApiExample(
-                        name=str(InvitationErrorMessages.INVITATION_NOT_FOUND.label),
+                        name=InvitationErrorMessages.INVITATION_NOT_FOUND.label,
                         value={
                             'detail': str(
                                 InvitationErrorMessages.INVITATION_NOT_FOUND.label

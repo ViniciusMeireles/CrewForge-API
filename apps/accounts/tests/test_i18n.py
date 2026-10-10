@@ -1,7 +1,9 @@
+from django.apps import apps
 from django.conf import settings
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils import translation
+from drf_spectacular.generators import SchemaGenerator
 from rest_framework import serializers
 from rest_framework.test import APITestCase
 
@@ -168,3 +170,60 @@ class TranslatedErrorMessagesTestCase(APITestCase):
         self.assertEqual(
             error['message'], 'As credenciais de autenticação não foram fornecidas.'
         )
+
+
+class SchemaTranslationTestCase(SimpleTestCase):
+    def _schema(self, language):
+        with translation.override(language):
+            return SchemaGenerator().get_schema(request=None, public=True)
+
+    def _tags(self, schema):
+        return {
+            str(tag)
+            for operations in schema['paths'].values()
+            for operation in operations.values()
+            if isinstance(operation, dict)
+            for tag in operation.get('tags', [])
+        }
+
+    def test_tags_translated_per_language(self):
+        portuguese = self._tags(self._schema('pt-br'))
+        english = self._tags(self._schema('en'))
+        self.assertTrue(
+            {'Convites', 'Autenticação', 'Cadastro', 'Sessão'} <= portuguese
+        )
+        self.assertTrue(
+            {'Invitations', 'Authentication', 'Signup', 'Session'} <= english
+        )
+        self.assertFalse(english & {'Convites', 'Autenticação', 'Cadastro'})
+
+    def test_auth_endpoints_share_authentication_tag(self):
+        schema = self._schema('en')
+        auth_operations = [
+            operation
+            for path, operations in schema['paths'].items()
+            if path.startswith('/api/auth/')
+            for operation in operations.values()
+            if isinstance(operation, dict)
+        ]
+        self.assertTrue(auth_operations)
+        for operation in auth_operations:
+            tags = [str(tag) for tag in operation['tags']]
+            self.assertEqual(tags, ['Authentication'])
+
+    def test_auth_descriptions_follow_language(self):
+        for language, prefix in (('pt-br', 'Obtém'), ('en', 'Obtain')):
+            with self.subTest(language=language):
+                operation = self._schema(language)['paths']['/api/auth/token/']['post']
+                self.assertTrue(str(operation['description']).startswith(prefix))
+
+
+class AppVerboseNameTranslationTestCase(SimpleTestCase):
+    def test_app_names_translated(self):
+        for language, expected in (
+            ('pt-br', {'accounts': 'Contas', 'teams': 'Equipes'}),
+            ('en', {'accounts': 'Accounts', 'teams': 'Teams'}),
+        ):
+            with self.subTest(language=language), translation.override(language):
+                for label, name in expected.items():
+                    self.assertEqual(str(apps.get_app_config(label).verbose_name), name)

@@ -10,7 +10,7 @@ from apps.accounts.serializers.session import SessionSerializer
 
 
 @extend_schema(
-    tags=[str(_('Sessions'))],
+    tags=[_('Sessions')],
     description=_('Get current session data.'),
     responses={200: SessionSerializer},
 )

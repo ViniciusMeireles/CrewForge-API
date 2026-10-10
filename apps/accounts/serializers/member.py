@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from rest_framework import serializers
 
 from apps.accounts.consts import INVITATION_LOOKUP_URL_KWARG
@@ -161,7 +162,7 @@ class MemberUpdateSerializer(MemberModelSerializer):
         extra_kwargs = {
             'user': {
                 'required': False,
-                'help_text': _(
+                'help_text': gettext_lazy(
                     'User data to update, if not provided, will not update the user.'
                 ),
             },

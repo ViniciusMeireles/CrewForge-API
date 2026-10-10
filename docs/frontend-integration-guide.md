@@ -834,7 +834,7 @@ with every request: labels and error messages localize to it, and responses echo
 active language in the `Content-Language` header. Emails do not follow this header: they
 render in the recipient's profile `preferred_language` (see [6.2](#62-update-profile)),
 and links inside them carry no locale prefix, so the SPA opens them in the reader's own
-UI language (`cf_locale` cookie, else browser language). Schema descriptions localize
+UI language (`cf_locale` cookie, else browser language). Schema tags and descriptions localize
 only when the schema is fetched live from `GET /api/schema/` with that header — the
 committed `schema.yml` file stays English.
 

@@ -1,8 +1,11 @@
 from django.conf import settings
 from django.db import models
+from django.utils.functional import lazy
 from django.utils.translation import gettext_lazy as _
 
 from apps.generics.managers.querysets import BaseManager, BaseQuerySet
+
+_lazy_capitalize = lazy(lambda value: str(value).capitalize(), str)
 
 
 class BaseModel(models.Model):
@@ -56,4 +59,4 @@ class BaseModel(models.Model):
     @classmethod
     def schema_tags(cls):
         """Returns the schema tags for the model for documentation purposes."""
-        return [cls._meta.verbose_name_plural.capitalize()]
+        return [_lazy_capitalize(cls._meta.verbose_name_plural)]

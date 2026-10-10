@@ -16,9 +16,7 @@ from apps.accounts.utils.security_log import log_security_event
 
 
 @extend_schema_view(
-    create=extend_schema(
-        tags=[str(_('Signup'))], description=_('Create a new account.')
-    ),
+    create=extend_schema(tags=[_('Signup')], description=_('Create a new account.')),
 )
 class SignupViewSet(
     AuthThrottleMixin, mixins.CreateModelMixin, viewsets.GenericViewSet

@@ -2576,7 +2576,7 @@ paths:
       description: Confirm the email address with the `uid` and `token` from the verification
         link.
       tags:
-      - auth
+      - Authentication
       requestBody:
         content:
           application/json:
@@ -2601,7 +2601,7 @@ paths:
       operationId: auth_email_verify_resend_create
       description: Send a new verification link to the authenticated user email.
       tags:
-      - auth
+      - Authentication
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -2617,7 +2617,7 @@ paths:
         Browsers (refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`;
         the auth cookies are always cleared and a CSRF token is required.'
       tags:
-      - auth
+      - Authentication
       requestBody:
         content:
           application/json:
@@ -2656,7 +2656,7 @@ paths:
       operationId: auth_password_reset_create
       description: Request a password reset link to be sent to the user's email.
       tags:
-      - auth
+      - Authentication
       requestBody:
         content:
           application/json:
@@ -2682,7 +2682,7 @@ paths:
       operationId: auth_password_reset_confirm_create
       description: Confirm the password reset using the provided token and new password.
       tags:
-      - auth
+      - Authentication
       requestBody:
         content:
           application/json:
@@ -2710,7 +2710,7 @@ paths:
         cookie` header (browsers) the tokens are set as HttpOnly cookies and omitted
         from the body, and a CSRF token is required.'
       tags:
-      - auth
+      - Authentication
       requestBody:
         content:
           application/json:
@@ -2738,7 +2738,7 @@ paths:
         answered with new cookies and never with tokens in the body; it requires a
         CSRF token.
       tags:
-      - auth
+      - Authentication
       requestBody:
         content:
           application/json:
@@ -2764,7 +2764,7 @@ paths:
         Takes a token and indicates if it is valid.  This view provides no
         information about a token's fitness for a particular use.
       tags:
-      - auth
+      - Authentication
       requestBody:
         content:
           application/json:
