@@ -123,8 +123,12 @@ Member) provides clean separation of concerns.
 
 ### Why `gettext_lazy` everywhere?
 
-User-facing strings (error messages, schema descriptions, email content) use
-`gettext_lazy` to support future i18n. This is a project-wide convention.
+User-facing strings (error messages, schema descriptions, choice labels, email
+content) use `gettext_lazy` so they resolve per request language. This is not
+aspirational: `LocaleMiddleware` negotiates the language from `Accept-Language`
+(pt-BR/en) and the `locale/pt_BR` catalog covers the API surface. This is a
+project-wide convention — every new user-facing string goes through
+`gettext`/`gettext_lazy` so it is extractable by `makemessages`.
 
 ---
 

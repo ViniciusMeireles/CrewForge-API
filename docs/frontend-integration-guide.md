@@ -371,6 +371,8 @@ Users created by signup start **unverified** and receive an email with a link to
 
 At most one link is sent per user every 5 minutes (`EMAIL_VERIFICATION_COOLDOWN_SECONDS`); an email change inside the cooldown updates the email without sending, and the user can resend afterwards. Links expire after `PASSWORD_RESET_TIMEOUT` and stop working once used or when the email changes. `user.email_verified` is returned in the session (`user`), token obtain (`auth_user`) and profile responses.
 
+The email renders in the recipient's profile `preferred_language` (see [6.2](#62-update-profile)), not in the language of the request that triggered the send.
+
 **Unverified users do not see or accept invitations addressed to their email** (received list is empty, accept/decline → 403). Opening an invitation link by key still works.
 
 ---
@@ -454,8 +456,10 @@ Authorization: Bearer eyJhbGciOiJI...
   "id": 1,
   "username": "john",
   "email": "john@example.com",
+  "email_verified": true,
   "first_name": "John",
-  "last_name": "Doe"
+  "last_name": "Doe",
+  "preferred_language": "en"
 }
 ```
 
@@ -471,11 +475,14 @@ Content-Type: application/json
 {
   "first_name": "Jonathan",
   "last_name": "Smith",
-  "email": "jonathan@example.com"
+  "email": "jonathan@example.com",
+  "preferred_language": "pt-br"
 }
 ```
 
 `username` and `id` are read-only. Partial updates are supported.
+
+`preferred_language` accepts exactly `en` or `pt-br` (lower-case); anything else is a 400 validation error. It decides the language of the user's emails (verification, password reset, invitations addressed to them). It is profile-only: it is never exposed on nested user payloads and cannot be set through member or invitation flows. It is initialized at creation from the `Accept-Language` of the signup / create-with-invite request (`pt*` → `pt-br`, anything else → `en`); the user changes it here afterwards.
 
 ### 6.3. Change Password
 
@@ -560,6 +567,8 @@ Email and role are taken from the invitation itself (not from the request body).
 | Filter options | `GET /api/accounts/invitations/filter-options/` | Admin+ |
 
 Received invitations (`/api/accounts/invitations/received/`, `accept`, `decline`) match the invitation email only for users with a **verified** email (see [4.3](#43-email-verification)).
+
+Invitation emails render in the invitee's profile `preferred_language` (see [6.2](#62-update-profile)) when the invite address belongs to a user; otherwise they fall back to the language of the request that sent them (`en` by default).
 
 ### Send Email Cooldown
 
@@ -703,6 +712,10 @@ All API errors follow a consistent JSON envelope:
 }
 ```
 
+`message` and `details` values are localized to the `Accept-Language` of the
+request (`pt-BR` or `en`, default `en`). `code` and `details` keys are stable
+identifiers — never match on `message`, always match on `code`.
+
 ### 13.2. Error Codes
 
 | Error code | HTTP status | `details` value |
@@ -816,8 +829,14 @@ members already active in it (removed members are listed, re-adding reactivates 
 Without a valid `team_id` (missing, another organization's or inactive team) only
 organization managers get roles and `member` is not narrowed.
 
-Labels are rendered in the request language. The API is English-only today (TD-012);
-send `Accept-Language` with the app locale so labels follow it once translations land.
+Labels are rendered in the request language. Send `Accept-Language` (`pt-BR` or `en`)
+with every request: labels and error messages localize to it, and responses echo the
+active language in the `Content-Language` header. Emails do not follow this header: they
+render in the recipient's profile `preferred_language` (see [6.2](#62-update-profile)),
+and links inside them carry no locale prefix, so the SPA opens them in the reader's own
+UI language (`cf_locale` cookie, else browser language). Schema descriptions localize
+only when the schema is fetched live from `GET /api/schema/` with that header — the
+committed `schema.yml` file stays English.
 
 ### 15.1. Response shapes
 
