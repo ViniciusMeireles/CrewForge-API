@@ -36,6 +36,9 @@ class InvitationQuerySet(BaseQuerySet):
         return self.filter(role__in=roles)
 
     def filter_acceptable(self):
+        return self.filter_pending().exclude_already_members()
+
+    def filter_pending(self):
         return (
             self.exclude(
                 is_accepted=True,
@@ -58,26 +61,23 @@ class InvitationQuerySet(BaseQuerySet):
             .exclude(
                 organization__is_active=False,
             )
-            .exclude_already_members()
         )
 
     def exclude_already_members(self):
         """
-        Exclude invitations whose invitee is already an active member of the
-        organization: the linked user, or the active user with the invitation
-        email when no user is linked.
+        Exclude invitations whose invitee already has a membership in the
+        organization, active or removed: the linked user, or the active user
+        with the invitation email when no user is linked (same rule as
+        Invitation.is_acceptable; a membership cannot be created twice).
         """
         from apps.accounts.models.member import Member
 
-        active_members = Member.objects.filter(
-            organization_id=OuterRef('organization_id'),
-            is_active=True,
-        )
+        members = Member.objects.filter(organization_id=OuterRef('organization_id'))
         linked_user_is_member = Exists(
-            active_members.filter(user_id=OuterRef('user_id')),
+            members.filter(user_id=OuterRef('user_id')),
         )
         email_user_is_member = Exists(
-            active_members.filter(
+            members.filter(
                 user__email=OuterRef('email'),
                 user__is_active=True,
             ),

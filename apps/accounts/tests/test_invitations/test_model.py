@@ -94,15 +94,17 @@ class InvitationModelTestCase(TestCase):
             message, str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
         )
 
-    def test_is_acceptable_removed_member_returns_true(self):
+    def test_is_acceptable_removed_member_returns_false(self):
         member = MemberFactory(is_active=False)
         invitation = InvitationFactory(
             organization=member.organization,
             email=member.user.email,
         )
         is_acceptable, message = invitation.is_acceptable()
-        self.assertTrue(is_acceptable)
-        self.assertEqual(message, '')
+        self.assertFalse(is_acceptable)
+        self.assertEqual(
+            message, str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
+        )
 
     def test_is_acceptable_linked_user_already_member_returns_false(self):
         member = MemberFactory()
@@ -124,6 +126,18 @@ class InvitationModelTestCase(TestCase):
         self.assertFalse(is_acceptable)
         self.assertEqual(
             message, str(InvitationErrorMessages.ORGANIZATION_INACTIVE.label)
+        )
+
+    def test_is_acceptable_unsaved_already_member_returns_false(self):
+        member = MemberFactory()
+        invitation = InvitationFactory.build(
+            organization=member.organization,
+            email=member.user.email,
+        )
+        is_acceptable, message = invitation.is_acceptable()
+        self.assertFalse(is_acceptable)
+        self.assertEqual(
+            message, str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
         )
 
     def test_get_invitation_link(self):

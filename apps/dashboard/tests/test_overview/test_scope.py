@@ -155,12 +155,12 @@ class OverviewScopeTestCase(APITestCaseMixin, APITestCase):
         data = self._get()
         self.assertEqual(data['received_invitations']['pending'], 0)
 
-    def test_received_counts_organization_where_user_was_removed(self):
+    def test_received_excludes_organization_where_user_was_removed(self):
         other = OrganizationFactory()
         MemberFactory(user=self.member.user, organization=other, is_active=False)
         InvitationFactory(organization=other, email=self.member.user.email)
         data = self._get()
-        self.assertEqual(data['received_invitations']['pending'], 1)
+        self.assertEqual(data['received_invitations']['pending'], 0)
 
     def test_pending_excludes_invitation_to_existing_member(self):
         existing = MemberFactory(organization=self.organization)

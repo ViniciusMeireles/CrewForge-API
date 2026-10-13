@@ -135,17 +135,11 @@ class Invitation(BaseModel):
             return False, str(InvitationErrorMessages.INVITATION_EXPIRED.label)
         elif not self.organization.is_active:
             return False, str(InvitationErrorMessages.ORGANIZATION_INACTIVE.label)
-        elif self.is_invitee_member():
+        elif (user := self.get_user()) and self.organization.members.filter(
+            user=user
+        ).exists():
             return False, str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
         return True, ''
-
-    def is_invitee_member(self) -> bool:
-        """Whether the invitee is already an active member of the organization."""
-        if self.pk is None:
-            return False
-        return not (
-            type(self).objects.filter(pk=self.pk).exclude_already_members().exists()
-        )
 
     def accept(self, member, check: bool = True):
         """

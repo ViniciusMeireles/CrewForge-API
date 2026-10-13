@@ -434,7 +434,7 @@ class InvitationViewSet(
                 user=self.auth_user,
             )
         else:
-            queryset = Invitation.objects.filter_acceptable()
+            queryset = Invitation.objects.filter_pending()
         invitation = get_object_or_404(
             queryset,
             key=kwargs.get('invitation_key'),

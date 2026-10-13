@@ -108,13 +108,13 @@ class InvitationQuerySetAlreadyMembersTestCase(TestCase):
         )
         self.assertNotIn(invitation.id, self._acceptable_ids())
 
-    def test_removed_member_is_kept(self):
+    def test_removed_member_is_excluded(self):
         member = MemberFactory(organization=self.organization, is_active=False)
         invitation = InvitationFactory(
             organization=self.organization,
             email=member.user.email,
         )
-        self.assertIn(invitation.id, self._acceptable_ids())
+        self.assertNotIn(invitation.id, self._acceptable_ids())
 
     def test_inactive_user_with_email_is_kept(self):
         member = MemberFactory(organization=self.organization)

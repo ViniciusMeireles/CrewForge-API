@@ -3,6 +3,7 @@ from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
 from apps.accounts.factories.invitations import InvitationFactory
+from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
@@ -55,6 +56,20 @@ class InvitationByKeyTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertFalse(response.data['has_user'])
+
+    def test_by_key_anonymous_returns_invitation_of_existing_member(self):
+        member = MemberFactory(organization=self.organization)
+        invitation = self._create_invitation(email=member.user.email)
+        response = self.client.get(self._by_key_url(invitation))
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(str(response.data['key']), str(invitation.key))
+
+    def test_by_key_anonymous_returns_404_for_inactive_organization(self):
+        invitation = self._create_invitation()
+        self.organization.is_active = False
+        self.organization.save(update_fields=['is_active'])
+        response = self.client.get(self._by_key_url(invitation))
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_by_key_is_public_no_auth_required(self):
         invitation = self._create_invitation()

@@ -570,7 +570,7 @@ Email and role are taken from the invitation itself (not from the request body).
 
 Received invitations (`/api/accounts/invitations/received/`, `accept`, `decline`) match the invitation email only for users with a **verified** email (see [4.3](#43-email-verification)).
 
-Invitations of a deactivated (soft-deleted) organization are not listed as received and cannot be accepted or declined (**400** "The organization is no longer active."). An invitation is pending (acceptable) only while it is active, not accepted, declined or expired, `expired_at` is in the future, and the invitee — the linked user, or the active user with the invitation email — is not already an active member of the organization; a member who was removed can be invited again.
+Invitations of a deactivated (soft-deleted) organization are not listed as received and cannot be accepted or declined (**400** "The organization is no longer active."). An invitation is pending (acceptable) only while it is active, not accepted, declined or expired, `expired_at` is in the future, and the invitee — the linked user, or the active user with the invitation email — has no membership in the organization, active or removed (accepting would create a second membership; `accept` answers **400** "User is already a member").
 
 Invitation emails render in the invitee's profile `preferred_language` (see [6.2](#62-update-profile)) when the invite address belongs to a user; otherwise they fall back to the language of the request that sent them (`en` by default).
 
@@ -1062,8 +1062,8 @@ Lists are ordered: `recent` by `created_at` desc then `id` desc, `mine` by Team 
 Only active records count (soft-delete). Every number is scoped to the session Organization
 except `received_invitations`, which is User-level by definition and only counts email-matched
 invitations when the User's email is verified. "Pending" follows the acceptance rule of section 9: invitations
-whose invitee is already an active member, and invitations of deactivated organizations, are
-never counted.
+whose invitee already has a membership in the organization (active or removed), and invitations
+of deactivated organizations, are never counted.
 
 ### 16.4. Example Payload
 
