@@ -18,7 +18,6 @@ from rest_framework.response import Response
 from apps.accounts.choices import (
     InvitationEmailErrorMessages,
     InvitationErrorMessages,
-    MemberRoleChoices,
 )
 from apps.accounts.consts import INVITATION_EMAIL_COOLDOWN_SECONDS
 from apps.accounts.filters.invitation import (
@@ -348,16 +347,7 @@ class InvitationViewSet(
     options_actions = ('create', 'update', 'list', 'received')
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        if not (auth_member := self.auth_member):
-            return queryset.none()
-        role_list = []
-        if auth_member.has_admin_permission:
-            role_list.extend([MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER])
-        if auth_member.has_owner_permission:
-            role_list.extend([MemberRoleChoices.OWNER, MemberRoleChoices.ADMIN])
-        queryset = queryset.filter(role__in=role_list)
-        return queryset
+        return super().get_queryset().filter_visible_to(self.auth_member)
 
     @action(detail=True, methods=['post'], url_path='send-email')
     def send_email(self, request, *args, **kwargs):
