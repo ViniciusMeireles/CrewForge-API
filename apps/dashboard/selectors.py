@@ -54,15 +54,7 @@ def teams_section(*, member: Member, organization_id: int) -> dict:
     )
     mine_count = mine.count()
     mine_list = list(
-        mine.annotate(
-            member_count=Count(
-                'team__members',
-                filter=Q(
-                    team__members__is_active=True,
-                    team__members__member__is_active=True,
-                ),
-            ),
-        )
+        mine.annotate(member_count=Team.member_count_expression(outer_ref='team'))
         .select_related('team')
         .order_by(Lower('team__name'), 'team_id')[:DASHBOARD_LIST_LIMIT],
     )

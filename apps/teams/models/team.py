@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Count, Q
 from django.utils.translation import gettext_lazy as _
 
 from apps.generics.models.abstracts import BaseModel
@@ -48,6 +49,20 @@ class Team(BaseModel):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def member_count_expression(cls, outer_ref: str | None = None) -> Count:
+        """Count of active team members whose organization member is active."""
+        members = f'{outer_ref}__members' if outer_ref else 'members'
+        return Count(
+            members,
+            filter=Q(
+                **{
+                    f'{members}__is_active': True,
+                    f'{members}__member__is_active': True,
+                },
+            ),
+        )
 
     def get_active_team_member(self, member):
         """Active membership of ``member`` in this team, or ``None``."""
