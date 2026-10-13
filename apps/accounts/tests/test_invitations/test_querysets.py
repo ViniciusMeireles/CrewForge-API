@@ -7,6 +7,7 @@ from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
+from apps.accounts.factories.users import UserFactory
 from apps.accounts.models.invitation import Invitation
 
 
@@ -82,3 +83,73 @@ class InvitationQuerySetAcceptableBoundaryTestCase(TestCase):
             expired_at=self.now - timedelta(seconds=1),
         )
         self.assertFalse(Invitation.objects.filter_acceptable().exists())
+
+
+class InvitationQuerySetAlreadyMembersTestCase(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory()
+
+    def _acceptable_ids(self):
+        return set(Invitation.objects.filter_acceptable().values_list('id', flat=True))
+
+    def test_email_of_active_member_is_excluded(self):
+        member = MemberFactory(organization=self.organization)
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertNotIn(invitation.id, self._acceptable_ids())
+
+    def test_linked_user_active_member_is_excluded(self):
+        member = MemberFactory(organization=self.organization)
+        invitation = InvitationFactory(
+            organization=self.organization,
+            user=member.user,
+        )
+        self.assertNotIn(invitation.id, self._acceptable_ids())
+
+    def test_removed_member_is_kept(self):
+        member = MemberFactory(organization=self.organization, is_active=False)
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertIn(invitation.id, self._acceptable_ids())
+
+    def test_inactive_user_with_email_is_kept(self):
+        member = MemberFactory(organization=self.organization)
+        member.user.is_active = False
+        member.user.save(update_fields=['is_active'])
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertIn(invitation.id, self._acceptable_ids())
+
+    def test_member_of_another_organization_is_kept(self):
+        member = MemberFactory()
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertIn(invitation.id, self._acceptable_ids())
+
+
+class InvitationQuerySetInactiveOrganizationTestCase(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory()
+        self.user = UserFactory()
+        self.invitation = InvitationFactory(
+            organization=self.organization,
+            email=self.user.email,
+        )
+        self.organization.is_active = False
+        self.organization.save(update_fields=['is_active'])
+
+    def test_not_acceptable(self):
+        self.assertFalse(Invitation.objects.filter_acceptable().exists())
+
+    def test_not_received(self):
+        self.assertFalse(
+            Invitation.objects.filter_received_by_user(self.user).exists(),
+        )

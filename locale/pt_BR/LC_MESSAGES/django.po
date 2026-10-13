@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-10 04:02+0000\n"
+"POT-Creation-Date: 2026-10-13 23:02+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -117,16 +117,20 @@ msgstr "O convite já foi recusado."
 msgid "User is already a member"
 msgstr "O usuário já é membro"
 
-#: apps/accounts/choices.py:186
+#: apps/accounts/choices.py:183
+msgid "The organization is no longer active."
+msgstr "A organização não está mais ativa."
+
+#: apps/accounts/choices.py:190
 msgid "An invitation email was recently sent. Please wait before resending."
 msgstr ""
 "Um e-mail de convite foi enviado recentemente. Aguarde antes de reenviar."
 
-#: apps/accounts/choices.py:188
+#: apps/accounts/choices.py:192
 msgid "Invitation email sent successfully."
 msgstr "E-mail de convite enviado com sucesso."
 
-#: apps/accounts/choices.py:191
+#: apps/accounts/choices.py:195
 msgid "The invitation is no longer valid."
 msgstr "O convite não é mais válido."
 
@@ -211,7 +215,7 @@ msgstr "Aceitar convite"
 #: apps/accounts/filters/organization_image.py:12
 #: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:67
 #: apps/accounts/models/member.py:31 apps/accounts/models/organization.py:34
-#: apps/accounts/models/organization.py:60 apps/teams/models/team.py:24
+#: apps/accounts/models/organization.py:60 apps/teams/models/team.py:25
 msgid "Organization"
 msgstr "Organização"
 
@@ -236,7 +240,7 @@ msgid "File to be stored"
 msgstr "Arquivo a ser armazenado"
 
 #: apps/accounts/models/files.py:54 apps/accounts/models/organization.py:15
-#: apps/teams/models/team.py:11
+#: apps/teams/models/team.py:12
 msgid "Name"
 msgstr "Nome"
 
@@ -405,7 +409,7 @@ msgstr "Convite"
 msgid "Invitations"
 msgstr "Convites"
 
-#: apps/accounts/models/invitation.py:195
+#: apps/accounts/models/invitation.py:203
 msgid "Expired date must be greater than now"
 msgstr "A data de expiração deve ser posterior ao momento atual"
 
@@ -441,7 +445,7 @@ msgstr "Membros"
 msgid "Organization name"
 msgstr "Nome da organização"
 
-#: apps/accounts/models/organization.py:18 apps/teams/models/team.py:13
+#: apps/accounts/models/organization.py:18 apps/teams/models/team.py:14
 msgid "Slug"
 msgstr "Slug"
 
@@ -469,7 +473,7 @@ msgstr "Site"
 msgid "Organization website"
 msgstr "Site da organização"
 
-#: apps/accounts/models/organization.py:72 apps/teams/models/team.py:17
+#: apps/accounts/models/organization.py:72 apps/teams/models/team.py:18
 msgid "Description"
 msgstr "Descrição"
 
@@ -627,7 +631,7 @@ msgstr "A nova senha deve ser diferente da senha atual."
 msgid "Permission denied"
 msgstr "Permissão negada"
 
-#: apps/accounts/tests/test_i18n.py:64 apps/teams/models/team.py:32
+#: apps/accounts/tests/test_i18n.py:64 apps/teams/models/team.py:33
 #: apps/teams/models/team_member.py:14
 msgid "Team"
 msgstr "Equipe"
@@ -985,8 +989,8 @@ msgid ""
 "Organization overview for the current member. Sections the member cannot "
 "access are null."
 msgstr ""
-"Visão geral da organização para o membro atual. Seções às quais o membro "
-"não tem acesso são nulas."
+"Visão geral da organização para o membro atual. Seções às quais o membro não "
+"tem acesso são nulas."
 
 #: apps/generics/choices.py:6
 msgid "Authentication error"
@@ -1181,7 +1185,7 @@ msgstr ""
 msgid "Maximum: {max}."
 msgstr "Máximo: {max}."
 
-#: apps/teams/apps.py:8 apps/teams/models/team.py:33
+#: apps/teams/apps.py:8 apps/teams/models/team.py:34
 msgid "Teams"
 msgstr "Equipes"
 
@@ -1201,23 +1205,23 @@ msgstr "Entrou em"
 msgid "ID"
 msgstr "ID"
 
-#: apps/teams/models/team.py:11
+#: apps/teams/models/team.py:12
 msgid "Name of the team"
 msgstr "Nome da equipe"
 
-#: apps/teams/models/team.py:13
+#: apps/teams/models/team.py:14
 msgid "Team slug"
 msgstr "Slug da equipe"
 
-#: apps/teams/models/team.py:18
+#: apps/teams/models/team.py:19
 msgid "Description of the team"
 msgstr "Descrição da equipe"
 
-#: apps/teams/models/team.py:25
+#: apps/teams/models/team.py:26
 msgid "Organization to which the team belongs"
 msgstr "Organização à qual a equipe pertence"
 
-#: apps/teams/models/team.py:39 apps/teams/models/team.py:45
+#: apps/teams/models/team.py:40 apps/teams/models/team.py:46
 #: apps/teams/serializers/team.py:38
 msgid "This team already exists."
 msgstr "Esta equipe já existe."

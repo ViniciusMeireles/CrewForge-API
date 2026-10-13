@@ -162,6 +162,21 @@ class OverviewScopeTestCase(APITestCaseMixin, APITestCase):
         data = self._get()
         self.assertEqual(data['received_invitations']['pending'], 1)
 
+    def test_pending_excludes_invitation_to_existing_member(self):
+        existing = MemberFactory(organization=self.organization)
+        InvitationFactory(organization=self.organization, email=existing.user.email)
+        data = self._get()
+        self.assertEqual(data['invitations']['pending'], 0)
+        self.assertEqual(data['invitations']['expiring_soon'], [])
+
+    def test_received_excludes_inactive_organization(self):
+        other = OrganizationFactory()
+        InvitationFactory(organization=other, email=self.member.user.email)
+        other.is_active = False
+        other.save(update_fields=['is_active'])
+        data = self._get()
+        self.assertEqual(data['received_invitations']['pending'], 0)
+
     def test_received_excludes_declined_accepted_and_inactive(self):
         other = OrganizationFactory()
         email = self.member.user.email

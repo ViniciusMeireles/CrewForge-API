@@ -90,18 +90,8 @@ def invitations_section(
 
 
 def received_invitations_section(*, user: 'User') -> dict:
-    pending = (
-        Invitation.objects.filter_received_by_user(user)
-        .filter_acceptable()
-        .exclude(
-            organization_id__in=Member.objects.filter(
-                user=user,
-                is_active=True,
-            ).values('organization_id'),
-        )
-        .count()
-    )
-    return {'pending': pending}
+    pending = Invitation.objects.filter_received_by_user(user).filter_acceptable()
+    return {'pending': pending.count()}
 
 
 def build_overview(*, member: Member, user: 'User', now: datetime) -> dict:
