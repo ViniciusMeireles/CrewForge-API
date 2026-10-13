@@ -193,6 +193,7 @@ MyViewSet
 - Put organization, membership, invitation, file, and auth logic in
   `apps/accounts/`.
 - Put team and team membership logic in `apps/teams/`.
+- Put read-only cross-app aggregates (Organization overview) in `apps/dashboard/`.
 - Put reusable cross-app code in `apps/generics/`.
 - Avoid duplicating shared helpers in feature apps when a generic helper belongs
   in `apps/generics/`.
@@ -207,6 +208,8 @@ MyViewSet
 - `apps/accounts/` and `apps/teams/` can import from `apps/generics/`.
 - `apps/teams/` can import from `apps/accounts/` (for Member, Organization).
 - `apps/accounts/` must NOT import from `apps/teams/`.
+- `apps/dashboard/` may import from `apps/accounts/`, `apps/teams/` and
+  `apps/generics/`; no app imports from `apps/dashboard/`.
 
 ---
 
