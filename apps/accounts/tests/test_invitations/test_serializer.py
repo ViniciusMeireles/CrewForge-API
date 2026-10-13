@@ -129,6 +129,17 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
+    def test_validate_email_of_removed_member_returns_400(self):
+        removed = MemberFactory(organization=self.organization, is_active=False)
+        payload = {
+            'email': removed.user.email,
+            'role': MemberRoleChoices.MEMBER,
+            'expired_at': timezone.now() + timedelta(days=7),
+        }
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', response.data['error']['details'])
+
     def test_validate_email_duplicate_allows_expired(self):
         invitation = self._create_invitation(
             is_expired=True,

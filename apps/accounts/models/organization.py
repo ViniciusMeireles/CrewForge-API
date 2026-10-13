@@ -37,17 +37,6 @@ class Organization(BaseModel):
     def __str__(self):
         return self.name
 
-    @property
-    def members(self):
-        from apps.accounts.models.member import Member
-
-        if not self.id:
-            return Member.objects.none()
-        return Member.objects.filter(
-            organization_id=self.id,
-            is_active=True,
-        )
-
     def get_profile(self) -> OrganizationProfile:
         return OrganizationProfile.objects.get_or_create(organization=self)[0]
 
