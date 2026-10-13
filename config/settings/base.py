@@ -60,6 +60,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'apps.accounts',
     'apps.teams',
+    'apps.dashboard',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -308,6 +309,7 @@ SPECTACULAR_SETTINGS = {
     'SERVE_URLCONF': [
         'apps.accounts.urls',
         'apps.teams.urls',
+        'apps.dashboard.urls',
     ],
     'ENUM_NAME_OVERRIDES': {
         'StoredFileAccess': 'apps.accounts.choices.StoredFileAccess',

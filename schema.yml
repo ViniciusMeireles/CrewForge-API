@@ -2784,6 +2784,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenVerify'
           description: ''
+  /api/dashboard/overview/:
+    get:
+      operationId: dashboard_overview_retrieve
+      description: Organization overview for the current member. Sections the member
+        cannot access are null.
+      tags:
+      - Dashboard
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Overview'
+          description: ''
   /api/teams/team-members/:
     get:
       operationId: teams_team_members_list
@@ -3505,6 +3522,39 @@ components:
       required:
       - token
       - uid
+    ExpiringInvitation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          description: Email of the user to invite
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
+        expired_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date and time when the invitation will expire
+      required:
+      - email
+      - id
+      - role_label
     ImageTypeEnum:
       enum:
       - logo
@@ -3874,6 +3924,18 @@ components:
       - last_email_sent_at
       - organization
       - role_label
+    InvitationsSection:
+      type: object
+      properties:
+        pending:
+          type: integer
+        expiring_soon:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpiringInvitation'
+      required:
+      - expiring_soon
+      - pending
     LoginNotFoundResponse:
       type: object
       properties:
@@ -4228,6 +4290,53 @@ components:
       - updated_at
       - updated_by
       - user
+    MembersSection:
+      type: object
+      properties:
+        total:
+          type: integer
+        by_role:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleCount'
+        recent:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecentMember'
+      required:
+      - by_role
+      - recent
+      - total
+    MyTeam:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Role of the member in the team
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
+        member_count:
+          type: integer
+      required:
+      - id
+      - member_count
+      - name
+      - role_label
+      - slug
     OptionInt:
       type: object
       description: Value/label option.
@@ -4713,6 +4822,63 @@ components:
       - id
       - name
       - slug
+    Overview:
+      type: object
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        member:
+          $ref: '#/components/schemas/OverviewMember'
+        members:
+          allOf:
+          - $ref: '#/components/schemas/MembersSection'
+          nullable: true
+        teams:
+          allOf:
+          - $ref: '#/components/schemas/TeamsSection'
+          nullable: true
+        invitations:
+          allOf:
+          - $ref: '#/components/schemas/InvitationsSection'
+          nullable: true
+        received_invitations:
+          $ref: '#/components/schemas/ReceivedInvitationsSection'
+      required:
+      - generated_at
+      - invitations
+      - member
+      - members
+      - received_invitations
+      - teams
+    OverviewMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+      required:
+      - created_at
+      - id
+      - role_label
     PaginatedIntOptions:
       type: object
       description: Paginated value/label options.
@@ -5279,6 +5445,66 @@ components:
           type: string
       required:
       - detail
+    ReceivedInvitationsSection:
+      type: object
+      properties:
+        pending:
+          type: integer
+      required:
+      - pending
+    RecentMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        nickname:
+          type: string
+          nullable: true
+          description: Nickname of the user in the organization
+          maxLength: 100
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        role_label:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+      required:
+      - created_at
+      - email
+      - full_name
+      - id
+      - role_label
+    RoleCount:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        role_label:
+          type: string
+        count:
+          type: integer
+      required:
+      - count
+      - role
+      - role_label
     RoleEnum:
       enum:
       - owner
@@ -6046,6 +6272,21 @@ components:
       - team
       - updated_at
       - updated_by
+    TeamsSection:
+      type: object
+      properties:
+        total:
+          type: integer
+        mine_count:
+          type: integer
+        mine:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyTeam'
+      required:
+      - mine
+      - mine_count
+      - total
     TokenObtainPair:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.

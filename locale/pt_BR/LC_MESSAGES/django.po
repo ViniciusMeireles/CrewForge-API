@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-10 02:38+0000\n"
+"POT-Creation-Date: 2026-10-10 04:02+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -26,7 +26,7 @@ msgstr "Contas"
 
 #: apps/accounts/choices.py:12 apps/accounts/choices.py:48
 #: apps/accounts/models/files.py:92 apps/accounts/models/organization.py:24
-#: apps/accounts/tests/test_i18n.py:61 apps/accounts/tests/test_i18n.py:69
+#: apps/accounts/tests/test_i18n.py:63 apps/accounts/tests/test_i18n.py:71
 #: apps/teams/choices.py:6
 msgid "Owner"
 msgstr "Proprietário"
@@ -600,7 +600,7 @@ msgstr ""
 msgid "Not allowed to change your own role."
 msgstr "Não é permitido alterar sua própria função."
 
-#: apps/accounts/serializers/mixins.py:26 apps/accounts/tests/test_i18n.py:73
+#: apps/accounts/serializers/mixins.py:26 apps/accounts/tests/test_i18n.py:75
 #: apps/teams/serializers/team_member.py:96
 #, python-format
 msgid "Not allowed to set the %(role)s role."
@@ -622,12 +622,12 @@ msgstr "A senha atual está incorreta."
 msgid "New password must be different from current password."
 msgstr "A nova senha deve ser diferente da senha atual."
 
-#: apps/accounts/tests/test_i18n.py:59 apps/accounts/tests/test_i18n.py:67
+#: apps/accounts/tests/test_i18n.py:61 apps/accounts/tests/test_i18n.py:69
 #: apps/generics/choices.py:7
 msgid "Permission denied"
 msgstr "Permissão negada"
 
-#: apps/accounts/tests/test_i18n.py:62 apps/teams/models/team.py:32
+#: apps/accounts/tests/test_i18n.py:64 apps/teams/models/team.py:32
 #: apps/teams/models/team_member.py:14
 msgid "Team"
 msgstr "Equipe"
@@ -810,66 +810,66 @@ msgstr "Erro ao tentar abrir o arquivo"
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
-#: apps/accounts/views/invitations.py:52
+#: apps/accounts/views/invitations.py:51
 msgid "Send an invitation email."
 msgstr "Envia um e-mail de convite."
 
-#: apps/accounts/views/invitations.py:70
+#: apps/accounts/views/invitations.py:69
 msgid "The invitation email has been sent successfully."
 msgstr "O e-mail de convite foi enviado com sucesso."
 
-#: apps/accounts/views/invitations.py:98 apps/accounts/views/members.py:86
+#: apps/accounts/views/invitations.py:97 apps/accounts/views/members.py:86
 msgid "The invitation is expired or the user is already a member."
 msgstr "O convite expirou ou o usuário já é membro."
 
-#: apps/accounts/views/invitations.py:125
+#: apps/accounts/views/invitations.py:124
 msgid "The invitation email cooldown is active."
 msgstr "O intervalo de reenvio do e-mail de convite está ativo."
 
-#: apps/accounts/views/invitations.py:131
+#: apps/accounts/views/invitations.py:130
 msgid "List received invitations for the authenticated user."
 msgstr "Lista os convites recebidos pelo usuário autenticado."
 
-#: apps/accounts/views/invitations.py:138
+#: apps/accounts/views/invitations.py:137
 msgid "Retrieve a received invitation detail."
 msgstr "Obtém os detalhes de um convite recebido."
 
-#: apps/accounts/views/invitations.py:146
-#: apps/accounts/views/invitations.py:180
-#: apps/accounts/views/invitations.py:258
-#: apps/accounts/views/invitations.py:333
+#: apps/accounts/views/invitations.py:145
+#: apps/accounts/views/invitations.py:179
+#: apps/accounts/views/invitations.py:257
+#: apps/accounts/views/invitations.py:332
 msgid "Invitation not found."
 msgstr "Convite não encontrado."
 
-#: apps/accounts/views/invitations.py:156 apps/accounts/views/members.py:50
+#: apps/accounts/views/invitations.py:155 apps/accounts/views/members.py:50
 msgid "The secret key of the invitation."
 msgstr "A chave secreta do convite."
 
-#: apps/accounts/views/invitations.py:161
+#: apps/accounts/views/invitations.py:160
 msgid "Retrieve an invitation by its secret key."
 msgstr "Obtém um convite pela sua chave secreta."
 
-#: apps/accounts/views/invitations.py:187
+#: apps/accounts/views/invitations.py:186
 msgid "Accept an invitation and create a member record."
 msgstr "Aceita um convite e cria um registro de membro."
 
-#: apps/accounts/views/invitations.py:240
+#: apps/accounts/views/invitations.py:239
 msgid "The invitation is no longer acceptable."
 msgstr "O convite não pode mais ser aceito."
 
-#: apps/accounts/views/invitations.py:265
+#: apps/accounts/views/invitations.py:264
 msgid "Decline an invitation."
 msgstr "Recusa um convite."
 
-#: apps/accounts/views/invitations.py:279
+#: apps/accounts/views/invitations.py:278
 msgid "The invitation has been declined successfully."
 msgstr "O convite foi recusado com sucesso."
 
-#: apps/accounts/views/invitations.py:315
+#: apps/accounts/views/invitations.py:314
 msgid "The invitation is not in a pending state."
 msgstr "O convite não está pendente."
 
-#: apps/accounts/views/invitations.py:522
+#: apps/accounts/views/invitations.py:512
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
@@ -975,6 +975,18 @@ msgstr "Altera a senha do usuário autenticado."
 #: apps/accounts/views/user_profile.py:96
 msgid "Password changed successfully."
 msgstr "Senha alterada com sucesso."
+
+#: apps/dashboard/apps.py:8 apps/dashboard/views/overview.py:15
+msgid "Dashboard"
+msgstr "Painel"
+
+#: apps/dashboard/views/overview.py:17
+msgid ""
+"Organization overview for the current member. Sections the member cannot "
+"access are null."
+msgstr ""
+"Visão geral da organização para o membro atual. Seções às quais o membro "
+"não tem acesso são nulas."
 
 #: apps/generics/choices.py:6
 msgid "Authentication error"
@@ -1265,11 +1277,11 @@ msgstr ""
 "chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
 "uma equipe válida, apenas gerentes da organização recebem funções."
 
-#: config/settings/base.py:294
+#: config/settings/base.py:295
 msgid "CrewForge API"
 msgstr "CrewForge API"
 
-#: config/settings/base.py:296
+#: config/settings/base.py:297
 msgid ""
 "API service for managing accounts, teams, and permissions with "
 "comprehensive\n"
@@ -1290,7 +1302,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:407
+#: config/settings/base.py:409
 msgid "CrewForge"
 msgstr "CrewForge"
 
