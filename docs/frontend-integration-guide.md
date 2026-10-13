@@ -581,7 +581,7 @@ Invitation emails render in the invitee's profile `preferred_language` (see [6.2
 | Status | Meaning |
 |---|---|
 | **200** | Email sent successfully |
-| **400** | Invitation expired or user already a member |
+| **400** | Invitation expired, user already a member, or organization no longer active |
 | **404** | Invitation not found |
 | **429** | Cooldown active (include `retry_after_seconds` in response) |
 
