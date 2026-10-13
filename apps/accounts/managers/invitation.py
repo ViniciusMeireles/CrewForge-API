@@ -33,7 +33,7 @@ class InvitationQuerySet(BaseQuerySet):
                 is_active=False,
             )
             .exclude(
-                expired_at__lt=timezone.now(),
+                expired_at__lte=timezone.now(),
             )
             .exclude(
                 member__isnull=False,
