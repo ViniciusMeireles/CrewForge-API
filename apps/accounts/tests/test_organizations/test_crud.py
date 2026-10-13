@@ -151,20 +151,26 @@ class OrganizationCRUDTestCase(APITestCaseMixin, APITestCase):
     def test_login_organization_switches_context(self):
         user = UserFactory.create()
         org1 = OrganizationFactory.create()
-        MemberFactory.create(user=user, organization=org1)
+        member1 = MemberFactory.create(user=user, organization=org1)
         org2 = OrganizationFactory.create()
-        MemberFactory.create(user=user, organization=org2)
+        member2 = MemberFactory.create(user=user, organization=org2)
         self.client.force_authenticate(user=user)
 
         url1 = self._login_url(org1)
         response1 = self.client.post(url1, format='json')
         self.assertEqual(response1.status_code, http_status.HTTP_200_OK)
         self.assertEqual(self.client.session.get('organization_id'), org1.id)
+        self.assertEqual(response1.data['member']['id'], member1.id)
 
         url2 = self._login_url(org2)
         response2 = self.client.post(url2, format='json')
         self.assertEqual(response2.status_code, http_status.HTTP_200_OK)
         self.assertEqual(self.client.session.get('organization_id'), org2.id)
+        self.assertEqual(response2.data['member']['id'], member2.id)
+        member1.refresh_from_db()
+        member2.refresh_from_db()
+        self.assertIsNotNone(member1.last_login_at)
+        self.assertIsNotNone(member2.last_login_at)
 
     def test_login_nonexistent_organization(self):
         user = UserFactory.create()

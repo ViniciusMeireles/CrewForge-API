@@ -39,6 +39,7 @@ third_party_urlpatterns = [
 local_urlpatterns = [
     path('', include('apps.accounts.urls')),
     path('', include('apps.teams.urls')),
+    path('', include('apps.dashboard.urls')),
 ]
 
 urlpatterns = (

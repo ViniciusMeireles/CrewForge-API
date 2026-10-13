@@ -178,6 +178,10 @@ class InvitationErrorMessages(models.TextChoices):
         _('The invitation has already been declined.'),
     )
     USER_ALREADY_MEMBER = 'user_already_member', _('User is already a member')
+    ORGANIZATION_INACTIVE = (
+        'organization_inactive',
+        _('The organization is no longer active.'),
+    )
 
 
 class InvitationEmailErrorMessages(models.TextChoices):

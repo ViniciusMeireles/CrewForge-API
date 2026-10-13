@@ -17,7 +17,8 @@
 - [Error Handling](#13-error-handling)
 - [Pagination](#14-pagination)
 - [Form Options Endpoints](#15-form-options-endpoints)
-- [Troubleshooting](#16-troubleshooting)
+- [Dashboard](#16-dashboard)
+- [Troubleshooting](#17-troubleshooting)
 
 ---
 
@@ -30,13 +31,14 @@ CrewForge is a Django REST API that uses a **two-layer authentication model**:
 
 All endpoints are prefixed with `/api/`.
 
-The API is organized into three main namespaces:
+The API is organized into four main namespaces:
 
 | Prefix | Purpose |
 |---|---|
 | `/api/auth/` | Authentication, token refresh, password reset |
 | `/api/accounts/` | Organizations, members, invitations, files, user profile, signup |
 | `/api/teams/` | Teams and team memberships |
+| `/api/dashboard/` | Organization overview for the dashboard page |
 
 ---
 
@@ -568,6 +570,8 @@ Email and role are taken from the invitation itself (not from the request body).
 
 Received invitations (`/api/accounts/invitations/received/`, `accept`, `decline`) match the invitation email only for users with a **verified** email (see [4.3](#43-email-verification)).
 
+Invitations of a deactivated (soft-deleted) organization are not listed as received and cannot be accepted or declined (**400** "The organization is no longer active."). An invitation is pending (acceptable) only while it is active, not accepted, declined or expired, `expired_at` is in the future, and the invitee — the linked user, or the active user with the invitation email — has no membership in the organization, active or removed (accepting would create a second membership; `accept` answers **400** "User is already a member").
+
 Invitation emails render in the invitee's profile `preferred_language` (see [6.2](#62-update-profile)) when the invite address belongs to a user; otherwise they fall back to the language of the request that sent them (`en` by default).
 
 ### Send Email Cooldown
@@ -577,7 +581,7 @@ Invitation emails render in the invitee's profile `preferred_language` (see [6.2
 | Status | Meaning |
 |---|---|
 | **200** | Email sent successfully |
-| **400** | Invitation expired or user already a member |
+| **400** | Invitation expired, user already a member, or organization no longer active |
 | **404** | Invitation not found |
 | **429** | Cooldown active (include `retry_after_seconds` in response) |
 
@@ -997,28 +1001,166 @@ The backend declares these per filter in the filterset `Meta.options_extra_kwarg
 
 ---
 
-## 16. Troubleshooting
+## 16. Dashboard
 
-### 16.1. Cookies Not Being Sent
+### 16.1. Overview Endpoint
+
+`GET /api/dashboard/overview/` returns the whole Organization overview for the dashboard page
+in one request: the requesting Member's header data, counts and short lists for Members, Teams
+and Invitations, plus the User's pending received Invitations across all Organizations.
+
+**Permission:** authenticated User **and** active Member of the session Organization
+(`IsActiveMember`). A valid JWT without an organization context answers **403** — establish the
+session organization first (see [3. Authentication Flow](#3-authentication-flow)). Method:
+`GET` (and `OPTIONS` for metadata); all other methods → 405. The endpoint takes
+**no query parameters**.
+
+### 16.2. Section Gates
+
+Each Organization section is computed with the same predicate that guards its management screen
+and is returned as `null` when the Member may not see it. Render only non-null sections; never
+derive section visibility from the Role on the client.
+
+| Section | Returned when | Otherwise |
+|---|---|---|
+| `member` | always | — |
+| `members` | active Member (`has_members_access`) | `null` |
+| `teams` | active Member (`has_teams_access`) | `null` |
+| `invitations` | Owner or Admin (`has_invitations_access`) | `null` |
+| `received_invitations` | always (User-level, all Organizations) | — |
+
+Invitation counts follow the same Role scoping as the Invitations list: an Admin sees Manager
+and Member invitations; an Owner sees all roles.
+
+### 16.3. Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `generated_at` | datetime | Server time of computation |
+| `member.id` | integer | Requesting Member id |
+| `member.role` | enum | `owner` \| `admin` \| `manager` \| `member` |
+| `member.role_label` | string | Role label translated by `Accept-Language` |
+| `member.created_at` | datetime | "Member since" |
+| `members` | object \| null | Null without Members access |
+| `members.total` | integer | Active Members |
+| `members.by_role[]` | array(4) | `{ role, role_label, count }` — always the four Roles in hierarchy order, zeros included |
+| `members.recent[]` | array(≤5) | `{ id, full_name, email, nickname, role, role_label, created_at }` |
+| `teams` | object \| null | Null without Teams access |
+| `teams.total` | integer | Active Teams |
+| `teams.mine_count` | integer | Teams the Member belongs to |
+| `teams.mine[]` | array(≤5) | `{ id, name, slug, role, role_label, member_count }` — `id` is the **Team** id and `role` the Team-level role |
+| `invitations` | object \| null | Null without Invitations access |
+| `invitations.pending` | integer | Pending visible Invitations |
+| `invitations.expiring_soon[]` | array(≤5) | `{ id, email, role, role_label, expired_at }` |
+| `received_invitations.pending` | integer | Pending Invitations received by the User (all Organizations) |
+
+**Limits:** `recent`, `mine` and `expiring_soon` are capped at **5** items; "expiring soon"
+means `expired_at` within the next **7 days**. Both are API constants, not query parameters.
+Lists are ordered: `recent` by `created_at` desc then `id` desc, `mine` by Team name
+(case-insensitive) then `team_id`, and `expiring_soon` by `expired_at` asc then `id`.
+
+Only active records count (soft-delete). Every number is scoped to the session Organization
+except `received_invitations`, which is User-level by definition and only counts email-matched
+invitations when the User's email is verified. "Pending" follows the acceptance rule of section 9: invitations
+whose invitee already has a membership in the organization (active or removed), and invitations
+of deactivated organizations, are never counted.
+
+### 16.4. Example Payload
+
+```json
+{
+  "generated_at": "2026-10-09T14:03:12.123456Z",
+  "member": {
+    "id": 7,
+    "role": "admin",
+    "role_label": "Admin",
+    "created_at": "2026-03-01T10:00:00Z"
+  },
+  "members": {
+    "total": 12,
+    "by_role": [
+      { "role": "owner", "role_label": "Owner", "count": 1 },
+      { "role": "admin", "role_label": "Admin", "count": 2 },
+      { "role": "manager", "role_label": "Manager", "count": 3 },
+      { "role": "member", "role_label": "Member", "count": 6 }
+    ],
+    "recent": [
+      {
+        "id": 31,
+        "full_name": "Ana Lima",
+        "email": "ana@acme.io",
+        "nickname": "ana",
+        "role": "member",
+        "role_label": "Member",
+        "created_at": "2026-10-08T09:12:00Z"
+      }
+    ]
+  },
+  "teams": {
+    "total": 4,
+    "mine_count": 2,
+    "mine": [
+      {
+        "id": 3,
+        "name": "Platform",
+        "slug": "platform",
+        "role": "owner",
+        "role_label": "Owner",
+        "member_count": 5
+      }
+    ]
+  },
+  "invitations": {
+    "pending": 3,
+    "expiring_soon": [
+      {
+        "id": 9,
+        "email": "joe@acme.io",
+        "role": "manager",
+        "role_label": "Manager",
+        "expired_at": "2026-10-11T00:00:00Z"
+      }
+    ]
+  },
+  "received_invitations": { "pending": 1 }
+}
+```
+
+Sections the Member cannot see are `null` (e.g. `invitations` for a Manager) and the frontend
+must not render them.
+
+### 16.5. Errors
+
+| Case | Status |
+|---|---|
+| Missing / invalid JWT | 401 |
+| No session Organization, or inactive Member | 403 |
+| Non-GET / non-OPTIONS method | 405 |
+
+---
+
+## 17. Troubleshooting
+
+### 17.1. Cookies Not Being Sent
 
 - Check that `withCredentials: true` (Angular) or `credentials: 'include'` (Fetch) is set on all requests that need the session.
 - Verify the SameSite + Secure configuration via `GET /api/accounts/session/config/` (public endpoint, no auth required; the diagnostics are only returned with `DEBUG=True`).
 - In development (HTTP), both `SameSite=Lax` and `Secure=False` are required. In production (HTTPS), `SameSite=None` and `Secure=True`.
 
-### 16.2. CORS Errors
+### 17.2. CORS Errors
 
 - Verify `CORS_ALLOWED_ORIGINS` in `.env` includes the frontend origin (e.g., `http://localhost:4200`).
 - Check the browser console for `Access-Control-Allow-Origin` headers.
 - With `DEBUG=True`, the `/api/accounts/session/config/` endpoint returns the current `cors_allowed_origins` setting.
 
-### 16.3. 404 on Org-Scoped Endpoints
+### 17.3. 404 on Org-Scoped Endpoints
 
 This is the most common issue. A 404 (not 403) on org-scoped resources usually means the `organization_id` is not in the session.
 
 - Verify Step 3 (organization login) was completed successfully.
 - Check `GET /api/accounts/session/` — if `organization` and `member` are `null`, the session has no active organization context.
 
-### 16.4. Token Expired
+### 17.4. Token Expired
 
 - A 401 response means the access token has expired.
 - Attempt a token refresh via `POST /api/auth/token/refresh/`.

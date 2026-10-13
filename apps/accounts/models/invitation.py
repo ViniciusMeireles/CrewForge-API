@@ -133,6 +133,8 @@ class Invitation(BaseModel):
             self.is_expired = True
             self.save()
             return False, str(InvitationErrorMessages.INVITATION_EXPIRED.label)
+        elif not self.organization.is_active:
+            return False, str(InvitationErrorMessages.ORGANIZATION_INACTIVE.label)
         elif (user := self.get_user()) and self.organization.members.filter(
             user=user
         ).exists():
