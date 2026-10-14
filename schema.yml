@@ -5679,6 +5679,7 @@ components:
         last_login_at:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
           description: Last time the member logged into the organization
         joined_at:
@@ -5703,6 +5704,7 @@ components:
       - id
       - is_active
       - joined_at
+      - last_login_at
       - organization
       - refresh
       - role

@@ -37,6 +37,7 @@ class SignupSerializer(
         fields = '__all__'
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
             'role',
+            'last_login_at',
             'joined_at',
         ]
 
