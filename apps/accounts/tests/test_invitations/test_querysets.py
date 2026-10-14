@@ -108,13 +108,13 @@ class InvitationQuerySetAlreadyMembersTestCase(TestCase):
         )
         self.assertNotIn(invitation.id, self._acceptable_ids())
 
-    def test_removed_member_is_excluded(self):
+    def test_removed_member_is_kept(self):
         member = MemberFactory(organization=self.organization, is_active=False)
         invitation = InvitationFactory(
             organization=self.organization,
             email=member.user.email,
         )
-        self.assertNotIn(invitation.id, self._acceptable_ids())
+        self.assertIn(invitation.id, self._acceptable_ids())
 
     def test_inactive_user_with_email_is_kept(self):
         member = MemberFactory(organization=self.organization)
@@ -153,3 +153,59 @@ class InvitationQuerySetInactiveOrganizationTestCase(TestCase):
         self.assertFalse(
             Invitation.objects.filter_received_by_user(self.user).exists(),
         )
+
+
+class InvitationQuerySetFormerMemberTestCase(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory()
+
+    def _is_former_member(self, invitation):
+        return (
+            Invitation.objects.filter(pk=invitation.pk)
+            .annotate_former_member()
+            .values_list('is_former_member', flat=True)
+            .get()
+        )
+
+    def test_removed_member_email_is_former_member(self):
+        member = MemberFactory(organization=self.organization, is_active=False)
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertTrue(self._is_former_member(invitation))
+
+    def test_removed_member_linked_user_is_former_member(self):
+        member = MemberFactory(organization=self.organization, is_active=False)
+        invitation = InvitationFactory(organization=self.organization, user=member.user)
+        self.assertTrue(self._is_former_member(invitation))
+
+    def test_active_member_is_not_former_member(self):
+        member = MemberFactory(organization=self.organization)
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertFalse(self._is_former_member(invitation))
+
+    def test_never_member_is_not_former_member(self):
+        invitation = InvitationFactory(organization=self.organization)
+        self.assertFalse(self._is_former_member(invitation))
+
+    def test_removed_member_of_another_organization_is_not_former_member(self):
+        member = MemberFactory(is_active=False)
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertFalse(self._is_former_member(invitation))
+
+    def test_inactive_user_with_the_email_is_not_former_member(self):
+        member = MemberFactory(organization=self.organization, is_active=False)
+        member.user.is_active = False
+        member.user.save(update_fields=['is_active'])
+        invitation = InvitationFactory(
+            organization=self.organization,
+            email=member.user.email,
+        )
+        self.assertFalse(self._is_former_member(invitation))

@@ -32,6 +32,7 @@ class MemberModelSerializerTestCase(APITestCaseMixin, APITestCase):
             'created_by',
             'updated_by',
             'last_login_at',
+            'joined_at',
         }
         self.assertEqual(set(result.keys()), expected_fields)
 
@@ -53,6 +54,7 @@ class MemberModelSerializerTestCase(APITestCaseMixin, APITestCase):
             'created_by',
             'updated_by',
             'last_login_at',
+            'joined_at',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
 

@@ -185,7 +185,8 @@ paths:
   /api/accounts/invitations/{invitation_pk}/accept/:
     post:
       operationId: accounts_invitations_accept_create
-      description: Accept an invitation and create a member record.
+      description: Accept an invitation and create a member record, or reactivate
+        the removed member of the user (readmission).
       parameters:
       - in: path
         name: invitation_pk
@@ -828,6 +829,7 @@ paths:
             - -created_by
             - -id
             - -is_active
+            - -joined_at
             - -last_login_at
             - -nickname
             - -organization
@@ -843,6 +845,7 @@ paths:
             - created_by
             - id
             - is_active
+            - joined_at
             - last_login_at
             - nickname
             - organization
@@ -865,6 +868,8 @@ paths:
           * `-id` - Descending ID
           * `is_active` - Is Active
           * `-is_active` - Descending Is Active
+          * `joined_at` - Joined at
+          * `-joined_at` - Descending Joined at
           * `last_login_at` - Last login at
           * `-last_login_at` - Descending Last login at
           * `nickname` - Nickname
@@ -3642,6 +3647,9 @@ components:
           type: boolean
           writeOnly: true
           default: false
+        is_former_member:
+          type: boolean
+          readOnly: true
       required:
       - accepted_at
       - declined_at
@@ -3649,6 +3657,7 @@ components:
       - id
       - is_accepted
       - is_declined
+      - is_former_member
       - last_email_sent_at
       - organization
       - role_label
@@ -3681,9 +3690,12 @@ components:
           type: string
         member_id:
           type: integer
+        readmitted:
+          type: boolean
       required:
       - access
       - member_id
+      - readmitted
       - refresh
     InvitationByKey:
       type: object
@@ -4029,6 +4041,11 @@ components:
           readOnly: true
           nullable: true
           description: Last time the member logged into the organization
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the current membership started
         created_by:
           type: integer
           readOnly: true
@@ -4048,6 +4065,7 @@ components:
       - created_by
       - id
       - is_active
+      - joined_at
       - last_login_at
       - organization
       - role_label
@@ -4190,6 +4208,11 @@ components:
           readOnly: true
           nullable: true
           description: Last time the member logged into the organization
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the current membership started
         created_by:
           type: integer
           readOnly: true
@@ -4209,6 +4232,7 @@ components:
       - created_by
       - id
       - is_active
+      - joined_at
       - last_login_at
       - organization
       - role
@@ -4264,6 +4288,11 @@ components:
           readOnly: true
           nullable: true
           description: Last time the member logged into the organization
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the current membership started
         created_by:
           type: integer
           readOnly: true
@@ -4283,6 +4312,7 @@ components:
       - created_by
       - id
       - is_active
+      - joined_at
       - last_login_at
       - organization
       - role
@@ -4875,6 +4905,10 @@ components:
           format: date-time
           readOnly: true
           description: When the record was initially created
+        joined_at:
+          type: string
+          format: date-time
+          description: When the current membership started
       required:
       - created_at
       - id
@@ -5205,6 +5239,11 @@ components:
           readOnly: true
           nullable: true
           description: Last time the member logged into the organization
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the current membership started
         created_by:
           type: integer
           readOnly: true
@@ -5486,6 +5525,10 @@ components:
           format: date-time
           readOnly: true
           description: When the record was initially created
+        joined_at:
+          type: string
+          format: date-time
+          description: When the current membership started
       required:
       - created_at
       - email
@@ -5636,8 +5679,14 @@ components:
         last_login_at:
           type: string
           format: date-time
+          readOnly: true
           nullable: true
           description: Last time the member logged into the organization
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the current membership started
         created_by:
           type: integer
           readOnly: true
@@ -5654,6 +5703,8 @@ components:
       - created_by
       - id
       - is_active
+      - joined_at
+      - last_login_at
       - organization
       - refresh
       - role

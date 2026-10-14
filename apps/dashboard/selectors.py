@@ -34,7 +34,7 @@ def members_section(*, organization_id: int) -> dict:
         for role in MemberRoleChoices.values
     ]
     recent = list(
-        members.select_related('user').order_by('-created_at', '-id')[
+        members.select_related('user').order_by('-joined_at', '-id')[
             :DASHBOARD_LIST_LIMIT
         ],
     )

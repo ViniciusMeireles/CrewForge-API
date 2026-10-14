@@ -73,9 +73,10 @@ class Invitation(BaseModel):
         verbose_name=_('Key'),
         help_text=_('Key for the invitation'),
     )
-    member = models.OneToOneField(
+    member = models.ForeignKey(
         to='accounts.Member',
         on_delete=models.CASCADE,
+        related_name='invitations',
         verbose_name=_('Member'),
         help_text=_('Member associated with the invitation'),
         null=True,
@@ -136,7 +137,8 @@ class Invitation(BaseModel):
         elif not self.organization.is_active:
             return False, str(InvitationErrorMessages.ORGANIZATION_INACTIVE.label)
         elif (user := self.get_user()) and self.organization.members.filter(
-            user=user
+            user=user,
+            is_active=True,
         ).exists():
             return False, str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
         return True, ''

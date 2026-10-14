@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -183,7 +185,10 @@ from apps.generics.utils.schema import extend_schema_model_view_set
     accept=extend_schema(
         request=InvitationAcceptSerializer,
         tags=Invitation.schema_tags(),
-        description=_('Accept an invitation and create a member record.'),
+        description=_(
+            'Accept an invitation and create a member record, or reactivate the '
+            'removed member of the user (readmission).'
+        ),
         responses={
             status.HTTP_200_OK: inline_serializer(
                 name='InvitationAcceptSuccess',
@@ -191,6 +196,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
                     'access': serializers.CharField(),
                     'refresh': serializers.CharField(),
                     'member_id': serializers.IntegerField(),
+                    'readmitted': serializers.BooleanField(),
                 },
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
@@ -347,7 +353,12 @@ class InvitationViewSet(
     options_actions = ('create', 'update', 'list', 'received')
 
     def get_queryset(self):
-        return super().get_queryset().filter_visible_to(self.auth_member)
+        return (
+            super()
+            .get_queryset()
+            .filter_visible_to(self.auth_member)
+            .annotate_former_member()
+        )
 
     @action(detail=True, methods=['post'], url_path='send-email')
     def send_email(self, request, *args, **kwargs):
@@ -463,19 +474,30 @@ class InvitationViewSet(
 
         from apps.accounts.models.member import Member
 
-        nickname = request.data.get('nickname', '')
-        member = Member.objects.create(
-            user=request.user,
-            organization=invitation.organization,
-            role=invitation.role,
-            nickname=nickname if nickname else None,
-        )
-        invitation.accept(member=member, check=False)
+        accept_serializer = InvitationAcceptSerializer(data=request.data)
+        accept_serializer.is_valid(raise_exception=True)
+        try:
+            with transaction.atomic():
+                member, readmitted = Member.objects.admit(
+                    user=request.user,
+                    organization=invitation.organization,
+                    role=invitation.role,
+                    nickname=accept_serializer.validated_data.get('nickname', ''),
+                )
+                invitation.accept(member=member, check=False)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.message_dict) from exc
+        except ValueError as exc:
+            return Response(
+                data={'detail': str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         log_security_event(
-            'invitation.accepted',
+            'member.readmitted' if readmitted else 'invitation.accepted',
             request,
             invitation_id=invitation.pk,
             organization_id=invitation.organization_id,
+            member_id=member.pk,
         )
 
         from rest_framework_simplejwt.tokens import RefreshToken
@@ -486,6 +508,7 @@ class InvitationViewSet(
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
                 'member_id': member.id,
+                'readmitted': readmitted,
             }
         )
         return move_tokens_to_cookies(request, response, response.data)

@@ -37,6 +37,7 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
             'role_label',
             'organization',
             'last_email_sent_at',
+            'is_former_member',
         }
         self.assertEqual(set(result.keys()), expected_fields)
 
@@ -58,6 +59,7 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
             'role_label',
             'organization',
             'last_email_sent_at',
+            'is_former_member',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
 
@@ -129,7 +131,7 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
-    def test_validate_email_of_removed_member_returns_400(self):
+    def test_validate_email_of_removed_member_is_allowed(self):
         removed = MemberFactory(organization=self.organization, is_active=False)
         payload = {
             'email': removed.user.email,
@@ -137,8 +139,41 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
             'expired_at': timezone.now() + timedelta(days=7),
         }
         response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertTrue(response.data['is_former_member'])
+
+    def test_validate_email_of_active_member_returns_400(self):
+        active = MemberFactory(organization=self.organization)
+        payload = {
+            'email': active.user.email,
+            'role': MemberRoleChoices.MEMBER,
+            'expired_at': timezone.now() + timedelta(days=7),
+        }
+        response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
         self.assertIn('email', response.data['error']['details'])
+
+    def test_validate_email_of_member_with_inactive_user_is_allowed(self):
+        member = MemberFactory(organization=self.organization)
+        member.user.is_active = False
+        member.user.save(update_fields=['is_active'])
+        payload = {
+            'email': member.user.email,
+            'role': MemberRoleChoices.MEMBER,
+            'expired_at': timezone.now() + timedelta(days=7),
+        }
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+
+    def test_create_for_new_email_is_not_former_member(self):
+        payload = {
+            'email': 'newcomer@example.com',
+            'role': MemberRoleChoices.MEMBER,
+            'expired_at': timezone.now() + timedelta(days=7),
+        }
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertFalse(response.data['is_former_member'])
 
     def test_validate_email_duplicate_allows_expired(self):
         invitation = self._create_invitation(

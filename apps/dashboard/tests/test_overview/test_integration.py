@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.factories.members import MemberFactory
+from apps.accounts.models.member import Member
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.factories.team_members import TeamMemberFactory
@@ -40,7 +41,7 @@ class OverviewIntegrationTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertEqual(
             set(data['member'].keys()),
-            {'id', 'role', 'role_label', 'created_at'},
+            {'id', 'role', 'role_label', 'created_at', 'joined_at'},
         )
         self.assertIsInstance(data['generated_at'], str)
         self.assertIsInstance(data['member']['role_label'], str)
@@ -100,12 +101,24 @@ class OverviewIntegrationTestCase(APITestCaseMixin, APITestCase):
             'role',
             'role_label',
             'created_at',
+            'joined_at',
         }
         for row in recent:
             self.assertEqual(set(row.keys()), expected_keys)
             self.assertIsInstance(row['full_name'], str)
             self.assertIsInstance(row['email'], str)
             self.assertIn(row['role'], MemberRoleChoices.values)
+
+    def test_readmitted_member_is_first_in_recent(self):
+        removed = MemberFactory(organization=self.organization, is_active=False)
+        MemberFactory(organization=self.organization)
+        Member.objects.admit(
+            user=removed.user,
+            organization=self.organization,
+            role=MemberRoleChoices.MEMBER,
+        )
+        recent = self._get()['members']['recent']
+        self.assertEqual(recent[0]['id'], removed.pk)
 
     def test_teams_total_mine_count_ordering_and_limit(self):
         names = [

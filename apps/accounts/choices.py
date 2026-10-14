@@ -184,6 +184,13 @@ class InvitationErrorMessages(models.TextChoices):
     )
 
 
+class MemberErrorMessages(models.TextChoices):
+    NICKNAME_TAKEN = (
+        'nickname_taken',
+        _('This nickname is already in use in this organization.'),
+    )
+
+
 class InvitationEmailErrorMessages(models.TextChoices):
     COOLDOWN_ACTIVE = (
         'cooldown_active',

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.expressions import Case, Value, When
 from django.db.models.functions import Concat
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.choices import MemberRoleChoices
@@ -44,6 +45,11 @@ class Member(BaseModel):
         blank=True,
         verbose_name=_('Last login at'),
         help_text=_('Last time the member logged into the organization'),
+    )
+    joined_at = models.DateTimeField(
+        default=timezone.now,
+        verbose_name=_('Joined at'),
+        help_text=_('When the current membership started'),
     )
 
     objects = MemberManager()
