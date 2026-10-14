@@ -439,7 +439,7 @@ Content-Type: application/json
 }
 ```
 
-The JWT tokens are nested inside `user.auth_token`. After signup, the frontend should store the tokens and call the organization login (Step 3) to establish the session.
+Bearer clients get the JWT tokens in `user.auth_token`. Browsers sending `X-Auth-Transport: cookie` receive them as HttpOnly cookies and `user.auth_token` is omitted (see [3.9](#39-browser-sessions-httponly-cookies)). Then call the organization login (Step 3) to establish the session.
 
 ---
 
@@ -514,8 +514,10 @@ Changing the password **revokes every refresh token** of the user (all devices a
 | List | `GET /api/accounts/organizations/` | Authenticated user (member of) |
 | Create | `POST /api/accounts/organizations/` | Any authenticated user |
 | Retrieve | `GET /api/accounts/organizations/{id}/` | Member of the organization |
-| Update | `PUT/PATCH /api/accounts/organizations/{id}/` | Admin+ role |
+| Update | `PUT/PATCH /api/accounts/organizations/{id}/` | Owner of the organization (in its session) |
+| Delete | `DELETE /api/accounts/organizations/{id}/` | Owner of the organization (in its session) |
 | Login | `POST /api/accounts/organizations/{id}/login/` | Active member |
+| Filter options | `GET /api/accounts/organizations/filter-options/` | Same as List |
 
 ---
 
@@ -525,8 +527,12 @@ Changing the password **revokes every refresh token** of the user (all devices a
 |---|---|---|
 | List | `GET /api/accounts/members/` | Member of the org |
 | Retrieve | `GET /api/accounts/members/{id}/` | Member of the org |
-| Update role | `PATCH /api/accounts/members/{id}/` | Sufficient role hierarchy |
+| Update | `PUT/PATCH /api/accounts/members/{id}/` (`role` is read-only here) | Yourself, or admin+ (owner to edit an owner) |
+| Update role | `PATCH /api/accounts/members/{id}/update-role/` | Admin+ (owner to change an owner); never your own role (400); new role must be assignable |
+| Delete | `DELETE /api/accounts/members/{id}/` | Yourself (leave), or admin+ |
 | Create via invite | `POST /api/accounts/members/create-with-invite/{invitation_key}/` | No auth required |
+| Filter options | `GET /api/accounts/members/filter-options/` | Same as List (every role listed) |
+| Update-role options | `GET /api/accounts/members/form-options-update-role/` | Member of the org (only roles the caller may assign) |
 
 ### 8.1. Create Member via Invitation
 
@@ -550,7 +556,7 @@ No auth headers
 
 Email and role are taken from the invitation itself (not from the request body).
 
-**Response (200):** Same shape as signup: nested `user` with `auth_token` containing JWT tokens, plus membership fields.
+**Response (200):** Same shape as signup: nested `user` plus membership fields. Bearer clients get the tokens in `user.auth_token`; in cookie mode they are set as cookies and omitted from the body.
 
 ### 8.2. Join Date and Removal
 
@@ -566,12 +572,18 @@ Email and role are taken from the invitation itself (not from the request body).
 | List | `GET /api/accounts/invitations/` | Admins see MANAGER+MEMBER; owners see all roles |
 | Create | `POST /api/accounts/invitations/` | Admin+ (owner for OWNER/ADMIN roles) |
 | Retrieve | `GET /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
-| Update | `PUT/PATCH /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
+| Update | `PUT /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Delete | `DELETE /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Send email | `POST /api/accounts/invitations/{id}/send-email/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Form options (create) | `GET /api/accounts/invitations/form-options-create/` | Admin+ |
 | Form options (update) | `GET /api/accounts/invitations/form-options-update/` | Admin+ |
 | Filter options | `GET /api/accounts/invitations/filter-options/` | Admin+ |
+| By key | `GET /api/accounts/invitations/by-key/{invitation_key}/` | Public (invitation link landing) |
+| Received list | `GET /api/accounts/invitations/received/` | Authenticated user with a verified email |
+| Received detail | `GET /api/accounts/invitations/received/{invitation_pk}/` | Authenticated user with a verified email |
+| Received filter options | `GET /api/accounts/invitations/received/filter-options/` | Authenticated user (every role listed) |
+| Accept | `POST /api/accounts/invitations/{invitation_pk}/accept/` | The invitee (verified email matching the invitation) |
+| Decline | `POST /api/accounts/invitations/{invitation_pk}/decline/` | The invitee (verified email matching the invitation) |
 
 Received invitations (`/api/accounts/invitations/received/`, `accept`, `decline`) match the invitation email only for users with a **verified** email (see [4.3](#43-email-verification)).
 
@@ -603,8 +615,9 @@ Invitations are looked up by primary key (`id`), not by the UUID `key`.
 | List | `GET /api/teams/teams/` | Member of the org |
 | Create | `POST /api/teams/teams/` | Org manager+ |
 | Retrieve | `GET /api/teams/teams/{id}/` | Member of the org |
-| Update | `PUT`/`PATCH /api/teams/teams/{id}/` | Org manager+ (a team owner/admin role alone does not grant it) |
+| Update | `PUT /api/teams/teams/{id}/` (no `PATCH`) | Org manager+ (a team owner/admin role alone does not grant it) |
 | Delete | `DELETE /api/teams/teams/{id}/` | Org manager+ (a team owner/admin role alone does not grant it) |
+| Filter options | `GET /api/teams/teams/filter-options/` | Same as List |
 
 Creating a team auto-creates a `TeamMember` record with `OWNER` role for the creator.
 
@@ -689,7 +702,7 @@ GET /api/accounts/stored-files/{uuid}/file/?download=true
 Authorization: Bearer eyJhbGciOiJI...
 ```
 
-Requires the `Authorization` header. Cannot use a plain `<a href>` tag — the frontend must fetch via `HttpClient` with `responseType: 'blob'`.
+Bearer clients must send the `Authorization` header. Browsers are authenticated by the access cookie; the SPA still fetches via `HttpClient` with `responseType: 'blob'` (e.g. `AuthImage`) so it can handle errors and object URLs.
 
 Only raster images (PNG, JPEG, GIF, WebP) are served inline, and only when `download` is omitted or `false`; `?download=true` forces an attachment. **Every other type is always an attachment**, whatever `download` says. All file responses carry `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox; default-src 'none'`.
 
@@ -702,8 +715,10 @@ POST /api/accounts/organization-images/
 Content-Type: multipart/form-data
 
 image.file: (binary image data)
-image.type: "logo"
+image_type: "logo_light"
 ```
+
+`image_type` is one of `logo`, `logo_light`, `logo_dark`, `logo_horizontal`, `logo_vertical`, `cover`, `favicon`, `og_image`; each type can exist once per organization profile (a second one answers **400** on `image_type`). Reads follow stored-file visibility; writes need admin+.
 
 ---
 
