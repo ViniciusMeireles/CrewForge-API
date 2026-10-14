@@ -552,6 +552,11 @@ Email and role are taken from the invitation itself (not from the request body).
 
 **Response (200):** Same shape as signup: nested `user` with `auth_token` containing JWT tokens, plus membership fields.
 
+### 8.2. Join Date and Removal
+
+- Member responses include a read-only `joined_at`: when the **current** membership started (creation, or readmission — see [9](#9-invitations)). Prefer it over `created_at`, which is when the row was first created.
+- Removing a member (`DELETE /api/accounts/members/{id}/`, soft-delete) also ends all of their team memberships, so a readmitted member starts without teams.
+
 ---
 
 ## 9. Invitations
@@ -570,7 +575,9 @@ Email and role are taken from the invitation itself (not from the request body).
 
 Received invitations (`/api/accounts/invitations/received/`, `accept`, `decline`) match the invitation email only for users with a **verified** email (see [4.3](#43-email-verification)).
 
-Invitations of a deactivated (soft-deleted) organization are not listed as received and cannot be accepted or declined (**400** "The organization is no longer active."). An invitation is pending (acceptable) only while it is active, not accepted, declined or expired, `expired_at` is in the future, and the invitee — the linked user, or the active user with the invitation email — has no membership in the organization, active or removed (accepting would create a second membership; `accept` answers **400** "User is already a member").
+Invitations of a deactivated (soft-deleted) organization are not listed as received and cannot be accepted or declined (**400** "The organization is no longer active."). An invitation is pending (acceptable) only while it is active, not accepted, declined or expired, `expired_at` is in the future, and the invitee — the linked user, or the active user with the invitation email — is not an **active** member of the organization (`accept` answers **400** "User is already a member").
+
+**Readmission.** A removed member can be invited again: creating an invitation only rejects the email of an **active** member (**400** on `email`). Organization-side invitation responses (list, retrieve, create, update) include a read-only `is_former_member` — the invitee has a removed membership and no active one — so the UI can flag it. Accepting such an invitation (`POST .../{id}/accept/`) reactivates the old member instead of creating one: role from the invitation, `nickname` from the request (or empty; the old one is dropped), a new `joined_at`, no teams. The response adds `readmitted` (`true` for a readmission, `false` for a new member) next to `member_id`; a `nickname` used by another member of the organization answers **400** on `nickname` ("This nickname is already in use in this organization.") and nothing changes. Readmissions are logged as `member.readmitted`.
 
 Invitation emails render in the invitee's profile `preferred_language` (see [6.2](#62-update-profile)) when the invite address belongs to a user; otherwise they fall back to the language of the request that sent them (`en` by default).
 
@@ -1040,11 +1047,12 @@ and Member invitations; an Owner sees all roles.
 | `member.id` | integer | Requesting Member id |
 | `member.role` | enum | `owner` \| `admin` \| `manager` \| `member` |
 | `member.role_label` | string | Role label translated by `Accept-Language` |
-| `member.created_at` | datetime | "Member since" |
+| `member.created_at` | datetime | Row creation (kept for compatibility) |
+| `member.joined_at` | datetime | "Member since" — start of the current membership |
 | `members` | object \| null | Null without Members access |
 | `members.total` | integer | Active Members |
 | `members.by_role[]` | array(4) | `{ role, role_label, count }` — always the four Roles in hierarchy order, zeros included |
-| `members.recent[]` | array(≤5) | `{ id, full_name, email, nickname, role, role_label, created_at }` |
+| `members.recent[]` | array(≤5) | `{ id, full_name, email, nickname, role, role_label, created_at, joined_at }` |
 | `teams` | object \| null | Null without Teams access |
 | `teams.total` | integer | Active Teams |
 | `teams.mine_count` | integer | Teams the Member belongs to |
@@ -1056,14 +1064,14 @@ and Member invitations; an Owner sees all roles.
 
 **Limits:** `recent`, `mine` and `expiring_soon` are capped at **5** items; "expiring soon"
 means `expired_at` within the next **7 days**. Both are API constants, not query parameters.
-Lists are ordered: `recent` by `created_at` desc then `id` desc, `mine` by Team name
+Lists are ordered: `recent` by `joined_at` desc then `id` desc, `mine` by Team name
 (case-insensitive) then `team_id`, and `expiring_soon` by `expired_at` asc then `id`.
 
 Only active records count (soft-delete). Every number is scoped to the session Organization
 except `received_invitations`, which is User-level by definition and only counts email-matched
 invitations when the User's email is verified. "Pending" follows the acceptance rule of section 9: invitations
-whose invitee already has a membership in the organization (active or removed), and invitations
-of deactivated organizations, are never counted.
+whose invitee is already an active member, and invitations of deactivated organizations, are
+never counted; readmission invitations (former members) are counted.
 
 ### 16.4. Example Payload
 
@@ -1074,7 +1082,8 @@ of deactivated organizations, are never counted.
     "id": 7,
     "role": "admin",
     "role_label": "Admin",
-    "created_at": "2026-03-01T10:00:00Z"
+    "created_at": "2026-03-01T10:00:00Z",
+    "joined_at": "2026-03-01T10:00:00Z"
   },
   "members": {
     "total": 12,
@@ -1092,7 +1101,8 @@ of deactivated organizations, are never counted.
         "nickname": "ana",
         "role": "member",
         "role_label": "Member",
-        "created_at": "2026-10-08T09:12:00Z"
+        "created_at": "2026-10-08T09:12:00Z",
+        "joined_at": "2026-10-08T09:12:00Z"
       }
     ]
   },

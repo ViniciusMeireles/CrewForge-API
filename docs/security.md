@@ -279,7 +279,7 @@ event-specific ids — never emails, passwords or tokens.
 | `auth.password.changed` / `auth.password_change.failed` | INFO / WARNING |
 | `auth.password_reset.requested` / `.completed` / `.failed` | INFO / INFO / WARNING |
 | `auth.email.verified` / `auth.email_verification.failed` | INFO / WARNING |
-| `organization.login`, `invitation.accepted` | INFO |
+| `organization.login`, `invitation.accepted`, `member.readmitted` | INFO |
 
 The level is set by `SECURITY_LOG_LEVEL` (default `INFO`); the handler writes to
 stderr, so the container logs collect it.
