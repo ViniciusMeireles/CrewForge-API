@@ -6,6 +6,8 @@ from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.teams.choices import TeamMemberRoleChoices
+from apps.teams.factories.team_members import TeamMemberFactory
 from apps.teams.factories.teams import TeamFactory
 
 
@@ -220,6 +222,46 @@ class TeamPermissionTestCase(APITestCaseMixin, APITestCase):
         url = self._detail_url(team)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    # --- Team owner/admin without organization manager role ---
+
+    def _team_leader(self, team, role):
+        member = MemberFactory(
+            organization=self.organization, role=MemberRoleChoices.MEMBER
+        )
+        TeamMemberFactory(
+            organization=self.organization, team=team, member=member, role=role
+        )
+        self.client.force_authenticate(member=member)
+
+    def test_team_owner_member_cannot_update(self):
+        team = self._create_team()
+        self._team_leader(team, TeamMemberRoleChoices.OWNER)
+        payload = self._team_payload()
+        response = self.client.put(self._detail_url(team), data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    def test_team_admin_member_cannot_partial_update(self):
+        team = self._create_team()
+        self._team_leader(team, TeamMemberRoleChoices.ADMIN)
+        response = self.client.patch(
+            self._detail_url(team), data={'name': 'Renamed'}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    def test_team_owner_member_cannot_delete(self):
+        team = self._create_team()
+        self._team_leader(team, TeamMemberRoleChoices.OWNER)
+        response = self.client.delete(self._detail_url(team))
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        team.refresh_from_db()
+        self.assertTrue(team.is_active)
+
+    def test_team_owner_member_can_retrieve(self):
+        team = self._create_team()
+        self._team_leader(team, TeamMemberRoleChoices.OWNER)
+        response = self.client.get(self._detail_url(team))
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     # --- All roles can read ---
 
