@@ -109,6 +109,13 @@ class InvitationReadmissionTestCase(APITestCaseMixin, APITestCase):
         response = self._accept(nickname='bobby')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
+    def test_nickname_longer_than_limit_returns_400(self):
+        response = self._accept(nickname='x' * 101)
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('nickname', response.data['error']['details'])
+        self.removed.refresh_from_db()
+        self.assertFalse(self.removed.is_active)
+
     def test_new_member_is_not_a_readmission(self):
         newcomer = UserFactory()
         invitation = InvitationFactory(

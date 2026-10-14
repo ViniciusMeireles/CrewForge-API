@@ -105,7 +105,11 @@ class InvitationSerializer(
             )
             errors['expired_at'] = expired_at_errors
         if (email := attrs.get('email')) and (organization := self.auth_organization):
-            if organization.members.filter(user__email=email, is_active=True).exists():
+            if organization.members.filter(
+                user__email=email,
+                user__is_active=True,
+                is_active=True,
+            ).exists():
                 email_errors = errors.get('email', [])
                 email_errors.append(
                     InvitationErrorMessages.USER_ALREADY_MEMBER.label,

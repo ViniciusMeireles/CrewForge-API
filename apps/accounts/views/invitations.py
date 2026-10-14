@@ -353,10 +353,12 @@ class InvitationViewSet(
     options_actions = ('create', 'update', 'list', 'received')
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter_visible_to(self.auth_member)
-        if self.action in ('list', 'retrieve'):
-            queryset = queryset.annotate_former_member()
-        return queryset
+        return (
+            super()
+            .get_queryset()
+            .filter_visible_to(self.auth_member)
+            .annotate_former_member()
+        )
 
     @action(detail=True, methods=['post'], url_path='send-email')
     def send_email(self, request, *args, **kwargs):
@@ -472,13 +474,15 @@ class InvitationViewSet(
 
         from apps.accounts.models.member import Member
 
+        accept_serializer = InvitationAcceptSerializer(data=request.data)
+        accept_serializer.is_valid(raise_exception=True)
         try:
             with transaction.atomic():
                 member, readmitted = Member.objects.admit(
                     user=request.user,
                     organization=invitation.organization,
                     role=invitation.role,
-                    nickname=request.data.get('nickname', ''),
+                    nickname=accept_serializer.validated_data.get('nickname', ''),
                 )
                 invitation.accept(member=member, check=False)
         except DjangoValidationError as exc:

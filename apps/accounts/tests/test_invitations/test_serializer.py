@@ -153,6 +153,18 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
         self.assertIn('email', response.data['error']['details'])
 
+    def test_validate_email_of_member_with_inactive_user_is_allowed(self):
+        member = MemberFactory(organization=self.organization)
+        member.user.is_active = False
+        member.user.save(update_fields=['is_active'])
+        payload = {
+            'email': member.user.email,
+            'role': MemberRoleChoices.MEMBER,
+            'expired_at': timezone.now() + timedelta(days=7),
+        }
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+
     def test_create_for_new_email_is_not_former_member(self):
         payload = {
             'email': 'newcomer@example.com',
