@@ -113,5 +113,7 @@ See [`.github/git-commit-instructions.md`](./.github/git-commit-instructions.md)
 | `scaffold-resource` | Generate complete Django resource (12-step checklist with grilling) |
 | `scaffold-permission` | Generate permission class with role-based checks |
 | `scaffold-test-matrix` | Generate 8 test files covering 19 scenarios |
+| `tdd` | Test-driven development with red-green-refactor loop |
+| `code-review` | Review generated code against CrewForge standards (architecture, permissions, tests, naming) |
 
 Skills are in `.agents/skills/`. Reference templates in `references/` subdirectories.
