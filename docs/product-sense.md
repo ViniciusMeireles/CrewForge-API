@@ -10,7 +10,7 @@ or product decisions.
 
 - [Core Beliefs](#core-beliefs)
 - [Domain Model](#domain-model)
-- [Design Decisions](#design-deisions)
+- [Design Decisions](#design-decisions)
 - [Non-Goals](#non-goals)
 - [Analogies](#analogies)
 
