@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -6,7 +7,7 @@ from apps.accounts.choices import MemberRoleChoices, OrganizationImageTypeChoice
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organization_image import OrganizationImageFactory
 from apps.accounts.factories.organizations import OrganizationFactory
-from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.mixins import PNG_SIGNATURE, APITestCaseMixin
 
 
 class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
@@ -119,6 +120,51 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         )
         self.client.force_authenticate(member=member)
         url = self._detail_url(image)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def _create_payload(self, image_type=OrganizationImageTypeChoices.COVER):
+        return {
+            'image.file': SimpleUploadedFile(
+                name='cover.png',
+                content=PNG_SIGNATURE + b'fake-png-content',
+                content_type='image/png',
+            ),
+            'image_type': image_type,
+        }
+
+    def _create_as(self, role):
+        if role != MemberRoleChoices.OWNER:
+            member = MemberFactory(organization=self.organization, role=role)
+            self.client.force_authenticate(member=member)
+        return self.client.post(
+            self.list_url, data=self._create_payload(), format='multipart'
+        )
+
+    def test_owner_can_create(self):
+        response = self._create_as(MemberRoleChoices.OWNER)
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+
+    def test_admin_can_create(self):
+        response = self._create_as(MemberRoleChoices.ADMIN)
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+
+    def test_manager_cannot_create(self):
+        response = self._create_as(MemberRoleChoices.MANAGER)
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertFalse(self.profile.images.exists())
+
+    def test_member_cannot_create(self):
+        response = self._create_as(MemberRoleChoices.MEMBER)
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertFalse(self.profile.images.exists())
+
+    def test_member_can_read_form_options_create(self):
+        member = MemberFactory(
+            organization=self.organization, role=MemberRoleChoices.MEMBER
+        )
+        self.client.force_authenticate(member=member)
+        url = reverse(viewname='accounts:organization_images-form-options-create')
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
