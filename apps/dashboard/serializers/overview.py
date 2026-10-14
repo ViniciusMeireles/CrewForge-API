@@ -11,7 +11,7 @@ class OverviewMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Member
-        fields = ['id', 'role', 'role_label', 'created_at']
+        fields = ['id', 'role', 'role_label', 'created_at', 'joined_at']
 
 
 class RoleCountSerializer(serializers.Serializer):
@@ -35,6 +35,7 @@ class RecentMemberSerializer(serializers.ModelSerializer):
             'role',
             'role_label',
             'created_at',
+            'joined_at',
         ]
 
 
