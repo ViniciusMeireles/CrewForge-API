@@ -601,10 +601,10 @@ Invitations are looked up by primary key (`id`), not by the UUID `key`.
 | Action | Endpoint | Permission |
 |---|---|---|
 | List | `GET /api/teams/teams/` | Member of the org |
-| Create | `POST /api/teams/teams/` | Member of the org |
+| Create | `POST /api/teams/teams/` | Org manager+ |
 | Retrieve | `GET /api/teams/teams/{id}/` | Member of the org |
-| Update | `PUT /api/teams/teams/{id}/` | Admin+ |
-| Delete | `DELETE /api/teams/teams/{id}/` | Admin+ |
+| Update | `PUT`/`PATCH /api/teams/teams/{id}/` | Org manager+ (a team owner/admin role alone does not grant it) |
+| Delete | `DELETE /api/teams/teams/{id}/` | Org manager+ (a team owner/admin role alone does not grant it) |
 
 Creating a team auto-creates a `TeamMember` record with `OWNER` role for the creator.
 
