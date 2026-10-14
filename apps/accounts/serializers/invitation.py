@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.accounts.choices import InvitationErrorMessages
@@ -39,6 +41,7 @@ class InvitationSerializer(
         required=False,
         default=False,
     )
+    is_former_member = serializers.SerializerMethodField()
 
     class Meta:
         model = Invitation
@@ -56,6 +59,7 @@ class InvitationSerializer(
             'organization',
             'last_email_sent_at',
             'send_email',
+            'is_former_member',
         ]
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
             'id',
@@ -101,7 +105,7 @@ class InvitationSerializer(
             )
             errors['expired_at'] = expired_at_errors
         if (email := attrs.get('email')) and (organization := self.auth_organization):
-            if organization.members.filter(user__email=email).exists():
+            if organization.members.filter(user__email=email, is_active=True).exists():
                 email_errors = errors.get('email', [])
                 email_errors.append(
                     InvitationErrorMessages.USER_ALREADY_MEMBER.label,
@@ -111,6 +115,17 @@ class InvitationSerializer(
             raise serializers.ValidationError(errors)
         return attrs
 
+    @extend_schema_field(OpenApiTypes.BOOL)
+    def get_is_former_member(self, obj) -> bool:
+        if hasattr(obj, 'is_former_member'):
+            return bool(obj.is_former_member)
+        return bool(
+            Invitation.objects.filter(pk=obj.pk)
+            .annotate_former_member()
+            .values_list('is_former_member', flat=True)
+            .first()
+        )
+
     def create(self, validated_data):
         send_email = validated_data.pop('send_email', False)
         instance: Invitation = super().create(validated_data)
@@ -119,8 +134,17 @@ class InvitationSerializer(
         return instance
 
 
+RECEIVED_INVITATION_FIELDS = [
+    field for field in InvitationSerializer.Meta.fields if field != 'is_former_member'
+]
+
+
 class InvitationReceivedDetailSerializer(InvitationSerializer):
     organization = InvitationOrganizationSerializer(read_only=True)
+    is_former_member = None
+
+    class Meta(InvitationSerializer.Meta):
+        fields = RECEIVED_INVITATION_FIELDS
 
 
 class InvitationReceivedSerializer(InvitationSerializer):
@@ -129,9 +153,10 @@ class InvitationReceivedSerializer(InvitationSerializer):
         source='organization.name',
         allow_null=True,
     )
+    is_former_member = None
 
     class Meta(InvitationSerializer.Meta):
-        fields = InvitationSerializer.Meta.fields + ['key', 'organization_name']
+        fields = RECEIVED_INVITATION_FIELDS + ['key', 'organization_name']
         read_only_fields = fields
 
 

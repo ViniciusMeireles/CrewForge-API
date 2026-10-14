@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 23:02+0000\n"
+"POT-Creation-Date: 2026-10-14 00:43+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -39,8 +39,8 @@ msgstr "Administrador"
 msgid "Manager"
 msgstr "Gerente"
 
-#: apps/accounts/choices.py:15 apps/accounts/models/invitation.py:79
-#: apps/accounts/models/member.py:53 apps/teams/choices.py:9
+#: apps/accounts/choices.py:15 apps/accounts/models/invitation.py:80
+#: apps/accounts/models/member.py:59 apps/teams/choices.py:9
 #: apps/teams/models/team_member.py:21
 msgid "Member"
 msgstr "Membro"
@@ -122,15 +122,19 @@ msgid "The organization is no longer active."
 msgstr "A organização não está mais ativa."
 
 #: apps/accounts/choices.py:190
+msgid "This nickname is already in use in this organization."
+msgstr "Este apelido já está em uso nesta organização."
+
+#: apps/accounts/choices.py:197
 msgid "An invitation email was recently sent. Please wait before resending."
 msgstr ""
 "Um e-mail de convite foi enviado recentemente. Aguarde antes de reenviar."
 
-#: apps/accounts/choices.py:192
+#: apps/accounts/choices.py:199
 msgid "Invitation email sent successfully."
 msgstr "E-mail de convite enviado com sucesso."
 
-#: apps/accounts/choices.py:195
+#: apps/accounts/choices.py:202
 msgid "The invitation is no longer valid."
 msgstr "O convite não é mais válido."
 
@@ -214,8 +218,8 @@ msgstr "Aceitar convite"
 
 #: apps/accounts/filters/organization_image.py:12
 #: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:67
-#: apps/accounts/models/member.py:31 apps/accounts/models/organization.py:34
-#: apps/accounts/models/organization.py:60 apps/teams/models/team.py:25
+#: apps/accounts/models/member.py:32 apps/accounts/models/organization.py:34
+#: apps/accounts/models/organization.py:49 apps/teams/models/team.py:25
 msgid "Organization"
 msgstr "Organização"
 
@@ -360,12 +364,12 @@ msgstr "Aceito em"
 msgid "When the invitation was accepted"
 msgstr "Quando o convite foi aceito"
 
-#: apps/accounts/models/invitation.py:60 apps/accounts/models/member.py:38
+#: apps/accounts/models/invitation.py:60 apps/accounts/models/member.py:39
 #: apps/teams/filters/team_member.py:68 apps/teams/models/team_member.py:26
 msgid "Role"
 msgstr "Função"
 
-#: apps/accounts/models/invitation.py:61 apps/accounts/models/member.py:39
+#: apps/accounts/models/invitation.py:61 apps/accounts/models/member.py:40
 msgid "User role in the organization"
 msgstr "Função do usuário na organização"
 
@@ -381,63 +385,71 @@ msgstr "Chave"
 msgid "Key for the invitation"
 msgstr "Chave do convite"
 
-#: apps/accounts/models/invitation.py:80
+#: apps/accounts/models/invitation.py:81
 msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
-#: apps/accounts/models/invitation.py:87 apps/accounts/models/member.py:24
+#: apps/accounts/models/invitation.py:88 apps/accounts/models/member.py:25
 msgid "User"
 msgstr "Usuário"
 
-#: apps/accounts/models/invitation.py:88
+#: apps/accounts/models/invitation.py:89
 msgid "User associated with the invitation"
 msgstr "Usuário associado ao convite"
 
-#: apps/accounts/models/invitation.py:93
+#: apps/accounts/models/invitation.py:94
 msgid "Last Email Sent At"
 msgstr "Último e-mail enviado em"
 
-#: apps/accounts/models/invitation.py:94
+#: apps/accounts/models/invitation.py:95
 msgid "Date and time when the last invitation email was sent"
 msgstr "Data e hora em que o último e-mail de convite foi enviado"
 
-#: apps/accounts/models/invitation.py:103
+#: apps/accounts/models/invitation.py:104
 msgid "Invitation"
 msgstr "Convite"
 
-#: apps/accounts/models/invitation.py:104
+#: apps/accounts/models/invitation.py:105
 msgid "Invitations"
 msgstr "Convites"
 
-#: apps/accounts/models/invitation.py:203
+#: apps/accounts/models/invitation.py:199
 msgid "Expired date must be greater than now"
 msgstr "A data de expiração deve ser posterior ao momento atual"
 
-#: apps/accounts/models/member.py:15
+#: apps/accounts/models/member.py:16
 msgid "Nickname"
 msgstr "Apelido"
 
-#: apps/accounts/models/member.py:16
+#: apps/accounts/models/member.py:17
 msgid "Nickname of the user in the organization"
 msgstr "Apelido do usuário na organização"
 
-#: apps/accounts/models/member.py:25
+#: apps/accounts/models/member.py:26
 msgid "User that is a member of the team"
 msgstr "Usuário que é membro da equipe"
 
-#: apps/accounts/models/member.py:32
+#: apps/accounts/models/member.py:33
 msgid "Organization to which the user belongs"
 msgstr "Organização à qual o usuário pertence"
 
-#: apps/accounts/models/member.py:45
+#: apps/accounts/models/member.py:46
 msgid "Last login at"
 msgstr "Último acesso em"
 
-#: apps/accounts/models/member.py:46
+#: apps/accounts/models/member.py:47
 msgid "Last time the member logged into the organization"
 msgstr "Última vez em que o membro acessou a organização"
 
-#: apps/accounts/models/member.py:54
+#: apps/accounts/models/member.py:51 apps/teams/filters/team_member.py:69
+msgid "Joined at"
+msgstr "Entrou em"
+
+#: apps/accounts/models/member.py:52
+msgid "When the current membership started"
+msgstr "Quando a participação atual começou"
+
+#: apps/accounts/models/member.py:60
 msgid "Members"
 msgstr "Membros"
 
@@ -461,67 +473,67 @@ msgstr "Proprietário da organização"
 msgid "Organizations"
 msgstr "Organizações"
 
-#: apps/accounts/models/organization.py:61
+#: apps/accounts/models/organization.py:50
 msgid "Organization to which this profile belongs"
 msgstr "Organização à qual este perfil pertence"
 
-#: apps/accounts/models/organization.py:66
+#: apps/accounts/models/organization.py:55
 msgid "Website"
 msgstr "Site"
 
-#: apps/accounts/models/organization.py:67
+#: apps/accounts/models/organization.py:56
 msgid "Organization website"
 msgstr "Site da organização"
 
-#: apps/accounts/models/organization.py:72 apps/teams/models/team.py:18
+#: apps/accounts/models/organization.py:61 apps/teams/models/team.py:18
 msgid "Description"
 msgstr "Descrição"
 
-#: apps/accounts/models/organization.py:73
+#: apps/accounts/models/organization.py:62
 msgid "Organization description"
 msgstr "Descrição da organização"
 
-#: apps/accounts/models/organization.py:80
+#: apps/accounts/models/organization.py:69
 msgid "Organization Profile"
 msgstr "Perfil da Organização"
 
-#: apps/accounts/models/organization.py:81
+#: apps/accounts/models/organization.py:70
 msgid "Organization Profiles"
 msgstr "Perfis da Organização"
 
-#: apps/accounts/models/organization.py:124
+#: apps/accounts/models/organization.py:113
 msgid "Profile"
 msgstr "Perfil"
 
-#: apps/accounts/models/organization.py:125
+#: apps/accounts/models/organization.py:114
 msgid "Organization profile"
 msgstr "Perfil da organização"
 
-#: apps/accounts/models/organization.py:131
+#: apps/accounts/models/organization.py:120
 msgid "Image type"
 msgstr "Tipo de imagem"
 
-#: apps/accounts/models/organization.py:132
+#: apps/accounts/models/organization.py:121
 msgid "Type of organization image"
 msgstr "Tipo de imagem da organização"
 
-#: apps/accounts/models/organization.py:138
+#: apps/accounts/models/organization.py:127
 msgid "Image"
 msgstr "Imagem"
 
-#: apps/accounts/models/organization.py:139
+#: apps/accounts/models/organization.py:128
 msgid "Organization image"
 msgstr "Imagem da organização"
 
-#: apps/accounts/models/organization.py:145
+#: apps/accounts/models/organization.py:134
 msgid "Organization Image"
 msgstr "Imagem da Organização"
 
-#: apps/accounts/models/organization.py:146
+#: apps/accounts/models/organization.py:135
 msgid "Organization Images"
 msgstr "Imagens da Organização"
 
-#: apps/accounts/models/organization.py:154
+#: apps/accounts/models/organization.py:143
 #: apps/accounts/serializers/organization_image.py:91
 msgid "An image of this type already exists for this profile."
 msgstr "Já existe uma imagem deste tipo para este perfil."
@@ -586,15 +598,15 @@ msgstr "O proprietário não está ativo."
 msgid "Organization is not active."
 msgstr "A organização não está ativa."
 
-#: apps/accounts/serializers/invitation.py:90
+#: apps/accounts/serializers/invitation.py:94
 msgid "An invitation with this email already exists."
 msgstr "Já existe um convite com este e-mail."
 
-#: apps/accounts/serializers/member.py:98
+#: apps/accounts/serializers/member.py:99
 msgid "User is already a member of the organization."
 msgstr "O usuário já é membro da organização."
 
-#: apps/accounts/serializers/member.py:166
+#: apps/accounts/serializers/member.py:167
 msgid "User data to update, if not provided, will not update the user."
 msgstr ""
 "Dados do usuário a atualizar; se não fornecidos, o usuário não será "
@@ -814,66 +826,70 @@ msgstr "Erro ao tentar abrir o arquivo"
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
-#: apps/accounts/views/invitations.py:51
+#: apps/accounts/views/invitations.py:53
 msgid "Send an invitation email."
 msgstr "Envia um e-mail de convite."
 
-#: apps/accounts/views/invitations.py:69
+#: apps/accounts/views/invitations.py:71
 msgid "The invitation email has been sent successfully."
 msgstr "O e-mail de convite foi enviado com sucesso."
 
-#: apps/accounts/views/invitations.py:97 apps/accounts/views/members.py:86
+#: apps/accounts/views/invitations.py:99 apps/accounts/views/members.py:86
 msgid "The invitation is expired or the user is already a member."
 msgstr "O convite expirou ou o usuário já é membro."
 
-#: apps/accounts/views/invitations.py:124
+#: apps/accounts/views/invitations.py:126
 msgid "The invitation email cooldown is active."
 msgstr "O intervalo de reenvio do e-mail de convite está ativo."
 
-#: apps/accounts/views/invitations.py:130
+#: apps/accounts/views/invitations.py:132
 msgid "List received invitations for the authenticated user."
 msgstr "Lista os convites recebidos pelo usuário autenticado."
 
-#: apps/accounts/views/invitations.py:137
+#: apps/accounts/views/invitations.py:139
 msgid "Retrieve a received invitation detail."
 msgstr "Obtém os detalhes de um convite recebido."
 
-#: apps/accounts/views/invitations.py:145
-#: apps/accounts/views/invitations.py:179
-#: apps/accounts/views/invitations.py:257
-#: apps/accounts/views/invitations.py:332
+#: apps/accounts/views/invitations.py:147
+#: apps/accounts/views/invitations.py:181
+#: apps/accounts/views/invitations.py:263
+#: apps/accounts/views/invitations.py:338
 msgid "Invitation not found."
 msgstr "Convite não encontrado."
 
-#: apps/accounts/views/invitations.py:155 apps/accounts/views/members.py:50
+#: apps/accounts/views/invitations.py:157 apps/accounts/views/members.py:50
 msgid "The secret key of the invitation."
 msgstr "A chave secreta do convite."
 
-#: apps/accounts/views/invitations.py:160
+#: apps/accounts/views/invitations.py:162
 msgid "Retrieve an invitation by its secret key."
 msgstr "Obtém um convite pela sua chave secreta."
 
-#: apps/accounts/views/invitations.py:186
-msgid "Accept an invitation and create a member record."
-msgstr "Aceita um convite e cria um registro de membro."
+#: apps/accounts/views/invitations.py:189
+msgid ""
+"Accept an invitation and create a member record, or reactivate the removed "
+"member of the user (readmission)."
+msgstr ""
+"Aceita um convite e cria um registro de membro, ou reativa o membro removido "
+"do usuário (readmissão)."
 
-#: apps/accounts/views/invitations.py:239
+#: apps/accounts/views/invitations.py:245
 msgid "The invitation is no longer acceptable."
 msgstr "O convite não pode mais ser aceito."
 
-#: apps/accounts/views/invitations.py:264
+#: apps/accounts/views/invitations.py:270
 msgid "Decline an invitation."
 msgstr "Recusa um convite."
 
-#: apps/accounts/views/invitations.py:278
+#: apps/accounts/views/invitations.py:284
 msgid "The invitation has been declined successfully."
 msgstr "O convite foi recusado com sucesso."
 
-#: apps/accounts/views/invitations.py:314
+#: apps/accounts/views/invitations.py:320
 msgid "The invitation is not in a pending state."
 msgstr "O convite não está pendente."
 
-#: apps/accounts/views/invitations.py:512
+#: apps/accounts/views/invitations.py:531
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
@@ -1185,7 +1201,7 @@ msgstr ""
 msgid "Maximum: {max}."
 msgstr "Máximo: {max}."
 
-#: apps/teams/apps.py:8 apps/teams/models/team.py:34
+#: apps/teams/apps.py:10 apps/teams/models/team.py:34
 msgid "Teams"
 msgstr "Equipes"
 
@@ -1196,10 +1212,6 @@ msgstr "Nome do membro"
 #: apps/teams/filters/team_member.py:67
 msgid "Member email"
 msgstr "E-mail do membro"
-
-#: apps/teams/filters/team_member.py:69
-msgid "Joined at"
-msgstr "Entrou em"
 
 #: apps/teams/filters/team_member.py:70
 msgid "ID"

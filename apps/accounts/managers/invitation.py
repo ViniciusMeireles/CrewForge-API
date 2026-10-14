@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import BooleanField, Exists, ExpressionWrapper, OuterRef, Q
 from django.utils import timezone
 
 from apps.accounts.choices import MemberRoleChoices
@@ -65,26 +65,39 @@ class InvitationQuerySet(BaseQuerySet):
 
     def exclude_already_members(self):
         """
-        Exclude invitations whose invitee already has a membership in the
-        organization, active or removed: the linked user, or the active user
-        with the invitation email when no user is linked (same rule as
-        Invitation.is_acceptable; a membership cannot be created twice).
+        Exclude invitations whose invitee is already an active member of the
+        organization: the linked user, or the active user with the invitation
+        email when no user is linked (same rule as Invitation.is_acceptable).
+        A removed member can be readmitted, so inactive memberships are kept.
         """
-        from apps.accounts.models.member import Member
+        return self.exclude(self._invitee_membership_exists(is_active=True))
 
-        members = Member.objects.filter(organization_id=OuterRef('organization_id'))
-        linked_user_is_member = Exists(
-            members.filter(user_id=OuterRef('user_id')),
-        )
-        email_user_is_member = Exists(
-            members.filter(
-                user__email=OuterRef('email'),
-                user__is_active=True,
+    def annotate_former_member(self):
+        """
+        Annotate ``is_former_member``: the invitee has a removed membership in
+        the organization and no active one.
+        """
+        return self.annotate(
+            is_former_member=ExpressionWrapper(
+                self._invitee_membership_exists(is_active=False)
+                & ~self._invitee_membership_exists(is_active=True),
+                output_field=BooleanField(),
             ),
         )
-        return self.exclude(
-            linked_user_is_member | (Q(user__isnull=True) & email_user_is_member),
+
+    @staticmethod
+    def _invitee_membership_exists(*, is_active: bool) -> Q:
+        from apps.accounts.models.member import Member
+
+        members = Member.objects.filter(
+            organization_id=OuterRef('organization_id'),
+            is_active=is_active,
         )
+        linked_user = Exists(members.filter(user_id=OuterRef('user_id')))
+        email_user = Exists(
+            members.filter(user__email=OuterRef('email'), user__is_active=True),
+        )
+        return Q(linked_user) | (Q(user__isnull=True) & Q(email_user))
 
 
 InvitationManager = BaseManager.from_queryset(InvitationQuerySet)

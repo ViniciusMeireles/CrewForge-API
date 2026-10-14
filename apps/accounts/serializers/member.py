@@ -81,6 +81,7 @@ class MemberModelSerializer(
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
             'organization',
             'last_login_at',
+            'joined_at',
         ]
 
     def validate_user(self, value):

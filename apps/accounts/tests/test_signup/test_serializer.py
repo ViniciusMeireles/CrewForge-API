@@ -53,10 +53,29 @@ class SignupSerializerTestCase(APITestCase):
                 'created_by',
                 'updated_by',
                 'last_login_at',
+                'joined_at',
                 'access',
                 'refresh',
             },
         )
+
+    def test_joined_at_cannot_be_set_on_signup(self):
+        user_data = UserFactory.build()
+        org_data = OrganizationFactory.build()
+        payload = {
+            'user': {
+                'username': user_data.username,
+                'email': user_data.email,
+                'first_name': user_data.first_name,
+                'last_name': user_data.last_name,
+                'password': user_data.password,
+            },
+            'organization': {'name': org_data.name, 'slug': org_data.slug},
+            'joined_at': '2000-01-01T00:00:00Z',
+        }
+        response = self.client.post(self.url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertFalse(response.data['joined_at'].startswith('2000-01-01'))
 
     def test_create_user_serializer_fields(self):
         user_data = UserFactory.build()

@@ -76,6 +76,7 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
         self.assertEqual(response.data['role'], invite.role)
         self.assertIsNotNone(response.data['user']['auth_token']['access'])
+        self.assertIsNotNone(response.data['joined_at'])
 
     def test_create_with_invite_expired_returns_404(self):
         user_data = UserFactory.build()

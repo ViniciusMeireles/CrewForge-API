@@ -35,7 +35,10 @@ class SignupSerializer(
     class Meta:
         model = Member
         fields = '__all__'
-        read_only_fields = ModelSerializerMixin._default_read_only_fields + ['role']
+        read_only_fields = ModelSerializerMixin._default_read_only_fields + [
+            'role',
+            'joined_at',
+        ]
 
     def get_refresh(self, obj) -> str | None:
         return super().get_refresh(getattr(obj, 'user', None))
