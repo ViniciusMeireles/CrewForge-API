@@ -210,6 +210,10 @@ MyViewSet
 - `apps/accounts/` must NOT import from `apps/teams/`.
 - `apps/dashboard/` may import from `apps/accounts/`, `apps/teams/` and
   `apps/generics/`; no app imports from `apps/dashboard/`.
+- When `apps/teams/` must react to an `apps/accounts/` change (e.g. ending team
+  memberships of a removed member), it does so with a signal receiver in
+  `apps/teams/signals.py` (connected in `TeamsConfig.ready()`), never by
+  importing `apps/teams/` from `apps/accounts/`.
 
 ---
 
