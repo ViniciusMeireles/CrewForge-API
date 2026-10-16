@@ -4,7 +4,7 @@
 
 CrewForge is a Django REST API for organization-aware access control.
 
-- **Organizations**, **members**, **invitations**, **teams**, **files**
+- **Organizations**, **members**, **invitations**, **teams**, **files**, **audit trail**
 - Organization context via session (`organization_id`) — JWT alone is NOT enough
 - Role hierarchy: Owner > Admin > Manager > Member
 
@@ -56,6 +56,7 @@ Agents must NOT assume JWT alone is sufficient.
 - Do NOT bypass existing permission classes when adding new actions.
 - Do NOT add comments to code unless explicitly asked.
 - Follow MRO: `OrganizationScopedViewSetMixin` → `ModelViewSetMixin` → `viewsets.ModelViewSet`.
+- New write actions declare `audit_actions` (or call `record_audit_event`) so they land in the audit trail.
 - Import generics from `apps/generics/`, not from `apps/accounts/`.
 - Permission changes are high-impact: always add tests.
 - Never commit secrets or put real values in `example.env`.

@@ -18,7 +18,8 @@
 - [Pagination](#14-pagination)
 - [Form Options Endpoints](#15-form-options-endpoints)
 - [Dashboard](#16-dashboard)
-- [Troubleshooting](#17-troubleshooting)
+- [Audit Trail](#17-audit-trail)
+- [Troubleshooting](#18-troubleshooting)
 
 ---
 
@@ -259,6 +260,7 @@ Returns the same shape as the login response (user, organizations, organization,
 | `invitations` | Invitations screen | Members with OWNER or ADMIN role |
 | `teams` | Teams screen | Any active member |
 | `organization_settings` | Organization settings screen | Members with OWNER role |
+| `audit` | Audit screen | Members with OWNER or ADMIN role |
 
 Superusers get every key as `true`. `access` is computed on every request (never cached server-side), so re-read the session after a `403` or after a role change to get fresh values. Action-level checks inside a screen (e.g., showing an "Invite" button) still use `member.permissions`.
 
@@ -1164,28 +1166,92 @@ must not render them.
 
 ---
 
-## 17. Troubleshooting
+## 17. Audit Trail
 
-### 17.1. Cookies Not Being Sent
+Every write in the audit catalog (Organizations, profiles, images, Members, Invitations,
+Teams, Team Members, StoredFiles) and every persisted security event is stored as an
+immutable **Audit Event**. Reads are never audited.
+
+### 17.1. Organization events
+
+`GET /api/audit/events/` and `GET /api/audit/events/{id}/` — JWT **and** session
+Organization, gated by `member.access.audit` (OWNER and ADMIN; others get `403`). Only the
+session Organization's events are returned (another Organization's id → `404`). Writes
+return `405`.
+
+| Filter | Example | Notes |
+|---|---|---|
+| `created_at_after` / `created_at_before` | `2026-10-01` | Dates, inclusive; inverted range → `400` |
+| `actor` | `12` | Member id (options list active Members only) |
+| `action` / `action__in` | `member.role_changed,member.removed` | Action codes |
+| `target_type` / `target_type__in` | `team,member` | Snake-case model names |
+| `target_id` | `42` | Requires `target_type` or `target_type__in` (`400` otherwise) |
+
+Order is fixed (newest first); pagination is the standard `{count, next, previous, results}`.
+`GET /api/audit/events/filter-options/` describes the `actor`, `action` and `target_type`
+filters (paginated `actor`).
+
+```json
+{
+  "id": 981,
+  "created_at": "2026-10-15T18:02:11.204Z",
+  "action": "member.role_changed",
+  "action_display": "Member role changed",
+  "actor_type": "user",
+  "actor": {"user_id": 3, "member_id": 7, "label": "Ana Lima (ana)"},
+  "impersonator": null,
+  "organization_id": 2,
+  "target_type": "member",
+  "target_id": "15",
+  "target_label": "Bruno Reis",
+  "changes": [
+    {"field": "role", "field_display": "Role", "before": "member", "after": "manager"}
+  ],
+  "metadata": {},
+  "ip": "203.0.113.9"
+}
+```
+
+- `action_display` and `field_display` follow `Accept-Language`.
+- `actor` is `null` for `actor_type: "system"`; `impersonator` is reserved (always `null`).
+- `target_label` and relation values in `changes` (`{"id", "label"}`) are snapshots taken
+  when the event happened, so they stay readable after renames and removals.
+- Create events list the initial values (`before: null`); delete events have no changes.
+- The invitee email may appear in `invitation.*` events; passwords, tokens and Invitation
+  keys never do.
+
+### 17.2. Account activity
+
+`GET /api/accounts/users/me/activity/` — JWT only (no Organization context). Paginated
+account events of the authenticated User: `auth.*` (sign-ins, failed sign-ins targeting the
+account, sign-outs, password changes and resets, email verification) and
+`user.profile.updated` (an email change is recorded without the email values). Same item
+shape as above, with `organization_id: null`.
+
+---
+
+## 18. Troubleshooting
+
+### 18.1. Cookies Not Being Sent
 
 - Check that `withCredentials: true` (Angular) or `credentials: 'include'` (Fetch) is set on all requests that need the session.
 - Verify the SameSite + Secure configuration via `GET /api/accounts/session/config/` (public endpoint, no auth required; the diagnostics are only returned with `DEBUG=True`).
 - In development (HTTP), both `SameSite=Lax` and `Secure=False` are required. In production (HTTPS), `SameSite=None` and `Secure=True`.
 
-### 17.2. CORS Errors
+### 18.2. CORS Errors
 
 - Verify `CORS_ALLOWED_ORIGINS` in `.env` includes the frontend origin (e.g., `http://localhost:4200`).
 - Check the browser console for `Access-Control-Allow-Origin` headers.
 - With `DEBUG=True`, the `/api/accounts/session/config/` endpoint returns the current `cors_allowed_origins` setting.
 
-### 17.3. 404 on Org-Scoped Endpoints
+### 18.3. 404 on Org-Scoped Endpoints
 
 This is the most common issue. A 404 (not 403) on org-scoped resources usually means the `organization_id` is not in the session.
 
 - Verify Step 3 (organization login) was completed successfully.
 - Check `GET /api/accounts/session/` — if `organization` and `member` are `null`, the session has no active organization context.
 
-### 17.4. Token Expired
+### 18.4. Token Expired
 
 - A 401 response means the access token has expired.
 - Attempt a token refresh via `POST /api/auth/token/refresh/`.

@@ -30,7 +30,8 @@ or product decisions.
 3. **Soft-delete over hard-delete.** Most domain models use `is_active` for
    soft-deletion. This preserves referential integrity, enables undo, and
    simplifies audit trails. Only `StoredFile` performs hard deletes (physical
-   file removal).
+   file removal), and `AuditEvent` is append-only (never updated or deleted
+   through the application).
 
 4. **Role hierarchy is sacred.** Owner > Admin > Manager > Member. This
    hierarchy is enforced at the permission layer, serializer layer, and
@@ -90,6 +91,13 @@ expiry, acceptance status, and a 60-second email cooldown.
 A file uploaded by a user. Files have granular access levels (`PUBLIC`,
 `OWNER`, `MEMBERS_ORGANIZATION`, etc.) via `StoredFileAccess` enum. Files
 provide absolute download URLs via `SELF_URL`.
+
+### AuditEvent
+
+An immutable record of a write or security event: actor, Organization (none for
+account events), action (`domain.action`), target snapshot, field changes and IP.
+Recorded in the same transaction as the write. OWNER and ADMIN read their
+Organization's events; each User reads their own account activity.
 
 ### OrganizationProfile / OrganizationImage
 

@@ -15,6 +15,7 @@ exception.
 - [Token Management](#token-management)
 - [Endpoint Security Model](#endpoint-security-model)
 - [Security Logging](#security-logging)
+- [Audit Trail](#audit-trail)
 - [Production Infrastructure](#production-infrastructure)
 - [Secrets Management](#secrets-management)
 
@@ -270,16 +271,40 @@ form, also attached to the record as `security_event` for structured handlers.
 Records carry the event, `user_id` (when known), the client `ip` and
 event-specific ids — never emails, passwords or tokens.
 
-| Event | Level |
-|---|---|
-| `auth.login.succeeded` / `auth.login.failed` | INFO / WARNING |
-| `auth.throttled` (with `scope`) | WARNING |
-| `auth.refresh.rejected` | WARNING |
-| `auth.logout`, `auth.signup` | INFO |
-| `auth.password.changed` / `auth.password_change.failed` | INFO / WARNING |
-| `auth.password_reset.requested` / `.completed` / `.failed` | INFO / INFO / WARNING |
-| `auth.email.verified` / `auth.email_verification.failed` | INFO / WARNING |
-| `organization.login`, `invitation.accepted`, `member.readmitted` | INFO |
+| Event | Level | Persisted |
+|---|---|---|
+| `auth.login.succeeded` / `auth.login.failed` | INFO / WARNING | Yes |
+| `auth.throttled` (with `scope`) | WARNING | No |
+| `auth.refresh.rejected` | WARNING | No |
+| `auth.logout`, `auth.signup` | INFO | Yes |
+| `auth.password.changed` / `auth.password_change.failed` | INFO / WARNING | Yes |
+| `auth.password_reset.requested` / `.completed` / `.failed` | INFO / INFO / WARNING | Yes |
+| `auth.email.verified` / `auth.email_verification.failed` | INFO / WARNING | Yes |
+| `organization.login`, `invitation.accepted`, `member.readmitted` | INFO | Yes |
+
+**Persisted** events are also stored as Audit Events (`apps/audit`) whenever the event name
+is an `AuditActionChoices` value: account events (`auth.*`) with no Organization and the
+User as `subject_user` (shown in `GET /api/accounts/users/me/activity/`), Organization
+events with the Organization. A failed sign-in is linked to the targeted account when the
+username exists — in the database only; the log line keeps `user_id` empty. Extra fields
+go to the event `metadata`, never `email`, `username`, `password` or `token`. Failure
+events must be logged outside any transaction that is rolled back, or they are lost.
+
+## Audit Trail
+
+Business writes are recorded by `record_audit_event` (`apps/audit/services.py`) in the
+**same transaction** as the write: a rolled-back write leaves no event, and a failed event
+write fails the request. Standard ViewSet writes are declared per ViewSet with
+`audit_actions` (see [architecture](./architecture.md#viewset-attributes)); custom actions
+(`send-email`, `accept`, `decline`, profile update) call the service explicitly.
+
+- Audit Events are append-only: no write endpoints, `save()` refuses updates and `delete()`
+  refuses deletion; the admin is read-only.
+- Snapshots exclude `password`, `key`, `token`, `last_login`, `session_key` and bookkeeping
+  fields; Invitations also exclude `key` and `last_email_sent_at`; the profile never stores
+  email values.
+- Organization events are readable by OWNER and ADMIN (`has_audit_access`) of that
+  Organization only; account events only by their `subject_user`. IPs are personal data.
 
 The level is set by `SECURITY_LOG_LEVEL` (default `INFO`); the handler writes to
 stderr, so the container logs collect it.
