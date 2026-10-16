@@ -47,7 +47,10 @@ class AuditActionChoices(models.TextChoices):
     AUTH_LOGIN_SUCCEEDED = 'auth.login.succeeded', _('Signed in')
     AUTH_LOGIN_FAILED = 'auth.login.failed', _('Failed sign-in attempt')
     AUTH_LOGOUT = 'auth.logout', _('Signed out')
-    AUTH_PASSWORD_CHANGED = 'auth.password.changed', _('Password changed')
+    AUTH_PASSWORD_CHANGED = (
+        'auth.password.changed',
+        _('Password changed'),
+    )
     AUTH_PASSWORD_CHANGE_FAILED = (
         'auth.password_change.failed',
         _('Failed password change attempt'),

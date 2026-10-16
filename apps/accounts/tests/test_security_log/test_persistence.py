@@ -16,6 +16,8 @@ from apps.audit.choices import AuditActorTypeChoices
 from apps.audit.models.audit_event import AuditEvent
 
 USERNAME_FIELD = get_user_model().USERNAME_FIELD
+NEW_PASSWORD = f'{DEFAULT_PASSWORD}!'
+WRONG_PASSWORD = f'wrong-{DEFAULT_PASSWORD}'
 
 
 class SecurityEventPersistenceTestCase(APITestCaseMixin, APITestCase):
@@ -43,7 +45,7 @@ class SecurityEventPersistenceTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(event.ip, '127.0.0.1')
 
     def test_failed_login_is_stored_for_the_targeted_account(self):
-        response = self.login(password='wrong-password')
+        response = self.login(password=WRONG_PASSWORD)
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
         (event,) = self.stored('auth.login.failed')
         self.assertEqual(event.subject_user, self.user)
@@ -82,17 +84,17 @@ class SecurityEventPersistenceTestCase(APITestCaseMixin, APITestCase):
         url = reverse('accounts:users-me-change-password')
         self.client.post(
             url,
-            {'current_password': 'wrong', 'new_password': 'newPass*456'},
+            {'current_password': WRONG_PASSWORD, 'new_password': NEW_PASSWORD},
             format='json',
         )
         self.client.post(
             url,
-            {'current_password': DEFAULT_PASSWORD, 'new_password': 'newPass*456'},
+            {'current_password': DEFAULT_PASSWORD, 'new_password': NEW_PASSWORD},
             format='json',
         )
         self.assertEqual(len(self.stored('auth.password_change.failed')), 1)
         (event,) = self.stored('auth.password.changed')
-        self.assertNotIn('newPass*456', str(event.metadata) + str(event.changes))
+        self.assertNotIn(NEW_PASSWORD, str(event.metadata) + str(event.changes))
 
     def test_password_reset_flow(self):
         with patch('apps.accounts.tasks.send_password_reset_email'):
@@ -104,7 +106,7 @@ class SecurityEventPersistenceTestCase(APITestCaseMixin, APITestCase):
         payload = {
             'uid': urlsafe_base64_encode(force_bytes(self.user.pk)),
             'token': default_token_generator.make_token(self.user),
-            'new_password': 'Newpass*123',
+            'new_password': NEW_PASSWORD,
         }
         url = reverse('accounts:password_reset_confirm')
         self.client.post(url, payload, format='json')
