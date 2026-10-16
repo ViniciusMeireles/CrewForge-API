@@ -21,7 +21,14 @@ from apps.teams.models.team_member import TeamMember
 class AuditServicesTestCase(TestCase):
     def test_snapshot_skips_bookkeeping_and_secrets(self):
         snapshot = snapshot_instance(UserFactory())
-        for name in ('id', 'created_at', 'updated_at', 'password', 'last_login'):
+        for name in (
+            'id',
+            'is_active',
+            'created_at',
+            'updated_at',
+            'password',
+            'last_login',
+        ):
             self.assertNotIn(name, snapshot)
         self.assertNotIn('full_name', snapshot)
         self.assertIn('first_name', snapshot)

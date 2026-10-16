@@ -14,8 +14,8 @@
 
 ## Status
 
-- [x] Active
-- [ ] Completed
+- [ ] Active
+- [x] Completed
 - [ ] Cancelled
 
 ---
@@ -78,8 +78,8 @@ features (audit → platform admin → billing). The other two record their even
 - [x] pt-BR catalog
 - [x] `make l_spectacular`
 - [x] `frontend-integration-guide.md`, `security.md`, `architecture.md`, `product-sense.md`
-- [ ] ADR amendment (append-only exception) in the root repository
-- [ ] Root `make sync-docs`, then hand over to the Frontend plan
+- [x] ADR amendment (append-only exception) in the root repository (root PR)
+- [x] Root `make sync-docs`, then hand over to the Frontend plan
 
 ---
 
@@ -89,6 +89,7 @@ features (audit → platform admin → billing). The other two record their even
 |------|--------|
 | 2026-10-15 | Plan created |
 | 2026-10-15 | Phases 1–4 implemented on `feat/audit-trail`; docs and pt-BR catalog updated; 1588 tests pass (baseline 1486), schema regenerated without warnings. Pending: commit/PR, ADR amendment (root), `make sync-docs` after merge |
+| 2026-10-16 | Merged in #46 (Codacy findings fixed in the PR); `make sync-docs` run and Frontend implemented in CrewForge-Frontend#35; follow-up drops `is_active` from snapshots (create events listed it as a change); ADR-004 amendment in the root repository |
 
 ---
 

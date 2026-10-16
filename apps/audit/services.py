@@ -12,7 +12,7 @@ from apps.generics.utils.requests import client_ip
 
 SENSITIVE_FIELDS = frozenset({'password', 'key', 'token', 'last_login', 'session_key'})
 BOOKKEEPING_FIELDS = frozenset(
-    {'id', 'created_at', 'updated_at', 'created_by', 'updated_by'}
+    {'id', 'is_active', 'created_at', 'updated_at', 'created_by', 'updated_by'}
 )
 
 
