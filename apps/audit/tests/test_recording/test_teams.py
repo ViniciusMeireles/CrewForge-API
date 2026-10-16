@@ -29,6 +29,7 @@ class TeamRecordingTestCase(AuditRecordingTestMixin, APITestCase):
             target_label='Design',
         )
         self.assertEqual(self.changed(created)['name'], (None, 'Design'))
+        self.assertNotIn('is_active', self.changed(created))
         detail = reverse('teams:teams-detail', args=[response.data['id']])
         self.client.put(detail, {'name': 'Product', 'description': 'UI'}, format='json')
         updated = self.assert_single(AuditActionChoices.TEAM_UPDATED)

@@ -301,7 +301,7 @@ write fails the request. Standard ViewSet writes are declared per ViewSet with
 - Audit Events are append-only: no write endpoints, `save()` refuses updates and `delete()`
   refuses deletion; the admin is read-only.
 - Snapshots exclude `password`, `key`, `token`, `last_login`, `session_key` and bookkeeping
-  fields; Invitations also exclude `key` and `last_email_sent_at`; the profile never stores
+  fields (`id`, `is_active`, timestamps, `created_by`/`updated_by`); Invitations also exclude `key` and `last_email_sent_at`; the profile never stores
   email values.
 - Organization events are readable by OWNER and ADMIN (`has_audit_access`) of that
   Organization only; account events only by their `subject_user`. IPs are personal data.
