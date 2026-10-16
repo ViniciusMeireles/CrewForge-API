@@ -7,6 +7,7 @@ from rest_framework import serializers, viewsets
 from rest_framework import status as http_status
 
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
+from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.models import get_verbose_name
 from apps.generics.utils.schema import extend_schema_model_view_set
 from apps.teams.filters.team_member import TeamMemberFilter
@@ -40,6 +41,11 @@ class TeamMemberViewSet(
     serializer_class = TeamMemberSerializer
     queryset = TeamMember.objects.all()
     http_method_names = ['get', 'post', 'put', 'delete']
+    audit_actions = {
+        'create': AuditActionChoices.TEAM_MEMBER_ADDED,
+        'update': AuditActionChoices.TEAM_MEMBER_UPDATED,
+        'destroy': AuditActionChoices.TEAM_MEMBER_REMOVED,
+    }
     permission_classes = [TeamMemberPermission]
     filterset_class = TeamMemberFilter
     filter_backends = [backends.DjangoFilterBackend]

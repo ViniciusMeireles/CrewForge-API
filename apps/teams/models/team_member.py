@@ -48,6 +48,10 @@ class TeamMember(BaseModel):
         return f'{self.member} - {self.team}'
 
     @property
+    def audit_label(self) -> str:
+        return f'{self.member.audit_label} - {self.team}'
+
+    @property
     def is_owner(self) -> bool:
         return self.role == TeamMemberRoleChoices.OWNER
 

@@ -2551,6 +2551,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserProfile'
           description: ''
+  /api/accounts/users/me/activity/:
+    get:
+      operationId: accounts_users_me_activity_list
+      description: 'List the account activity of the authenticated user: sign-ins,
+        password changes, resets, email verification and profile updates.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Users
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditEventList'
+          description: ''
   /api/accounts/users/me/change-password/:
     post:
       operationId: accounts_users_me_change_password_create
@@ -2575,6 +2605,241 @@ paths:
       responses:
         '200':
           description: Password changed successfully.
+  /api/audit/events/:
+    get:
+      operationId: audit_events_list
+      description: List all Audit Events.
+      summary: List all Audit Events.
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+          enum:
+          - auth.email.verified
+          - auth.email_verification.failed
+          - auth.login.failed
+          - auth.login.succeeded
+          - auth.logout
+          - auth.password.changed
+          - auth.password_change.failed
+          - auth.password_reset.completed
+          - auth.password_reset.failed
+          - auth.password_reset.requested
+          - auth.signup
+          - invitation.accepted
+          - invitation.created
+          - invitation.declined
+          - invitation.deleted
+          - invitation.email_sent
+          - invitation.updated
+          - member.joined
+          - member.readmitted
+          - member.removed
+          - member.role_changed
+          - member.updated
+          - organization.created
+          - organization.deleted
+          - organization.image.created
+          - organization.image.deleted
+          - organization.image.updated
+          - organization.login
+          - organization.profile.updated
+          - organization.updated
+          - stored_file.deleted
+          - stored_file.updated
+          - stored_file.uploaded
+          - team.created
+          - team.deleted
+          - team.updated
+          - team_member.added
+          - team_member.removed
+          - team_member.updated
+          - user.profile.updated
+        description: |-
+          What happened
+
+          * `organization.created` - Organization created
+          * `organization.updated` - Organization updated
+          * `organization.deleted` - Organization deleted
+          * `organization.login` - Organization accessed
+          * `organization.profile.updated` - Organization profile updated
+          * `organization.image.created` - Organization image added
+          * `organization.image.updated` - Organization image updated
+          * `organization.image.deleted` - Organization image removed
+          * `member.joined` - Member joined
+          * `member.readmitted` - Member readmitted
+          * `member.updated` - Member updated
+          * `member.role_changed` - Member role changed
+          * `member.removed` - Member removed
+          * `invitation.created` - Invitation created
+          * `invitation.updated` - Invitation updated
+          * `invitation.email_sent` - Invitation email sent
+          * `invitation.deleted` - Invitation deleted
+          * `invitation.accepted` - Invitation accepted
+          * `invitation.declined` - Invitation declined
+          * `team.created` - Team created
+          * `team.updated` - Team updated
+          * `team.deleted` - Team deleted
+          * `team_member.added` - Team member added
+          * `team_member.updated` - Team member updated
+          * `team_member.removed` - Team member removed
+          * `stored_file.uploaded` - File uploaded
+          * `stored_file.updated` - File updated
+          * `stored_file.deleted` - File deleted
+          * `auth.signup` - Account created
+          * `auth.login.succeeded` - Signed in
+          * `auth.login.failed` - Failed sign-in attempt
+          * `auth.logout` - Signed out
+          * `auth.password.changed` - Password changed
+          * `auth.password_change.failed` - Failed password change attempt
+          * `auth.password_reset.requested` - Password reset requested
+          * `auth.password_reset.completed` - Password reset completed
+          * `auth.password_reset.failed` - Failed password reset attempt
+          * `auth.email.verified` - Email verified
+          * `auth.email_verification.failed` - Failed email verification attempt
+          * `user.profile.updated` - Profile updated
+      - in: query
+        name: action__in
+        schema:
+          type: array
+          items:
+            type: string
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: actor
+        schema:
+          type: integer
+        description: Actor
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: target_id
+        schema:
+          type: string
+      - in: query
+        name: target_type
+        schema:
+          type: string
+      - in: query
+        name: target_type__in
+        schema:
+          type: array
+          items:
+            type: string
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      tags:
+      - Audit
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditEventList'
+          description: ''
+  /api/audit/events/{id}/:
+    get:
+      operationId: audit_events_retrieve
+      description: Retrieve a specific Audit Event.
+      summary: Retrieve a specific Audit Event.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Audit Event.
+        required: true
+      tags:
+      - Audit
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEvent'
+          description: ''
+  /api/audit/events/filter-options/:
+    get:
+      operationId: audit_events_filter_options_retrieve
+      description: Filter options for listing Audit Events.
+      summary: Filter options for listing Audit Events.
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+        description: Return only `action`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: action__in
+        schema:
+          type: string
+        description: Return only `action__in`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: actor
+        schema:
+          type: string
+        description: Return only `actor` (paginated). A non-empty value filters its
+          options by label (`unaccent__icontains`).
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: A page number within the paginated result set. Applies to every
+          paginated field in the response; combine with `?<field>` to paginate a single
+          one.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of results to return per page. Maximum: 100. Applies
+          to every paginated field in the response; combine with `?<field>` to paginate
+          a single one.'
+      tags:
+      - Audit
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListAuditEvent'
+          description: ''
   /api/auth/email/verify/:
     post:
       operationId: auth_email_verify_create
@@ -3452,6 +3717,267 @@ paths:
           description: ''
 components:
   schemas:
+    ActionEnum:
+      enum:
+      - organization.created
+      - organization.updated
+      - organization.deleted
+      - organization.login
+      - organization.profile.updated
+      - organization.image.created
+      - organization.image.updated
+      - organization.image.deleted
+      - member.joined
+      - member.readmitted
+      - member.updated
+      - member.role_changed
+      - member.removed
+      - invitation.created
+      - invitation.updated
+      - invitation.email_sent
+      - invitation.deleted
+      - invitation.accepted
+      - invitation.declined
+      - team.created
+      - team.updated
+      - team.deleted
+      - team_member.added
+      - team_member.updated
+      - team_member.removed
+      - stored_file.uploaded
+      - stored_file.updated
+      - stored_file.deleted
+      - auth.signup
+      - auth.login.succeeded
+      - auth.login.failed
+      - auth.logout
+      - auth.password.changed
+      - auth.password_change.failed
+      - auth.password_reset.requested
+      - auth.password_reset.completed
+      - auth.password_reset.failed
+      - auth.email.verified
+      - auth.email_verification.failed
+      - user.profile.updated
+      type: string
+      description: |-
+        * `organization.created` - Organization created
+        * `organization.updated` - Organization updated
+        * `organization.deleted` - Organization deleted
+        * `organization.login` - Organization accessed
+        * `organization.profile.updated` - Organization profile updated
+        * `organization.image.created` - Organization image added
+        * `organization.image.updated` - Organization image updated
+        * `organization.image.deleted` - Organization image removed
+        * `member.joined` - Member joined
+        * `member.readmitted` - Member readmitted
+        * `member.updated` - Member updated
+        * `member.role_changed` - Member role changed
+        * `member.removed` - Member removed
+        * `invitation.created` - Invitation created
+        * `invitation.updated` - Invitation updated
+        * `invitation.email_sent` - Invitation email sent
+        * `invitation.deleted` - Invitation deleted
+        * `invitation.accepted` - Invitation accepted
+        * `invitation.declined` - Invitation declined
+        * `team.created` - Team created
+        * `team.updated` - Team updated
+        * `team.deleted` - Team deleted
+        * `team_member.added` - Team member added
+        * `team_member.updated` - Team member updated
+        * `team_member.removed` - Team member removed
+        * `stored_file.uploaded` - File uploaded
+        * `stored_file.updated` - File updated
+        * `stored_file.deleted` - File deleted
+        * `auth.signup` - Account created
+        * `auth.login.succeeded` - Signed in
+        * `auth.login.failed` - Failed sign-in attempt
+        * `auth.logout` - Signed out
+        * `auth.password.changed` - Password changed
+        * `auth.password_change.failed` - Failed password change attempt
+        * `auth.password_reset.requested` - Password reset requested
+        * `auth.password_reset.completed` - Password reset completed
+        * `auth.password_reset.failed` - Failed password reset attempt
+        * `auth.email.verified` - Email verified
+        * `auth.email_verification.failed` - Failed email verification attempt
+        * `user.profile.updated` - Profile updated
+    ActorTypeEnum:
+      enum:
+      - user
+      - platform
+      - system
+      type: string
+      description: |-
+        * `user` - User
+        * `platform` - Platform
+        * `system` - System
+    AuditActor:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          nullable: true
+        member_id:
+          type: integer
+          nullable: true
+        label:
+          type: string
+      required:
+      - label
+      - member_id
+      - user_id
+    AuditEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the event happened
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ActionEnum'
+          readOnly: true
+          description: |-
+            What happened
+
+            * `organization.created` - Organization created
+            * `organization.updated` - Organization updated
+            * `organization.deleted` - Organization deleted
+            * `organization.login` - Organization accessed
+            * `organization.profile.updated` - Organization profile updated
+            * `organization.image.created` - Organization image added
+            * `organization.image.updated` - Organization image updated
+            * `organization.image.deleted` - Organization image removed
+            * `member.joined` - Member joined
+            * `member.readmitted` - Member readmitted
+            * `member.updated` - Member updated
+            * `member.role_changed` - Member role changed
+            * `member.removed` - Member removed
+            * `invitation.created` - Invitation created
+            * `invitation.updated` - Invitation updated
+            * `invitation.email_sent` - Invitation email sent
+            * `invitation.deleted` - Invitation deleted
+            * `invitation.accepted` - Invitation accepted
+            * `invitation.declined` - Invitation declined
+            * `team.created` - Team created
+            * `team.updated` - Team updated
+            * `team.deleted` - Team deleted
+            * `team_member.added` - Team member added
+            * `team_member.updated` - Team member updated
+            * `team_member.removed` - Team member removed
+            * `stored_file.uploaded` - File uploaded
+            * `stored_file.updated` - File updated
+            * `stored_file.deleted` - File deleted
+            * `auth.signup` - Account created
+            * `auth.login.succeeded` - Signed in
+            * `auth.login.failed` - Failed sign-in attempt
+            * `auth.logout` - Signed out
+            * `auth.password.changed` - Password changed
+            * `auth.password_change.failed` - Failed password change attempt
+            * `auth.password_reset.requested` - Password reset requested
+            * `auth.password_reset.completed` - Password reset completed
+            * `auth.password_reset.failed` - Failed password reset attempt
+            * `auth.email.verified` - Email verified
+            * `auth.email_verification.failed` - Failed email verification attempt
+            * `user.profile.updated` - Profile updated
+        action_display:
+          type: string
+        actor_type:
+          allOf:
+          - $ref: '#/components/schemas/ActorTypeEnum'
+          readOnly: true
+          description: |-
+            Who performed the action
+
+            * `user` - User
+            * `platform` - Platform
+            * `system` - System
+        actor:
+          allOf:
+          - $ref: '#/components/schemas/AuditActor'
+          nullable: true
+          readOnly: true
+        impersonator:
+          allOf:
+          - $ref: '#/components/schemas/AuditImpersonator'
+          nullable: true
+          readOnly: true
+        organization_id:
+          type: integer
+          nullable: true
+          description: Organization of the event; empty for account events
+          readOnly: true
+        target_type:
+          type: string
+          readOnly: true
+          description: Kind of record the action applies to
+        target_id:
+          type: string
+          readOnly: true
+          description: Identifier of the record the action applies to
+        target_label:
+          type: string
+          readOnly: true
+          description: Record name when the event happened
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEventChange'
+          readOnly: true
+        metadata:
+          readOnly: true
+          description: Extra context of the event
+        ip:
+          type: string
+          readOnly: true
+          nullable: true
+          title: IP Address
+          description: Client address of the request
+      required:
+      - action
+      - action_display
+      - actor
+      - actor_type
+      - changes
+      - created_at
+      - id
+      - impersonator
+      - ip
+      - metadata
+      - organization_id
+      - target_id
+      - target_label
+      - target_type
+    AuditEventChange:
+      type: object
+      properties:
+        field:
+          type: string
+        field_display:
+          type: string
+        before:
+          nullable: true
+        after:
+          nullable: true
+      required:
+      - after
+      - before
+      - field
+      - field_display
+    AuditImpersonator:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        label:
+          type: string
+      required:
+      - label
+      - user_id
     ByKeyNotFound:
       type: object
       properties:
@@ -3989,7 +4515,11 @@ components:
         organization_settings:
           type: boolean
           readOnly: true
+        audit:
+          type: boolean
+          readOnly: true
       required:
+      - audit
       - invitations
       - members
       - organization_settings
@@ -4415,6 +4945,21 @@ components:
           allOf:
           - $ref: '#/components/schemas/PaginatedIntOptions'
           description: Member of the team
+    OptionsListAuditEvent:
+      type: object
+      description: Filter options for listing Audit Events.
+      properties:
+        action:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+        action__in:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Multiple values may be separated by commas.
+        actor:
+          $ref: '#/components/schemas/PaginatedIntOptions'
     OptionsListInvitation:
       type: object
       description: Filter options for listing Invitations.
@@ -4913,6 +5458,29 @@ components:
       - created_at
       - id
       - role_label
+    PaginatedAuditEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
     PaginatedIntOptions:
       type: object
       description: Paginated value/label options.

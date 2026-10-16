@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -64,13 +65,31 @@ AUTH_SCHEMA_TAGS = [_('Authentication')]
 class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
     _serializer_class = jwt_settings.TOKEN_OBTAIN_SERIALIZER
 
+    @staticmethod
+    def attempted_user_id(request) -> int | None:
+        """Account targeted by a failed sign-in (kept out of the log line)."""
+        User = get_user_model()
+        username = request.data.get(User.USERNAME_FIELD)
+        if not isinstance(username, str) or not username:
+            return None
+        return (
+            User.objects.filter(**{User.USERNAME_FIELD: username})
+            .values_list('pk', flat=True)
+            .first()
+        )
+
     def post(self, request, *args, **kwargs):
         if wants_cookie_transport(request):
             enforce_csrf(request)
         try:
             response = super().post(request, *args, **kwargs)
         except AuthenticationFailed:
-            log_security_event('auth.login.failed', request, level=logging.WARNING)
+            log_security_event(
+                'auth.login.failed',
+                request,
+                level=logging.WARNING,
+                audit={'subject_user_id': self.attempted_user_id(request)},
+            )
             raise
         log_security_event(
             'auth.login.succeeded',

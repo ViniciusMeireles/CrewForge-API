@@ -84,6 +84,11 @@ accounts_urlpatterns = [
     ),
     path('api/accounts/users/me/', user_profile, name='users-me'),
     path(
+        'api/accounts/users/me/activity/',
+        UserProfileViewSet.as_view({'get': 'activity'}),
+        name='users-me-activity',
+    ),
+    path(
         'api/accounts/users/me/change-password/',
         UserProfileViewSet.as_view({'post': 'change_password'}),
         name='users-me-change-password',

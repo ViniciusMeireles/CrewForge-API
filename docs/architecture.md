@@ -121,6 +121,8 @@ class MyViewSet(
 | `lookup_field` | Non-default PK field | `'uuid'` for StoredFile |
 | `parser_classes` | Request parsing | `[MultiPartParser, FormParser]` |
 | `options_actions` | Form-options routes to generate (`()` disables them) | `('create', 'update')` |
+| `audit_actions` | DRF action → audit action recorded by `ModelViewSetMixin` (same transaction); omitted actions are not audited | `{'create': AuditActionChoices.TEAM_CREATED}` |
+| `audit_exclude_fields` | Fields left out of audit snapshots and diffs | `('key',)` |
 
 ### MRO Variations
 
@@ -159,7 +161,8 @@ MyViewSet
 ### Models
 
 - Use **singular** names: `Organization`, `Member`, `Team`, `TeamMember`.
-- All domain models inherit from `apps.generics.models.abstracts.BaseModel`.
+- All domain models inherit from `apps.generics.models.abstracts.BaseModel`
+  (exception: the append-only `AuditEvent`, which has no `is_active`).
 - Field names use `snake_case`.
 - `ForeignKey`/`OneToOneField` always specify `related_name` explicitly.
 - Use `verbose_name` and `verbose_name_plural` in `Meta` classes.
@@ -194,6 +197,7 @@ MyViewSet
   `apps/accounts/`.
 - Put team and team membership logic in `apps/teams/`.
 - Put read-only cross-app aggregates (Organization overview) in `apps/dashboard/`.
+- Put the audit trail (`AuditEvent`, recording service, read API) in `apps/audit/`.
 - Put reusable cross-app code in `apps/generics/`.
 - Avoid duplicating shared helpers in feature apps when a generic helper belongs
   in `apps/generics/`.
@@ -210,6 +214,12 @@ MyViewSet
 - `apps/accounts/` must NOT import from `apps/teams/`.
 - `apps/dashboard/` may import from `apps/accounts/`, `apps/teams/` and
   `apps/generics/`; no app imports from `apps/dashboard/`.
+- `apps/audit/` has a **recording layer** (`choices`, `models`, `managers`,
+  `services`) that `apps/accounts/` and `apps/teams/` may import; it imports only
+  `apps/generics/` and `apps.accounts.utils.requests`, and its model relations use
+  string references. Its **read layer** (`views`, `permissions`, `serializers`,
+  `filters`) may import from `apps/accounts/`; `apps/accounts/` only imports
+  `AuditEventSerializer` from it (account activity) and never `apps.audit.views`.
 - When `apps/teams/` must react to an `apps/accounts/` change (e.g. ending team
   memberships of a removed member), it does so with a signal receiver in
   `apps/teams/signals.py` (connected in `TeamsConfig.ready()`), never by

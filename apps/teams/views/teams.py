@@ -2,6 +2,7 @@ from django_filters.rest_framework import backends
 from rest_framework import viewsets
 
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
+from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.schema import extend_schema_model_view_set
 from apps.teams.filters.team import TeamFilter
 from apps.teams.models.team import Team
@@ -16,6 +17,11 @@ class TeamViewSet(
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
     http_method_names = ['get', 'post', 'put', 'delete']
+    audit_actions = {
+        'create': AuditActionChoices.TEAM_CREATED,
+        'update': AuditActionChoices.TEAM_UPDATED,
+        'destroy': AuditActionChoices.TEAM_DELETED,
+    }
     permission_classes = [TeamPermission]
     filterset_class = TeamFilter
     filter_backends = [backends.DjangoFilterBackend]

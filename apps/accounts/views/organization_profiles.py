@@ -10,6 +10,7 @@ from apps.accounts.models.organization import OrganizationProfile
 from apps.accounts.permissions.generics import IsActiveMember
 from apps.accounts.permissions.organization_profile import OrganizationProfilePermission
 from apps.accounts.serializers.organization_profile import OrganizationProfileSerializer
+from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.schema import extend_schema_model_view_set
 
 
@@ -22,6 +23,10 @@ class OrganizationProfileViewSet(
     serializer_class = OrganizationProfileSerializer
     queryset = OrganizationProfile.objects.filter_actives()
     http_method_names = ['get', 'put', 'patch', 'delete']
+    audit_actions = {
+        'update': AuditActionChoices.ORGANIZATION_PROFILE_UPDATED,
+        'partial_update': AuditActionChoices.ORGANIZATION_PROFILE_UPDATED,
+    }
     permission_classes = [IsActiveMember, OrganizationProfilePermission]
     filterset_class = OrganizationProfileFilter
     filter_backends = [backends.DjangoFilterBackend]

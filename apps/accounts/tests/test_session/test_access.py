@@ -18,24 +18,28 @@ EXPECTED_ACCESS = {
         'invitations': True,
         'teams': True,
         'organization_settings': True,
+        'audit': True,
     },
     MemberRoleChoices.ADMIN: {
         'members': True,
         'invitations': True,
         'teams': True,
         'organization_settings': False,
+        'audit': True,
     },
     MemberRoleChoices.MANAGER: {
         'members': True,
         'invitations': False,
         'teams': True,
         'organization_settings': False,
+        'audit': False,
     },
     MemberRoleChoices.MEMBER: {
         'members': True,
         'invitations': False,
         'teams': True,
         'organization_settings': False,
+        'audit': False,
     },
 }
 
@@ -43,6 +47,7 @@ AREA_LIST_URLS = {
     'members': 'accounts:members-list',
     'invitations': 'accounts:invitations-list',
     'teams': 'teams:teams-list',
+    'audit': 'audit:audit_events-list',
 }
 
 

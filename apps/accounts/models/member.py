@@ -64,6 +64,14 @@ class Member(BaseModel):
         return f'{self.user} - {self.organization}'
 
     @property
+    def audit_label(self) -> str:
+        """Python counterpart of ``label_expression`` for a loaded member."""
+        full_name, nickname = self.user.full_name, self.nickname
+        if full_name and nickname:
+            return f'{full_name} ({nickname})'
+        return full_name or nickname or str(self.get_role_display())
+
+    @property
     def is_owner(self) -> bool:
         return self.role == MemberRoleChoices.OWNER and self.is_active
 
@@ -112,6 +120,10 @@ class Member(BaseModel):
     @property
     def has_organization_settings_access(self) -> bool:
         return self.has_owner_permission
+
+    @property
+    def has_audit_access(self) -> bool:
+        return self.has_admin_permission
 
     @classmethod
     def label_expression(

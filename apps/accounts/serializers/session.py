@@ -29,10 +29,11 @@ class MemberAccessSerializer(serializers.ModelSerializer):
     organization_settings = serializers.BooleanField(
         source='has_organization_settings_access', read_only=True
     )
+    audit = serializers.BooleanField(source='has_audit_access', read_only=True)
 
     class Meta:
         model = Member
-        fields = ['members', 'invitations', 'teams', 'organization_settings']
+        fields = ['members', 'invitations', 'teams', 'organization_settings', 'audit']
 
 
 class MemberSessionSerializer(serializers.ModelSerializer):
