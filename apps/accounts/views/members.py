@@ -34,6 +34,7 @@ from apps.accounts.utils.auth_cookies import (
     wants_cookie_transport,
 )
 from apps.accounts.utils.security_log import log_security_event
+from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.models import get_verbose_name
 from apps.generics.utils.schema import extend_schema_model_view_set
 
@@ -134,6 +135,13 @@ class MemberViewSet(
 ):
     queryset = Member.objects.all()
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
+    audit_actions = {
+        'create_with_invite': AuditActionChoices.MEMBER_JOINED,
+        'update': AuditActionChoices.MEMBER_UPDATED,
+        'partial_update': AuditActionChoices.MEMBER_UPDATED,
+        'update_role': AuditActionChoices.MEMBER_ROLE_CHANGED,
+        'destroy': AuditActionChoices.MEMBER_REMOVED,
+    }
     permission_classes = [MemberPermission]
     filterset_class = MemberFilter
     filter_backends = [backends.DjangoFilterBackend]
@@ -153,6 +161,11 @@ class MemberViewSet(
         elif self.action == 'create_with_invite':
             return MemberWithInviteCreateSerializer
         return MemberModelSerializer
+
+    def get_audit_kwargs(self, instance) -> dict:
+        if self.action == 'create_with_invite':
+            return {'actor_member': instance}
+        return {}
 
     def get_invitation(self) -> Invitation | None:
         """Get the invitation object."""

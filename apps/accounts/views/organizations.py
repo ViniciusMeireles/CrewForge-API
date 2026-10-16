@@ -26,6 +26,7 @@ from apps.accounts.serializers.organization import (
 from apps.accounts.serializers.session import SessionSerializer
 from apps.accounts.utils.requests import get_member
 from apps.accounts.utils.security_log import log_security_event
+from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.schema import (
     extend_schema_list,
     extend_schema_model_view_set,
@@ -98,6 +99,12 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
     http_method_names = ['get', 'put', 'patch', 'post', 'delete']
+    audit_actions = {
+        'create': AuditActionChoices.ORGANIZATION_CREATED,
+        'update': AuditActionChoices.ORGANIZATION_UPDATED,
+        'partial_update': AuditActionChoices.ORGANIZATION_UPDATED,
+        'destroy': AuditActionChoices.ORGANIZATION_DELETED,
+    }
     permission_classes = [OrganizationPermission]
     filterset_class = OrganizationFilter
     filter_backends = [backends.DjangoFilterBackend]
@@ -118,6 +125,14 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
                 is_active=True,
             )
         return queryset
+
+    def get_audit_organization_id(self, instance) -> int | None:
+        return instance.pk
+
+    def get_audit_kwargs(self, instance) -> dict:
+        if self.action == 'create':
+            return {'actor_member': instance.owner}
+        return {}
 
     def get_serializer_class(self):
         if self.action == 'list':

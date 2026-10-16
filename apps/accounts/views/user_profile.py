@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
@@ -17,12 +18,26 @@ from apps.accounts.serializers.user_profile import (
 from apps.accounts.utils.auth_cookies import set_auth_cookies, wants_cookie_transport
 from apps.accounts.utils.security_log import log_security_event
 from apps.accounts.utils.tokens import revoke_refresh_tokens
+from apps.audit.choices import AuditActionChoices
+from apps.audit.models.audit_event import AuditEvent
+from apps.audit.serializers.audit_event import AuditEventSerializer
+from apps.audit.services import diff_instance, record_audit_event, snapshot_instance
 from apps.generics.utils.schema import (
     extend_schema_partial_update,
     extend_schema_retrieve,
 )
 
 User = get_user_model()
+
+PROFILE_AUDIT_EXCLUDE = (
+    'password',
+    'email',
+    'email_verified_at',
+    'email_verification_sent_at',
+    'is_staff',
+    'is_superuser',
+    'date_joined',
+)
 
 
 @extend_schema_view(
@@ -36,6 +51,7 @@ User = get_user_model()
     ),
 )
 class UserProfileViewSet(viewsets.GenericViewSet):
+    queryset = User.objects.none()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'patch', 'post']
@@ -56,8 +72,50 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        with transaction.atomic():
+            before = snapshot_instance(instance, PROFILE_AUDIT_EXCLUDE)
+            email = instance.email
+            serializer.save()
+            self.record_profile_update(instance, before, email)
         return Response(serializer.data)
+
+    def record_profile_update(self, instance, before: dict, email: str) -> None:
+        changes = diff_instance(before, instance, PROFILE_AUDIT_EXCLUDE)
+        email_changed = instance.email != email
+        if email_changed:
+            changes.append({'field': 'email', 'before': None, 'after': None})
+        if not changes:
+            return
+        record_audit_event(
+            AuditActionChoices.USER_PROFILE_UPDATED,
+            request=self.request,
+            target=instance,
+            changes=changes,
+            metadata={'email_changed': True} if email_changed else {},
+        )
+
+    @extend_schema(
+        description=_(
+            'List the account activity of the authenticated user: sign-ins, '
+            'password changes, resets, email verification and profile updates.'
+        ),
+        tags=User.schema_tags(),
+        responses=AuditEventSerializer(many=True),
+    )
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='activity',
+        url_name='activity',
+        permission_classes=[IsAuthenticated],
+        serializer_class=AuditEventSerializer,
+        filter_backends=[],
+    )
+    def activity(self, request, *args, **kwargs):
+        queryset = AuditEvent.objects.account_activity(request.user)
+        page = self.paginate_queryset(queryset)
+        serializer = AuditEventSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     @extend_schema(
         description=_('Change the authenticated user password.'),

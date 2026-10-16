@@ -7,6 +7,7 @@ from apps.accounts.mixins.views import ModelViewSetMixin, UploadSizeLimitMixin
 from apps.accounts.models.organization import OrganizationImage
 from apps.accounts.permissions.organization_image import OrganizationImagePermission
 from apps.accounts.serializers.organization_image import OrganizationImageSerializer
+from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.schema import extend_schema_model_view_set
 
 
@@ -20,6 +21,12 @@ class OrganizationImageViewSet(
         'profile', 'image'
     ).filter_actives()
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
+    audit_actions = {
+        'create': AuditActionChoices.ORGANIZATION_IMAGE_CREATED,
+        'update': AuditActionChoices.ORGANIZATION_IMAGE_UPDATED,
+        'partial_update': AuditActionChoices.ORGANIZATION_IMAGE_UPDATED,
+        'destroy': AuditActionChoices.ORGANIZATION_IMAGE_DELETED,
+    }
     permission_classes = [OrganizationImagePermission]
     filterset_class = OrganizationImageFilter
     filter_backends = [backends.DjangoFilterBackend]

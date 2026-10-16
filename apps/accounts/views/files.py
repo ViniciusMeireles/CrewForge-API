@@ -22,6 +22,7 @@ from apps.accounts.serializers.files import (
     StoredFileListModelSerializer,
 )
 from apps.accounts.utils.files import is_inline_content_type
+from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.schema import (
     extend_schema_create,
     extend_schema_model_view_set,
@@ -78,6 +79,12 @@ class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelV
     filter_backends = [backends.DjangoFilterBackend]
     parser_classes = [MultiPartParser, FormParser]
     lookup_field = 'uuid'
+    audit_actions = {
+        'create': AuditActionChoices.STORED_FILE_UPLOADED,
+        'update': AuditActionChoices.STORED_FILE_UPDATED,
+        'partial_update': AuditActionChoices.STORED_FILE_UPDATED,
+        'destroy': AuditActionChoices.STORED_FILE_DELETED,
+    }
     queryset = StoredFile.objects.all()
     auto_orderable_filter = True
     # No form options: ``owner``/``organization`` are not tenant-scoped and would

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 00:43+0000\n"
+"POT-Creation-Date: 2026-10-15 21:12+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -219,7 +219,8 @@ msgstr "Aceitar convite"
 #: apps/accounts/filters/organization_image.py:12
 #: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:67
 #: apps/accounts/models/member.py:32 apps/accounts/models/organization.py:34
-#: apps/accounts/models/organization.py:49 apps/teams/models/team.py:25
+#: apps/accounts/models/organization.py:49 apps/audit/models/audit_event.py:23
+#: apps/teams/models/team.py:25
 msgid "Organization"
 msgstr "Organização"
 
@@ -390,6 +391,7 @@ msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
 #: apps/accounts/models/invitation.py:88 apps/accounts/models/member.py:25
+#: apps/audit/choices.py:76
 msgid "User"
 msgstr "Usuário"
 
@@ -662,11 +664,11 @@ msgstr "Este tipo de arquivo não é permitido."
 msgid "The file is too large. Maximum size is %(size)s MB."
 msgstr "O arquivo é muito grande. O tamanho máximo é %(size)s MB."
 
-#: apps/accounts/views/auth.py:53
+#: apps/accounts/views/auth.py:54
 msgid "Authentication"
 msgstr "Autenticação"
 
-#: apps/accounts/views/auth.py:59
+#: apps/accounts/views/auth.py:60
 msgid ""
 "Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` "
 "header (browsers) the tokens are set as HttpOnly cookies and omitted from "
@@ -676,7 +678,7 @@ msgstr ""
 "cookie` (navegadores), os tokens são definidos como cookies HttpOnly e "
 "omitidos do corpo, e um token CSRF é obrigatório."
 
-#: apps/accounts/views/auth.py:90
+#: apps/accounts/views/auth.py:109
 msgid ""
 "Rotate the refresh token. Send `refresh` in the body (Bearer clients) or "
 "rely on the refresh cookie (browsers). A refresh read from the cookie is "
@@ -688,19 +690,19 @@ msgstr ""
 "respondida com novos cookies e nunca com tokens no corpo; requer um token "
 "CSRF."
 
-#: apps/accounts/views/auth.py:131
+#: apps/accounts/views/auth.py:150
 msgid ""
 "Password reset link has been sent to your email. Please check your inbox."
 msgstr ""
 "O link de redefinição de senha foi enviado para o seu e-mail. Verifique sua "
 "caixa de entrada."
 
-#: apps/accounts/views/auth.py:136
+#: apps/accounts/views/auth.py:155
 msgid "Request a password reset link to be sent to the user's email."
 msgstr ""
 "Solicita o envio de um link de redefinição de senha para o e-mail do usuário."
 
-#: apps/accounts/views/auth.py:166
+#: apps/accounts/views/auth.py:185
 msgid ""
 "If an account exists for this email, a password reset link has been sent to "
 "it. Please check your inbox."
@@ -708,7 +710,7 @@ msgstr ""
 "Se existir uma conta para este e-mail, um link de redefinição de senha foi "
 "enviado para ela. Verifique sua caixa de entrada."
 
-#: apps/accounts/views/auth.py:181 apps/accounts/views/auth.py:214
+#: apps/accounts/views/auth.py:200 apps/accounts/views/auth.py:233
 msgid ""
 "Your password has been successfully reset. You can now log in with your new "
 "password."
@@ -716,36 +718,36 @@ msgstr ""
 "Sua senha foi redefinida com sucesso. Agora você pode entrar com sua nova "
 "senha."
 
-#: apps/accounts/views/auth.py:187
+#: apps/accounts/views/auth.py:206
 msgid "Confirm the password reset using the provided token and new password."
 msgstr ""
 "Confirma a redefinição de senha usando o token fornecido e a nova senha."
 
-#: apps/accounts/views/auth.py:233
+#: apps/accounts/views/auth.py:252
 msgid "Logout successful."
 msgstr "Sessão encerrada com sucesso."
 
-#: apps/accounts/views/auth.py:244
+#: apps/accounts/views/auth.py:263
 msgid "Missing refresh token"
 msgstr "Token de refresh ausente"
 
-#: apps/accounts/views/auth.py:245 apps/accounts/views/auth.py:283
+#: apps/accounts/views/auth.py:264 apps/accounts/views/auth.py:302
 msgid "Refresh token is required."
 msgstr "O token de refresh é obrigatório."
 
-#: apps/accounts/views/auth.py:249
+#: apps/accounts/views/auth.py:268
 msgid "Invalid or expired token"
 msgstr "Token inválido ou expirado"
 
-#: apps/accounts/views/auth.py:250 apps/accounts/views/auth.py:281
+#: apps/accounts/views/auth.py:269 apps/accounts/views/auth.py:300
 msgid "Token is invalid or expired."
 msgstr "O token é inválido ou expirou."
 
-#: apps/accounts/views/auth.py:254
+#: apps/accounts/views/auth.py:273
 msgid "Invalid request."
 msgstr "Requisição inválida."
 
-#: apps/accounts/views/auth.py:258
+#: apps/accounts/views/auth.py:277
 msgid ""
 "Blacklist the refresh token and clear the organization session. Browsers "
 "(refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`; the auth "
@@ -756,61 +758,61 @@ msgstr ""
 "`refresh`; os cookies de autenticação são sempre limpos e um token CSRF é "
 "obrigatório."
 
-#: apps/accounts/views/auth.py:298
+#: apps/accounts/views/auth.py:317
 msgid "Email verified."
 msgstr "E-mail verificado."
 
-#: apps/accounts/views/auth.py:301
+#: apps/accounts/views/auth.py:320
 msgid ""
 "Confirm the email address with the `uid` and `token` from the verification "
 "link."
 msgstr ""
 "Confirma o endereço de e-mail com o `uid` e o `token` do link de verificação."
 
-#: apps/accounts/views/auth.py:320
+#: apps/accounts/views/auth.py:339
 msgid "Your email has been verified."
 msgstr "Seu e-mail foi verificado."
 
-#: apps/accounts/views/auth.py:329
+#: apps/accounts/views/auth.py:348
 msgid "Verification email sent."
 msgstr "E-mail de verificação enviado."
 
-#: apps/accounts/views/auth.py:332
+#: apps/accounts/views/auth.py:351
 msgid "A link was sent recently; retry after the cooldown."
 msgstr ""
 "Um link foi enviado recentemente; tente novamente após o intervalo de "
 "reenvio."
 
-#: apps/accounts/views/auth.py:335
+#: apps/accounts/views/auth.py:354
 msgid "Send a new verification link to the authenticated user email."
 msgstr ""
 "Envia um novo link de verificação para o e-mail do usuário autenticado."
 
-#: apps/accounts/views/auth.py:342
+#: apps/accounts/views/auth.py:361
 msgid "Your email is already verified."
 msgstr "Seu e-mail já está verificado."
 
-#: apps/accounts/views/auth.py:346
+#: apps/accounts/views/auth.py:365
 msgid "Please wait before requesting a new link."
 msgstr "Aguarde antes de solicitar um novo link."
 
-#: apps/accounts/views/auth.py:354
+#: apps/accounts/views/auth.py:373
 msgid "A new verification link has been sent to your email."
 msgstr "Um novo link de verificação foi enviado para o seu e-mail."
 
-#: apps/accounts/views/files.py:40
+#: apps/accounts/views/files.py:41
 msgid "Download a file."
 msgstr "Baixa um arquivo."
 
-#: apps/accounts/views/files.py:44
+#: apps/accounts/views/files.py:45
 msgid "The file content."
 msgstr "O conteúdo do arquivo."
 
-#: apps/accounts/views/files.py:47
+#: apps/accounts/views/files.py:48
 msgid "File not found."
 msgstr "Arquivo não encontrado."
 
-#: apps/accounts/views/files.py:55
+#: apps/accounts/views/files.py:56
 msgid ""
 "Download as an attachment. Only raster images are ever served inline; every "
 "other type is always an attachment."
@@ -818,54 +820,54 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:135
+#: apps/accounts/views/files.py:142
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:139
+#: apps/accounts/views/files.py:146
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
-#: apps/accounts/views/invitations.py:53
+#: apps/accounts/views/invitations.py:55
 msgid "Send an invitation email."
 msgstr "Envia um e-mail de convite."
 
-#: apps/accounts/views/invitations.py:71
+#: apps/accounts/views/invitations.py:73
 msgid "The invitation email has been sent successfully."
 msgstr "O e-mail de convite foi enviado com sucesso."
 
-#: apps/accounts/views/invitations.py:99 apps/accounts/views/members.py:86
+#: apps/accounts/views/invitations.py:101 apps/accounts/views/members.py:87
 msgid "The invitation is expired or the user is already a member."
 msgstr "O convite expirou ou o usuário já é membro."
 
-#: apps/accounts/views/invitations.py:126
+#: apps/accounts/views/invitations.py:128
 msgid "The invitation email cooldown is active."
 msgstr "O intervalo de reenvio do e-mail de convite está ativo."
 
-#: apps/accounts/views/invitations.py:132
+#: apps/accounts/views/invitations.py:134
 msgid "List received invitations for the authenticated user."
 msgstr "Lista os convites recebidos pelo usuário autenticado."
 
-#: apps/accounts/views/invitations.py:139
+#: apps/accounts/views/invitations.py:141
 msgid "Retrieve a received invitation detail."
 msgstr "Obtém os detalhes de um convite recebido."
 
-#: apps/accounts/views/invitations.py:147
-#: apps/accounts/views/invitations.py:181
-#: apps/accounts/views/invitations.py:263
-#: apps/accounts/views/invitations.py:338
+#: apps/accounts/views/invitations.py:149
+#: apps/accounts/views/invitations.py:183
+#: apps/accounts/views/invitations.py:265
+#: apps/accounts/views/invitations.py:340
 msgid "Invitation not found."
 msgstr "Convite não encontrado."
 
-#: apps/accounts/views/invitations.py:157 apps/accounts/views/members.py:50
+#: apps/accounts/views/invitations.py:159 apps/accounts/views/members.py:51
 msgid "The secret key of the invitation."
 msgstr "A chave secreta do convite."
 
-#: apps/accounts/views/invitations.py:162
+#: apps/accounts/views/invitations.py:164
 msgid "Retrieve an invitation by its secret key."
 msgstr "Obtém um convite pela sua chave secreta."
 
-#: apps/accounts/views/invitations.py:189
+#: apps/accounts/views/invitations.py:191
 msgid ""
 "Accept an invitation and create a member record, or reactivate the removed "
 "member of the user (readmission)."
@@ -873,77 +875,77 @@ msgstr ""
 "Aceita um convite e cria um registro de membro, ou reativa o membro removido "
 "do usuário (readmissão)."
 
-#: apps/accounts/views/invitations.py:245
+#: apps/accounts/views/invitations.py:247
 msgid "The invitation is no longer acceptable."
 msgstr "O convite não pode mais ser aceito."
 
-#: apps/accounts/views/invitations.py:270
+#: apps/accounts/views/invitations.py:272
 msgid "Decline an invitation."
 msgstr "Recusa um convite."
 
-#: apps/accounts/views/invitations.py:284
+#: apps/accounts/views/invitations.py:286
 msgid "The invitation has been declined successfully."
 msgstr "O convite foi recusado com sucesso."
 
-#: apps/accounts/views/invitations.py:320
+#: apps/accounts/views/invitations.py:322
 msgid "The invitation is not in a pending state."
 msgstr "O convite não está pendente."
 
-#: apps/accounts/views/invitations.py:531
+#: apps/accounts/views/invitations.py:595
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
-#: apps/accounts/views/members.py:56
+#: apps/accounts/views/members.py:57
 #, python-brace-format
 msgid "Create a new {name} with an invitation."
 msgstr "Cria um novo {name} com um convite."
 
-#: apps/accounts/views/members.py:105
+#: apps/accounts/views/members.py:106
 msgid "Invitation not found or already accepted/expired."
 msgstr "Convite não encontrado, já aceito ou expirado."
 
-#: apps/accounts/views/members.py:119
+#: apps/accounts/views/members.py:120
 #, python-brace-format
 msgid "Update the role of a {name}."
 msgstr "Atualiza a função de um {name}."
 
-#: apps/accounts/views/members.py:129 apps/generics/utils/schema.py:50
-#: apps/teams/views/team_members.py:28
+#: apps/accounts/views/members.py:130 apps/generics/utils/schema.py:50
+#: apps/teams/views/team_members.py:29
 #, python-brace-format
 msgid "Update a {name}."
 msgstr "Atualiza uma instância de {name}."
 
-#: apps/accounts/views/members.py:177
+#: apps/accounts/views/members.py:190
 msgid ""
 "This route is not available anymore. Use the `create_with_invite` route "
 "instead."
 msgstr "Esta rota não está mais disponível. Use a rota `create_with_invite`."
 
-#: apps/accounts/views/organizations.py:38
+#: apps/accounts/views/organizations.py:39
 msgid "Whether to show the dark logo or not."
 msgstr "Se deve exibir o logo escuro ou não."
 
-#: apps/accounts/views/organizations.py:46
+#: apps/accounts/views/organizations.py:47
 msgid "Login to the organization."
 msgstr "Realiza login na organização."
 
-#: apps/accounts/views/organizations.py:59
+#: apps/accounts/views/organizations.py:60
 msgid "Organization not found"
 msgstr "Organização não encontrada"
 
-#: apps/accounts/views/organizations.py:60
-#: apps/accounts/views/organizations.py:64
-#: apps/accounts/views/organizations.py:139
+#: apps/accounts/views/organizations.py:61
+#: apps/accounts/views/organizations.py:65
+#: apps/accounts/views/organizations.py:154
 msgid "Organization not found."
 msgstr "Organização não encontrada."
 
-#: apps/accounts/views/organizations.py:75
+#: apps/accounts/views/organizations.py:76
 msgid "User not authenticated"
 msgstr "Usuário não autenticado"
 
-#: apps/accounts/views/organizations.py:76
-#: apps/accounts/views/organizations.py:80
-#: apps/accounts/views/organizations.py:134
+#: apps/accounts/views/organizations.py:77
+#: apps/accounts/views/organizations.py:81
+#: apps/accounts/views/organizations.py:149
 msgid "User not authenticated."
 msgstr "Usuário não autenticado."
 
@@ -979,22 +981,336 @@ msgstr "Cadastro"
 msgid "Create a new account."
 msgstr "Cria uma nova conta."
 
-#: apps/accounts/views/user_profile.py:31
+#: apps/accounts/views/user_profile.py:46
 msgid "Retrieve the authenticated user profile."
 msgstr "Obtém o perfil do usuário autenticado."
 
-#: apps/accounts/views/user_profile.py:35
+#: apps/accounts/views/user_profile.py:50
 msgid "Partially update the authenticated user profile."
 msgstr "Atualiza parcialmente o perfil do usuário autenticado."
 
-#: apps/accounts/views/user_profile.py:63
+#: apps/accounts/views/user_profile.py:99
+msgid ""
+"List the account activity of the authenticated user: sign-ins, password "
+"changes, resets, email verification and profile updates."
+msgstr "Lista a atividade da conta do usuário autenticado: entradas, alterações de senha, redefinições, verificação de e-mail e atualizações do perfil."
+
+#: apps/accounts/views/user_profile.py:121
 msgid "Change the authenticated user password."
 msgstr "Altera a senha do usuário autenticado."
 
-#: apps/accounts/views/user_profile.py:68
-#: apps/accounts/views/user_profile.py:96
+#: apps/accounts/views/user_profile.py:126
+#: apps/accounts/views/user_profile.py:154
 msgid "Password changed successfully."
 msgstr "Senha alterada com sucesso."
+
+#: apps/audit/apps.py:8 apps/audit/models/audit_event.py:157
+msgid "Audit"
+msgstr "Auditoria"
+
+#: apps/audit/choices.py:6
+msgid "Organization created"
+msgstr "Organização criada"
+
+#: apps/audit/choices.py:7
+msgid "Organization updated"
+msgstr "Organização atualizada"
+
+#: apps/audit/choices.py:8
+msgid "Organization deleted"
+msgstr "Organização excluída"
+
+#: apps/audit/choices.py:9
+msgid "Organization accessed"
+msgstr "Organização acessada"
+
+#: apps/audit/choices.py:12
+msgid "Organization profile updated"
+msgstr "Perfil da organização atualizado"
+
+#: apps/audit/choices.py:16
+msgid "Organization image added"
+msgstr "Imagem da organização adicionada"
+
+#: apps/audit/choices.py:20
+msgid "Organization image updated"
+msgstr "Imagem da organização atualizada"
+
+#: apps/audit/choices.py:24
+msgid "Organization image removed"
+msgstr "Imagem da organização removida"
+
+#: apps/audit/choices.py:26
+msgid "Member joined"
+msgstr "Membro entrou"
+
+#: apps/audit/choices.py:27
+msgid "Member readmitted"
+msgstr "Membro readmitido"
+
+#: apps/audit/choices.py:28
+msgid "Member updated"
+msgstr "Membro atualizado"
+
+#: apps/audit/choices.py:29
+msgid "Member role changed"
+msgstr "Cargo do membro alterado"
+
+#: apps/audit/choices.py:30
+msgid "Member removed"
+msgstr "Membro removido"
+
+#: apps/audit/choices.py:31
+msgid "Invitation created"
+msgstr "Convite criado"
+
+#: apps/audit/choices.py:32
+msgid "Invitation updated"
+msgstr "Convite atualizado"
+
+#: apps/audit/choices.py:33
+msgid "Invitation email sent"
+msgstr "E-mail de convite enviado"
+
+#: apps/audit/choices.py:34
+msgid "Invitation deleted"
+msgstr "Convite excluído"
+
+#: apps/audit/choices.py:35
+msgid "Invitation accepted"
+msgstr "Convite aceito"
+
+#: apps/audit/choices.py:36
+msgid "Invitation declined"
+msgstr "Convite recusado"
+
+#: apps/audit/choices.py:37
+msgid "Team created"
+msgstr "Equipe criada"
+
+#: apps/audit/choices.py:38
+msgid "Team updated"
+msgstr "Equipe atualizada"
+
+#: apps/audit/choices.py:39
+msgid "Team deleted"
+msgstr "Equipe excluída"
+
+#: apps/audit/choices.py:40
+msgid "Team member added"
+msgstr "Membro adicionado à equipe"
+
+#: apps/audit/choices.py:41
+msgid "Team member updated"
+msgstr "Membro da equipe atualizado"
+
+#: apps/audit/choices.py:42
+msgid "Team member removed"
+msgstr "Membro removido da equipe"
+
+#: apps/audit/choices.py:43
+msgid "File uploaded"
+msgstr "Arquivo enviado"
+
+#: apps/audit/choices.py:44
+msgid "File updated"
+msgstr "Arquivo atualizado"
+
+#: apps/audit/choices.py:45
+msgid "File deleted"
+msgstr "Arquivo excluído"
+
+#: apps/audit/choices.py:46
+msgid "Account created"
+msgstr "Conta criada"
+
+#: apps/audit/choices.py:47
+msgid "Signed in"
+msgstr "Entrou na conta"
+
+#: apps/audit/choices.py:48
+msgid "Failed sign-in attempt"
+msgstr "Tentativa de entrada com falha"
+
+#: apps/audit/choices.py:49
+msgid "Signed out"
+msgstr "Saiu da conta"
+
+#: apps/audit/choices.py:50
+msgid "Password changed"
+msgstr "Senha alterada"
+
+#: apps/audit/choices.py:53
+msgid "Failed password change attempt"
+msgstr "Tentativa de alteração de senha com falha"
+
+#: apps/audit/choices.py:57
+msgid "Password reset requested"
+msgstr "Redefinição de senha solicitada"
+
+#: apps/audit/choices.py:61
+msgid "Password reset completed"
+msgstr "Redefinição de senha concluída"
+
+#: apps/audit/choices.py:65
+msgid "Failed password reset attempt"
+msgstr "Tentativa de redefinição de senha com falha"
+
+#: apps/audit/choices.py:67
+msgid "Email verified"
+msgstr "E-mail verificado"
+
+#: apps/audit/choices.py:70
+msgid "Failed email verification attempt"
+msgstr "Tentativa de verificação de e-mail com falha"
+
+#: apps/audit/choices.py:72
+msgid "Profile updated"
+msgstr "Perfil atualizado"
+
+#: apps/audit/choices.py:77
+msgid "Platform"
+msgstr "Plataforma"
+
+#: apps/audit/choices.py:78
+msgid "System"
+msgstr "Sistema"
+
+#: apps/audit/filters/audit_event.py:17
+msgid "Actor"
+msgstr "Autor"
+
+#: apps/audit/filters/audit_event.py:36
+msgid "The start date must be before the end date."
+msgstr "A data inicial deve ser anterior à data final."
+
+#: apps/audit/filters/audit_event.py:42
+msgid "Filter by target type together with target ID."
+msgstr "Filtre pelo tipo do registro junto com o ID do registro."
+
+#: apps/audit/models/audit_event.py:14 apps/generics/models/abstracts.py:19
+msgid "Created At"
+msgstr "Criado em"
+
+#: apps/audit/models/audit_event.py:15
+msgid "When the event happened"
+msgstr "Quando o evento aconteceu"
+
+#: apps/audit/models/audit_event.py:24
+msgid "Organization of the event; empty for account events"
+msgstr "Organização do evento; vazia para eventos da conta"
+
+#: apps/audit/models/audit_event.py:29
+msgid "Action"
+msgstr "Ação"
+
+#: apps/audit/models/audit_event.py:30
+msgid "What happened"
+msgstr "O que aconteceu"
+
+#: apps/audit/models/audit_event.py:36
+msgid "Actor Type"
+msgstr "Tipo de autor"
+
+#: apps/audit/models/audit_event.py:37
+msgid "Who performed the action"
+msgstr "Quem realizou a ação"
+
+#: apps/audit/models/audit_event.py:45
+msgid "Actor User"
+msgstr "Usuário autor"
+
+#: apps/audit/models/audit_event.py:46
+msgid "User who performed the action"
+msgstr "Usuário que realizou a ação"
+
+#: apps/audit/models/audit_event.py:54
+msgid "Actor Member"
+msgstr "Membro autor"
+
+#: apps/audit/models/audit_event.py:55
+msgid "Member who performed the action"
+msgstr "Membro que realizou a ação"
+
+#: apps/audit/models/audit_event.py:60
+msgid "Actor Label"
+msgstr "Nome do autor"
+
+#: apps/audit/models/audit_event.py:61
+msgid "Actor name when the event happened"
+msgstr "Nome do autor quando o evento aconteceu"
+
+#: apps/audit/models/audit_event.py:69
+msgid "Subject User"
+msgstr "Usuário titular"
+
+#: apps/audit/models/audit_event.py:70
+msgid "User an account event belongs to"
+msgstr "Usuário a quem o evento da conta pertence"
+
+#: apps/audit/models/audit_event.py:78
+msgid "Impersonator"
+msgstr "Personificador"
+
+#: apps/audit/models/audit_event.py:79
+msgid "Platform user acting as the actor"
+msgstr "Usuário da plataforma agindo como o autor"
+
+#: apps/audit/models/audit_event.py:84
+msgid "Target Type"
+msgstr "Tipo do registro"
+
+#: apps/audit/models/audit_event.py:85
+msgid "Kind of record the action applies to"
+msgstr "Tipo de registro afetado pela ação"
+
+#: apps/audit/models/audit_event.py:90
+msgid "Target ID"
+msgstr "ID do registro"
+
+#: apps/audit/models/audit_event.py:91
+msgid "Identifier of the record the action applies to"
+msgstr "Identificador do registro afetado pela ação"
+
+#: apps/audit/models/audit_event.py:96
+msgid "Target Label"
+msgstr "Nome do registro"
+
+#: apps/audit/models/audit_event.py:97
+msgid "Record name when the event happened"
+msgstr "Nome do registro quando o evento aconteceu"
+
+#: apps/audit/models/audit_event.py:102
+msgid "Changes"
+msgstr "Alterações"
+
+#: apps/audit/models/audit_event.py:103
+msgid "Changed fields with their values before and after"
+msgstr "Campos alterados com os valores antes e depois"
+
+#: apps/audit/models/audit_event.py:108
+msgid "Metadata"
+msgstr "Metadados"
+
+#: apps/audit/models/audit_event.py:109
+msgid "Extra context of the event"
+msgstr "Contexto adicional do evento"
+
+#: apps/audit/models/audit_event.py:114
+msgid "IP Address"
+msgstr "Endereço IP"
+
+#: apps/audit/models/audit_event.py:115
+msgid "Client address of the request"
+msgstr "Endereço do cliente da requisição"
+
+#: apps/audit/models/audit_event.py:122
+msgid "Audit Event"
+msgstr "Evento de auditoria"
+
+#: apps/audit/models/audit_event.py:123
+msgid "Audit Events"
+msgstr "Eventos de auditoria"
 
 #: apps/dashboard/apps.py:8 apps/dashboard/views/overview.py:15
 msgid "Dashboard"
@@ -1083,10 +1399,6 @@ msgstr "Está ativo"
 #: apps/generics/models/abstracts.py:15
 msgid "Is this record active or not"
 msgstr "Se este registro está ativo ou não"
-
-#: apps/generics/models/abstracts.py:19
-msgid "Created At"
-msgstr "Criado em"
 
 #: apps/generics/models/abstracts.py:20
 msgid "When the record was initially created"
@@ -1283,7 +1595,7 @@ msgstr "Você não tem permissão para adicionar um membro a esta equipe."
 msgid "Not allowed to change the member."
 msgstr "Não é permitido alterar o membro."
 
-#: apps/teams/views/team_members.py:54
+#: apps/teams/views/team_members.py:60
 msgid ""
 "Team the form is for: `role` lists only the roles the caller may assign in "
 "it and `member` hides members already in it. Without a valid team only "
@@ -1293,11 +1605,11 @@ msgstr ""
 "chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
 "uma equipe válida, apenas gerentes da organização recebem funções."
 
-#: config/settings/base.py:295
+#: config/settings/base.py:296
 msgid "CrewForge API"
 msgstr "CrewForge API"
 
-#: config/settings/base.py:297
+#: config/settings/base.py:298
 msgid ""
 "API service for managing accounts, teams, and permissions with "
 "comprehensive\n"
@@ -1318,7 +1630,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:409
+#: config/settings/base.py:410
 msgid "CrewForge"
 msgstr "CrewForge"
 

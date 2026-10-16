@@ -41,6 +41,8 @@ from apps.accounts.serializers.invitation import (
 )
 from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
 from apps.accounts.utils.security_log import log_security_event
+from apps.audit.choices import AuditActionChoices
+from apps.audit.services import record_audit_event
 from apps.generics.decorators import action_custom
 from apps.generics.utils.schema import extend_schema_model_view_set
 
@@ -346,6 +348,12 @@ class InvitationViewSet(
     serializer_class = InvitationSerializer
     queryset = Invitation.objects.filter(is_active=True)
     http_method_names = ['get', 'post', 'put', 'delete']
+    audit_actions = {
+        'create': AuditActionChoices.INVITATION_CREATED,
+        'update': AuditActionChoices.INVITATION_UPDATED,
+        'destroy': AuditActionChoices.INVITATION_DELETED,
+    }
+    audit_exclude_fields = ('key', 'last_email_sent_at')
     permission_classes = [InvitationPermission]
     filterset_class = InvitationFilter
     filter_backends = [backends.DjangoFilterBackend]
@@ -359,6 +367,51 @@ class InvitationViewSet(
             .filter_visible_to(self.auth_member)
             .annotate_former_member()
         )
+
+    def record_acceptance(self, invitation, member, readmitted: bool) -> None:
+        """
+        Log the acceptance as before (``member.readmitted`` or
+        ``invitation.accepted``) and audit both the Invitation and the Member.
+        """
+        logged, audited = (
+            (
+                AuditActionChoices.MEMBER_READMITTED,
+                AuditActionChoices.INVITATION_ACCEPTED,
+            )
+            if readmitted
+            else (
+                AuditActionChoices.INVITATION_ACCEPTED,
+                AuditActionChoices.MEMBER_JOINED,
+            )
+        )
+        targets = {
+            AuditActionChoices.INVITATION_ACCEPTED: {'target': invitation},
+            AuditActionChoices.MEMBER_READMITTED: self.member_audit(member),
+            AuditActionChoices.MEMBER_JOINED: self.member_audit(member),
+        }
+        log_security_event(
+            logged,
+            self.request,
+            invitation_id=invitation.pk,
+            organization_id=invitation.organization_id,
+            member_id=member.pk,
+            audit={'actor_member': member, **targets[logged]},
+        )
+        record_audit_event(
+            audited,
+            request=self.request,
+            organization_id=invitation.organization_id,
+            actor_member=member,
+            metadata={'invitation_id': invitation.pk, 'member_id': member.pk},
+            **targets[audited],
+        )
+
+    @staticmethod
+    def member_audit(member) -> dict:
+        return {
+            'target': member,
+            'changes': [{'field': 'role', 'before': None, 'after': member.role}],
+        }
 
     @action(detail=True, methods=['post'], url_path='send-email')
     def send_email(self, request, *args, **kwargs):
@@ -386,8 +439,14 @@ class InvitationViewSet(
 
         invitation.send_email()
 
-        invitation.last_email_sent_at = timezone.now()
-        invitation.save(update_fields=['last_email_sent_at', 'updated_at'])
+        with transaction.atomic():
+            invitation.last_email_sent_at = timezone.now()
+            invitation.save(update_fields=['last_email_sent_at', 'updated_at'])
+            record_audit_event(
+                AuditActionChoices.INVITATION_EMAIL_SENT,
+                request=request,
+                target=invitation,
+            )
 
         return Response(
             data={'detail': InvitationEmailErrorMessages.SENT_SUCCESS.label},
@@ -485,6 +544,7 @@ class InvitationViewSet(
                     nickname=accept_serializer.validated_data.get('nickname', ''),
                 )
                 invitation.accept(member=member, check=False)
+                self.record_acceptance(invitation, member, readmitted)
         except DjangoValidationError as exc:
             raise serializers.ValidationError(exc.message_dict) from exc
         except ValueError as exc:
@@ -492,13 +552,6 @@ class InvitationViewSet(
                 data={'detail': str(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        log_security_event(
-            'member.readmitted' if readmitted else 'invitation.accepted',
-            request,
-            invitation_id=invitation.pk,
-            organization_id=invitation.organization_id,
-            member_id=member.pk,
-        )
 
         from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -531,5 +584,12 @@ class InvitationViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        invitation.decline(user=self.auth_user, check=False)
+        with transaction.atomic():
+            invitation.decline(user=self.auth_user, check=False)
+            record_audit_event(
+                AuditActionChoices.INVITATION_DECLINED,
+                request=request,
+                organization_id=invitation.organization_id,
+                target=invitation,
+            )
         return Response(data={'detail': _('Invitation declined successfully.')})
