@@ -83,7 +83,7 @@ class SessionSerializerTestCase(APITestCaseMixin, APITestCase):
         access = response.data['member']['access']
         self.assertEqual(
             set(access.keys()),
-            {'members', 'invitations', 'teams', 'organization_settings'},
+            {'members', 'invitations', 'teams', 'organization_settings', 'audit'},
         )
         for value in access.values():
             self.assertIsInstance(value, bool)
