@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.choices import OrganizationErrorMessages
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 
@@ -70,6 +71,30 @@ class OrganizationSerializerTestCase(APITestCaseMixin, APITestCase):
         payload = self._org_payload(slug=self.organization.slug)
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data['error']['details']['slug'],
+            [OrganizationErrorMessages.SLUG_TAKEN.label],
+        )
+
+    def test_validate_slug_of_inactive_organization_is_taken(self):
+        inactive = OrganizationFactory(is_active=False)
+        payload = self._org_payload(slug=inactive.slug)
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data['error']['details']['slug'],
+            [OrganizationErrorMessages.SLUG_TAKEN.label],
+        )
+
+    def test_duplicate_slug_message_pt_br(self):
+        payload = self._org_payload(slug=self.organization.slug)
+        response = self.client.post(
+            self.list_url, data=payload, format='json', HTTP_ACCEPT_LANGUAGE='pt-BR'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data['error']['details']['slug'], ['Este slug já está em uso.']
+        )
 
     def test_validate_empty_name(self):
         payload = self._org_payload(name='', slug='valid-slug')

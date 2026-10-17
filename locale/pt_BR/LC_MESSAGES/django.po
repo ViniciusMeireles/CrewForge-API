@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 21:12+0000\n"
+"POT-Creation-Date: 2026-10-17 01:34+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -121,20 +121,24 @@ msgstr "O usuário já é membro"
 msgid "The organization is no longer active."
 msgstr "A organização não está mais ativa."
 
-#: apps/accounts/choices.py:190
+#: apps/accounts/choices.py:188
+msgid "This slug is already in use."
+msgstr "Este slug já está em uso."
+
+#: apps/accounts/choices.py:194
 msgid "This nickname is already in use in this organization."
 msgstr "Este apelido já está em uso nesta organização."
 
-#: apps/accounts/choices.py:197
+#: apps/accounts/choices.py:201
 msgid "An invitation email was recently sent. Please wait before resending."
 msgstr ""
 "Um e-mail de convite foi enviado recentemente. Aguarde antes de reenviar."
 
-#: apps/accounts/choices.py:199
+#: apps/accounts/choices.py:203
 msgid "Invitation email sent successfully."
 msgstr "E-mail de convite enviado com sucesso."
 
-#: apps/accounts/choices.py:202
+#: apps/accounts/choices.py:206
 msgid "The invitation is no longer valid."
 msgstr "O convite não é mais válido."
 
@@ -391,7 +395,7 @@ msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
 #: apps/accounts/models/invitation.py:88 apps/accounts/models/member.py:25
-#: apps/audit/choices.py:76
+#: apps/audit/choices.py:79
 msgid "User"
 msgstr "Usuário"
 
@@ -993,7 +997,9 @@ msgstr "Atualiza parcialmente o perfil do usuário autenticado."
 msgid ""
 "List the account activity of the authenticated user: sign-ins, password "
 "changes, resets, email verification and profile updates."
-msgstr "Lista a atividade da conta do usuário autenticado: entradas, alterações de senha, redefinições, verificação de e-mail e atualizações do perfil."
+msgstr ""
+"Lista a atividade da conta do usuário autenticado: entradas, alterações de "
+"senha, redefinições, verificação de e-mail e atualizações do perfil."
 
 #: apps/accounts/views/user_profile.py:121
 msgid "Change the authenticated user password."
@@ -1136,43 +1142,43 @@ msgstr "Tentativa de entrada com falha"
 msgid "Signed out"
 msgstr "Saiu da conta"
 
-#: apps/audit/choices.py:50
+#: apps/audit/choices.py:52
 msgid "Password changed"
 msgstr "Senha alterada"
 
-#: apps/audit/choices.py:53
+#: apps/audit/choices.py:56
 msgid "Failed password change attempt"
 msgstr "Tentativa de alteração de senha com falha"
 
-#: apps/audit/choices.py:57
+#: apps/audit/choices.py:60
 msgid "Password reset requested"
 msgstr "Redefinição de senha solicitada"
 
-#: apps/audit/choices.py:61
+#: apps/audit/choices.py:64
 msgid "Password reset completed"
 msgstr "Redefinição de senha concluída"
 
-#: apps/audit/choices.py:65
+#: apps/audit/choices.py:68
 msgid "Failed password reset attempt"
 msgstr "Tentativa de redefinição de senha com falha"
 
-#: apps/audit/choices.py:67
+#: apps/audit/choices.py:70
 msgid "Email verified"
 msgstr "E-mail verificado"
 
-#: apps/audit/choices.py:70
+#: apps/audit/choices.py:73
 msgid "Failed email verification attempt"
 msgstr "Tentativa de verificação de e-mail com falha"
 
-#: apps/audit/choices.py:72
+#: apps/audit/choices.py:75
 msgid "Profile updated"
 msgstr "Perfil atualizado"
 
-#: apps/audit/choices.py:77
+#: apps/audit/choices.py:80
 msgid "Platform"
 msgstr "Plataforma"
 
-#: apps/audit/choices.py:78
+#: apps/audit/choices.py:81
 msgid "System"
 msgstr "Sistema"
 

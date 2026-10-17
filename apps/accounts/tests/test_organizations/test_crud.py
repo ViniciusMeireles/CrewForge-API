@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.choices import OrganizationErrorMessages
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
@@ -133,6 +134,29 @@ class OrganizationCRUDTestCase(APITestCaseMixin, APITestCase):
         url = reverse('accounts:organizations-list')
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data['error']['details']['slug'],
+            [OrganizationErrorMessages.SLUG_TAKEN.label],
+        )
+
+    def test_update_to_taken_slug(self):
+        org = self.new_account()
+        other = OrganizationFactory()
+        response = self.client.patch(
+            self._detail_url(org), data={'slug': other.slug}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data['error']['details']['slug'],
+            [OrganizationErrorMessages.SLUG_TAKEN.label],
+        )
+
+    def test_update_keeps_own_slug(self):
+        org = self.new_account()
+        response = self.client.patch(
+            self._detail_url(org), data={'slug': org.slug}, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     def test_login_organization(self):
         org = self.new_account()

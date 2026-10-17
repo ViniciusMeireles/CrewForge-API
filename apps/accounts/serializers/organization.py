@@ -1,7 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
-from apps.accounts.choices import MemberRoleChoices
+from apps.accounts.choices import MemberRoleChoices, OrganizationErrorMessages
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization, OrganizationProfile
@@ -84,6 +85,16 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         model = Organization
         fields = '__all__'
         read_only_fields = ModelSerializerMixin._default_read_only_fields + ['owner']
+        extra_kwargs = {
+            'slug': {
+                'validators': [
+                    UniqueValidator(
+                        queryset=Organization.objects.all(),
+                        message=OrganizationErrorMessages.SLUG_TAKEN.label,
+                    )
+                ]
+            }
+        }
 
     def _get_profile_serializer(self, data) -> OrganizationProfileRelatedSerializer:
         profile_instance = None
