@@ -184,6 +184,10 @@ class InvitationErrorMessages(models.TextChoices):
     )
 
 
+class OrganizationErrorMessages(models.TextChoices):
+    SLUG_TAKEN = 'slug_taken', _('This slug is already in use.')
+
+
 class MemberErrorMessages(models.TextChoices):
     NICKNAME_TAKEN = (
         'nickname_taken',
