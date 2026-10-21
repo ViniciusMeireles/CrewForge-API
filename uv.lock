@@ -237,7 +237,7 @@ requires-dist = [
     { name = "drf-spectacular-sidecar", specifier = ">=2026.10.1" },
     { name = "flower", specifier = ">=2.2.0" },
     { name = "gunicorn", specifier = ">=26.2.0" },
-    { name = "pillow", specifier = ">=12.3.0" },
+    { name = "pillow", specifier = ">=13.0.0" },
     { name = "psycopg", specifier = ">=3.3.6" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "redis", specifier = ">=8.1.0" },
@@ -254,7 +254,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=7.1.0" },
     { name = "pytest-django", specifier = ">=4.14.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "ruff", specifier = ">=0.17.0" },
+    { name = "ruff", specifier = ">=0.17.1" },
 ]
 
 [[package]]
