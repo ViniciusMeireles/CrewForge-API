@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
@@ -14,6 +13,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
