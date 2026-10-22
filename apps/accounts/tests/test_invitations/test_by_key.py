@@ -42,6 +42,25 @@ class InvitationByKeyTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
+    def test_by_key_returns_404_for_malformed_key(self):
+        url = reverse(
+            'accounts:invitations-by-key',
+            kwargs={'invitation_key': 'nao-existe'},
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['error']['code'], 'NOT_FOUND')
+
+    def test_by_key_authenticated_returns_404_for_malformed_key(self):
+        user = UserFactory()
+        self.client.force_authenticate(user=user)
+        url = reverse(
+            'accounts:invitations-by-key',
+            kwargs={'invitation_key': 'nao-existe'},
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
     def test_by_key_returns_has_user_true_when_user_exists(self):
         user = UserFactory()
         invitation = self._create_invitation(email=user.email)
