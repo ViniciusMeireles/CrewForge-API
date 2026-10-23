@@ -54,10 +54,10 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 
 ### Phase 2: Increment 2 — actions and enforcement (PR C)
 
-- [ ] `User.blocked_*`, `sessions_revoked_at`, `revoke_sessions`
-- [ ] Authentication and sign-in checks; Organization context, login and Invitations refuse suspended Organizations
-- [ ] Action services + endpoints + emails (on commit)
-- [ ] Tests (AC-8…AC-21, AC-28), schema, `make sync-docs`
+- [x] `User.blocked_*`, `sessions_revoked_at`, `revoke_sessions`
+- [x] Authentication and sign-in checks; Organization context, login and Invitations refuse suspended Organizations
+- [x] Action services + endpoints + emails (on commit)
+- [x] Tests (AC-8…AC-21, AC-28), schema (`make sync-docs` after merge)
 
 ### Phase 3: Increment 3 — impersonation (PR D)
 
@@ -78,6 +78,7 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 | 2026-10-22 | Plan created (stage 5, `implementation-planner`) |
 | 2026-10-22 | Phase 1 (PR B) done: platform role, Organization status, read-only `/api/platform/` (overview, Organizations + tabs, Users, audit), session fields, admin/command audited, docs |
 | 2026-10-22 | Phase 0 done: shortcuts removed; Django admin validates StoredFiles with `StoredFileAdminSerializer`; code review clean; 1606 tests pass |
+| 2026-10-23 | Phase 2 (PR C) built: blocking/revocation at authentication, suspension enforcement, eight admin actions with audit and owner emails, pt-BR |
 
 ---
 
@@ -92,6 +93,10 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 | `set_platform_role` in `apps/accounts/utils/platform_role.py` | `apps/accounts` (admin, command) must not import `apps/platform` | Service in `apps/platform` |
 | List ordering parameter is `order_by` (project convention); filter-options only on the platform audit (action labels for the Action filter) | Existing lists use `order_by`; platform enums are in the schema | `ordering`; options routes now |
 | `options_component_prefix` on `OptionsBaseModelMixin`; scoped paginated options share the canonical schema component | Two ViewSets of `AuditEvent` exposed options with the same component names (spectacular warnings, wrong schema) | Rename per filterset class (unstable: orderable filtersets are generated) |
+| Coded exceptions (`apps/generics/errors.py`: `InvalidState`, `CooldownThrottled`; `apps/accounts/exceptions.py`: `AccountBlocked`, `OrganizationSuspended`) read by the exception handler (`error_code`, `error_details`) | One envelope for the new codes; outside `exceptions.py` because `rest_framework.views` imports the authentication classes (circular import) | Ad-hoc `Response` bodies as in the invitation cooldown |
+| Suspension checked in `OrganizationScopedRequestMixin.check_permissions` with per-view `organization_context_exempt_actions` | Every Organization-context view already uses the mixin; runs before the permissions so the code is `ORGANIZATION_SUSPENDED`, not `PERMISSION_DENIED`; one indexed `exists()` per request (dashboard query budget 11 → 12) | A global DRF permission (views override `permission_classes`); raising inside `get_organization_id` (breaks audit and platform actions of staff Members) |
+| Blocked sign-in through `USER_AUTHENTICATION_RULE` | simplejwt calls it only after the password or refresh token is accepted (BR-22), in sign-in and refresh | Override `TokenObtainPairSerializer.validate` (tokens already issued by then) |
+| Org/User platform viewsets on `ReadOnlyModelViewSet` + `post` for the actions | `POST` on the lists stays `405` (no `create`) | `ModelViewSet` with `post` allowed |
 | One service function per action | Single transaction, reused by views and tests | Logic in views |
 | `StoredFileAdminSerializer` for the StoredFile admin form | ADR-009 keeps Django admin access unchanged while the API serializer has no admin case | Context flag in the API serializer (review finding) |
 
