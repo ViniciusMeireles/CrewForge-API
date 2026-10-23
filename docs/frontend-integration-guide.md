@@ -19,7 +19,8 @@
 - [Form Options Endpoints](#15-form-options-endpoints)
 - [Dashboard](#16-dashboard)
 - [Audit Trail](#17-audit-trail)
-- [Troubleshooting](#18-troubleshooting)
+- [Platform Panel](#18-platform-panel)
+- [Troubleshooting](#19-troubleshooting)
 
 ---
 
@@ -1230,28 +1231,55 @@ shape as above, with `organization_id: null`.
 
 ---
 
-## 18. Troubleshooting
+## 18. Platform Panel
 
-### 18.1. Cookies Not Being Sent
+Endpoints for **platform staff** (`user.platform_role` = `support` or `admin`), outside any Organization context
+([ADR-009](../../docs/adr/009-platform-access-outside-organization-context.md)): JWT only — no Organization login is
+needed and the session's Organization is ignored. A User with role `none` gets `403` on every route. All routes are
+read-only in this increment; account actions come with the next one.
+
+The session exposes the role: `GET /api/accounts/session/` → `user.platform_role` (`none` | `support` | `admin`). Every
+Organization in `organizations` (session and Organization list) carries `status` (`active` | `suspended`).
+
+| Endpoint | Description | Query parameters |
+|---|---|---|
+| `GET /api/platform/overview/` | Platform numbers (`organizations_total`, `organizations_suspended`, `organizations_new_7d/30d`, `organizations_active_30d`, `users_total`, `users_blocked`, `users_new_7d/30d`) | — |
+| `GET /api/platform/organizations/` | Organizations with `owner {id, full_name, email, member_id, member_since}`, `active_members_count`, `last_access_at`, `status`, `is_deleted` | `search` (name, slug, owner email), `status`, `created_at_after`, `created_at_before`, `deleted` (default hides soft-deleted), `order_by` (`name`, `created_at`, `last_access_at`, `active_members_count`, `-` for descending), `page`, `page_size` |
+| `GET /api/platform/organizations/{id}/` | Detail: list fields + `profile`, `counts {active_members, teams, pending_invitations}`, `storage_bytes`, `suspension {suspended_at, suspended_by, reason}` or `null` | — |
+| `GET /api/platform/organizations/{id}/members/` | Members (`user {id, full_name, email}`, `role`, `joined_at`, `last_login_at`, `is_active`) | `search`, `is_active`, `exclude_owner`, `page` |
+| `GET /api/platform/organizations/{id}/teams/` | Active teams with `members_count` | `page` |
+| `GET /api/platform/organizations/{id}/invitations/` | Pending invitations | `page` |
+| `GET /api/platform/users/` | Users with `organizations_count`, `platform_role`, `is_blocked`, `is_deleted`, `email_verified` | `search`, `verified`, `blocked`, `platform_role`, `date_joined_after`, `date_joined_before`, `deleted`, `order_by` (`full_name`, `date_joined`, `last_login`), `page`, `page_size` |
+| `GET /api/platform/users/{id}/` | Detail: list fields + `blocking {blocked_at, blocked_by, reason}` or `null`, `memberships[]`, `can_impersonate`, `can_block` (for the requesting staff member) | — |
+| `GET /api/platform/audit-events/` | Every Audit Event (Organization and account) with `organization {id, name}` or `null` and `subject_user` | `created_at_after`, `created_at_before`, `organization`, `user` (actor or subject), `scope` (`account` \| `organization`), `action`, `action__in`, `target_type`, `target_type__in`, `page` |
+
+Inverted periods answer `400` with `created_at` / `date_joined` field errors. Use the Organization detail's
+`members` route with `is_active=true&exclude_owner=true&search=` for the ownership-transfer picker.
+
+---
+
+## 19. Troubleshooting
+
+### 19.1. Cookies Not Being Sent
 
 - Check that `withCredentials: true` (Angular) or `credentials: 'include'` (Fetch) is set on all requests that need the session.
 - Verify the SameSite + Secure configuration via `GET /api/accounts/session/config/` (public endpoint, no auth required; the diagnostics are only returned with `DEBUG=True`).
 - In development (HTTP), both `SameSite=Lax` and `Secure=False` are required. In production (HTTPS), `SameSite=None` and `Secure=True`.
 
-### 18.2. CORS Errors
+### 19.2. CORS Errors
 
 - Verify `CORS_ALLOWED_ORIGINS` in `.env` includes the frontend origin (e.g., `http://localhost:4200`).
 - Check the browser console for `Access-Control-Allow-Origin` headers.
 - With `DEBUG=True`, the `/api/accounts/session/config/` endpoint returns the current `cors_allowed_origins` setting.
 
-### 18.3. 404 on Org-Scoped Endpoints
+### 19.3. 404 on Org-Scoped Endpoints
 
 This is the most common issue. A 404 (not 403) on org-scoped resources usually means the `organization_id` is not in the session.
 
 - Verify Step 3 (organization login) was completed successfully.
 - Check `GET /api/accounts/session/` — if `organization` and `member` are `null`, the session has no active organization context.
 
-### 18.4. Token Expired
+### 19.4. Token Expired
 
 - A 401 response means the access token has expired.
 - Attempt a token refresh via `POST /api/auth/token/refresh/`.

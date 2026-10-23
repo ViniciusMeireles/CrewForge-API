@@ -29,6 +29,21 @@ class MemberRoleChoices(models.TextChoices):
         return roles
 
 
+class PlatformRoleChoices(models.TextChoices):
+    NONE = 'none', _('None')
+    SUPPORT = 'support', _('Support')
+    ADMIN = 'admin', _('Admin')
+
+    @classproperty
+    def staff_values(cls) -> list[str]:
+        return [cls.SUPPORT, cls.ADMIN]
+
+
+class OrganizationStatusChoices(models.TextChoices):
+    ACTIVE = 'active', _('Active')
+    SUSPENDED = 'suspended', _('Suspended')
+
+
 class OrganizationImageTypeChoices(models.TextChoices):
     LOGO = 'logo', _('Logo')
     COVER = 'cover', _('Cover')

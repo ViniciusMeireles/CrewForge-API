@@ -1838,10 +1838,12 @@ paths:
             - -name
             - -profile__id
             - -slug
+            - -status
             - id
             - name
             - profile__id
             - slug
+            - status
         description: |-
           Ordering
 
@@ -1851,6 +1853,8 @@ paths:
           * `-name` - Descending Name
           * `slug` - Slug
           * `-slug` - Descending Slug
+          * `status` - Status
+          * `-status` - Descending Status
           * `profile__id` - Profile - ID
           * `-profile__id` - Profile - Descending ID
         explode: false
@@ -2655,6 +2659,7 @@ paths:
           - team_member.added
           - team_member.removed
           - team_member.updated
+          - user.platform_role_changed
           - user.profile.updated
         description: |-
           What happened
@@ -2699,6 +2704,7 @@ paths:
           * `auth.email.verified` - Email verified
           * `auth.email_verification.failed` - Failed email verification attempt
           * `user.profile.updated` - Profile updated
+          * `user.platform_role_changed` - Platform role changed
       - in: query
         name: action__in
         schema:
@@ -3070,6 +3076,733 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Overview'
+          description: ''
+  /api/platform/audit-events/:
+    get:
+      operationId: platform_audit_events_list
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+          enum:
+          - auth.email.verified
+          - auth.email_verification.failed
+          - auth.login.failed
+          - auth.login.succeeded
+          - auth.logout
+          - auth.password.changed
+          - auth.password_change.failed
+          - auth.password_reset.completed
+          - auth.password_reset.failed
+          - auth.password_reset.requested
+          - auth.signup
+          - invitation.accepted
+          - invitation.created
+          - invitation.declined
+          - invitation.deleted
+          - invitation.email_sent
+          - invitation.updated
+          - member.joined
+          - member.readmitted
+          - member.removed
+          - member.role_changed
+          - member.updated
+          - organization.created
+          - organization.deleted
+          - organization.image.created
+          - organization.image.deleted
+          - organization.image.updated
+          - organization.login
+          - organization.profile.updated
+          - organization.updated
+          - stored_file.deleted
+          - stored_file.updated
+          - stored_file.uploaded
+          - team.created
+          - team.deleted
+          - team.updated
+          - team_member.added
+          - team_member.removed
+          - team_member.updated
+          - user.platform_role_changed
+          - user.profile.updated
+        description: |-
+          What happened
+
+          * `organization.created` - Organization created
+          * `organization.updated` - Organization updated
+          * `organization.deleted` - Organization deleted
+          * `organization.login` - Organization accessed
+          * `organization.profile.updated` - Organization profile updated
+          * `organization.image.created` - Organization image added
+          * `organization.image.updated` - Organization image updated
+          * `organization.image.deleted` - Organization image removed
+          * `member.joined` - Member joined
+          * `member.readmitted` - Member readmitted
+          * `member.updated` - Member updated
+          * `member.role_changed` - Member role changed
+          * `member.removed` - Member removed
+          * `invitation.created` - Invitation created
+          * `invitation.updated` - Invitation updated
+          * `invitation.email_sent` - Invitation email sent
+          * `invitation.deleted` - Invitation deleted
+          * `invitation.accepted` - Invitation accepted
+          * `invitation.declined` - Invitation declined
+          * `team.created` - Team created
+          * `team.updated` - Team updated
+          * `team.deleted` - Team deleted
+          * `team_member.added` - Team member added
+          * `team_member.updated` - Team member updated
+          * `team_member.removed` - Team member removed
+          * `stored_file.uploaded` - File uploaded
+          * `stored_file.updated` - File updated
+          * `stored_file.deleted` - File deleted
+          * `auth.signup` - Account created
+          * `auth.login.succeeded` - Signed in
+          * `auth.login.failed` - Failed sign-in attempt
+          * `auth.logout` - Signed out
+          * `auth.password.changed` - Password changed
+          * `auth.password_change.failed` - Failed password change attempt
+          * `auth.password_reset.requested` - Password reset requested
+          * `auth.password_reset.completed` - Password reset completed
+          * `auth.password_reset.failed` - Failed password reset attempt
+          * `auth.email.verified` - Email verified
+          * `auth.email_verification.failed` - Failed email verification attempt
+          * `user.profile.updated` - Profile updated
+          * `user.platform_role_changed` - Platform role changed
+      - in: query
+        name: action__in
+        schema:
+          type: array
+          items:
+            type: string
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: organization
+        schema:
+          type: integer
+        description: Organization
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: scope
+        schema:
+          type: string
+          enum:
+          - account
+          - organization
+        description: |-
+          Scope
+
+          * `account` - Account
+          * `organization` - Organization
+      - in: query
+        name: target_type
+        schema:
+          type: string
+      - in: query
+        name: target_type__in
+        schema:
+          type: array
+          items:
+            type: string
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: user
+        schema:
+          type: number
+        description: User
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformAuditEventList'
+          description: ''
+  /api/platform/audit-events/{id}/:
+    get:
+      operationId: platform_audit_events_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Audit Event.
+        required: true
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformAuditEvent'
+          description: ''
+  /api/platform/organizations/:
+    get:
+      operationId: platform_organizations_list
+      parameters:
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: deleted
+        schema:
+          type: boolean
+        description: Include deleted
+      - in: query
+        name: order_by
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -active_members_count
+            - -created_at
+            - -last_access_at
+            - -name
+            - active_members_count
+            - created_at
+            - last_access_at
+            - name
+        description: |-
+          Ordering
+
+          * `name` - Name
+          * `-name` - Name (descending)
+          * `created_at` - Created at
+          * `-created_at` - Created at (descending)
+          * `last_access_at` - Last access at
+          * `-last_access_at` - Last access at (descending)
+          * `active_members_count` - Active members count
+          * `-active_members_count` - Active members count (descending)
+        explode: false
+        style: form
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - suspended
+        description: |-
+          Suspended organizations cannot be entered
+
+          * `active` - Active
+          * `suspended` - Suspended
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformOrganizationListList'
+          description: ''
+  /api/platform/organizations/{id}/:
+    get:
+      operationId: platform_organizations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformOrganizationDetail'
+          description: ''
+  /api/platform/organizations/{id}/invitations/:
+    get:
+      operationId: platform_organizations_invitations_list
+      parameters:
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: deleted
+        schema:
+          type: boolean
+        description: Include deleted
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      - in: query
+        name: order_by
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -active_members_count
+            - -created_at
+            - -last_access_at
+            - -name
+            - active_members_count
+            - created_at
+            - last_access_at
+            - name
+        description: |-
+          Ordering
+
+          * `name` - Name
+          * `-name` - Name (descending)
+          * `created_at` - Created at
+          * `-created_at` - Created at (descending)
+          * `last_access_at` - Last access at
+          * `-last_access_at` - Last access at (descending)
+          * `active_members_count` - Active members count
+          * `-active_members_count` - Active members count (descending)
+        explode: false
+        style: form
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - suspended
+        description: |-
+          Suspended organizations cannot be entered
+
+          * `active` - Active
+          * `suspended` - Suspended
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformInvitationList'
+          description: ''
+  /api/platform/organizations/{id}/members/:
+    get:
+      operationId: platform_organizations_members_list
+      parameters:
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: deleted
+        schema:
+          type: boolean
+        description: Include deleted
+      - in: query
+        name: exclude_owner
+        schema:
+          type: boolean
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: order_by
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -active_members_count
+            - -created_at
+            - -last_access_at
+            - -name
+            - active_members_count
+            - created_at
+            - last_access_at
+            - name
+        description: |-
+          Ordering
+
+          * `name` - Name
+          * `-name` - Name (descending)
+          * `created_at` - Created at
+          * `-created_at` - Created at (descending)
+          * `last_access_at` - Last access at
+          * `-last_access_at` - Last access at (descending)
+          * `active_members_count` - Active members count
+          * `-active_members_count` - Active members count (descending)
+        explode: false
+        style: form
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - suspended
+        description: |-
+          Suspended organizations cannot be entered
+
+          * `active` - Active
+          * `suspended` - Suspended
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformMemberList'
+          description: ''
+  /api/platform/organizations/{id}/teams/:
+    get:
+      operationId: platform_organizations_teams_list
+      parameters:
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: deleted
+        schema:
+          type: boolean
+        description: Include deleted
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      - in: query
+        name: order_by
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -active_members_count
+            - -created_at
+            - -last_access_at
+            - -name
+            - active_members_count
+            - created_at
+            - last_access_at
+            - name
+        description: |-
+          Ordering
+
+          * `name` - Name
+          * `-name` - Name (descending)
+          * `created_at` - Created at
+          * `-created_at` - Created at (descending)
+          * `last_access_at` - Last access at
+          * `-last_access_at` - Last access at (descending)
+          * `active_members_count` - Active members count
+          * `-active_members_count` - Active members count (descending)
+        explode: false
+        style: form
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - suspended
+        description: |-
+          Suspended organizations cannot be entered
+
+          * `active` - Active
+          * `suspended` - Suspended
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformTeamList'
+          description: ''
+  /api/platform/overview/:
+    get:
+      operationId: platform_overview_retrieve
+      description: Platform numbers, computed when requested (platform staff).
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformOverview'
+          description: ''
+  /api/platform/users/:
+    get:
+      operationId: platform_users_list
+      parameters:
+      - in: query
+        name: blocked
+        schema:
+          type: boolean
+        description: Blocked
+      - in: query
+        name: date_joined_after
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: date_joined_before
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: deleted
+        schema:
+          type: boolean
+        description: Include deleted
+      - in: query
+        name: order_by
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -date_joined
+            - -full_name
+            - -last_login
+            - date_joined
+            - full_name
+            - last_login
+        description: |-
+          Ordering
+
+          * `full_name` - Full name
+          * `-full_name` - Full name (descending)
+          * `date_joined` - Date joined
+          * `-date_joined` - Date joined (descending)
+          * `last_login` - Last login
+          * `-last_login` - Last login (descending)
+        explode: false
+        style: form
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: platform_role
+        schema:
+          type: string
+          enum:
+          - admin
+          - none
+          - support
+        description: |-
+          Access to the platform panel, outside any organization
+
+          * `none` - None
+          * `support` - Support
+          * `admin` - Admin
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search
+      - in: query
+        name: verified
+        schema:
+          type: boolean
+        description: Verified
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformUserListList'
+          description: ''
+  /api/platform/users/{id}/:
+    get:
+      operationId: platform_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserDetail'
           description: ''
   /api/teams/team-members/:
     get:
@@ -3759,6 +4492,7 @@ components:
       - auth.email.verified
       - auth.email_verification.failed
       - user.profile.updated
+      - user.platform_role_changed
       type: string
       description: |-
         * `organization.created` - Organization created
@@ -3801,6 +4535,7 @@ components:
         * `auth.email.verified` - Email verified
         * `auth.email_verification.failed` - Failed email verification attempt
         * `user.profile.updated` - Profile updated
+        * `user.platform_role_changed` - Platform role changed
     ActorTypeEnum:
       enum:
       - user
@@ -3884,6 +4619,7 @@ components:
             * `auth.email.verified` - Email verified
             * `auth.email_verification.failed` - Failed email verification attempt
             * `user.profile.updated` - Profile updated
+            * `user.platform_role_changed` - Platform role changed
         action_display:
           type: string
         actor_type:
@@ -5154,6 +5890,15 @@ components:
           description: Organization slug
           maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+          description: |-
+            Suspended organizations cannot be entered
+
+            * `active` - Active
+            * `suspended` - Suspended
         created_by:
           type: integer
           readOnly: true
@@ -5177,6 +5922,7 @@ components:
       - name
       - owner
       - slug
+      - status
       - updated_at
       - updated_by
     OrganizationDetail:
@@ -5213,6 +5959,14 @@ components:
           description: Organization slug
           maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          description: |-
+            Suspended organizations cannot be entered
+
+            * `active` - Active
+            * `suspended` - Suspended
         created_by:
           type: integer
           nullable: true
@@ -5275,6 +6029,15 @@ components:
           readOnly: true
           description: Organization slug
           pattern: ^[-a-zA-Z0-9_]+$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+          description: |-
+            Suspended organizations cannot be entered
+
+            * `active` - Active
+            * `suspended` - Suspended
         profile:
           $ref: '#/components/schemas/OrganizationProfileListRelated'
       required:
@@ -5282,6 +6045,7 @@ components:
       - name
       - profile
       - slug
+      - status
     OrganizationProfile:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -5641,6 +6405,144 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationProfile'
+    PaginatedPlatformAuditEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformAuditEvent'
+    PaginatedPlatformInvitationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformInvitation'
+    PaginatedPlatformMemberList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformMember'
+    PaginatedPlatformOrganizationListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformOrganizationList'
+    PaginatedPlatformTeamList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformTeam'
+    PaginatedPlatformUserListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformUserList'
     PaginatedStoredFileListModelList:
       type: object
       required:
@@ -5858,6 +6760,15 @@ components:
           description: Organization slug
           maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+          description: |-
+            Suspended organizations cannot be entered
+
+            * `active` - Active
+            * `suspended` - Suspended
         created_by:
           type: integer
           readOnly: true
@@ -6037,6 +6948,726 @@ components:
 
             * `en` - English
             * `pt-br` - Português (Brasil)
+    PlatformAuditEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the event happened
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ActionEnum'
+          readOnly: true
+          description: |-
+            What happened
+
+            * `organization.created` - Organization created
+            * `organization.updated` - Organization updated
+            * `organization.deleted` - Organization deleted
+            * `organization.login` - Organization accessed
+            * `organization.profile.updated` - Organization profile updated
+            * `organization.image.created` - Organization image added
+            * `organization.image.updated` - Organization image updated
+            * `organization.image.deleted` - Organization image removed
+            * `member.joined` - Member joined
+            * `member.readmitted` - Member readmitted
+            * `member.updated` - Member updated
+            * `member.role_changed` - Member role changed
+            * `member.removed` - Member removed
+            * `invitation.created` - Invitation created
+            * `invitation.updated` - Invitation updated
+            * `invitation.email_sent` - Invitation email sent
+            * `invitation.deleted` - Invitation deleted
+            * `invitation.accepted` - Invitation accepted
+            * `invitation.declined` - Invitation declined
+            * `team.created` - Team created
+            * `team.updated` - Team updated
+            * `team.deleted` - Team deleted
+            * `team_member.added` - Team member added
+            * `team_member.updated` - Team member updated
+            * `team_member.removed` - Team member removed
+            * `stored_file.uploaded` - File uploaded
+            * `stored_file.updated` - File updated
+            * `stored_file.deleted` - File deleted
+            * `auth.signup` - Account created
+            * `auth.login.succeeded` - Signed in
+            * `auth.login.failed` - Failed sign-in attempt
+            * `auth.logout` - Signed out
+            * `auth.password.changed` - Password changed
+            * `auth.password_change.failed` - Failed password change attempt
+            * `auth.password_reset.requested` - Password reset requested
+            * `auth.password_reset.completed` - Password reset completed
+            * `auth.password_reset.failed` - Failed password reset attempt
+            * `auth.email.verified` - Email verified
+            * `auth.email_verification.failed` - Failed email verification attempt
+            * `user.profile.updated` - Profile updated
+            * `user.platform_role_changed` - Platform role changed
+        action_display:
+          type: string
+        actor_type:
+          allOf:
+          - $ref: '#/components/schemas/ActorTypeEnum'
+          readOnly: true
+          description: |-
+            Who performed the action
+
+            * `user` - User
+            * `platform` - Platform
+            * `system` - System
+        actor:
+          allOf:
+          - $ref: '#/components/schemas/AuditActor'
+          nullable: true
+          readOnly: true
+        impersonator:
+          allOf:
+          - $ref: '#/components/schemas/AuditImpersonator'
+          nullable: true
+          readOnly: true
+        organization_id:
+          type: integer
+          nullable: true
+          description: Organization of the event; empty for account events
+          readOnly: true
+        target_type:
+          type: string
+          readOnly: true
+          description: Kind of record the action applies to
+        target_id:
+          type: string
+          readOnly: true
+          description: Identifier of the record the action applies to
+        target_label:
+          type: string
+          readOnly: true
+          description: Record name when the event happened
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEventChange'
+          readOnly: true
+        metadata:
+          readOnly: true
+          description: Extra context of the event
+        ip:
+          type: string
+          readOnly: true
+          nullable: true
+          title: IP Address
+          description: Client address of the request
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/PlatformAuditOrganization'
+          readOnly: true
+          nullable: true
+        subject_user:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: User an account event belongs to
+      required:
+      - action
+      - action_display
+      - actor
+      - actor_type
+      - changes
+      - created_at
+      - id
+      - impersonator
+      - ip
+      - metadata
+      - organization
+      - organization_id
+      - subject_user
+      - target_id
+      - target_label
+      - target_type
+    PlatformAuditOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Organization name
+      required:
+      - id
+      - name
+    PlatformBlocking:
+      type: object
+      properties:
+        blocked_at:
+          type: string
+          format: date-time
+        blocked_by:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserRef'
+          nullable: true
+        reason:
+          type: string
+      required:
+      - blocked_at
+      - blocked_by
+      - reason
+    PlatformInvitation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          description: Email of the user to invite
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        expired_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Date and time when the invitation will expire
+        last_email_sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Date and time when the last invitation email was sent
+      required:
+      - email
+      - expired_at
+      - id
+      - last_email_sent_at
+      - role
+    PlatformMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserRef'
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the current membership started
+        last_login_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Last time the member logged into the organization
+        is_active:
+          type: boolean
+          readOnly: true
+          description: Is this record active or not
+      required:
+      - id
+      - is_active
+      - joined_at
+      - last_login_at
+      - role
+      - user
+    PlatformMembership:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/PlatformMembershipOrganization'
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        is_active:
+          type: boolean
+          readOnly: true
+          description: Is this record active or not
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the current membership started
+      required:
+      - id
+      - is_active
+      - joined_at
+      - organization
+      - role
+    PlatformMembershipOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Organization name
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+          description: |-
+            Suspended organizations cannot be entered
+
+            * `active` - Active
+            * `suspended` - Suspended
+      required:
+      - id
+      - name
+      - status
+    PlatformOrganizationCounts:
+      type: object
+      properties:
+        active_members:
+          type: integer
+        teams:
+          type: integer
+        pending_invitations:
+          type: integer
+      required:
+      - active_members
+      - pending_invitations
+      - teams
+    PlatformOrganizationDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Organization name
+        slug:
+          type: string
+          readOnly: true
+          description: Organization slug
+          pattern: ^[-a-zA-Z0-9_]+$
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/PlatformOwner'
+          nullable: true
+          readOnly: true
+        active_members_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        last_access_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+          description: |-
+            Suspended organizations cannot be entered
+
+            * `active` - Active
+            * `suspended` - Suspended
+        is_deleted:
+          type: boolean
+          readOnly: true
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/OrganizationProfileDetailRelated'
+          readOnly: true
+        counts:
+          allOf:
+          - $ref: '#/components/schemas/PlatformOrganizationCounts'
+          readOnly: true
+        storage_bytes:
+          type: integer
+          readOnly: true
+        suspension:
+          allOf:
+          - $ref: '#/components/schemas/PlatformSuspension'
+          nullable: true
+          readOnly: true
+      required:
+      - active_members_count
+      - counts
+      - created_at
+      - id
+      - is_deleted
+      - last_access_at
+      - name
+      - owner
+      - profile
+      - slug
+      - status
+      - storage_bytes
+      - suspension
+    PlatformOrganizationList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Organization name
+        slug:
+          type: string
+          readOnly: true
+          description: Organization slug
+          pattern: ^[-a-zA-Z0-9_]+$
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/PlatformOwner'
+          nullable: true
+          readOnly: true
+        active_members_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        last_access_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+          description: |-
+            Suspended organizations cannot be entered
+
+            * `active` - Active
+            * `suspended` - Suspended
+        is_deleted:
+          type: boolean
+          readOnly: true
+      required:
+      - active_members_count
+      - created_at
+      - id
+      - is_deleted
+      - last_access_at
+      - name
+      - owner
+      - slug
+      - status
+    PlatformOverview:
+      type: object
+      properties:
+        organizations_total:
+          type: integer
+        organizations_suspended:
+          type: integer
+        organizations_new_7d:
+          type: integer
+        organizations_new_30d:
+          type: integer
+        organizations_active_30d:
+          type: integer
+        users_total:
+          type: integer
+        users_blocked:
+          type: integer
+        users_new_7d:
+          type: integer
+        users_new_30d:
+          type: integer
+      required:
+      - organizations_active_30d
+      - organizations_new_30d
+      - organizations_new_7d
+      - organizations_suspended
+      - organizations_total
+      - users_blocked
+      - users_new_30d
+      - users_new_7d
+      - users_total
+    PlatformOwner:
+      type: object
+      properties:
+        id:
+          type: integer
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        member_id:
+          type: integer
+        member_since:
+          type: string
+          format: date-time
+      required:
+      - email
+      - full_name
+      - id
+      - member_id
+      - member_since
+    PlatformRoleEnum:
+      enum:
+      - none
+      - support
+      - admin
+      type: string
+      description: |-
+        * `none` - None
+        * `support` - Support
+        * `admin` - Admin
+    PlatformSuspension:
+      type: object
+      properties:
+        suspended_at:
+          type: string
+          format: date-time
+        suspended_by:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserRef'
+          nullable: true
+        reason:
+          type: string
+      required:
+      - reason
+      - suspended_at
+      - suspended_by
+    PlatformTeam:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Name of the team
+        description:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Description of the team
+        members_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+      required:
+      - created_at
+      - description
+      - id
+      - members_count
+      - name
+    PlatformUserDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        full_name:
+          type: string
+          readOnly: true
+          description: Full name of the user
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        email_verified:
+          type: boolean
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        organizations_count:
+          type: integer
+          readOnly: true
+        platform_role:
+          allOf:
+          - $ref: '#/components/schemas/PlatformRoleEnum'
+          readOnly: true
+          description: |-
+            Access to the platform panel, outside any organization
+
+            * `none` - None
+            * `support` - Support
+            * `admin` - Admin
+        is_blocked:
+          type: boolean
+          readOnly: true
+        is_deleted:
+          type: boolean
+          readOnly: true
+        blocking:
+          allOf:
+          - $ref: '#/components/schemas/PlatformBlocking'
+          nullable: true
+          readOnly: true
+        memberships:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformMembership'
+          readOnly: true
+        can_impersonate:
+          type: boolean
+          readOnly: true
+        can_block:
+          type: boolean
+          readOnly: true
+      required:
+      - blocking
+      - can_block
+      - can_impersonate
+      - date_joined
+      - email
+      - email_verified
+      - full_name
+      - id
+      - is_blocked
+      - is_deleted
+      - last_login
+      - memberships
+      - organizations_count
+      - platform_role
+      - username
+    PlatformUserList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        full_name:
+          type: string
+          readOnly: true
+          description: Full name of the user
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        email_verified:
+          type: boolean
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        organizations_count:
+          type: integer
+          readOnly: true
+        platform_role:
+          allOf:
+          - $ref: '#/components/schemas/PlatformRoleEnum'
+          readOnly: true
+          description: |-
+            Access to the platform panel, outside any organization
+
+            * `none` - None
+            * `support` - Support
+            * `admin` - Admin
+        is_blocked:
+          type: boolean
+          readOnly: true
+        is_deleted:
+          type: boolean
+          readOnly: true
+      required:
+      - date_joined
+      - email
+      - email_verified
+      - full_name
+      - id
+      - is_blocked
+      - is_deleted
+      - last_login
+      - organizations_count
+      - platform_role
+      - username
+    PlatformUserRef:
+      type: object
+      properties:
+        id:
+          type: integer
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+      required:
+      - email
+      - full_name
+      - id
     PreferredLanguageEnum:
       enum:
       - en
@@ -6159,7 +7790,7 @@ components:
       type: object
       properties:
         user:
-          $ref: '#/components/schemas/UserReady'
+          $ref: '#/components/schemas/SessionUser'
         organizations:
           type: array
           items:
@@ -6193,6 +7824,51 @@ components:
           type: boolean
       required:
       - session_configured
+    SessionUser:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        email_verified:
+          type: boolean
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        platform_role:
+          allOf:
+          - $ref: '#/components/schemas/PlatformRoleEnum'
+          readOnly: true
+          description: |-
+            Access to the platform panel, outside any organization
+
+            * `none` - None
+            * `support` - Support
+            * `admin` - Admin
+      required:
+      - email
+      - email_verified
+      - first_name
+      - id
+      - last_name
+      - platform_role
+      - username
     Signup:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.
@@ -6279,6 +7955,14 @@ components:
       - updated_at
       - updated_by
       - user
+    StatusEnum:
+      enum:
+      - active
+      - suspended
+      type: string
+      description: |-
+        * `active` - Active
+        * `suspended` - Suspended
     StoredFileAccess:
       enum:
       - owners_organization

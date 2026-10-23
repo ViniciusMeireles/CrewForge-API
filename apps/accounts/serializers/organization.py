@@ -9,6 +9,8 @@ from apps.accounts.models.organization import Organization, OrganizationProfile
 from apps.generics.utils.shortcuts import get_object_or_none
 from apps.generics.utils.strings import str_to_bool
 
+SUSPENSION_INTERNAL_FIELDS = ['suspended_at', 'suspended_by', 'suspension_reason']
+
 
 class OrganizationReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
     class Meta:
@@ -47,7 +49,7 @@ class OrganizationListSerializer(ModelSerializerMixin, serializers.ModelSerializ
 
     class Meta:
         model = Organization
-        fields = ['id', 'name', 'slug', 'profile']
+        fields = ['id', 'name', 'slug', 'status', 'profile']
         read_only_fields = fields
 
 
@@ -64,7 +66,7 @@ class OrganizationDetailSerializer(ModelSerializerMixin, serializers.ModelSerial
 
     class Meta:
         model = Organization
-        fields = '__all__'
+        exclude = SUSPENSION_INTERNAL_FIELDS
 
 
 class OrganizationProfileRelatedSerializer(
@@ -83,8 +85,11 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        fields = '__all__'
-        read_only_fields = ModelSerializerMixin._default_read_only_fields + ['owner']
+        exclude = SUSPENSION_INTERNAL_FIELDS
+        read_only_fields = ModelSerializerMixin._default_read_only_fields + [
+            'owner',
+            'status',
+        ]
         extra_kwargs = {
             'slug': {
                 'validators': [

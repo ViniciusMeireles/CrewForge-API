@@ -45,8 +45,14 @@ class MemberSessionSerializer(serializers.ModelSerializer):
         fields = ['id', 'role', 'nickname', 'permissions', 'access', 'last_login_at']
 
 
+class SessionUserSerializer(UserReadySerializer):
+    class Meta(UserReadySerializer.Meta):
+        fields = UserReadySerializer.Meta.fields + ['platform_role']
+        read_only_fields = fields
+
+
 class SessionSerializer(serializers.Serializer):
-    user = UserReadySerializer()
+    user = SessionUserSerializer()
     organizations = OrganizationListSerializer(many=True, read_only=True)
     organization = OrganizationListSerializer(allow_null=True, default=None)
     member = MemberSessionSerializer(allow_null=True, default=None)

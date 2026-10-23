@@ -5,7 +5,7 @@ from django.db.models.fields.generated import GeneratedField
 from django.db.models.functions import Concat
 from django.utils.translation import gettext_lazy as _
 
-from apps.accounts.choices import PreferredLanguageChoices
+from apps.accounts.choices import PlatformRoleChoices, PreferredLanguageChoices
 from apps.accounts.managers.user import UserManager
 from apps.generics.models.abstracts import BaseModel
 
@@ -87,8 +87,50 @@ class User(AbstractUser, BaseModel):
         verbose_name=_('Preferred Language'),
         help_text=_("Language used to render this user's emails."),
     )
+    platform_role = models.CharField(
+        max_length=16,
+        choices=PlatformRoleChoices.choices,
+        default=PlatformRoleChoices.NONE,
+        db_index=True,
+        verbose_name=_('Platform Role'),
+        help_text=_('Access to the platform panel, outside any organization'),
+    )
+    blocked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_('Blocked At'),
+        help_text=_('When a platform admin blocked the user'),
+    )
+    blocked_by = models.ForeignKey(
+        to='self',
+        on_delete=models.SET_NULL,
+        related_name='+',
+        null=True,
+        blank=True,
+        verbose_name=_('Blocked By'),
+        help_text=_('Platform admin who blocked the user'),
+    )
+    blocked_reason = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name=_('Blocked Reason'),
+        help_text=_('Internal reason, never shown to the user'),
+    )
 
     objects = UserManager()
+
+    @property
+    def is_blocked(self) -> bool:
+        return self.blocked_at is not None
+
+    @property
+    def is_platform_staff(self) -> bool:
+        return self.platform_role in PlatformRoleChoices.staff_values
+
+    @property
+    def is_platform_admin(self) -> bool:
+        return self.platform_role == PlatformRoleChoices.ADMIN
 
     @property
     def email_verified(self) -> bool:

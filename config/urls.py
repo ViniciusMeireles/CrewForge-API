@@ -41,6 +41,7 @@ local_urlpatterns = [
     path('', include('apps.teams.urls')),
     path('', include('apps.dashboard.urls')),
     path('', include('apps.audit.urls')),
+    path('', include('apps.platform.urls')),
 ]
 
 urlpatterns = (

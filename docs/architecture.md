@@ -198,6 +198,7 @@ MyViewSet
 - Put team and team membership logic in `apps/teams/`.
 - Put read-only cross-app aggregates (Organization overview) in `apps/dashboard/`.
 - Put the audit trail (`AuditEvent`, recording service, read API) in `apps/audit/`.
+- Put the platform panel (staff-only, Organization-less read API and account actions) in `apps/platform/`.
 - Put reusable cross-app code in `apps/generics/`.
 - Avoid duplicating shared helpers in feature apps when a generic helper belongs
   in `apps/generics/`.
@@ -214,6 +215,9 @@ MyViewSet
 - `apps/accounts/` must NOT import from `apps/teams/`.
 - `apps/dashboard/` may import from `apps/accounts/`, `apps/teams/` and
   `apps/generics/`; no app imports from `apps/dashboard/`.
+- `apps/platform/` may import from `apps/accounts/`, `apps/teams/`, `apps/audit/`
+  and `apps/generics/`; no app imports from `apps/platform/` (account-level helpers
+  such as `set_platform_role` live in `apps/accounts/utils/`).
 - `apps/audit/` has a **recording layer** (`choices`, `models`, `managers`,
   `services`) that `apps/accounts/` and `apps/teams/` may import; it imports only
   `apps/generics/` and `apps.accounts.utils.requests`, and its model relations use

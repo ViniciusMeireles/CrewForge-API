@@ -73,6 +73,10 @@ class AuditActionChoices(models.TextChoices):
         _('Failed email verification attempt'),
     )
     USER_PROFILE_UPDATED = 'user.profile.updated', _('Profile updated')
+    USER_PLATFORM_ROLE_CHANGED = (
+        'user.platform_role_changed',
+        _('Platform role changed'),
+    )
 
 
 class AuditActorTypeChoices(models.TextChoices):
