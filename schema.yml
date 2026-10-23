@@ -2648,7 +2648,10 @@ paths:
           - organization.image.deleted
           - organization.image.updated
           - organization.login
+          - organization.ownership_transferred
           - organization.profile.updated
+          - organization.reactivated
+          - organization.suspended
           - organization.updated
           - stored_file.deleted
           - stored_file.updated
@@ -2659,8 +2662,13 @@ paths:
           - team_member.added
           - team_member.removed
           - team_member.updated
+          - user.blocked
+          - user.password_reset_forced
           - user.platform_role_changed
           - user.profile.updated
+          - user.sessions_ended
+          - user.unblocked
+          - user.verification_resent
         description: |-
           What happened
 
@@ -2668,6 +2676,9 @@ paths:
           * `organization.updated` - Organization updated
           * `organization.deleted` - Organization deleted
           * `organization.login` - Organization accessed
+          * `organization.suspended` - Organization suspended
+          * `organization.reactivated` - Organization reactivated
+          * `organization.ownership_transferred` - Ownership transferred
           * `organization.profile.updated` - Organization profile updated
           * `organization.image.created` - Organization image added
           * `organization.image.updated` - Organization image updated
@@ -2705,6 +2716,11 @@ paths:
           * `auth.email_verification.failed` - Failed email verification attempt
           * `user.profile.updated` - Profile updated
           * `user.platform_role_changed` - Platform role changed
+          * `user.blocked` - Account blocked
+          * `user.unblocked` - Account unblocked
+          * `user.sessions_ended` - Sessions ended by platform support
+          * `user.verification_resent` - Verification email resent
+          * `user.password_reset_forced` - Password reset forced
       - in: query
         name: action__in
         schema:
@@ -3115,7 +3131,10 @@ paths:
           - organization.image.deleted
           - organization.image.updated
           - organization.login
+          - organization.ownership_transferred
           - organization.profile.updated
+          - organization.reactivated
+          - organization.suspended
           - organization.updated
           - stored_file.deleted
           - stored_file.updated
@@ -3126,8 +3145,13 @@ paths:
           - team_member.added
           - team_member.removed
           - team_member.updated
+          - user.blocked
+          - user.password_reset_forced
           - user.platform_role_changed
           - user.profile.updated
+          - user.sessions_ended
+          - user.unblocked
+          - user.verification_resent
         description: |-
           What happened
 
@@ -3135,6 +3159,9 @@ paths:
           * `organization.updated` - Organization updated
           * `organization.deleted` - Organization deleted
           * `organization.login` - Organization accessed
+          * `organization.suspended` - Organization suspended
+          * `organization.reactivated` - Organization reactivated
+          * `organization.ownership_transferred` - Ownership transferred
           * `organization.profile.updated` - Organization profile updated
           * `organization.image.created` - Organization image added
           * `organization.image.updated` - Organization image updated
@@ -3172,6 +3199,11 @@ paths:
           * `auth.email_verification.failed` - Failed email verification attempt
           * `user.profile.updated` - Profile updated
           * `user.platform_role_changed` - Platform role changed
+          * `user.blocked` - Account blocked
+          * `user.unblocked` - Account unblocked
+          * `user.sessions_ended` - Sessions ended by platform support
+          * `user.verification_resent` - Verification email resent
+          * `user.password_reset_forced` - Password reset forced
       - in: query
         name: action__in
         schema:
@@ -3335,6 +3367,8 @@ paths:
   /api/platform/organizations/:
     get:
       operationId: platform_organizations_list
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
       parameters:
       - in: query
         name: created_at_after
@@ -3423,6 +3457,8 @@ paths:
   /api/platform/organizations/{id}/:
     get:
       operationId: platform_organizations_retrieve
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
       parameters:
       - in: path
         name: id
@@ -3445,6 +3481,8 @@ paths:
   /api/platform/organizations/{id}/invitations/:
     get:
       operationId: platform_organizations_invitations_list
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
       parameters:
       - in: query
         name: created_at_after
@@ -3539,6 +3577,8 @@ paths:
   /api/platform/organizations/{id}/members/:
     get:
       operationId: platform_organizations_members_list
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
       parameters:
       - in: query
         name: created_at_after
@@ -3637,9 +3677,82 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPlatformMemberList'
           description: ''
+  /api/platform/organizations/{id}/reactivate/:
+    post:
+      operationId: platform_organizations_reactivate_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformOrganizationDetail'
+          description: ''
+  /api/platform/organizations/{id}/suspend/:
+    post:
+      operationId: platform_organizations_suspend_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+        required: true
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformOrganizationDetail'
+          description: ''
   /api/platform/organizations/{id}/teams/:
     get:
       operationId: platform_organizations_teams_list
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
       parameters:
       - in: query
         name: created_at_after
@@ -3731,6 +3844,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPlatformTeamList'
           description: ''
+  /api/platform/organizations/{id}/transfer-ownership/:
+    post:
+      operationId: platform_organizations_transfer_ownership_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnershipTransfer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OwnershipTransfer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OwnershipTransfer'
+        required: true
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformOrganizationDetail'
+          description: ''
   /api/platform/overview/:
     get:
       operationId: platform_overview_retrieve
@@ -3750,6 +3899,8 @@ paths:
   /api/platform/users/:
     get:
       operationId: platform_users_list
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
       parameters:
       - in: query
         name: blocked
@@ -3846,6 +3997,8 @@ paths:
   /api/platform/users/{id}/:
     get:
       operationId: platform_users_retrieve
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
       parameters:
       - in: path
         name: id
@@ -3855,6 +4008,182 @@ paths:
         required: true
       tags:
       - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserDetail'
+          description: ''
+  /api/platform/users/{id}/block/:
+    post:
+      operationId: platform_users_block_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+        required: true
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserDetail'
+          description: ''
+  /api/platform/users/{id}/end-sessions/:
+    post:
+      operationId: platform_users_end_sessions_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserDetail'
+          description: ''
+  /api/platform/users/{id}/force-password-reset/:
+    post:
+      operationId: platform_users_force_password_reset_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserDetail'
+          description: ''
+  /api/platform/users/{id}/resend-verification/:
+    post:
+      operationId: platform_users_resend_verification_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserDetail'
+          description: ''
+  /api/platform/users/{id}/unblock/:
+    post:
+      operationId: platform_users_unblock_create
+      description: Reads for staff; ``post`` only reaches the account actions (no
+        ``create``).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonOptional'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -4517,6 +4846,9 @@ components:
       - organization.updated
       - organization.deleted
       - organization.login
+      - organization.suspended
+      - organization.reactivated
+      - organization.ownership_transferred
       - organization.profile.updated
       - organization.image.created
       - organization.image.updated
@@ -4554,12 +4886,20 @@ components:
       - auth.email_verification.failed
       - user.profile.updated
       - user.platform_role_changed
+      - user.blocked
+      - user.unblocked
+      - user.sessions_ended
+      - user.verification_resent
+      - user.password_reset_forced
       type: string
       description: |-
         * `organization.created` - Organization created
         * `organization.updated` - Organization updated
         * `organization.deleted` - Organization deleted
         * `organization.login` - Organization accessed
+        * `organization.suspended` - Organization suspended
+        * `organization.reactivated` - Organization reactivated
+        * `organization.ownership_transferred` - Ownership transferred
         * `organization.profile.updated` - Organization profile updated
         * `organization.image.created` - Organization image added
         * `organization.image.updated` - Organization image updated
@@ -4597,6 +4937,11 @@ components:
         * `auth.email_verification.failed` - Failed email verification attempt
         * `user.profile.updated` - Profile updated
         * `user.platform_role_changed` - Platform role changed
+        * `user.blocked` - Account blocked
+        * `user.unblocked` - Account unblocked
+        * `user.sessions_ended` - Sessions ended by platform support
+        * `user.verification_resent` - Verification email resent
+        * `user.password_reset_forced` - Password reset forced
     ActorTypeEnum:
       enum:
       - user
@@ -4644,6 +4989,9 @@ components:
             * `organization.updated` - Organization updated
             * `organization.deleted` - Organization deleted
             * `organization.login` - Organization accessed
+            * `organization.suspended` - Organization suspended
+            * `organization.reactivated` - Organization reactivated
+            * `organization.ownership_transferred` - Ownership transferred
             * `organization.profile.updated` - Organization profile updated
             * `organization.image.created` - Organization image added
             * `organization.image.updated` - Organization image updated
@@ -4681,6 +5029,11 @@ components:
             * `auth.email_verification.failed` - Failed email verification attempt
             * `user.profile.updated` - Profile updated
             * `user.platform_role_changed` - Platform role changed
+            * `user.blocked` - Account blocked
+            * `user.unblocked` - Account unblocked
+            * `user.sessions_ended` - Sessions ended by platform support
+            * `user.verification_resent` - Verification email resent
+            * `user.password_reset_forced` - Password reset forced
         action_display:
           type: string
         actor_type:
@@ -6302,6 +6655,17 @@ components:
       - created_at
       - id
       - role_label
+    OwnershipTransfer:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+        member:
+          type: integer
+      required:
+      - member
+      - reason
     PaginatedAuditEventList:
       type: object
       required:
@@ -7050,6 +7414,9 @@ components:
             * `organization.updated` - Organization updated
             * `organization.deleted` - Organization deleted
             * `organization.login` - Organization accessed
+            * `organization.suspended` - Organization suspended
+            * `organization.reactivated` - Organization reactivated
+            * `organization.ownership_transferred` - Ownership transferred
             * `organization.profile.updated` - Organization profile updated
             * `organization.image.created` - Organization image added
             * `organization.image.updated` - Organization image updated
@@ -7087,6 +7454,11 @@ components:
             * `auth.email_verification.failed` - Failed email verification attempt
             * `user.profile.updated` - Profile updated
             * `user.platform_role_changed` - Platform role changed
+            * `user.blocked` - Account blocked
+            * `user.unblocked` - Account unblocked
+            * `user.sessions_ended` - Sessions ended by platform support
+            * `user.verification_resent` - Verification email resent
+            * `user.password_reset_forced` - Password reset forced
         action_display:
           type: string
         actor_type:
@@ -7756,6 +8128,21 @@ components:
       description: |-
         * `en` - English
         * `pt-br` - Português (Brasil)
+    ReasonOptional:
+      type: object
+      properties:
+        reason:
+          type: string
+          default: ''
+          maxLength: 500
+    ReasonRequired:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+      required:
+      - reason
     ReceivedDetailNotFound:
       type: object
       properties:

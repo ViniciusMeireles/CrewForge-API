@@ -197,6 +197,10 @@ class InvitationErrorMessages(models.TextChoices):
         'organization_inactive',
         _('The organization is no longer active.'),
     )
+    ORGANIZATION_SUSPENDED = (
+        'organization_suspended',
+        _("This organization is suspended, so the invitation can't be accepted."),
+    )
 
 
 class OrganizationErrorMessages(models.TextChoices):

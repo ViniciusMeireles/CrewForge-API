@@ -63,3 +63,56 @@ class PlatformPermissionTestCase(PlatformTestMixin, APITestCaseMixin, APITestCas
         url = reverse('platform:organizations-detail', args=[self.organization.id])
         response = self.client.patch(url, data={'name': 'x'}, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class PlatformActionPermissionTestCase(
+    PlatformTestMixin, APITestCaseMixin, APITestCase
+):
+    def setUp(self):
+        self.organization = OrganizationFactory()
+        self.user = UserFactory()
+        organization_actions = ('suspend', 'reactivate', 'transfer-ownership')
+        user_actions = (
+            'block',
+            'unblock',
+            'end-sessions',
+            'resend-verification',
+            'force-password-reset',
+        )
+        self.urls = [
+            reverse(f'platform:organizations-{name}', args=[self.organization.id])
+            for name in organization_actions
+        ] + [
+            reverse(f'platform:users-{name}', args=[self.user.id])
+            for name in user_actions
+        ]
+
+    def test_role_none_is_forbidden(self):
+        self.client.force_authenticate(user=UserFactory())
+        for url in self.urls:
+            with self.subTest(url=url):
+                response = self.client.post(url, data={'reason': 'x'}, format='json')
+                self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    def test_support_cannot_run_actions(self):
+        self.authenticate_staff('support')
+        for url in self.urls:
+            with self.subTest(url=url):
+                response = self.client.post(url, data={'reason': 'x'}, format='json')
+                self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.organization.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertFalse(self.organization.is_suspended)
+        self.assertFalse(self.user.is_blocked)
+
+    def test_lists_do_not_accept_create(self):
+        self.authenticate_staff('admin')
+        for url in (
+            reverse('platform:organizations-list'),
+            reverse('platform:users-list'),
+        ):
+            with self.subTest(url=url):
+                response = self.client.post(url, data={'name': 'x'}, format='json')
+                self.assertEqual(
+                    response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED
+                )

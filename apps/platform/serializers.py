@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -270,3 +271,41 @@ class PlatformAuditEventSerializer(AuditEventSerializer):
     class Meta(AuditEventSerializer.Meta):
         fields = AuditEventSerializer.Meta.fields + ['organization', 'subject_user']
         read_only_fields = fields
+
+
+REASON_MAX_LENGTH = 500
+REASON_ERROR_MESSAGES = {
+    'required': _('Enter a reason.'),
+    'blank': _('Enter a reason.'),
+    'max_length': _('Use at most 500 characters.'),
+}
+
+
+class ReasonRequiredSerializer(serializers.Serializer):
+    reason = serializers.CharField(
+        max_length=REASON_MAX_LENGTH, error_messages=REASON_ERROR_MESSAGES
+    )
+
+
+class ReasonOptionalSerializer(serializers.Serializer):
+    reason = serializers.CharField(
+        max_length=REASON_MAX_LENGTH,
+        required=False,
+        allow_blank=True,
+        default='',
+        error_messages=REASON_ERROR_MESSAGES,
+    )
+
+
+class OwnershipTransferSerializer(ReasonRequiredSerializer):
+    member = serializers.PrimaryKeyRelatedField(queryset=Member.objects.none())
+
+    def __init__(self, *args, organization: Organization | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if organization is None:
+            return
+        self.fields['member'].queryset = (
+            Member.objects.filter_actives()
+            .filter(organization=organization, user__is_active=True)
+            .exclude(pk=organization.owner_id)
+        )

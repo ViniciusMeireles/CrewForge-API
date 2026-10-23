@@ -14,7 +14,7 @@ from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.teams.factories.team_members import TeamMemberFactory
 from apps.teams.factories.teams import TeamFactory
 
-QUERY_BUDGET = 11
+QUERY_BUDGET = 12
 
 
 class OverviewPerformanceTestCase(APITestCaseMixin, APITestCase):

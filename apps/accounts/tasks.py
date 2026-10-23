@@ -43,3 +43,20 @@ def send_email_verification_email(
         ),
         countdown=1,
     )
+
+
+def send_organization_notice_email(
+    email_class_name: str,
+    recipient_list: list[str],
+    kwargs: dict,
+    language: str | None = None,
+):
+    send_email_task.apply_async(
+        kwargs=dict(
+            email_class_path=f'apps.accounts.emails.{email_class_name}',
+            recipient_list=recipient_list,
+            kwargs=kwargs,
+            language=language or get_language(),
+        ),
+        countdown=1,
+    )

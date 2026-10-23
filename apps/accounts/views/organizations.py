@@ -14,6 +14,7 @@ from rest_framework import status as http_status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.accounts.exceptions import OrganizationSuspended
 from apps.accounts.filters.organization import OrganizationFilter
 from apps.accounts.mixins.views import ModelViewSetMixin
 from apps.accounts.models.organization import Organization
@@ -106,6 +107,7 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
         'destroy': AuditActionChoices.ORGANIZATION_DELETED,
     }
     permission_classes = [OrganizationPermission]
+    organization_context_exempt_actions = ('list', 'create', 'login')
     filterset_class = OrganizationFilter
     filter_backends = [backends.DjangoFilterBackend]
     auto_orderable_filter = True
@@ -154,6 +156,8 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
                 data={'detail': _('Organization not found.')},
                 status=http_status.HTTP_404_NOT_FOUND,
             )
+        if organization.is_suspended:
+            raise OrganizationSuspended()
 
         request.session.cycle_key()
         request.session['organization_id'] = organization.id

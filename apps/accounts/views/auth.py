@@ -27,6 +27,7 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView as TokenVerifyViewBase,
 )
 
+from apps.accounts.exceptions import AccountBlocked
 from apps.accounts.serializers.auth import (
     EmailVerificationConfirmSerializer,
     PasswordResetConfirmSerializer,
@@ -83,6 +84,14 @@ class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
             enforce_csrf(request)
         try:
             response = super().post(request, *args, **kwargs)
+        except AccountBlocked:
+            log_security_event(
+                'account.blocked_sign_in',
+                request,
+                level=logging.WARNING,
+                user_id=self.attempted_user_id(request),
+            )
+            raise
         except AuthenticationFailed:
             log_security_event(
                 'auth.login.failed',

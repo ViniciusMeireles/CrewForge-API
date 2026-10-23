@@ -8,7 +8,7 @@ from apps.accounts.choices import (
 
 class InvitationErrorMessagesTestCase(TestCase):
     def test_values_count(self):
-        self.assertEqual(len(InvitationErrorMessages), 6)
+        self.assertEqual(len(InvitationErrorMessages), 7)
 
     def test_invitation_expired(self):
         self.assertEqual(
@@ -28,6 +28,16 @@ class InvitationErrorMessagesTestCase(TestCase):
         self.assertEqual(
             InvitationErrorMessages.ORGANIZATION_INACTIVE.label,
             'The organization is no longer active.',
+        )
+
+    def test_organization_suspended(self):
+        self.assertEqual(
+            InvitationErrorMessages.ORGANIZATION_SUSPENDED.value,
+            'organization_suspended',
+        )
+        self.assertEqual(
+            InvitationErrorMessages.ORGANIZATION_SUSPENDED.label,
+            "This organization is suspended, so the invitation can't be accepted.",
         )
 
     def test_invitation_not_found(self):

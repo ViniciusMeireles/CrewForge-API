@@ -10,4 +10,7 @@ class ErrorCode(models.TextChoices):
     NOT_ACCEPTABLE = 'NOT_ACCEPTABLE', _('Not acceptable')
     THROTTLED = 'THROTTLED', _('Throttled')
     VALIDATION_ERROR = 'VALIDATION_ERROR', _('Validation error')
+    ACCOUNT_BLOCKED = 'ACCOUNT_BLOCKED', _('Account blocked')
+    ORGANIZATION_SUSPENDED = 'ORGANIZATION_SUSPENDED', _('Organization suspended')
+    INVALID_STATE = 'INVALID_STATE', _('Invalid state')
     INTERNAL_ERROR = 'INTERNAL_ERROR', _('Internal error')

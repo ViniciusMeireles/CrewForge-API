@@ -101,6 +101,10 @@ if settings.ENVIRONMENT in ['local_development', 'test']:
     from apps.accounts.emails import (
         EmailVerificationEmail,
         InvitationEmail,
+        OrganizationReactivatedEmail,
+        OrganizationSuspendedEmail,
+        OwnershipTransferredNewOwnerEmail,
+        OwnershipTransferredPreviousOwnerEmail,
         PasswordResetRequestEmail,
     )
 
@@ -119,5 +123,25 @@ if settings.ENVIRONMENT in ['local_development', 'test']:
             route='email-preview/auth/email/verify/',
             view=EmailVerificationEmail.as_view(),
             name='email_verification_email_preview',
+        ),
+        path(
+            route='email-preview/accounts/organization/suspended/',
+            view=OrganizationSuspendedEmail.as_view(),
+            name='organization_suspended_email_preview',
+        ),
+        path(
+            route='email-preview/accounts/organization/reactivated/',
+            view=OrganizationReactivatedEmail.as_view(),
+            name='organization_reactivated_email_preview',
+        ),
+        path(
+            route='email-preview/accounts/organization/ownership/new-owner/',
+            view=OwnershipTransferredNewOwnerEmail.as_view(),
+            name='ownership_new_owner_email_preview',
+        ),
+        path(
+            route='email-preview/accounts/organization/ownership/previous-owner/',
+            view=OwnershipTransferredPreviousOwnerEmail.as_view(),
+            name='ownership_previous_owner_email_preview',
         ),
     ]

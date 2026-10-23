@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 
 def _get_error_code(exc: APIException) -> ErrorCode:
+    if code := getattr(exc, 'error_code', None):
+        return code
     mapping = {
         AuthenticationFailed: ErrorCode.AUTHENTICATION_ERROR,
         NotAuthenticated: ErrorCode.AUTHENTICATION_ERROR,
@@ -63,6 +65,8 @@ def _get_error_message(exc: APIException, code: ErrorCode) -> str:
 
 
 def _get_error_details(exc: APIException) -> dict | None:
+    if (details := getattr(exc, 'error_details', None)) is not None:
+        return details
     if not isinstance(exc, exceptions.ValidationError):
         return None
     detail = exc.detail
