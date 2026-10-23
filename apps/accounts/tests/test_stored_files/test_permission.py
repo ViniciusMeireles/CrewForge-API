@@ -64,7 +64,7 @@ class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
-    def test_superuser_can_view_any_file(self):
+    def test_superuser_does_not_see_other_users_files(self):
         StoredFileFactory.create(
             organization=self.organization,
             owner=self.owner_user,
@@ -73,7 +73,35 @@ class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(user=superuser)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertGreaterEqual(response.data['count'], 1)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_superuser_cannot_retrieve_other_users_file(self):
+        stored_file = StoredFileFactory.create(
+            organization=self.organization,
+            owner=self.owner_user,
+        )
+        superuser = UserFactory(is_superuser=True, is_staff=True)
+        self.client.force_authenticate(user=superuser)
+        url = reverse(
+            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_superuser_member_sees_files_of_its_role_only(self):
+        stored_file = StoredFileFactory.create(
+            org_admins=True,
+            organization=self.organization,
+            owner=self.owner_user,
+        )
+        user = UserFactory(is_superuser=True, is_staff=True)
+        member = MemberFactory(organization=self.organization, user=user, role='member')
+        self.client.force_authenticate(member=member)
+        url = reverse(
+            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_member_can_view_members_file(self):
         member = MemberFactory(organization=self.organization, role='member')

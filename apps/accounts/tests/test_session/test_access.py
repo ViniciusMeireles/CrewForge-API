@@ -80,14 +80,14 @@ class SessionAccessTestCase(APITestCaseMixin, APITestCase):
                 self.assertEqual(response.status_code, http_status.HTTP_200_OK)
                 self.assertEqual(response.data['member']['access'], expected)
 
-    def test_superuser_has_all_access(self):
+    def test_superuser_access_follows_role(self):
         user = UserFactory(is_superuser=True)
         member = self.new_member(MemberRoleChoices.MEMBER, user=user)
         self.client.force_authenticate(member=member)
         response = self.client.get(self.session_url)
         self.assertEqual(
             response.data['member']['access'],
-            EXPECTED_ACCESS[MemberRoleChoices.OWNER],
+            EXPECTED_ACCESS[MemberRoleChoices.MEMBER],
         )
 
     def test_role_change_is_reflected_on_next_session_read(self):

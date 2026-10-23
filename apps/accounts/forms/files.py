@@ -48,7 +48,9 @@ class StoredFileModelForm(forms.ModelForm):
         serializer = StoredFileCreateUpdateModelSerializer(
             instance=self.instance,
             data=data,
-            context={'request': self.request} if self.request else {},
+            context={'request': self.request, 'django_admin': True}
+            if self.request
+            else {'django_admin': True},
         )
         is_valid = serializer.is_valid()
         self.cleaned_data.update(serializer.validated_data)
