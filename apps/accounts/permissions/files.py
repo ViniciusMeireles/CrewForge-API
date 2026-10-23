@@ -31,13 +31,8 @@ class StoredFilePermission(BasePermission):
             request.user
             and request.user.is_authenticated
             and request.user.is_active
-            and (
-                request.user.is_superuser
-                or (
-                    obj.owner_id == request.user.id
-                    and obj_permission == StoredFileAccess.OWNER
-                )
-            )
+            and obj.owner_id == request.user.id
+            and obj_permission == StoredFileAccess.OWNER
         ):
             return True
 

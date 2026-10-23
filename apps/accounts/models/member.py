@@ -91,7 +91,7 @@ class Member(BaseModel):
     def has_owner_permission(self) -> bool:
         if not self.is_active:
             return False
-        return self.is_owner or self.user.is_superuser
+        return self.is_owner
 
     @property
     def has_admin_permission(self) -> bool:

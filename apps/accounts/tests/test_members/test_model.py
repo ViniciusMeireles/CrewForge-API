@@ -63,10 +63,13 @@ class MemberModelTestCase(TestCase):
         member = MemberFactory(role=MemberRoleChoices.OWNER, is_active=False)
         self.assertFalse(member.has_owner_permission)
 
-    def test_has_owner_permission_superuser(self):
+    def test_has_owner_permission_superuser_follows_role(self):
         user = UserFactory(is_superuser=True)
         member = MemberFactory(user=user, role=MemberRoleChoices.MEMBER)
-        self.assertTrue(member.has_owner_permission)
+        self.assertFalse(member.has_owner_permission)
+        self.assertFalse(member.has_admin_permission)
+        self.assertFalse(member.has_manager_permission)
+        self.assertTrue(member.has_member_permission)
 
     def test_has_admin_permission_owner(self):
         member = MemberFactory(role=MemberRoleChoices.OWNER)
@@ -119,13 +122,14 @@ class MemberModelTestCase(TestCase):
                     values,
                 )
 
-    def test_access_superuser_has_all(self):
+    def test_access_superuser_follows_role(self):
         user = UserFactory(is_superuser=True)
         member = MemberFactory(user=user, role=MemberRoleChoices.MEMBER)
         self.assertTrue(member.has_members_access)
-        self.assertTrue(member.has_invitations_access)
+        self.assertFalse(member.has_invitations_access)
         self.assertTrue(member.has_teams_access)
-        self.assertTrue(member.has_organization_settings_access)
+        self.assertFalse(member.has_organization_settings_access)
+        self.assertFalse(member.has_audit_access)
 
     def test_access_inactive_has_none(self):
         for role in MemberRoleChoices:

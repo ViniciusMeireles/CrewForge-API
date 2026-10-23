@@ -96,8 +96,6 @@ class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelV
 
         conditions = Q(viewing_permission=StoredFileAccess.PUBLIC)
         if auth_user := self.auth_user:
-            if auth_user.is_superuser:
-                return queryset
             conditions |= Q(
                 viewing_permission=StoredFileAccess.OWNER,
                 owner_id=auth_user.id,

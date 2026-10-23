@@ -262,7 +262,7 @@ Returns the same shape as the login response (user, organizations, organization,
 | `organization_settings` | Organization settings screen | Members with OWNER role |
 | `audit` | Audit screen | Members with OWNER or ADMIN role |
 
-Superusers get every key as `true`. `access` is computed on every request (never cached server-side), so re-read the session after a `403` or after a role change to get fresh values. Action-level checks inside a screen (e.g., showing an "Invite" button) still use `member.permissions`.
+Keys follow the Member's Role only: `is_superuser` grants nothing inside an Organization (ADR-009). `access` is computed on every request (never cached server-side), so re-read the session after a `403` or after a role change to get fresh values. Action-level checks inside a screen (e.g., showing an "Invite" button) still use `member.permissions`.
 
 ### 3.7. Token Refresh
 

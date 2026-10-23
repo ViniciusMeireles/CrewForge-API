@@ -54,11 +54,11 @@ class InvitationQuerySetVisibleToTestCase(TestCase):
         member = self._new_member(role=MemberRoleChoices.ADMIN, is_active=False)
         self.assertEqual(self._visible_roles(member), set())
 
-    def test_superuser_member_sees_all_roles(self):
+    def test_superuser_member_sees_only_what_its_role_allows(self):
         member = self._new_member(role=MemberRoleChoices.MEMBER)
         member.user.is_superuser = True
         member.user.save(update_fields=['is_superuser'])
-        self.assertEqual(self._visible_roles(member), set(MemberRoleChoices.values))
+        self.assertEqual(self._visible_roles(member), set())
 
 
 class InvitationQuerySetAcceptableBoundaryTestCase(TestCase):

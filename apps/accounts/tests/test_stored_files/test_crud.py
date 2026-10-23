@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.choices import StoredFileAccess
 from apps.accounts.factories.files import StoredFileFactory
 from apps.accounts.factories.members import MemberFactory
+from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 
@@ -91,6 +92,26 @@ class StoredFileCRUDTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
         self.assertEqual(response.data['organization']['id'], self.organization.id)
+
+    def test_create_file_superuser_cannot_target_another_organization(self):
+        other_organization = OrganizationFactory()
+        self.owner_user.is_superuser = True
+        self.owner_user.save(update_fields=['is_superuser'])
+        payload = {
+            'file': SimpleUploadedFile(
+                name='test.txt', content=b'Hello', content_type='text/plain'
+            ),
+            'viewing_permission': StoredFileAccess.PUBLIC.value,
+            'updating_permission': StoredFileAccess.PUBLIC.value,
+            'organization': other_organization.id,
+        }
+        response = self.client.post(
+            path=self.list_url,
+            data=payload,
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('organization', response.data['error']['details'])
 
     def test_create_file_member_within_role(self):
         member = MemberFactory(
