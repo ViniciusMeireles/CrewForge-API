@@ -425,12 +425,19 @@ def _create_paginated_options_serializer_class(
     """Return the cached paginated serializer class typed with ``output_type``."""
     key = (output_type, bases or ())
     if key not in _paginated_options_serializer_classes:
-        _paginated_options_serializer_classes[key] = (
-            _build_paginated_options_serializer_class(
-                output_type=output_type,
-                bases=bases,
-            )
+        serializer_class = _build_paginated_options_serializer_class(
+            output_type=output_type,
+            bases=bases,
         )
+        canonical_bases = (PaginatedOptionsSerializer,)
+        if bases and bases != canonical_bases:
+            # Scoped variants (e.g. Organization-scoped querysets) share the
+            # canonical component: same shape, one schema name.
+            canonical = _create_paginated_options_serializer_class(
+                output_type=output_type, bases=canonical_bases
+            )
+            extend_schema_field(canonical)(serializer_class)
+        _paginated_options_serializer_classes[key] = serializer_class
     return _paginated_options_serializer_classes[key]
 
 

@@ -13,6 +13,7 @@ from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
 from apps.audit.models.audit_event import AuditEvent
+from apps.generics.mixins.views import OptionsModelMixin
 from apps.platform.filters import (
     PlatformAuditEventFilter,
     PlatformMemberFilter,
@@ -62,8 +63,9 @@ class PlatformOverviewView(APIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class PlatformReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+class PlatformReadOnlyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsPlatformStaff]
+    http_method_names = ['get', 'head', 'options']
     filter_backends = [DjangoFilterBackend]
 
     def paginated(self, queryset, serializer_class, filterset_class=None):
@@ -166,8 +168,13 @@ class PlatformUserViewSet(PlatformReadOnlyViewSet):
 @extend_schema_view(
     list=extend_schema(tags=PLATFORM_TAGS),
     retrieve=extend_schema(tags=PLATFORM_TAGS),
+    filter_options=extend_schema(tags=PLATFORM_TAGS),
 )
-class PlatformAuditEventViewSet(PlatformReadOnlyViewSet):
+class PlatformAuditEventViewSet(OptionsModelMixin, PlatformReadOnlyViewSet):
+    """Audit Events of every Organization and account, for platform staff."""
+
+    options_actions = ('list',)
+    options_component_prefix = 'Platform'
     queryset = AuditEvent.objects.select_related('organization', 'impersonator')
     serializer_class = PlatformAuditEventSerializer
     filterset_class = PlatformAuditEventFilter

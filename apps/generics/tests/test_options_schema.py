@@ -141,3 +141,10 @@ class FormOptionsSchemaTestCase(SimpleTestCase):
     def test_response_fields_are_optional(self):
         component = self.schema['components']['schemas']['OptionsCreateTeamMember']
         self.assertNotIn('required', component)
+
+    def test_same_model_filter_options_have_distinct_components(self):
+        schemas = self.schema['components']['schemas']
+        self.assertIn('actor', schemas['OptionsListAuditEvent']['properties'])
+        platform = schemas['OptionsListPlatformAuditEvent']['properties']
+        self.assertIn('organization', platform)
+        self.assertNotIn('organization', schemas['OptionsListAuditEvent']['properties'])

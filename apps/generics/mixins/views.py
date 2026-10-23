@@ -124,6 +124,10 @@ class OptionsBaseModelMixin:
     options_filterset_serializer_class = OptionsFilterSetSerializer
     options_search = True
     options_form_parameters = ()
+    # Prefix of the generated options serializer names (schema components).
+    # Set it when two ViewSets of one model expose options, so their components
+    # do not collide (e.g. ``'Platform'``).
+    options_component_prefix = ''
 
     @classmethod
     def get_options_actions_map(cls) -> dict[str, str]:
@@ -188,7 +192,7 @@ class OptionsBaseModelMixin:
                 meta_bases = (serializer_meta,)
             model = serializer_class.Meta.model
             options_class = type(
-                f'Options{view_action}{model.__name__}',
+                f'Options{view_action}{cls.options_component_prefix}{model.__name__}',
                 (cls.options_serializer_class,),
                 {
                     'Meta': type(
@@ -209,7 +213,7 @@ class OptionsBaseModelMixin:
         if key not in cache:
             model = filterset_class._meta.model
             options_class = type(
-                f'Options{view_action}{model.__name__}',
+                f'Options{view_action}{cls.options_component_prefix}{model.__name__}',
                 (cls.options_filterset_serializer_class,),
                 {
                     'Meta': type(

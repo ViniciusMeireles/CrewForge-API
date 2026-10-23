@@ -3080,6 +3080,7 @@ paths:
   /api/platform/audit-events/:
     get:
       operationId: platform_audit_events_list
+      description: Audit Events of every Organization and account, for platform staff.
       parameters:
       - in: query
         name: action
@@ -3252,6 +3253,7 @@ paths:
   /api/platform/audit-events/{id}/:
     get:
       operationId: platform_audit_events_retrieve
+      description: Audit Events of every Organization and account, for platform staff.
       parameters:
       - in: path
         name: id
@@ -3270,6 +3272,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlatformAuditEvent'
+          description: ''
+  /api/platform/audit-events/filter-options/:
+    get:
+      operationId: platform_audit_events_filter_options_retrieve
+      description: Filter options for listing Audit Events.
+      summary: Filter options for listing Audit Events.
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+        description: Return only `action`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: action__in
+        schema:
+          type: string
+        description: Return only `action__in`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: organization
+        schema:
+          type: string
+        description: Return only `organization` (paginated). A non-empty value filters
+          its options by label (`exact`).
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: A page number within the paginated result set. Applies to every
+          paginated field in the response; combine with `?<field>` to paginate a single
+          one.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of results to return per page. Maximum: 100. Applies
+          to every paginated field in the response; combine with `?<field>` to paginate
+          a single one.'
+      - in: query
+        name: scope
+        schema:
+          type: string
+        description: Return only `scope`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListPlatformAuditEvent'
           description: ''
   /api/platform/organizations/:
     get:
@@ -5771,6 +5832,25 @@ components:
           items:
             $ref: '#/components/schemas/ChoiceOptionStr'
           title: Ordering
+    OptionsListPlatformAuditEvent:
+      type: object
+      description: Filter options for listing Audit Events.
+      properties:
+        action:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+        action__in:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
+          description: Multiple values may be separated by commas.
+        organization:
+          $ref: '#/components/schemas/PaginatedIntOptions'
+        scope:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
     OptionsListTeam:
       type: object
       description: Filter options for listing Teams.
