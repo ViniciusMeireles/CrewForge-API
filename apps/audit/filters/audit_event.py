@@ -5,10 +5,13 @@ from rest_framework.exceptions import ValidationError
 from apps.accounts.mixins.filters import FilterSetMixin
 from apps.accounts.models.member import Member
 from apps.audit.models.audit_event import AuditEvent
+from apps.generics.utils.filters import PeriodValidationMixin
 
 
-class AuditEventFilter(FilterSetMixin, filterset.FilterSet):
+class AuditEventFilter(PeriodValidationMixin, FilterSetMixin, filterset.FilterSet):
     """Filter for the AuditEvent model."""
+
+    period_fields = ('created_at',)
 
     created_at = filters.DateFromToRangeFilter()
     actor = filters.ModelChoiceFilter(
@@ -30,11 +33,6 @@ class AuditEventFilter(FilterSetMixin, filterset.FilterSet):
 
     def filter_queryset(self, queryset):
         data = self.form.cleaned_data
-        period = data.get('created_at')
-        if period and period.start and period.stop and period.start > period.stop:
-            raise ValidationError(
-                {'created_at': [_('The start date must be before the end date.')]}
-            )
         if data.get('target_id') and not (
             data.get('target_type') or data.get('target_type__in')
         ):

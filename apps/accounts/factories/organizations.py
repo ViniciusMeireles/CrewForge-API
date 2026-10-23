@@ -1,4 +1,5 @@
 import factory
+from django.utils import timezone
 from django.utils.text import slugify
 
 from apps.accounts.choices import MemberRoleChoices
@@ -12,6 +13,11 @@ class OrganizationFactory(ModelFactoryMixin):
 
     class Params:
         base_name = factory.Faker('company')
+        suspended = factory.Trait(
+            status='suspended',
+            suspended_at=factory.LazyFunction(timezone.now),
+            suspension_reason='Chargeback under investigation',
+        )
 
     class Meta:
         model = Organization

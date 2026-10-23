@@ -64,11 +64,11 @@ class PreferredLanguageMigrationTestCase(TransactionTestCase):
             executor.migrate([('accounts', '0004_user_email_verified_at')])
             executor.loader.build_graph()
             executor.migrate([('accounts', '0005_user_preferred_language')])
-            user.refresh_from_db()
+            user.refresh_from_db(fields=['preferred_language'])
             self.assertEqual(user.preferred_language, 'en')
         finally:
             executor.loader.build_graph()
-            executor.migrate([('accounts', '0005_user_preferred_language')])
+            executor.migrate(executor.loader.graph.leaf_nodes())
 
 
 class PreferredLanguageSignupTestCase(APITestCase):

@@ -48,6 +48,7 @@ CATALOG = {
     'auth.email.verified',
     'auth.email_verification.failed',
     'user.profile.updated',
+    'user.platform_role_changed',
 }
 
 

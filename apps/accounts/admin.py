@@ -13,6 +13,7 @@ from apps.accounts.models.organization import (
     OrganizationImage,
     OrganizationProfile,
 )
+from apps.accounts.utils.platform_role import set_platform_role
 
 
 class OrganizationImageInline(NestedTabularInline):
@@ -31,8 +32,14 @@ class OrganizationProfileInline(NestedStackedInline):
 class OrganizationAdmin(NestedModelAdmin):
     list_display = ('name', 'slug', 'owner', 'is_active', 'created_at')
     search_fields = ('name', 'slug', 'owner__user__email')
-    list_filter = ('is_active',)
-    readonly_fields = ('slug',)
+    list_filter = ('is_active', 'status')
+    readonly_fields = (
+        'slug',
+        'status',
+        'suspended_at',
+        'suspended_by',
+        'suspension_reason',
+    )
     inlines = [OrganizationProfileInline]
 
 
@@ -68,10 +75,20 @@ class CustomUserAdmin(admin.ModelAdmin):
         'first_name',
         'last_name',
         'is_staff',
+        'platform_role',
         'is_active',
     )
     search_fields = ('username', 'email', 'first_name', 'last_name')
-    list_filter = ('is_staff', 'is_active')
+    list_filter = ('is_staff', 'platform_role', 'is_active')
+
+    def save_model(self, request, obj, form, change):
+        role = obj.platform_role
+        if change and 'platform_role' in form.changed_data:
+            obj.platform_role = form.initial['platform_role']
+            super().save_model(request, obj, form, change)
+            set_platform_role(obj, role, request=request)
+            return
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(StoredFile)

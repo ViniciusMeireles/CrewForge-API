@@ -38,6 +38,7 @@ class OrganizationSerializerTestCase(APITestCaseMixin, APITestCase):
             'updated_at',
             'created_by',
             'updated_by',
+            'status',
             'profile',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
@@ -56,6 +57,7 @@ class OrganizationSerializerTestCase(APITestCaseMixin, APITestCase):
             'updated_at',
             'created_by',
             'updated_by',
+            'status',
             'profile',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
@@ -64,7 +66,7 @@ class OrganizationSerializerTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         result = response.data['results'][0]
-        expected_fields = {'id', 'name', 'slug', 'profile'}
+        expected_fields = {'id', 'name', 'slug', 'status', 'profile'}
         self.assertEqual(set(result.keys()), expected_fields)
 
     def test_validate_duplicate_slug(self):

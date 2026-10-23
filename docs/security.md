@@ -201,6 +201,12 @@ These rules are non-negotiable:
 | `IsAuthenticated` | JWT required, no org context | Token endpoints |
 | `IsActiveMember` | JWT + active member in session | Most list endpoints |
 | `OrganizationScopedPermission` | JWT + active member + org match | Object-level access |
+| `IsPlatformStaff` / `IsPlatformAdmin` | JWT + `User.platform_role` (`support`/`admin` or `admin`), **no** org context | `/api/platform/` ([ADR-009](../../docs/adr/009-platform-access-outside-organization-context.md)) |
+
+The platform role is granted only with `manage.py set_platform_role <user> <none|support|admin>` or the Django admin;
+every change is an account Audit Event (`user.platform_role_changed`). `is_superuser` grants nothing inside an
+Organization: Organization permissions follow the Member's Role only. Organization status and suspension fields are
+read-only for Organization endpoints, and the internal suspension reason is never serialized to Members.
 
 ### Role-Based Access
 

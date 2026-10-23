@@ -1,4 +1,6 @@
+from django.utils.translation import gettext_lazy as _
 from django_filters import filters, filterset
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import BaseSerializer
 
 from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
@@ -48,3 +50,17 @@ def orderable_filter_factory(
             ),
         },
     )
+
+
+class PeriodValidationMixin:
+    period_fields: tuple[str, ...] = ()
+
+    def filter_queryset(self, queryset):
+        data = self.form.cleaned_data
+        for name in self.period_fields:
+            period = data.get(name)
+            if period and period.start and period.stop and period.start > period.stop:
+                raise ValidationError(
+                    {name: [_('The start date must be before the end date.')]}
+                )
+        return super().filter_queryset(queryset)

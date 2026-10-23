@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 01:34+0000\n"
+"POT-Creation-Date: 2026-10-23 02:26+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: apps/accounts/admin.py:124
+#: apps/accounts/admin.py:141
 msgid "file"
 msgstr "arquivo"
 
@@ -24,14 +24,15 @@ msgstr "arquivo"
 msgid "Accounts"
 msgstr "Contas"
 
-#: apps/accounts/choices.py:12 apps/accounts/choices.py:48
-#: apps/accounts/models/files.py:92 apps/accounts/models/organization.py:24
+#: apps/accounts/choices.py:12 apps/accounts/choices.py:63
+#: apps/accounts/models/files.py:92 apps/accounts/models/organization.py:28
 #: apps/accounts/tests/test_i18n.py:63 apps/accounts/tests/test_i18n.py:71
 #: apps/teams/choices.py:6
 msgid "Owner"
 msgstr "Proprietário"
 
-#: apps/accounts/choices.py:13 apps/teams/choices.py:7
+#: apps/accounts/choices.py:13 apps/accounts/choices.py:35
+#: apps/teams/choices.py:7
 msgid "Admin"
 msgstr "Administrador"
 
@@ -46,99 +47,115 @@ msgid "Member"
 msgstr "Membro"
 
 #: apps/accounts/choices.py:33
+msgid "None"
+msgstr "Nenhuma"
+
+#: apps/accounts/choices.py:34
+msgid "Support"
+msgstr "Suporte"
+
+#: apps/accounts/choices.py:43
+msgid "Active"
+msgstr "Ativa"
+
+#: apps/accounts/choices.py:44
+msgid "Suspended"
+msgstr "Suspensa"
+
+#: apps/accounts/choices.py:48
 msgid "Logo"
 msgstr "Logo"
 
-#: apps/accounts/choices.py:34
+#: apps/accounts/choices.py:49
 msgid "Cover"
 msgstr "Capa"
 
-#: apps/accounts/choices.py:35
+#: apps/accounts/choices.py:50
 msgid "Favicon"
 msgstr "Favicon"
 
-#: apps/accounts/choices.py:36
+#: apps/accounts/choices.py:51
 msgid "Open Graph Image"
 msgstr "Imagem Open Graph"
 
-#: apps/accounts/choices.py:37
+#: apps/accounts/choices.py:52
 msgid "Logo Horizontal"
 msgstr "Logo horizontal"
 
-#: apps/accounts/choices.py:38
+#: apps/accounts/choices.py:53
 msgid "Logo Vertical"
 msgstr "Logo vertical"
 
-#: apps/accounts/choices.py:39
+#: apps/accounts/choices.py:54
 msgid "Logo Dark"
 msgstr "Logo escuro"
 
-#: apps/accounts/choices.py:40
+#: apps/accounts/choices.py:55
 msgid "Logo Light"
 msgstr "Logo claro"
 
-#: apps/accounts/choices.py:44
+#: apps/accounts/choices.py:59
 msgid "Owners of Organization"
 msgstr "Proprietários da Organização"
 
-#: apps/accounts/choices.py:45
+#: apps/accounts/choices.py:60
 msgid "Admins of Organization"
 msgstr "Administradores da Organização"
 
-#: apps/accounts/choices.py:46
+#: apps/accounts/choices.py:61
 msgid "Managers of Organization"
 msgstr "Gerentes da Organização"
 
-#: apps/accounts/choices.py:47
+#: apps/accounts/choices.py:62
 msgid "Members of Organization"
 msgstr "Membros da Organização"
 
-#: apps/accounts/choices.py:49
+#: apps/accounts/choices.py:64
 msgid "Public"
 msgstr "Público"
 
-#: apps/accounts/choices.py:173
+#: apps/accounts/choices.py:188
 msgid "Invitation is expired"
 msgstr "O convite expirou"
 
-#: apps/accounts/choices.py:174
+#: apps/accounts/choices.py:189
 msgid "Invitation not found or expired"
 msgstr "Convite não encontrado ou expirado"
 
-#: apps/accounts/choices.py:175
+#: apps/accounts/choices.py:190
 msgid "Invitation already accepted"
 msgstr "Convite já aceito"
 
-#: apps/accounts/choices.py:178
+#: apps/accounts/choices.py:193
 msgid "The invitation has already been declined."
 msgstr "O convite já foi recusado."
 
-#: apps/accounts/choices.py:180
+#: apps/accounts/choices.py:195
 msgid "User is already a member"
 msgstr "O usuário já é membro"
 
-#: apps/accounts/choices.py:183
+#: apps/accounts/choices.py:198
 msgid "The organization is no longer active."
 msgstr "A organização não está mais ativa."
 
-#: apps/accounts/choices.py:188
+#: apps/accounts/choices.py:203
 msgid "This slug is already in use."
 msgstr "Este slug já está em uso."
 
-#: apps/accounts/choices.py:194
+#: apps/accounts/choices.py:209
 msgid "This nickname is already in use in this organization."
 msgstr "Este apelido já está em uso nesta organização."
 
-#: apps/accounts/choices.py:201
+#: apps/accounts/choices.py:216
 msgid "An invitation email was recently sent. Please wait before resending."
 msgstr ""
 "Um e-mail de convite foi enviado recentemente. Aguarde antes de reenviar."
 
-#: apps/accounts/choices.py:203
+#: apps/accounts/choices.py:218
 msgid "Invitation email sent successfully."
 msgstr "E-mail de convite enviado com sucesso."
 
-#: apps/accounts/choices.py:206
+#: apps/accounts/choices.py:221
 msgid "The invitation is no longer valid."
 msgstr "O convite não é mais válido."
 
@@ -222,8 +239,9 @@ msgstr "Aceitar convite"
 
 #: apps/accounts/filters/organization_image.py:12
 #: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:67
-#: apps/accounts/models/member.py:32 apps/accounts/models/organization.py:34
-#: apps/accounts/models/organization.py:49 apps/audit/models/audit_event.py:23
+#: apps/accounts/models/member.py:32 apps/accounts/models/organization.py:67
+#: apps/accounts/models/organization.py:86 apps/audit/models/audit_event.py:23
+#: apps/platform/filters.py:141 apps/platform/filters.py:149
 #: apps/teams/models/team.py:25
 msgid "Organization"
 msgstr "Organização"
@@ -248,7 +266,7 @@ msgstr "Arquivo"
 msgid "File to be stored"
 msgstr "Arquivo a ser armazenado"
 
-#: apps/accounts/models/files.py:54 apps/accounts/models/organization.py:15
+#: apps/accounts/models/files.py:54 apps/accounts/models/organization.py:19
 #: apps/teams/models/team.py:12
 msgid "Name"
 msgstr "Nome"
@@ -395,7 +413,7 @@ msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
 #: apps/accounts/models/invitation.py:88 apps/accounts/models/member.py:25
-#: apps/audit/choices.py:79
+#: apps/audit/choices.py:83 apps/platform/filters.py:143
 msgid "User"
 msgstr "Usuário"
 
@@ -459,87 +477,119 @@ msgstr "Quando a participação atual começou"
 msgid "Members"
 msgstr "Membros"
 
-#: apps/accounts/models/organization.py:15
+#: apps/accounts/models/organization.py:19
 msgid "Organization name"
 msgstr "Nome da organização"
 
-#: apps/accounts/models/organization.py:18 apps/teams/models/team.py:14
+#: apps/accounts/models/organization.py:22 apps/teams/models/team.py:14
 msgid "Slug"
 msgstr "Slug"
 
-#: apps/accounts/models/organization.py:18
+#: apps/accounts/models/organization.py:22
 msgid "Organization slug"
 msgstr "Slug da organização"
 
-#: apps/accounts/models/organization.py:25
+#: apps/accounts/models/organization.py:29
 msgid "Owner of the organization"
 msgstr "Proprietário da organização"
 
-#: apps/accounts/models/organization.py:35 apps/accounts/models/user.py:59
+#: apps/accounts/models/organization.py:38
+msgid "Status"
+msgstr "Status"
+
+#: apps/accounts/models/organization.py:39
+msgid "Suspended organizations cannot be entered"
+msgstr "Organizações suspensas não podem ser acessadas"
+
+#: apps/accounts/models/organization.py:44
+msgid "Suspended At"
+msgstr "Suspensa em"
+
+#: apps/accounts/models/organization.py:45
+msgid "When the organization was suspended"
+msgstr "Quando a organização foi suspensa"
+
+#: apps/accounts/models/organization.py:53
+msgid "Suspended By"
+msgstr "Suspensa por"
+
+#: apps/accounts/models/organization.py:54
+msgid "Platform admin who suspended the organization"
+msgstr "Admin da plataforma que suspendeu a organização"
+
+#: apps/accounts/models/organization.py:59
+msgid "Suspension Reason"
+msgstr "Motivo da suspensão"
+
+#: apps/accounts/models/organization.py:60
+msgid "Internal reason, never shown to members"
+msgstr "Motivo interno, nunca mostrado aos membros"
+
+#: apps/accounts/models/organization.py:68 apps/accounts/models/user.py:59
 msgid "Organizations"
 msgstr "Organizações"
 
-#: apps/accounts/models/organization.py:50
+#: apps/accounts/models/organization.py:87
 msgid "Organization to which this profile belongs"
 msgstr "Organização à qual este perfil pertence"
 
-#: apps/accounts/models/organization.py:55
+#: apps/accounts/models/organization.py:92
 msgid "Website"
 msgstr "Site"
 
-#: apps/accounts/models/organization.py:56
+#: apps/accounts/models/organization.py:93
 msgid "Organization website"
 msgstr "Site da organização"
 
-#: apps/accounts/models/organization.py:61 apps/teams/models/team.py:18
+#: apps/accounts/models/organization.py:98 apps/teams/models/team.py:18
 msgid "Description"
 msgstr "Descrição"
 
-#: apps/accounts/models/organization.py:62
+#: apps/accounts/models/organization.py:99
 msgid "Organization description"
 msgstr "Descrição da organização"
 
-#: apps/accounts/models/organization.py:69
+#: apps/accounts/models/organization.py:106
 msgid "Organization Profile"
 msgstr "Perfil da Organização"
 
-#: apps/accounts/models/organization.py:70
+#: apps/accounts/models/organization.py:107
 msgid "Organization Profiles"
 msgstr "Perfis da Organização"
 
-#: apps/accounts/models/organization.py:113
+#: apps/accounts/models/organization.py:150
 msgid "Profile"
 msgstr "Perfil"
 
-#: apps/accounts/models/organization.py:114
+#: apps/accounts/models/organization.py:151
 msgid "Organization profile"
 msgstr "Perfil da organização"
 
-#: apps/accounts/models/organization.py:120
+#: apps/accounts/models/organization.py:157
 msgid "Image type"
 msgstr "Tipo de imagem"
 
-#: apps/accounts/models/organization.py:121
+#: apps/accounts/models/organization.py:158
 msgid "Type of organization image"
 msgstr "Tipo de imagem da organização"
 
-#: apps/accounts/models/organization.py:127
+#: apps/accounts/models/organization.py:164
 msgid "Image"
 msgstr "Imagem"
 
-#: apps/accounts/models/organization.py:128
+#: apps/accounts/models/organization.py:165
 msgid "Organization image"
 msgstr "Imagem da organização"
 
-#: apps/accounts/models/organization.py:134
+#: apps/accounts/models/organization.py:171
 msgid "Organization Image"
 msgstr "Imagem da Organização"
 
-#: apps/accounts/models/organization.py:135
+#: apps/accounts/models/organization.py:172
 msgid "Organization Images"
 msgstr "Imagens da Organização"
 
-#: apps/accounts/models/organization.py:143
+#: apps/accounts/models/organization.py:180
 #: apps/accounts/serializers/organization_image.py:91
 msgid "An image of this type already exists for this profile."
 msgstr "Já existe uma imagem deste tipo para este perfil."
@@ -580,6 +630,38 @@ msgstr "Idioma preferido"
 msgid "Language used to render this user's emails."
 msgstr "Idioma usado para renderizar os e-mails deste usuário."
 
+#: apps/accounts/models/user.py:95
+msgid "Platform Role"
+msgstr "Função na plataforma"
+
+#: apps/accounts/models/user.py:96
+msgid "Access to the platform panel, outside any organization"
+msgstr "Acesso ao painel da plataforma, fora de qualquer organização"
+
+#: apps/accounts/models/user.py:102
+msgid "Blocked At"
+msgstr "Bloqueado em"
+
+#: apps/accounts/models/user.py:103
+msgid "When a platform admin blocked the user"
+msgstr "Quando um admin da plataforma bloqueou o usuário"
+
+#: apps/accounts/models/user.py:111
+msgid "Blocked By"
+msgstr "Bloqueado por"
+
+#: apps/accounts/models/user.py:112
+msgid "Platform admin who blocked the user"
+msgstr "Admin da plataforma que bloqueou o usuário"
+
+#: apps/accounts/models/user.py:117
+msgid "Blocked Reason"
+msgstr "Motivo do bloqueio"
+
+#: apps/accounts/models/user.py:118
+msgid "Internal reason, never shown to the user"
+msgstr "Motivo interno, nunca mostrado ao usuário"
+
 #: apps/accounts/serializers/auth.py:100
 msgid "Invalid UID."
 msgstr "UID inválido."
@@ -592,15 +674,15 @@ msgstr "Token inválido."
 msgid "Invalid verification link."
 msgstr "Link de verificação inválido."
 
-#: apps/accounts/serializers/files.py:123
+#: apps/accounts/serializers/files.py:122
 msgid "You are not authorized to change the organization."
 msgstr "Você não está autorizado a alterar a organização."
 
-#: apps/accounts/serializers/files.py:220
+#: apps/accounts/serializers/files.py:222
 msgid "Owner is not active."
 msgstr "O proprietário não está ativo."
 
-#: apps/accounts/serializers/files.py:229
+#: apps/accounts/serializers/files.py:231
 msgid "Organization is not active."
 msgstr "A organização não está ativa."
 
@@ -824,11 +906,11 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:142
+#: apps/accounts/views/files.py:140
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:146
+#: apps/accounts/views/files.py:144
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
@@ -1174,11 +1256,15 @@ msgstr "Tentativa de verificação de e-mail com falha"
 msgid "Profile updated"
 msgstr "Perfil atualizado"
 
-#: apps/audit/choices.py:80
+#: apps/audit/choices.py:78
+msgid "Platform role changed"
+msgstr "Função na plataforma alterada"
+
+#: apps/audit/choices.py:84 apps/platform/apps.py:8 apps/platform/views.py:40
 msgid "Platform"
 msgstr "Plataforma"
 
-#: apps/audit/choices.py:81
+#: apps/audit/choices.py:85
 msgid "System"
 msgstr "Sistema"
 
@@ -1186,7 +1272,7 @@ msgstr "Sistema"
 msgid "Actor"
 msgstr "Autor"
 
-#: apps/audit/filters/audit_event.py:36
+#: apps/audit/filters/audit_event.py:36 apps/platform/filters.py:15
 msgid "The start date must be before the end date."
 msgstr "A data inicial deve ser anterior à data final."
 
@@ -1519,6 +1605,39 @@ msgstr ""
 msgid "Maximum: {max}."
 msgstr "Máximo: {max}."
 
+#: apps/platform/filters.py:42 apps/platform/filters.py:75
+#: apps/platform/filters.py:111
+msgid "Search"
+msgstr "Buscar"
+
+#: apps/platform/filters.py:45 apps/platform/filters.py:80
+msgid "Include deleted"
+msgstr "Incluir excluídos"
+
+#: apps/platform/filters.py:76
+msgid "Verified"
+msgstr "Verificado"
+
+#: apps/platform/filters.py:77
+msgid "Blocked"
+msgstr "Bloqueado"
+
+#: apps/platform/filters.py:114
+msgid "Exclude owner"
+msgstr "Excluir dono"
+
+#: apps/platform/filters.py:146
+msgid "Scope"
+msgstr "Escopo"
+
+#: apps/platform/filters.py:148
+msgid "Account"
+msgstr "Conta"
+
+#: apps/platform/views.py:50
+msgid "Platform numbers, computed when requested (platform staff)."
+msgstr "Números da plataforma, calculados na requisição (equipe da plataforma)."
+
 #: apps/teams/apps.py:10 apps/teams/models/team.py:34
 msgid "Teams"
 msgstr "Equipes"
@@ -1611,11 +1730,11 @@ msgstr ""
 "chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
 "uma equipe válida, apenas gerentes da organização recebem funções."
 
-#: config/settings/base.py:296
+#: config/settings/base.py:297
 msgid "CrewForge API"
 msgstr "CrewForge API"
 
-#: config/settings/base.py:298
+#: config/settings/base.py:299
 msgid ""
 "API service for managing accounts, teams, and permissions with "
 "comprehensive\n"
@@ -1636,7 +1755,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:410
+#: config/settings/base.py:411
 msgid "CrewForge"
 msgstr "CrewForge"
 

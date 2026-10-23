@@ -17,6 +17,12 @@ class UserFactory(DjangoModelFactory):
 
     class Params:
         base_username = factory.Faker('user_name')
+        platform_support = factory.Trait(platform_role='support')
+        platform_admin = factory.Trait(platform_role='admin')
+        blocked = factory.Trait(
+            blocked_at=factory.LazyFunction(timezone.now),
+            blocked_reason='Abuse report',
+        )
 
     class Meta:
         model = User

@@ -1,7 +1,11 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.accounts.choices import OrganizationImageTypeChoices
+from apps.accounts.choices import (
+    OrganizationImageTypeChoices,
+    OrganizationStatusChoices,
+)
 from apps.accounts.managers.organization import (
     OrganizationManager,
     OrganizationProfileManager,
@@ -26,6 +30,35 @@ class Organization(BaseModel):
         null=True,
         blank=True,
     )
+    status = models.CharField(
+        max_length=16,
+        choices=OrganizationStatusChoices.choices,
+        default=OrganizationStatusChoices.ACTIVE,
+        db_index=True,
+        verbose_name=_('Status'),
+        help_text=_('Suspended organizations cannot be entered'),
+    )
+    suspended_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Suspended At'),
+        help_text=_('When the organization was suspended'),
+    )
+    suspended_by = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        null=True,
+        blank=True,
+        verbose_name=_('Suspended By'),
+        help_text=_('Platform admin who suspended the organization'),
+    )
+    suspension_reason = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name=_('Suspension Reason'),
+        help_text=_('Internal reason, never shown to members'),
+    )
 
     objects = OrganizationManager()
 
@@ -36,6 +69,10 @@ class Organization(BaseModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_suspended(self) -> bool:
+        return self.status == OrganizationStatusChoices.SUSPENDED
 
     def get_profile(self) -> OrganizationProfile:
         return OrganizationProfile.objects.get_or_create(organization=self)[0]
