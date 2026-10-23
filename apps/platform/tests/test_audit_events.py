@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.audit.factories.audit_event import AuditEventFactory
@@ -69,6 +70,15 @@ class PlatformAuditEventFilterOptionsTestCase(
         actions = {option['value'] for option in response.data['action__in']}
         self.assertIn('user.platform_role_changed', actions)
         self.assertIn('member.role_changed', actions)
+
+    def test_organization_options_match_part_of_the_name_ignoring_accents(self):
+        OrganizationFactory(name='Açaí Labs')
+        OrganizationFactory(name='Globex Corp')
+        self.authenticate_staff()
+        response = self.client.get(self.url, {'organization': 'acai'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        labels = [o['label'] for o in response.data['organization']['results']]
+        self.assertEqual(labels, ['Açaí Labs'])
 
     def test_role_none_is_forbidden(self):
         self.client.force_authenticate(user=UserFactory())
