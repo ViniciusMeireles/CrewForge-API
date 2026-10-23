@@ -117,17 +117,16 @@ class StoredFileCreateUpdateModelSerializer(
 
     def validate_organization(self, value) -> int | None:
         auth_member = self.auth_member
-        if (
-            value
-            and (not auth_member or (value != auth_member.organization_id))
-            and not self.context.get('django_admin')
-        ):
+        if value and (not auth_member or (value != auth_member.organization_id)):
             raise serializers.ValidationError(
                 _('You are not authorized to change the organization.')
             )
         elif not value and auth_member:
             return auth_member.organization_id
         return value
+
+    def default_organization(self):
+        return self.auth_organization
 
     def _validate_updating_permission(
         self,
@@ -207,7 +206,7 @@ class StoredFileCreateUpdateModelSerializer(
         owner = attrs.get('owner')
         if owner is None and 'owner' not in attrs and self.instance:
             owner = self.instance.owner
-        organization = attrs.get('organization') or self.auth_organization
+        organization = attrs.get('organization') or self.default_organization()
         updating_permission = attrs.get(
             'updating_permission',
             getattr(self.instance, 'updating_permission', None),
@@ -266,3 +265,14 @@ class StoredFileCreateUpdateModelSerializer(
 
     def to_representation(self, instance):
         return StoredFileDetailModelSerializer(instance, context=self.context).data
+
+
+class StoredFileAdminSerializer(StoredFileCreateUpdateModelSerializer):
+    def validate_organization(self, value) -> int | None:
+        return value
+
+    def default_organization(self):
+        return None
+
+    def _validate_viewing_permission(self, attrs, errors):
+        return None
