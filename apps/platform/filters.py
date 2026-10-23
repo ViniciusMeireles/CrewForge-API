@@ -2,29 +2,14 @@ from django.contrib.auth import get_user_model
 from django.db.models import F, Q
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import filters, filterset
-from rest_framework.exceptions import ValidationError
 
 from apps.accounts.choices import OrganizationStatusChoices, PlatformRoleChoices
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
 from apps.audit.models.audit_event import AuditEvent
-from apps.generics.utils.filters import StableOrderingFilter
+from apps.generics.utils.filters import PeriodValidationMixin, StableOrderingFilter
 
 User = get_user_model()
-
-PERIOD_ERROR = _('The start date must be before the end date.')
-
-
-class PeriodValidationMixin:
-    period_fields: tuple[str, ...] = ()
-
-    def filter_queryset(self, queryset):
-        data = self.form.cleaned_data
-        for name in self.period_fields:
-            period = data.get(name)
-            if period and period.start and period.stop and period.start > period.stop:
-                raise ValidationError({name: [PERIOD_ERROR]})
-        return super().filter_queryset(queryset)
 
 
 class DeletedFilterMixin:

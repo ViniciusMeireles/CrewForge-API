@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_filters import utils as filter_utils
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
@@ -10,6 +11,7 @@ from rest_framework.views import APIView
 
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.member import Member
+from apps.accounts.models.organization import Organization
 from apps.audit.models.audit_event import AuditEvent
 from apps.platform.filters import (
     PlatformAuditEventFilter,
@@ -38,6 +40,7 @@ from apps.platform.serializers import (
 from apps.teams.models.team import Team
 
 PLATFORM_TAGS = [_('Platform')]
+TAB_ACTIONS = ('members', 'teams', 'invitations')
 MEMBER_PARAMETERS = [
     OpenApiParameter('search', OpenApiTypes.STR),
     OpenApiParameter('is_active', OpenApiTypes.BOOL),
@@ -68,13 +71,19 @@ class PlatformReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             filterset = filterset_class(
                 self.request.query_params, queryset=queryset, request=self.request
             )
-            filterset.is_valid()
+            if not filterset.is_valid():
+                raise filter_utils.translate_validation(filterset.errors)
             queryset = filterset.qs
         page = self.paginate_queryset(queryset)
         serializer = serializer_class(
             page, many=True, context=self.get_serializer_context()
         )
         return self.get_paginated_response(serializer.data)
+
+    def filter_queryset(self, queryset):
+        if self.action != 'list':
+            return queryset
+        return super().filter_queryset(queryset)
 
 
 @extend_schema_view(
@@ -98,17 +107,14 @@ class PlatformOrganizationViewSet(PlatformReadOnlyViewSet):
     def get_queryset(self):
         if self.action == 'list':
             return organizations_queryset()
+        if self.action in TAB_ACTIONS:
+            return Organization.objects.all()
         return organization_detail_queryset()
 
     def get_serializer_class(self):
         if self.action == 'list':
             return PlatformOrganizationListSerializer
         return PlatformOrganizationDetailSerializer
-
-    def filter_queryset(self, queryset):
-        if self.action != 'list':
-            return queryset
-        return super().filter_queryset(queryset)
 
     @action(detail=True, methods=['get'])
     def members(self, request, *args, **kwargs):
@@ -155,11 +161,6 @@ class PlatformUserViewSet(PlatformReadOnlyViewSet):
         if self.action == 'list':
             return PlatformUserListSerializer
         return PlatformUserDetailSerializer
-
-    def filter_queryset(self, queryset):
-        if self.action != 'list':
-            return queryset
-        return super().filter_queryset(queryset)
 
 
 @extend_schema_view(

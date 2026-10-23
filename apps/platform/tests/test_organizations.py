@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
@@ -73,12 +74,13 @@ class PlatformOrganizationListTestCase(
 
     def test_last_access_and_active_members_ignore_inactive_members(self):
         now = timezone.now()
-        MemberFactory(organization=self.acme, last_login_at=now - timedelta(days=1))
+        last_login = now - timedelta(days=1)
+        MemberFactory(organization=self.acme, last_login_at=last_login)
         MemberFactory(organization=self.acme, last_login_at=now, is_active=False)
         response = self.client.get(self.list_url, data={'search': 'Acme'})
         row = response.data['results'][0]
         self.assertEqual(row['active_members_count'], 2)
-        self.assertLess(row['last_access_at'], now.isoformat())
+        self.assertEqual(parse_datetime(row['last_access_at']), last_login)
 
     def test_order_by_name(self):
         response = self.client.get(self.list_url, data={'order_by': 'name'})
