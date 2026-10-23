@@ -76,7 +76,7 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 | Date | Update |
 |------|--------|
 | 2026-10-22 | Plan created (stage 5, `implementation-planner`) |
-| 2026-10-22 | Phase 0 done: shortcuts removed; Django admin keeps choosing any organization for a StoredFile (serializer context `django_admin`); 1599 tests pass |
+| 2026-10-22 | Phase 0 done: shortcuts removed; Django admin validates StoredFiles with `StoredFileAdminSerializer`; code review clean; 1606 tests pass |
 
 ---
 
@@ -87,7 +87,7 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 | Server-side impersonation in the Django session | ADR-009, Q71 | JWT for the target |
 | `sessions_revoked_at` + blacklist | BR-21: refuse already-issued access tokens at once | Blacklist only (access tokens live 15 min) |
 | One service function per action | Single transaction, reused by views and tests | Logic in views |
-| StoredFile admin form passes `django_admin` in the serializer context | ADR-009 keeps Django admin access unchanged while the API loses the bypass | Keep `is_superuser` in the serializer |
+| `StoredFileAdminSerializer` for the StoredFile admin form | ADR-009 keeps Django admin access unchanged while the API serializer has no admin case | Context flag in the API serializer (review finding) |
 
 ---
 
