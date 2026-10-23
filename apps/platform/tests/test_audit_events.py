@@ -54,3 +54,23 @@ class PlatformAuditEventTestCase(PlatformTestMixin, APITestCaseMixin, APITestCas
             data={'created_at_after': '2026-10-20', 'created_at_before': '2026-10-01'},
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+
+class PlatformAuditEventFilterOptionsTestCase(
+    PlatformTestMixin, APITestCaseMixin, APITestCase
+):
+    def setUp(self):
+        self.url = reverse('platform:audit_events-filter-options')
+
+    def test_staff_gets_action_and_record_type_options(self):
+        self.authenticate_staff()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        actions = {option['value'] for option in response.data['action__in']}
+        self.assertIn('user.platform_role_changed', actions)
+        self.assertIn('member.role_changed', actions)
+
+    def test_role_none_is_forbidden(self):
+        self.client.force_authenticate(user=UserFactory())
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)

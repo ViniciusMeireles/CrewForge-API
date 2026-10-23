@@ -90,7 +90,8 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 | `User.blocked_*` fields (data only) moved to Phase 1 | The read panel shows blocked Users, the Blocked mark/filter and the overview tile; enforcement stays in Phase 2 | Add them with enforcement in Phase 2 |
 | Overview and querysets in `apps/platform/selectors.py` | Same pattern as `apps/dashboard/selectors.py` | `services.py` |
 | `set_platform_role` in `apps/accounts/utils/platform_role.py` | `apps/accounts` (admin, command) must not import `apps/platform` | Service in `apps/platform` |
-| List ordering parameter is `order_by` (project convention); filter-options routes deferred | Existing lists use `order_by`; platform enums are in the schema | `ordering`; options routes now |
+| List ordering parameter is `order_by` (project convention); filter-options only on the platform audit (action labels for the Action filter) | Existing lists use `order_by`; platform enums are in the schema | `ordering`; options routes now |
+| `options_component_prefix` on `OptionsBaseModelMixin`; scoped paginated options share the canonical schema component | Two ViewSets of `AuditEvent` exposed options with the same component names (spectacular warnings, wrong schema) | Rename per filterset class (unstable: orderable filtersets are generated) |
 | One service function per action | Single transaction, reused by views and tests | Logic in views |
 | `StoredFileAdminSerializer` for the StoredFile admin form | ADR-009 keeps Django admin access unchanged while the API serializer has no admin case | Context flag in the API serializer (review finding) |
 

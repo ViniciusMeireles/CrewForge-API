@@ -1253,6 +1253,8 @@ Organization in `organizations` (session and Organization list) carries `status`
 | `GET /api/platform/users/{id}/` | Detail: list fields + `blocking {blocked_at, blocked_by, reason}` or `null`, `memberships[]`, `can_impersonate`, `can_block` (for the requesting staff member) | — |
 | `GET /api/platform/audit-events/` | Every Audit Event (Organization and account) with `organization {id, name}` or `null` and `subject_user` | `created_at_after`, `created_at_before`, `organization`, `user` (actor or subject), `scope` (`account` \| `organization`), `action`, `action__in`, `target_type`, `target_type__in`, `page` |
 
+`GET /api/platform/audit-events/filter-options/` returns the audit filter choices: `action` / `action__in` with labels, `scope`, and `organization` paginated (`?organization=<name>&page=`), same envelope as the other `filter-options` routes.
+
 Inverted periods answer `400` with `created_at` / `date_joined` field errors. Use the Organization detail's
 `members` route with `is_active=true&exclude_owner=true&search=` for the ownership-transfer picker.
 

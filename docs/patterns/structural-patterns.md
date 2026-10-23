@@ -170,6 +170,10 @@ class ModelViewSetMixin(
 - `options_search = False` on a ViewSet turns off the value search on all its
   form-options fields; the schema documents the value as ignored. Used by
   `OrganizationImageViewSet`, whose routes answer anonymous requests
+- Options serializers are named `Options{Action}{Model}` (schema components); a
+  second ViewSet of the same model sets `options_component_prefix` (e.g.
+  `PlatformAuditEventViewSet` → `OptionsListPlatformAuditEvent`). Scoped
+  paginated fields share the canonical `Paginated{Type}Options` component
 - Every paginated field must declare its label/search field or expression in the
   source serializer `Meta.options_extra_kwargs` (case by case, never automatic).
   `PaginatedOptionsSearchConfiguredTestCase` fails for any route that misses it:
