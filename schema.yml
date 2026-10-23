@@ -3298,7 +3298,7 @@ paths:
         schema:
           type: string
         description: Return only `organization` (paginated). A non-empty value filters
-          its options by label (`exact`).
+          its options by label (`unaccent__icontains`).
       - in: query
         name: page
         schema:

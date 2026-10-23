@@ -141,7 +141,12 @@ class PlatformAuditEventFilter(PeriodValidationMixin, filterset.FilterSet):
             'action': ['exact', 'in'],
             'target_type': ['exact', 'in'],
         }
-        options_extra_kwargs = {'organization': {'label_field_name': 'name'}}
+        options_extra_kwargs = {
+            'organization': {
+                'label_field_name': 'name',
+                'filter_lookup_expr': 'unaccent__icontains',
+            }
+        }
 
     def filter_user(self, queryset, name, value):
         return queryset.filter(Q(actor_user_id=value) | Q(subject_user_id=value))
