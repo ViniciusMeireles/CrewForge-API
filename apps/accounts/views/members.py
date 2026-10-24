@@ -143,6 +143,7 @@ class MemberViewSet(
         'destroy': AuditActionChoices.MEMBER_REMOVED,
     }
     permission_classes = [MemberPermission]
+    organization_context_exempt_actions = ('create_with_invite',)
     filterset_class = MemberFilter
     filter_backends = [backends.DjangoFilterBackend]
     auto_orderable_filter = True
@@ -206,6 +207,7 @@ class MemberViewSet(
                 data={'detail': InvitationErrorMessages.INVITATION_NOT_FOUND.label},
                 status=http_status.HTTP_404_NOT_FOUND,
             )
+        invitation.ensure_organization_not_suspended()
 
         is_acceptable, message = invitation.is_acceptable()
         if not is_acceptable:

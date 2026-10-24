@@ -281,6 +281,7 @@ SIMPLE_JWT = {
     ),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'USER_AUTHENTICATION_RULE': 'apps.accounts.authentication.user_authentication_rule',
 }
 if jwt_signing_key := os.environ.get('JWT_SIGNING_KEY'):
     SIMPLE_JWT['SIGNING_KEY'] = jwt_signing_key

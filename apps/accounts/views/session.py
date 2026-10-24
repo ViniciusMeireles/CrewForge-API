@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from apps.accounts.mixins.requests import OrganizationScopedRequestMixin
 from apps.accounts.serializers.session import SessionSerializer
+from apps.accounts.utils.requests import clear_suspended_organization_context
 
 
 @extend_schema(
@@ -16,6 +17,9 @@ from apps.accounts.serializers.session import SessionSerializer
 )
 class SessionView(OrganizationScopedRequestMixin, APIView):
     permission_classes = [IsAuthenticated]
+
+    def refuse_suspended_organization_context(self, request) -> None:
+        clear_suspended_organization_context(request)
 
     def get(self, request, *args, **kwargs):
         user = self.auth_user

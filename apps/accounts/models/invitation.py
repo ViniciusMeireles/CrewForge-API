@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.accounts.choices import InvitationErrorMessages, MemberRoleChoices
 from apps.accounts.consts import INVITATION_ACCEPT_URL_PATH
 from apps.accounts.managers.invitation import InvitationManager
+from apps.generics.errors import InvalidState
 from apps.generics.models.abstracts import BaseModel
 from apps.generics.utils.shortcuts import get_object_or_none
 
@@ -142,6 +143,11 @@ class Invitation(BaseModel):
         ).exists():
             return False, str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
         return True, ''
+
+    def ensure_organization_not_suspended(self) -> None:
+        """Refuse accepting while the Organization is suspended (BR-11)."""
+        if self.organization.is_suspended:
+            raise InvalidState(InvitationErrorMessages.ORGANIZATION_SUSPENDED.label)
 
     def accept(self, member, check: bool = True):
         """

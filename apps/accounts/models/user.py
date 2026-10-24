@@ -117,6 +117,12 @@ class User(AbstractUser, BaseModel):
         verbose_name=_('Blocked Reason'),
         help_text=_('Internal reason, never shown to the user'),
     )
+    sessions_revoked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Sessions Revoked At'),
+        help_text=_('Access tokens issued before this moment are refused'),
+    )
 
     objects = UserManager()
 

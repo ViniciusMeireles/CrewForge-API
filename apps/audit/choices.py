@@ -7,6 +7,15 @@ class AuditActionChoices(models.TextChoices):
     ORGANIZATION_UPDATED = 'organization.updated', _('Organization updated')
     ORGANIZATION_DELETED = 'organization.deleted', _('Organization deleted')
     ORGANIZATION_LOGIN = 'organization.login', _('Organization accessed')
+    ORGANIZATION_SUSPENDED = 'organization.suspended', _('Organization suspended')
+    ORGANIZATION_REACTIVATED = (
+        'organization.reactivated',
+        _('Organization reactivated'),
+    )
+    ORGANIZATION_OWNERSHIP_TRANSFERRED = (
+        'organization.ownership_transferred',
+        _('Ownership transferred'),
+    )
     ORGANIZATION_PROFILE_UPDATED = (
         'organization.profile.updated',
         _('Organization profile updated'),
@@ -77,6 +86,20 @@ class AuditActionChoices(models.TextChoices):
         'user.platform_role_changed',
         _('Platform role changed'),
     )
+    USER_BLOCKED = 'user.blocked', _('Account blocked')
+    USER_UNBLOCKED = 'user.unblocked', _('Account unblocked')
+    USER_SESSIONS_ENDED = (
+        'user.sessions_ended',
+        _('Sessions ended by platform support'),
+    )
+    USER_VERIFICATION_RESENT = (
+        'user.verification_resent',
+        _('Verification email resent'),
+    )
+    USER_PASSWORD_RESET_FORCED = (
+        'user.password_reset_forced',
+        _('Password reset forced'),
+    )
 
 
 class AuditActorTypeChoices(models.TextChoices):
@@ -86,3 +109,8 @@ class AuditActorTypeChoices(models.TextChoices):
 
 
 ACCOUNT_ACTION_PREFIXES = ('auth.', 'user.')
+
+CHANGE_FIELD_LABELS = {
+    'previous_owner_role': _('Previous owner role'),
+    'new_owner_role': _('New owner role'),
+}

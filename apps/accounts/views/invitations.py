@@ -355,6 +355,13 @@ class InvitationViewSet(
     }
     audit_exclude_fields = ('key', 'last_email_sent_at')
     permission_classes = [InvitationPermission]
+    organization_context_exempt_actions = (
+        'received',
+        'received_detail',
+        'by_key',
+        'accept',
+        'decline',
+    )
     filterset_class = InvitationFilter
     filter_backends = [backends.DjangoFilterBackend]
     auto_orderable_filter = True
@@ -523,6 +530,7 @@ class InvitationViewSet(
         invitation_pk = kwargs.get('invitation_pk')
         invitation = get_object_or_404(Invitation, pk=invitation_pk)
         self.check_object_permissions(request, invitation)
+        invitation.ensure_organization_not_suspended()
 
         is_acceptable, message = invitation.is_acceptable()
         if not is_acceptable:

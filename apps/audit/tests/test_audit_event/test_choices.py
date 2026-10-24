@@ -12,6 +12,9 @@ CATALOG = {
     'organization.updated',
     'organization.deleted',
     'organization.login',
+    'organization.suspended',
+    'organization.reactivated',
+    'organization.ownership_transferred',
     'organization.profile.updated',
     'organization.image.created',
     'organization.image.updated',
@@ -49,6 +52,11 @@ CATALOG = {
     'auth.email_verification.failed',
     'user.profile.updated',
     'user.platform_role_changed',
+    'user.blocked',
+    'user.unblocked',
+    'user.sessions_ended',
+    'user.verification_resent',
+    'user.password_reset_forced',
 }
 
 

@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import (
@@ -27,6 +26,7 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView as TokenVerifyViewBase,
 )
 
+from apps.accounts.exceptions import AccountBlocked
 from apps.accounts.serializers.auth import (
     EmailVerificationConfirmSerializer,
     PasswordResetConfirmSerializer,
@@ -48,6 +48,7 @@ from apps.accounts.utils.email_verification import (
     verification_cooldown_remaining,
 )
 from apps.accounts.utils.language import resolve_recipient_language
+from apps.accounts.utils.password_reset import password_reset_link
 from apps.accounts.utils.security_log import log_security_event
 from apps.accounts.utils.tokens import revoke_refresh_tokens
 
@@ -83,6 +84,14 @@ class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
             enforce_csrf(request)
         try:
             response = super().post(request, *args, **kwargs)
+        except AccountBlocked:
+            log_security_event(
+                'account.blocked_sign_in',
+                request,
+                level=logging.WARNING,
+                user_id=self.attempted_user_id(request),
+            )
+            raise
         except AuthenticationFailed:
             log_security_event(
                 'auth.login.failed',
@@ -165,11 +174,8 @@ class PasswordResetRequestView(AuthThrottleMixin, APIView):
         if serializer.user:
             from apps.accounts.tasks import send_password_reset_email
 
-            uid = serializer.data.get('uid')
-            token = serializer.data.get('token')
-            reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
             send_password_reset_email(
-                reset_link,
+                password_reset_link(serializer.user),
                 [serializer.user.email],
                 language=resolve_recipient_language(serializer.user),
             )

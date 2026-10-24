@@ -20,7 +20,7 @@ from apps.platform.filters import (
     PlatformOrganizationFilter,
     PlatformUserFilter,
 )
-from apps.platform.permissions import IsPlatformStaff
+from apps.platform.permissions import IsPlatformAdmin, IsPlatformStaff
 from apps.platform.selectors import (
     organization_detail_queryset,
     organizations_queryset,
@@ -28,6 +28,7 @@ from apps.platform.selectors import (
     users_queryset,
 )
 from apps.platform.serializers import (
+    OwnershipTransferSerializer,
     PlatformAuditEventSerializer,
     PlatformInvitationSerializer,
     PlatformMemberSerializer,
@@ -37,6 +38,18 @@ from apps.platform.serializers import (
     PlatformTeamSerializer,
     PlatformUserDetailSerializer,
     PlatformUserListSerializer,
+    ReasonOptionalSerializer,
+    ReasonRequiredSerializer,
+)
+from apps.platform.services import (
+    block_user,
+    end_sessions,
+    force_password_reset,
+    reactivate_organization,
+    resend_verification,
+    suspend_organization,
+    transfer_ownership,
+    unblock_user,
 )
 from apps.teams.models.team import Team
 
@@ -63,9 +76,8 @@ class PlatformOverviewView(APIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class PlatformReadOnlyViewSet(viewsets.ModelViewSet):
+class PlatformViewSetMixin:
     permission_classes = [IsPlatformStaff]
-    http_method_names = ['get', 'head', 'options']
     filter_backends = [DjangoFilterBackend]
 
     def paginated(self, queryset, serializer_class, filterset_class=None):
@@ -87,6 +99,54 @@ class PlatformReadOnlyViewSet(viewsets.ModelViewSet):
             return queryset
         return super().filter_queryset(queryset)
 
+    def get_action_serializer_kwargs(self, instance) -> dict:
+        return {}
+
+    def run_action(self, service, request_serializer):
+        """Validate the body, run ``service`` on the object, answer with its detail."""
+        instance = self.get_object()
+        serializer = request_serializer(
+            data=self.request.data, **self.get_action_serializer_kwargs(instance)
+        )
+        serializer.is_valid(raise_exception=True)
+        service(self.request, instance, **serializer.validated_data)
+        refreshed = self.get_queryset().get(pk=instance.pk)
+        return Response(
+            data=self.get_serializer_class()(
+                refreshed, context=self.get_serializer_context()
+            ).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class PlatformReadOnlyViewSet(PlatformViewSetMixin, viewsets.ModelViewSet):
+    http_method_names = ['get', 'head', 'options']
+
+
+class PlatformActionsViewSet(PlatformViewSetMixin, viewsets.ReadOnlyModelViewSet):
+    """Reads for staff; ``post`` only reaches the account actions (no ``create``)."""
+
+    http_method_names = ['get', 'head', 'options', 'post']
+    action_permission_classes = [IsPlatformAdmin]
+
+    def get_permissions(self):
+        if self.action in self.account_actions:
+            return [permission() for permission in self.action_permission_classes]
+        return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.action in self.account_actions:
+            return self.detail_serializer_class
+        return super().get_serializer_class()
+
+
+def action_schema(request, response):
+    return extend_schema(
+        tags=PLATFORM_TAGS,
+        request=request,
+        responses={200: response},
+    )
+
 
 @extend_schema_view(
     list=extend_schema(tags=PLATFORM_TAGS),
@@ -102,9 +162,20 @@ class PlatformReadOnlyViewSet(viewsets.ModelViewSet):
     invitations=extend_schema(
         tags=PLATFORM_TAGS, responses=PlatformInvitationSerializer(many=True)
     ),
+    suspend=action_schema(
+        ReasonRequiredSerializer, PlatformOrganizationDetailSerializer
+    ),
+    reactivate=action_schema(
+        ReasonOptionalSerializer, PlatformOrganizationDetailSerializer
+    ),
+    transfer_ownership=action_schema(
+        OwnershipTransferSerializer, PlatformOrganizationDetailSerializer
+    ),
 )
-class PlatformOrganizationViewSet(PlatformReadOnlyViewSet):
+class PlatformOrganizationViewSet(PlatformActionsViewSet):
     filterset_class = PlatformOrganizationFilter
+    account_actions = ('suspend', 'reactivate', 'transfer_ownership')
+    detail_serializer_class = PlatformOrganizationDetailSerializer
 
     def get_queryset(self):
         if self.action == 'list':
@@ -112,6 +183,23 @@ class PlatformOrganizationViewSet(PlatformReadOnlyViewSet):
         if self.action in TAB_ACTIONS:
             return Organization.objects.all()
         return organization_detail_queryset()
+
+    @action(detail=True, methods=['post'])
+    def suspend(self, request, *args, **kwargs):
+        return self.run_action(suspend_organization, ReasonRequiredSerializer)
+
+    @action(detail=True, methods=['post'])
+    def reactivate(self, request, *args, **kwargs):
+        return self.run_action(reactivate_organization, ReasonOptionalSerializer)
+
+    @action(detail=True, methods=['post'], url_path='transfer-ownership')
+    def transfer_ownership(self, request, *args, **kwargs):
+        return self.run_action(transfer_ownership, OwnershipTransferSerializer)
+
+    def get_action_serializer_kwargs(self, instance) -> dict:
+        if self.action == 'transfer_ownership':
+            return {'organization': instance}
+        return {}
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -152,9 +240,26 @@ class PlatformOrganizationViewSet(PlatformReadOnlyViewSet):
 @extend_schema_view(
     list=extend_schema(tags=PLATFORM_TAGS),
     retrieve=extend_schema(tags=PLATFORM_TAGS),
+    block=action_schema(ReasonRequiredSerializer, PlatformUserDetailSerializer),
+    unblock=action_schema(ReasonOptionalSerializer, PlatformUserDetailSerializer),
+    end_sessions=action_schema(ReasonOptionalSerializer, PlatformUserDetailSerializer),
+    resend_verification=action_schema(
+        ReasonOptionalSerializer, PlatformUserDetailSerializer
+    ),
+    force_password_reset=action_schema(
+        ReasonOptionalSerializer, PlatformUserDetailSerializer
+    ),
 )
-class PlatformUserViewSet(PlatformReadOnlyViewSet):
+class PlatformUserViewSet(PlatformActionsViewSet):
     filterset_class = PlatformUserFilter
+    account_actions = (
+        'block',
+        'unblock',
+        'end_sessions',
+        'resend_verification',
+        'force_password_reset',
+    )
+    detail_serializer_class = PlatformUserDetailSerializer
 
     def get_queryset(self):
         return users_queryset().select_related('blocked_by')
@@ -163,6 +268,26 @@ class PlatformUserViewSet(PlatformReadOnlyViewSet):
         if self.action == 'list':
             return PlatformUserListSerializer
         return PlatformUserDetailSerializer
+
+    @action(detail=True, methods=['post'])
+    def block(self, request, *args, **kwargs):
+        return self.run_action(block_user, ReasonRequiredSerializer)
+
+    @action(detail=True, methods=['post'])
+    def unblock(self, request, *args, **kwargs):
+        return self.run_action(unblock_user, ReasonOptionalSerializer)
+
+    @action(detail=True, methods=['post'], url_path='end-sessions')
+    def end_sessions(self, request, *args, **kwargs):
+        return self.run_action(end_sessions, ReasonOptionalSerializer)
+
+    @action(detail=True, methods=['post'], url_path='resend-verification')
+    def resend_verification(self, request, *args, **kwargs):
+        return self.run_action(resend_verification, ReasonOptionalSerializer)
+
+    @action(detail=True, methods=['post'], url_path='force-password-reset')
+    def force_password_reset(self, request, *args, **kwargs):
+        return self.run_action(force_password_reset, ReasonOptionalSerializer)
 
 
 @extend_schema_view(

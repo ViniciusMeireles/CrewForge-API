@@ -1,11 +1,16 @@
+from unittest import mock
+
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
+from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.audit.choices import AuditActorTypeChoices
 from apps.audit.factories.audit_event import AuditEventFactory
+from apps.audit.models.audit_event import AuditEvent
 from apps.platform.tests.mixins import PlatformTestMixin
 
 
@@ -84,3 +89,54 @@ class PlatformAuditEventFilterOptionsTestCase(
         self.client.force_authenticate(user=UserFactory())
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+
+class PlatformActionAuditTestCase(PlatformTestMixin, APITestCaseMixin, APITestCase):
+    def test_every_staff_action_audited(self):
+        staff = self.authenticate_staff('admin')
+        organization = OrganizationFactory()
+        new_owner = MemberFactory(organization=organization)
+        user = UserFactory(email_verified_at=None)
+        steps = [
+            ('organizations-suspend', organization.id, {}, 'organization.suspended'),
+            (
+                'organizations-reactivate',
+                organization.id,
+                {},
+                'organization.reactivated',
+            ),
+            (
+                'organizations-transfer-ownership',
+                organization.id,
+                {'member': new_owner.id},
+                'organization.ownership_transferred',
+            ),
+            ('users-resend-verification', user.id, {}, 'user.verification_resent'),
+            ('users-block', user.id, {}, 'user.blocked'),
+            ('users-unblock', user.id, {}, 'user.unblocked'),
+            ('users-end-sessions', user.id, {}, 'user.sessions_ended'),
+            ('users-force-password-reset', user.id, {}, 'user.password_reset_forced'),
+        ]
+        with mock.patch('apps.accounts.tasks.send_email_task.apply_async'):
+            for name, pk, data, action in steps:
+                with self.subTest(action=action):
+                    reason = f'Reason for {action}'
+                    response = self.client.post(
+                        reverse(f'platform:{name}', args=[pk]),
+                        data={**data, 'reason': reason},
+                        format='json',
+                    )
+                    self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+                    event = AuditEvent.objects.get(action=action)
+                    self.assertEqual(event.actor_type, AuditActorTypeChoices.PLATFORM)
+                    self.assertEqual(event.actor_user_id, staff.id)
+                    self.assertEqual(event.metadata, {'reason': reason})
+                    if action.startswith('organization.'):
+                        self.assertEqual(event.organization_id, organization.id)
+                    else:
+                        self.assertIsNone(event.organization_id)
+                        self.assertEqual(event.subject_user_id, user.id)
+        self.assertEqual(
+            set(AuditEvent.objects.values_list('action', flat=True)),
+            {step[3] for step in steps},
+        )

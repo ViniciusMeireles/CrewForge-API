@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.utils import timezone
+from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.choices import OrganizationImageTypeChoices
@@ -143,3 +144,75 @@ class InvitationEmail(EmailBase):
             }
         )
         return kwargs
+
+
+class OrganizationNoticeEmail(EmailBase):
+    """
+    Notice about an Organization sent to its Owners by platform staff actions.
+
+    Built from plain names so the Celery task can rebuild it; the internal reason
+    of the action is never part of it (BR-16, BR-19).
+    """
+
+    template_name = 'accounts/emails/base.html'
+
+    def __init__(self, *, organization_name: str, new_owner_name: str = '', **kwargs):
+        super().__init__(**kwargs)
+        self.organization_name = organization_name
+        self.new_owner_name = new_owner_name
+
+    def _format(self, text, escape_names: bool = False) -> str:
+        names = {
+            'organization': self.organization_name,
+            'new_owner': self.new_owner_name,
+        }
+        if escape_names:
+            names = {key: escape(value) for key, value in names.items()}
+        return str(text).format(system=self.get_system_title(), **names)
+
+    def get_subject(self) -> str:
+        return self._format(self.subject)
+
+    def get_title(self) -> str:
+        return self._format(self.subject)
+
+    def get_content(self) -> str:
+        return self._format(self.content, escape_names=True)
+
+    @classmethod
+    def get_preview_kwargs(cls, **kwargs) -> dict:
+        kwargs = super().get_preview_kwargs(**kwargs)
+        kwargs.update(
+            {'organization_name': 'Acme Inc', 'new_owner_name': 'Maria Silva'}
+        )
+        return kwargs
+
+
+class OrganizationSuspendedEmail(OrganizationNoticeEmail):
+    subject = _('Your organization {organization} was suspended')
+    content = _(
+        'Your organization {organization} was suspended by {system}. Its members '
+        "can't access it until it is reactivated. If you have questions, contact "
+        'support.'
+    )
+
+
+class OrganizationReactivatedEmail(OrganizationNoticeEmail):
+    subject = _('Your organization {organization} is active again')
+    content = _(
+        'Your organization {organization} was reactivated. Its members can access it '
+        'again.'
+    )
+
+
+class OwnershipTransferredNewOwnerEmail(OrganizationNoticeEmail):
+    subject = _('You are now the owner of {organization}')
+    content = _('{system} transferred the ownership of {organization} to you.')
+
+
+class OwnershipTransferredPreviousOwnerEmail(OrganizationNoticeEmail):
+    subject = _('Ownership of {organization} was transferred')
+    content = _(
+        '{system} transferred the ownership of {organization} to {new_owner}. You '
+        'remain a member as an admin.'
+    )

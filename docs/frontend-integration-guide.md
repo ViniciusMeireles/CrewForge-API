@@ -755,7 +755,10 @@ identifiers — never match on `message`, always match on `code`.
 | `NOT_FOUND` | 404 | `null` |
 | `METHOD_NOT_ALLOWED` | 405 | `null` |
 | `NOT_ACCEPTABLE` | 406 | `null` |
-| `THROTTLED` | 429 | `null` |
+| `ACCOUNT_BLOCKED` | 401 | `null` — correct password (or refresh / access token) of a blocked account; message "Your account is blocked. Contact support." |
+| `ORGANIZATION_SUSPENDED` | 403 | `null` — the session's Organization is suspended; the API has already dropped it from the session (go back to the Organization selection) |
+| `INVALID_STATE` | 409 | `null` — the action does not apply to the current state (already suspended, not blocked, own account…); `message` is user-facing |
+| `THROTTLED` | 429 | `null`, or `{"retry_after_seconds": n}` for a per-object cooldown (platform resend verification) |
 | `INTERNAL_ERROR` | 500 | `null` |
 
 For `VALIDATION_ERROR`, `details` contains field-level errors:
@@ -782,8 +785,9 @@ For `VALIDATION_ERROR`, `details` contains field-level errors:
 | 204 | No Content | DELETE |
 | 400 | Bad Request | Validation errors |
 | 401 | Unauthorized | Missing/expired JWT |
-| 403 | Forbidden | Insufficient role |
+| 403 | Forbidden | Insufficient role; suspended Organization (`ORGANIZATION_SUSPENDED`) |
 | 404 | Not Found | Cross-org access or nonexistent resource |
+| 409 | Conflict | `INVALID_STATE` (platform actions, invitation of a suspended Organization) |
 | 429 | Too Many Requests | Invitation email cooldown |
 
 ---
@@ -1235,8 +1239,8 @@ shape as above, with `organization_id: null`.
 
 Endpoints for **platform staff** (`user.platform_role` = `support` or `admin`), outside any Organization context
 ([ADR-009](../../docs/adr/009-platform-access-outside-organization-context.md)): JWT only — no Organization login is
-needed and the session's Organization is ignored. A User with role `none` gets `403` on every route. All routes are
-read-only in this increment; account actions come with the next one.
+needed and the session's Organization is ignored. A User with role `none` gets `403` on every route. Reads are open to
+`support` and `admin`; account actions (below) need `admin` (`support` gets `403`).
 
 The session exposes the role: `GET /api/accounts/session/` → `user.platform_role` (`none` | `support` | `admin`). Every
 Organization in `organizations` (session and Organization list) carries `status` (`active` | `suspended`).
@@ -1257,6 +1261,36 @@ Organization in `organizations` (session and Organization list) carries `status`
 
 Inverted periods answer `400` with `created_at` / `date_joined` field errors. Use the Organization detail's
 `members` route with `is_active=true&exclude_owner=true&search=` for the ownership-transfer picker.
+
+### 18.1. Account actions (platform admin)
+
+Every action is a `POST` with a JSON body, answers `200` with the refreshed detail (Organization or User) and records
+an Audit Event with `actor_type: "platform"` and `metadata.reason` when a reason is given. `reason` is trimmed, at most
+500 characters; "required" means blank is refused with `VALIDATION_ERROR` (`details.reason`). Reasons are internal: they
+never appear in emails.
+
+| Endpoint | Body | Errors |
+|---|---|---|
+| `POST /api/platform/organizations/{id}/suspend/` | `reason` (required) | `409` "This organization is already suspended." |
+| `POST /api/platform/organizations/{id}/reactivate/` | `reason` (optional) | `409` "This organization is already active." |
+| `POST /api/platform/organizations/{id}/transfer-ownership/` | `member` (active Member of the Organization, not the owner), `reason` (required) | `400` `details.member` |
+| `POST /api/platform/users/{id}/block/` | `reason` (required) | `409` "This user is already blocked." / "You can't block your own account." |
+| `POST /api/platform/users/{id}/unblock/` | `reason` (optional) | `409` "This user is not blocked." |
+| `POST /api/platform/users/{id}/end-sessions/` | `reason` (optional) | — |
+| `POST /api/platform/users/{id}/resend-verification/` | `reason` (optional) | `409` (already verified), `429` `THROTTLED` with `details.retry_after_seconds` |
+| `POST /api/platform/users/{id}/force-password-reset/` | `reason` (optional) | — |
+
+Effects the SPA must handle:
+
+- **Suspension:** Members of the Organization get `403 ORGANIZATION_SUSPENDED` on their next Organization request (and
+  on its login); the session no longer holds it, and `GET /api/accounts/session/` answers `organization: null` with the
+  Organization listed as `status: "suspended"`. Invitations of a suspended Organization can't be accepted (`409
+  INVALID_STATE` "This organization is suspended, so the invitation can't be accepted."). The owner is emailed on
+  suspension and reactivation; both owners on a transfer (new owner Owner, previous owner Admin).
+- **Block / end sessions / force reset:** every access token issued before the action is refused at once
+  (`AUTHENTICATION_ERROR`) and refresh tokens are blacklisted; signing in again answers `ACCOUNT_BLOCKED` while the
+  account is blocked. Deleted accounts refuse every action (`409` "This user account is deleted."). Unblocking does not restore ended sessions. Force reset also makes the current password unusable and emails
+  a reset link.
 
 ---
 
