@@ -1288,8 +1288,8 @@ Effects the SPA must handle:
   INVALID_STATE` "This organization is suspended, so the invitation can't be accepted."). The owner is emailed on
   suspension and reactivation; both owners on a transfer (new owner Owner, previous owner Admin).
 - **Block / end sessions / force reset:** every access token issued before the action is refused at once
-  (`ACCOUNT_BLOCKED` while blocked, otherwise `AUTHENTICATION_ERROR`) and refresh tokens are blacklisted; the User signs
-  in again. Unblocking does not restore ended sessions. Force reset also makes the current password unusable and emails
+  (`AUTHENTICATION_ERROR`) and refresh tokens are blacklisted; signing in again answers `ACCOUNT_BLOCKED` while the
+  account is blocked. Deleted accounts refuse every action (`409` "This user account is deleted."). Unblocking does not restore ended sessions. Force reset also makes the current password unusable and emails
   a reset link.
 
 ---

@@ -178,18 +178,19 @@ These rules are non-negotiable:
   `X-Forwarded-Proto`, or set `CSRF_TRUSTED_ORIGINS` to the public origin.
 - Changing or resetting the password blacklists every outstanding refresh
   token of the user (`apps/accounts/utils/tokens.py`).
-- **Blocking and revocation** (platform admin actions, ADR-009): `JWTCookieAuthentication.get_user` refuses a
-  blocked User with `401 ACCOUNT_BLOCKED` (bearer and cookie paths) and treats a token whose `iat` is before
-  `User.sessions_revoked_at` as invalid. Block, end sessions and force password reset call `revoke_sessions`
+- **Blocking and revocation** (platform admin actions, ADR-009): `JWTCookieAuthentication.get_user` first treats a
+  token whose `iat` is before `User.sessions_revoked_at` as invalid (a stale cookie is ignored, so logout and public
+  routes keep working), then refuses a blocked User with `401 ACCOUNT_BLOCKED` (bearer and cookie paths). Block, end sessions and force password reset call `revoke_sessions`
   (`apps/accounts/utils/sessions.py`): `sessions_revoked_at = now` plus every refresh token blacklisted. Tokens issued in
   the same second as the revocation are kept (`iat` has second precision). Sign-in and refresh use
   `USER_AUTHENTICATION_RULE = user_authentication_rule`: only after the password (or refresh token) is accepted does a
   blocked account get `ACCOUNT_BLOCKED`; a wrong password keeps the generic error (no account enumeration).
 - **Suspended Organizations** (BR-11): `get_organization` / `get_member` ignore them, and
   `OrganizationScopedRequestMixin.check_permissions` refuses a request whose session Organization is suspended with
-  `403 ORGANIZATION_SUSPENDED`, dropping it from the session, before any permission runs. User-level actions are
+  `403 ORGANIZATION_SUSPENDED`, dropping it from the session, before any permission runs. The status query runs only
+  when the request has no Member (`get_member` is memoized per request, User and Organization). User-level actions are
   exempt through `organization_context_exempt_actions` (Organization list/create/login, received invitations, accept,
-  decline, signup by invitation); the Organization login and invitation acceptance refuse suspended Organizations
+  decline, signup by invitation), together with their `filter-options` / `form-options` routes; the Organization login and invitation acceptance refuse suspended Organizations
   themselves.
 - Organization login rotates the session key (`cycle_key`) to prevent session
   fixation.
