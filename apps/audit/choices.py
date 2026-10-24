@@ -109,3 +109,8 @@ class AuditActorTypeChoices(models.TextChoices):
 
 
 ACCOUNT_ACTION_PREFIXES = ('auth.', 'user.')
+
+CHANGE_FIELD_LABELS = {
+    'previous_owner_role': _('Previous owner role'),
+    'new_owner_role': _('New owner role'),
+}

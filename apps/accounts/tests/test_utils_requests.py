@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest import mock
 
 from django.test import SimpleTestCase
 
@@ -49,3 +50,20 @@ class IsSameOrganizationScopeTestCase(SimpleTestCase):
                 obj, organization_id=1, lookup='team.organization_id'
             )
         )
+
+
+class GetMemberCacheTestCase(SimpleTestCase):
+    def test_member_is_loaded_once_per_user_and_organization(self):
+        request = _request(session={'organization_id': 7})
+        request.user.pk = 3
+        queryset = mock.MagicMock()
+        get_or_none = (
+            queryset.filter_actives.return_value.filter.return_value.get_or_none
+        )
+        get_or_none.side_effect = ['member of 7', 'member of 8']
+        with mock.patch('apps.accounts.utils.requests.Member.objects', queryset):
+            self.assertEqual(get_member(request), 'member of 7')
+            self.assertEqual(get_member(request), 'member of 7')
+            request.session['organization_id'] = 8
+            self.assertEqual(get_member(request), 'member of 8')
+        self.assertEqual(get_or_none.call_count, 2)

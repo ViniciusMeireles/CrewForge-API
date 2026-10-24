@@ -130,3 +130,19 @@ class OrganizationSuspensionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=other.owner)
         response = self.client.get(reverse('accounts:members-list'))
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_options_of_user_level_actions_stay_available(self):
+        self.suspend()
+        for url in (
+            reverse('accounts:invitations-filter-options-received'),
+            reverse('accounts:organizations-filter-options'),
+        ):
+            with self.subTest(url=url):
+                self.client.force_authenticate(
+                    member=self.owner, organization_auth=False
+                )
+                session = self.client.session
+                session['organization_id'] = self.organization.id
+                session.save()
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, http_status.HTTP_200_OK)

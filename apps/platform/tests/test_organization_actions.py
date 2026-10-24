@@ -206,3 +206,15 @@ class PlatformOrganizationActionTestCase(
         apply_async.assert_not_called()
         self.organization.refresh_from_db()
         self.assertFalse(self.organization.is_suspended)
+
+    def test_transfer_changes_have_labels_in_the_audit_trail(self):
+        new_owner = MemberFactory(organization=self.organization)
+        self.post('transfer-ownership', {'member': new_owner.id, 'reason': 'x'})
+        response = self.client.get(
+            reverse('platform:audit_events-list'),
+            {'action': AuditActionChoices.ORGANIZATION_OWNERSHIP_TRANSFERRED},
+        )
+        labels = [
+            change['field_display'] for change in response.data['results'][0]['changes']
+        ]
+        self.assertEqual(labels, ['Owner', 'Previous owner role', 'New owner role'])

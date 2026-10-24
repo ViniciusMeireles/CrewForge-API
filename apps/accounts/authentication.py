@@ -14,16 +14,18 @@ class JWTCookieAuthentication(JWTAuthentication):
     """
     Bearer header first; otherwise the HttpOnly access cookie with CSRF checks.
 
-    A blocked User is refused with ``ACCOUNT_BLOCKED`` on both paths; a token issued
-    before the User's sessions were revoked is treated as invalid.
+    A token issued before the User's sessions were revoked is invalid, so the stale
+    cookie of a blocked User is ignored like any expired one (logout and public routes
+    keep working). A blocked User with a token issued afterwards is refused with
+    ``ACCOUNT_BLOCKED`` on both paths.
     """
 
     def get_user(self, validated_token):
         user = super().get_user(validated_token)
-        if user.is_blocked:
-            raise AccountBlocked()
         if is_token_revoked(user, validated_token.get('iat')):
             raise AuthenticationFailed(_('Your session has ended. Sign in again.'))
+        if user.is_blocked:
+            raise AccountBlocked()
         return user
 
     def authenticate(self, request):

@@ -1,12 +1,6 @@
-import logging
-
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
 from django.utils import timezone
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.choices import MemberRoleChoices, OrganizationStatusChoices
@@ -17,12 +11,13 @@ from apps.accounts.utils.email_verification import (
     verification_cooldown_remaining,
 )
 from apps.accounts.utils.language import resolve_recipient_language
+from apps.accounts.utils.password_reset import password_reset_link
 from apps.accounts.utils.sessions import revoke_sessions
 from apps.audit.choices import AuditActionChoices, AuditActorTypeChoices
 from apps.audit.services import label_for, record_audit_event
 from apps.generics.errors import CooldownThrottled, InvalidState
+from apps.generics.utils.db import queue_on_commit
 
-logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -66,21 +61,12 @@ def _queue_organization_notice(email_class_name: str, user, **kwargs) -> None:
         return
     email = user.email
     language = resolve_recipient_language(user)
-
-    def send():
-        try:
-            send_organization_notice_email(
-                email_class_name, [email], kwargs, language=language
-            )
-        except Exception:
-            logger.error(
-                'Could not queue %s for user %s',
-                email_class_name,
-                user.pk,
-                exc_info=True,
-            )
-
-    transaction.on_commit(send)
+    queue_on_commit(
+        lambda: send_organization_notice_email(
+            email_class_name, [email], kwargs, language=language
+        ),
+        f'{email_class_name} for user {user.pk}',
+    )
 
 
 def _locked_organization(organization_id: int) -> Organization:
@@ -92,7 +78,11 @@ def _locked_organization(organization_id: int) -> Organization:
 
 
 def _locked_user(user_id: int):
-    return User.objects.select_for_update().get(pk=user_id)
+    """The target of an account action; deleted accounts are refused."""
+    user = User.objects.select_for_update().get(pk=user_id)
+    if not user.is_active:
+        raise InvalidState(_('This user account is deleted.'))
+    return user
 
 
 @transaction.atomic
@@ -290,21 +280,13 @@ def force_password_reset(request, user, reason: str = ''):
     user.set_unusable_password()
     user.save(update_fields=['password', 'updated_at'])
     revoke_sessions(user)
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = default_token_generator.make_token(user)
-    reset_link = f'{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}'
+    reset_link = password_reset_link(user)
     email = user.email
     language = resolve_recipient_language(user)
-
-    def send():
-        try:
-            send_password_reset_email(reset_link, [email], language=language)
-        except Exception:
-            logger.error(
-                'Could not queue the password reset for user %s', user.pk, exc_info=True
-            )
-
-    transaction.on_commit(send)
+    queue_on_commit(
+        lambda: send_password_reset_email(reset_link, [email], language=language),
+        f'the password reset for user {user.pk}',
+    )
     _record_account_event(
         request, AuditActionChoices.USER_PASSWORD_RESET_FORCED, user, reason
     )

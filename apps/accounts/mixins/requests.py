@@ -28,8 +28,19 @@ class OrganizationScopedRequestMixin(RequestUserMixin):
 
     organization_context_exempt_actions: tuple[str, ...] = ()
 
+    def get_organization_context_exempt_actions(self) -> set[str]:
+        """The exempt actions plus their options routes (``filter-options`` …)."""
+        exempt = set(self.organization_context_exempt_actions)
+        if options_map := getattr(self, 'get_options_actions_map', None):
+            exempt |= {
+                options_action
+                for action, options_action in options_map().items()
+                if action in exempt
+            }
+        return exempt
+
     def check_permissions(self, request):
-        exempt = self.organization_context_exempt_actions
+        exempt = self.get_organization_context_exempt_actions()
         if getattr(self, 'action', None) not in exempt:
             self.refuse_suspended_organization_context(request)
         super().check_permissions(request)

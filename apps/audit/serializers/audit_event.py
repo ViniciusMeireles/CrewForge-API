@@ -2,6 +2,7 @@ from django.core.exceptions import FieldDoesNotExist
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from apps.audit.choices import CHANGE_FIELD_LABELS
 from apps.audit.models.audit_event import AuditEvent
 from apps.audit.services import model_for_target_type
 
@@ -76,6 +77,8 @@ class AuditEventSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def field_display(model, field_name: str) -> str:
+        if label := CHANGE_FIELD_LABELS.get(field_name):
+            return str(label)
         if model is None:
             return field_name
         try:

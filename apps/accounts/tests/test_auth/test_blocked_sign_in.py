@@ -1,11 +1,15 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.cache import cache
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status as http_status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.factories.users import DEFAULT_PASSWORD, UserFactory
+from apps.accounts.utils.sessions import revoke_sessions
 
 BLOCKED_MESSAGE = 'Your account is blocked. Contact support.'
 
@@ -54,3 +58,28 @@ class BlockedSignInTestCase(APITestCase):
         self.user.save(update_fields=['blocked_at'])
         response = self.sign_in(self.user.username, DEFAULT_PASSWORD)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+
+class BlockedStaleCookieTestCase(APITestCase):
+    def test_logout_with_the_stale_cookie_of_a_blocked_account(self):
+        user = UserFactory()
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+        access.set_iat(at_time=timezone.now() - timedelta(minutes=1))
+        user.blocked_at = timezone.now()
+        user.save(update_fields=['blocked_at'])
+        revoke_sessions(user)
+        client = APIClient()
+        client.cookies[settings.AUTH_COOKIE_ACCESS_NAME] = str(access)
+        client.cookies[settings.AUTH_COOKIE_REFRESH_NAME] = str(refresh)
+
+        response = client.post(
+            reverse('accounts:logout'), format='json', HTTP_X_AUTH_TRANSPORT='cookie'
+        )
+
+        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.cookies[settings.AUTH_COOKIE_ACCESS_NAME].value, '')
+        self.assertEqual(
+            client.get(reverse('accounts:session')).status_code,
+            http_status.HTTP_401_UNAUTHORIZED,
+        )

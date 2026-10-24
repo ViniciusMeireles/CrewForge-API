@@ -72,7 +72,7 @@ class EmailVerificationTestCase(APITestCaseMixin, APITestCase):
                 'apps.accounts.tasks.send_email_verification_email',
                 side_effect=ConnectionError('broker down'),
             ),
-            self.assertLogs('apps.accounts.utils.email_verification', 'ERROR'),
+            self.assertLogs('apps.generics.utils.db', 'ERROR'),
             self.captureOnCommitCallbacks(execute=True),
         ):
             response = self.client.post(

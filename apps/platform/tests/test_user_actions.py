@@ -71,7 +71,7 @@ class PlatformUserActionTestCase(PlatformTestMixin, APITestCaseMixin, APITestCas
         for device in (laptop, phone):
             response = device.session()
             self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-            self.assertEqual(response.data['error']['code'], 'ACCOUNT_BLOCKED')
+            self.assertEqual(response.data['error']['code'], 'AUTHENTICATION_ERROR')
             refreshed = device.refresh_tokens()
             self.assertEqual(refreshed.status_code, http_status.HTTP_401_UNAUTHORIZED)
         response = sign_in(self.target)
@@ -196,3 +196,23 @@ class PlatformUserActionTestCase(PlatformTestMixin, APITestCaseMixin, APITestCas
         self.assertIsNone(event.organization_id)
         self.assertEqual(event.subject_user_id, self.target.id)
         self.assertEqual(event.actor_user_id, self.staff.id)
+
+    def test_deleted_accounts_are_refused(self):
+        deleted = UserFactory(is_active=False)
+        for name in (
+            'block',
+            'unblock',
+            'end-sessions',
+            'resend-verification',
+            'force-password-reset',
+        ):
+            with self.subTest(action=name):
+                response, apply_async = self.post(
+                    name, user=deleted, data={'reason': 'x'}
+                )
+                self.assertEqual(response.status_code, http_status.HTTP_409_CONFLICT)
+                self.assertEqual(
+                    response.data['error']['message'], 'This user account is deleted.'
+                )
+                apply_async.assert_not_called()
+        self.assertFalse(AuditEvent.objects.filter(subject_user=deleted).exists())

@@ -4,6 +4,8 @@ from apps.accounts.choices import OrganizationStatusChoices
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
 
+MEMBER_CACHE_ATTRIBUTE = '_auth_member_cache'
+
 
 def get_organization_id(request: Request) -> int | None:
     """Get the organization ID from the request."""
@@ -26,7 +28,7 @@ def get_organization(request: Request) -> Organization | None:
 
 
 def get_member(request: Request) -> Member | None:
-    """Get the member from the request."""
+    """Get the member from the request, once per request, User and Organization."""
     if not request:
         return None
     user = request.user
@@ -36,12 +38,21 @@ def get_member(request: Request) -> Member | None:
         return None
     if not (organization_id := request.session.get('organization_id')):
         return None
-    member_queryset = Member.objects.filter_actives().filter(
-        user=user,
-        organization_id=organization_id,
-        organization__status=OrganizationStatusChoices.ACTIVE,
+    key = (user.pk, organization_id)
+    cached = getattr(request, MEMBER_CACHE_ATTRIBUTE, None)
+    if cached is not None and cached[0] == key:
+        return cached[1]
+    member = (
+        Member.objects.filter_actives()
+        .filter(
+            user=user,
+            organization_id=organization_id,
+            organization__status=OrganizationStatusChoices.ACTIVE,
+        )
+        .get_or_none(organization_id=organization_id)
     )
-    return member_queryset.get_or_none(organization_id=organization_id)
+    setattr(request, MEMBER_CACHE_ATTRIBUTE, (key, member))
+    return member
 
 
 def clear_suspended_organization_context(request: Request) -> int | None:
@@ -51,6 +62,8 @@ def clear_suspended_organization_context(request: Request) -> int | None:
     Returns the id that was dropped, so the caller can refuse the request.
     """
     if not (organization_id := get_organization_id(request)):
+        return None
+    if get_member(request) is not None:
         return None
     if not Organization.objects.filter(
         id=organization_id, status=OrganizationStatusChoices.SUSPENDED

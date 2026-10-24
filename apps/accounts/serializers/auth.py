@@ -2,8 +2,8 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -14,6 +14,7 @@ from rest_framework_simplejwt.serializers import (
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.user import UserReadySerializer
 from apps.accounts.utils.email_verification import email_verification_token
+from apps.accounts.utils.password_reset import password_reset_uid_token
 
 User = get_user_model()
 
@@ -74,8 +75,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             email=attrs.get('email'), is_active=True
         ).first()
         if self.user:
-            self._uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-            self._token = default_token_generator.make_token(self.user)
+            self._uid, self._token = password_reset_uid_token(self.user)
         return attrs
 
 
