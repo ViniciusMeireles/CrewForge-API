@@ -2,6 +2,7 @@ from django.conf import settings
 from django.utils.cache import patch_vary_headers
 from django.utils.translation import get_language, get_supported_language_variant
 from drf_spectacular.plumbing import set_query_parameters
+from drf_spectacular.utils import extend_schema
 from drf_spectacular.views import SpectacularSwaggerView
 
 LOCALE_COOKIE = 'cf_locale'
@@ -20,6 +21,7 @@ def resolve_docs_language(request) -> str:
 
 
 class ApiDocsView(SpectacularSwaggerView):
+    @extend_schema(exclude=True)
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
         language = resolve_docs_language(request)
