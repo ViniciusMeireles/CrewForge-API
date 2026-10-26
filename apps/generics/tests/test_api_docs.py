@@ -57,6 +57,53 @@ class ApiDocsAccessTestCase(APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_302_FOUND)
 
 
+@override_settings(DEBUG=True, API_DOCS_PUBLIC=None)
+class ApiDocsLanguageTestCase(APITestCase):
+    def get_docs(self, **kwargs):
+        return self.client.get(reverse('swagger-ui'), **kwargs)
+
+    def test_lang_query_parameter_selects_language(self):
+        response = self.get_docs(data={'lang': 'pt-br'})
+        self.assertEqual(response.data['docs_lang'], 'pt-br')
+        self.assertEqual(response.data['schema_url'], '/api/schema/?lang=pt-br')
+        self.assertContains(response, '<html lang="pt-br">')
+        self.assertContains(response, 'Alterar tema')
+
+    def test_locale_cookie_selects_language(self):
+        self.client.cookies['cf_locale'] = 'pt-BR'
+        response = self.get_docs()
+        self.assertEqual(response.data['docs_lang'], 'pt-br')
+        self.assertIn('Cookie', response.headers['Vary'])
+
+    def test_lang_query_parameter_overrides_cookie(self):
+        self.client.cookies['cf_locale'] = 'pt-BR'
+        response = self.get_docs(data={'lang': 'en'})
+        self.assertEqual(response.data['docs_lang'], 'en')
+        self.assertContains(response, 'Change theme')
+
+    def test_unsupported_language_falls_back_to_default(self):
+        self.client.cookies['cf_locale'] = 'xx-YY'
+        response = self.get_docs(data={'lang': 'zz'})
+        self.assertEqual(response.data['docs_lang'], 'en')
+        self.assertEqual(response.data['schema_url'], '/api/schema/?lang=en')
+
+    def test_languages_expose_locale_cookie_values(self):
+        response = self.get_docs()
+        languages = response.data['languages']
+        self.assertEqual(
+            [(language['code'], language['locale']) for language in languages],
+            [('en', 'en-US'), ('pt-br', 'pt-BR')],
+        )
+
+    def test_native_server_and_auth_sections_are_replaced_by_navbar(self):
+        response = self.get_docs()
+        self.assertContains(response, 'allow-server-selection="false"')
+        self.assertContains(response, 'allow-authentication="false"')
+        self.assertContains(response, 'id="docs-navbar"')
+        token_url = reverse('accounts:token_obtain_pair')
+        self.assertContains(response, f'data-token-url="{token_url}"')
+
+
 class SecuritySettingsTestCase(SimpleTestCase):
     def test_hsts_defaults_to_one_year_without_preload(self):
         self.assertEqual(base.SECURE_HSTS_SECONDS, 31536000)

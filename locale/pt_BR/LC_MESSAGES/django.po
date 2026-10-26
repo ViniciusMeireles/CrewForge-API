@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-23 23:57+0000\n"
+"POT-Creation-Date: 2026-10-26 22:07+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -828,7 +828,8 @@ msgstr "Este tipo de arquivo não é permitido."
 msgid "The file is too large. Maximum size is %(size)s MB."
 msgstr "O arquivo é muito grande. O tamanho máximo é %(size)s MB."
 
-#: apps/accounts/views/auth.py:55
+#: apps/accounts/views/auth.py:55 templates/drf_spectacular/swagger_ui.html:68
+#: templates/drf_spectacular/swagger_ui.html:77
 msgid "Authentication"
 msgstr "Autenticação"
 
@@ -1374,7 +1375,7 @@ msgstr "Redefinição de senha forçada"
 msgid "Platform"
 msgstr "Plataforma"
 
-#: apps/audit/choices.py:108
+#: apps/audit/choices.py:108 templates/drf_spectacular/swagger_ui.html:133
 msgid "System"
 msgstr "Sistema"
 
@@ -1927,7 +1928,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:412
+#: config/settings/base.py:414
 msgid "CrewForge"
 msgstr "CrewForge"
 
@@ -1938,6 +1939,69 @@ msgstr "Swagger"
 #: templates/drf_spectacular/swagger_ui.html:5
 msgid "API documentation"
 msgstr "Documentação da API"
+
+#: templates/drf_spectacular/swagger_ui.html:54
+msgid "Authenticated"
+msgstr "Autenticado"
+
+#: templates/drf_spectacular/swagger_ui.html:55
+#: templates/drf_spectacular/swagger_ui.html:72
+msgid "Not authenticated"
+msgstr "Não autenticado"
+
+#: templates/drf_spectacular/swagger_ui.html:56
+msgid "Sign-in failed. Check your username and password."
+msgstr "Falha ao entrar. Verifique seu usuário e sua senha."
+
+#: templates/drf_spectacular/swagger_ui.html:58
+#: templates/drf_spectacular/swagger_ui.html:60
+msgid "API server"
+msgstr "Servidor da API"
+
+#: templates/drf_spectacular/swagger_ui.html:80
+msgid "Username"
+msgstr "Usuário"
+
+#: templates/drf_spectacular/swagger_ui.html:84
+msgid "Password"
+msgstr "Senha"
+
+#: templates/drf_spectacular/swagger_ui.html:90
+msgid "Sign in"
+msgstr "Entrar"
+
+#: templates/drf_spectacular/swagger_ui.html:93
+msgid "or paste a token"
+msgstr "ou cole um token"
+
+#: templates/drf_spectacular/swagger_ui.html:96
+msgid "Bearer token"
+msgstr "Token Bearer"
+
+#: templates/drf_spectacular/swagger_ui.html:99
+msgid "Apply token"
+msgstr "Aplicar token"
+
+#: templates/drf_spectacular/swagger_ui.html:103
+msgid "Sign out"
+msgstr "Sair"
+
+
+#: templates/drf_spectacular/swagger_ui.html:117
+msgid "Change theme"
+msgstr "Alterar tema"
+
+#: templates/drf_spectacular/swagger_ui.html:123
+msgid "Light"
+msgstr "Claro"
+
+#: templates/drf_spectacular/swagger_ui.html:128
+msgid "Dark"
+msgstr "Escuro"
+
+#: templates/drf_spectacular/swagger_ui.html:142
+msgid "Change language"
+msgstr "Alterar idioma"
 
 #: templates/emails/base.html:110
 msgid "All rights reserved"
