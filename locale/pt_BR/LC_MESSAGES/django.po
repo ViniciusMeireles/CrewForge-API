@@ -1986,6 +1986,9 @@ msgstr "Aplicar token"
 msgid "Sign out"
 msgstr "Sair"
 
+#: templates/drf_spectacular/swagger_ui.html:110
+msgid "Sort tags alphabetically"
+msgstr "Ordenar tags em ordem alfabética"
 
 #: templates/drf_spectacular/swagger_ui.html:117
 msgid "Change theme"

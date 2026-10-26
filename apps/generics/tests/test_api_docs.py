@@ -103,6 +103,19 @@ class ApiDocsLanguageTestCase(APITestCase):
         token_url = reverse('accounts:token_obtain_pair')
         self.assertContains(response, f'data-token-url="{token_url}"')
 
+    def test_tags_sorted_alphabetically_by_default(self):
+        response = self.get_docs()
+        self.assertTrue(response.data['sort_tags'])
+        self.assertContains(response, 'sort-tags="true"')
+        self.assertContains(response, 'data-sort-tags-default="true"')
+        self.assertContains(response, 'id="docs-sort-tags"')
+
+    @override_settings(API_DOCS_SORT_TAGS=False)
+    def test_tag_sorting_can_be_disabled(self):
+        response = self.get_docs()
+        self.assertContains(response, 'sort-tags="false"')
+        self.assertContains(response, 'data-sort-tags-default="false"')
+
 
 class SecuritySettingsTestCase(SimpleTestCase):
     def test_hsts_defaults_to_one_year_without_preload(self):

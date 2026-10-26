@@ -24,6 +24,7 @@ class ApiDocsView(SpectacularSwaggerView):
         response = super().get(request, *args, **kwargs)
         language = resolve_docs_language(request)
         response.data['docs_lang'] = language
+        response.data['sort_tags'] = settings.API_DOCS_SORT_TAGS
         response.data['languages'] = [
             {'code': code, 'name': name, 'locale': LOCALE_COOKIE_VALUES.get(code, code)}
             for code, name in settings.LANGUAGES

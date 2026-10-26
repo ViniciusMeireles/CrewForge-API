@@ -465,6 +465,12 @@ rapi-doc::part(section-main-content) {
   background: var(--ghost-hover-bg);
 }
 
+.docs-btn--toggle[aria-pressed='true'],
+.docs-btn--toggle[aria-pressed='true']:hover {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-fg);
+}
+
 .docs-btn--primary {
   background: var(--color-indigo-600);
   color: #fff;
