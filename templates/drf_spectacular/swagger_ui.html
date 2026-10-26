@@ -22,22 +22,17 @@
       <link rel="manifest" href="{% static 'site/site.webmanifest' %}" />
       <link rel="stylesheet" href="{{ swagger_ui_css }}">
     {% endblock head %}
-    <style>
-      rapi-doc {
-          --bg: #0D1117 !important;
-          --nav-bg-color: #010409 !important;
-          --nav-hover-bg-color: #0D1117 !important;
-          --input-bg: #0D1117 !important;
-          --nav-text-color: rgb(255 255 255 / 70%) !important;
-          --nav-hover-text-color: #ffffff;
-      }
-    </style>
   </head>
   <body>
-    <rapi-doc spec-url="{% url 'schema' %}" theme="dark" render-style="read" show-header="false"
-              primary-color="#c8d6ff" show-method-in-nav-bar="as-colored-text"
+    <rapi-doc spec-url="{% url 'schema' %}" color-scheme="dark" render-style="read" show-header="false"
+              show-method-in-nav-bar="as-colored-text" theme="blue" show-curl-before-try="true"
     >
-      <img slot="nav-logo" src="{% static 'images/logo/Logo_512.png' %}"/>
+      <div slot="nav-logo" data-tuner-slot="nav-logo" style="display:flex; align-items:center; justify-content:center; width:100% !important; box-sizing:border-box !important; padding:12px 16px !important; background:color-mix(in srgb, var(--primary, #3b82f6) 18%, var(--background, #18181b)) !important; color:var(--foreground, currentColor); min-height:48px;">
+        <img src="{% static 'images/logo/Logo_64.png' %}" style="width:40px; margin-right:20px;" alt="{{ title|default:default_title }}">
+        <span style="font-size:13px;">
+          <b>{{ title|default:default_title }}</b>
+        </span>
+      </div>
     </rapi-doc>
   </body>
 </html>
