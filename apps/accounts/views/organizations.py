@@ -45,7 +45,11 @@ _dark_logo_parameter = OpenApiParameter(
     model=Organization,
     login=extend_schema(
         tags=Organization.schema_tags(),
-        description=_('Login to the organization.'),
+        summary=_('Enter organization'),
+        description=_(
+            'Set the organization of the current session: organization-scoped routes '
+            'act on it. Suspended organizations are refused.'
+        ),
         request=None,
         responses={
             http_status.HTTP_200_OK: SessionSerializer,

@@ -105,6 +105,9 @@ class OptionsBaseModelMixin:
       every field of the routes (field selection keeps working).
     - ``options_form_parameters``: extra ``OpenApiParameter`` documented on the
       form-options routes (context params read by option filters).
+    - ``options_schema``: ``extend_schema`` kwargs (``summary``, ``description``)
+      per entry of ``options_actions``, for options routes that the generic texts
+      do not describe well (custom actions).
     - ``url_path_options_*`` / ``action_options_*``: route path and action name.
 
     The routes are built when the ViewSet class is created, so
@@ -124,6 +127,7 @@ class OptionsBaseModelMixin:
     options_filterset_serializer_class = OptionsFilterSetSerializer
     options_search = True
     options_form_parameters = ()
+    options_schema = {}
     # Prefix of the generated options serializer names (schema components).
     # Set it when two ViewSets of one model expose options, so their components
     # do not collide (e.g. ``'Platform'``).
@@ -409,6 +413,7 @@ class OptionsModelViewSetMetaclass(type):
             view_func = schema(
                 model=serializer_class.Meta.model,
                 responses=serializer_class,
+                **klass.options_schema.get(source_action, {}),
                 parameters=[
                     *get_form_options_parameters(
                         serializer_class, search=klass.options_search

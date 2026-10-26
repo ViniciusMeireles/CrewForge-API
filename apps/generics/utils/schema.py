@@ -1,3 +1,4 @@
+from django.utils.functional import lazy
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.types import OpenApiTypes
@@ -13,78 +14,131 @@ from apps.generics.models.abstracts import BaseModel
 from apps.generics.utils.models import get_verbose_name, get_verbose_name_plural
 
 
-def extend_schema_retrieve(model: type[BaseModel], **kwargs):
+def _lower(value) -> str:
+    return lazy(lambda: str(value).lower(), str)()
+
+
+def _model_schema(
+    model: type[BaseModel],
+    default_summary: str,
+    default_description: str,
+    plural: bool,
+    **kwargs,
+):
+    get_name = get_verbose_name_plural if plural else get_verbose_name
+    name = _lower(get_name(model))
     kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('Retrieve a specific {name}.'), name=get_verbose_name(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
+    kwargs.setdefault('summary', format_lazy(default_summary, name=name))
+    kwargs.setdefault('description', format_lazy(default_description, name=name))
     return extend_schema(**kwargs)
+
+
+def extend_schema_retrieve(model: type[BaseModel], **kwargs):
+    return _model_schema(
+        model,
+        _('Get {name}'),
+        _('Return the {name} with the given identifier.'),
+        plural=False,
+        **kwargs,
+    )
 
 
 def extend_schema_list(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('List all {name}.'), name=get_verbose_name_plural(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
+    return _model_schema(
+        model,
+        _('List {name}'),
+        _(
+            'Paginated list of the {name} the authenticated user can access. The '
+            'query parameters filter and order the results.'
+        ),
+        plural=True,
+        **kwargs,
+    )
 
 
 def extend_schema_create(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('Create a new {name}.'), name=get_verbose_name(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
+    return _model_schema(
+        model,
+        _('Create {name}'),
+        _('Create the {name} sent in the request body and return it.'),
+        plural=False,
+        **kwargs,
+    )
 
 
 def extend_schema_destroy(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('Delete a {name}.'), name=get_verbose_name(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
+    return _model_schema(
+        model,
+        _('Delete {name}'),
+        _(
+            'Delete the {name}. Records that can be deactivated are deactivated '
+            'instead of erased.'
+        ),
+        plural=False,
+        **kwargs,
+    )
 
 
 def extend_schema_update(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('Update a {name}.'), name=get_verbose_name(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
+    return _model_schema(
+        model,
+        _('Update {name}'),
+        _(
+            'Replace the editable fields of the {name} with the request body and '
+            'return it.'
+        ),
+        plural=False,
+        **kwargs,
+    )
 
 
 def extend_schema_partial_update(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('Partially update a {name}.'), name=get_verbose_name(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
+    return _model_schema(
+        model,
+        _('Partially update {name}'),
+        _('Update only the fields sent in the request body and return the {name}.'),
+        plural=False,
+        **kwargs,
+    )
 
 
 def extend_schema_options_create(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('Create options for a {name}.'), name=get_verbose_name(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
+    return _model_schema(
+        model,
+        _('Creation form options'),
+        _(
+            'Return the choices of each field of the {name} creation form. Send a '
+            'field name as query parameter to get only that field.'
+        ),
+        plural=False,
+        **kwargs,
+    )
 
 
 def extend_schema_options_update(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(_('Update options for a {name}.'), name=get_verbose_name(model))
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
+    return _model_schema(
+        model,
+        _('Edit form options'),
+        _(
+            'Return the choices of each field of the {name} edit form. Send a field '
+            'name as query parameter to get only that field.'
+        ),
+        plural=False,
+        **kwargs,
+    )
 
 
 def extend_schema_options_list(model: type[BaseModel], **kwargs):
-    kwargs.setdefault('tags', model.schema_tags())
-    msg = format_lazy(
-        _('Filter options for listing {name}.'), name=get_verbose_name_plural(model)
+    return _model_schema(
+        model,
+        _('Filter options'),
+        _(
+            'Return the choices of each filter of the {name} list. Send a field '
+            'name as query parameter to get only that field.'
+        ),
+        plural=True,
+        **kwargs,
     )
-    kwargs.setdefault('description', msg)
-    kwargs.setdefault('summary', msg)
-    return extend_schema(**kwargs)
 
 
 def _get_form_options_field_description(

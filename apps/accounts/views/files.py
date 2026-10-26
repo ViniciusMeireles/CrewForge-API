@@ -38,7 +38,8 @@ logger = logging.getLogger(__name__)
     model=StoredFile,
     file=extend_schema(
         tags=StoredFile.schema_tags(),
-        description=_('Download a file.'),
+        summary=_('Download file'),
+        description=_('Return the content of the stored file.'),
         responses={
             http_status.HTTP_200_OK: OpenApiResponse(
                 response=OpenApiTypes.BYTE,

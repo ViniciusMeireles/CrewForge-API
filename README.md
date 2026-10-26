@@ -117,7 +117,7 @@ Additional authentication-related actions:
 - :lock: **Authentication**: [Simple JWT](https://django-rest-framework-simplejwt.readthedocs.io/)
 - :file_cabinet: **Database**: [PostgreSQL](https://www.postgresql.org/)
 - :whale: **Containerization**: [Docker](https://docs.docker.com/), [Docker Compose](https://docs.docker.com/compose/)
-- :books: **API Documentation**: [Swagger](https://swagger.io/) ([drf-spectacular](https://drf-spectacular.readthedocs.io/), [RapiDoc](https://rapidocweb.com/))
+- :books: **API Documentation**: [Swagger](https://swagger.io/) ([drf-spectacular](https://drf-spectacular.readthedocs.io/), [RapiDoc](https://rapidocweb.com/); theme in `static/css/rapidoc-theme.css`, mirroring the Frontend Tailwind tokens; a navbar picks the API server, signs in or applies a Bearer token, and switches theme and language, sharing the Frontend `app-theme` and `cf_locale` preferences)
 - :dash: **WSGI Server**: [Gunicorn](https://gunicorn.org/)
 - :test_tube: **Testing**: [pytest](https://pytest-django.readthedocs.io/), [Factory Boy](https://factoryboy.readthedocs.io/)
 - :blue_book: **Linting & Formatting**: [Ruff](https://docs.astral.sh/ruff/)

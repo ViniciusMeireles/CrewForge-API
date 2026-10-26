@@ -1,11 +1,11 @@
 {% load i18n %}
 {% load static %}
-{% get_current_language as LANGUAGE_CODE %}
+{% language docs_lang %}
 {% trans "Swagger" as default_title %}
 {% trans "API documentation" as default_description %}
 
 <!doctype html> <!-- Important: must specify -->
-  <html lang="{{ LANGUAGE_CODE }}">
+  <html lang="{{ docs_lang }}">
   <head>
     <meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 characters -->
     <script type="module" src="{% static 'js/rapidoc/rapidoc-min.js' %}"></script>
@@ -21,23 +21,142 @@
       {% include 'includes/favicon.html' %}
       <link rel="manifest" href="{% static 'site/site.webmanifest' %}" />
       <link rel="stylesheet" href="{{ swagger_ui_css }}">
+      <link rel="stylesheet" href="{% static 'css/rapidoc-theme.css' %}">
     {% endblock head %}
-    <style>
-      rapi-doc {
-          --bg: #0D1117 !important;
-          --nav-bg-color: #010409 !important;
-          --nav-hover-bg-color: #0D1117 !important;
-          --input-bg: #0D1117 !important;
-          --nav-text-color: rgb(255 255 255 / 70%) !important;
-          --nav-hover-text-color: #ffffff;
-      }
-    </style>
   </head>
   <body>
-    <rapi-doc spec-url="{% url 'schema' %}" theme="dark" render-style="read" show-header="false"
-              primary-color="#c8d6ff" show-method-in-nav-bar="as-colored-text"
+    <svg class="docs-icons" aria-hidden="true" focusable="false">
+      <symbol id="icon-server" viewBox="0 0 24 24"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></symbol>
+      <symbol id="icon-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+      <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+      <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+      <symbol id="icon-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></symbol>
+      <symbol id="icon-languages" viewBox="0 0 24 24"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="icon-arrow-down-a-z" viewBox="0 0 24 24"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 6h5"/></symbol>
+      <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="icon-log-in" viewBox="0 0 24 24"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></symbol>
+      <symbol id="icon-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></symbol>
+    </svg>
+    <rapi-doc id="rapidoc" spec-url="{{ schema_url }}" color-scheme="dark" radius="lg" render-style="read"
+              show-header="false" show-method-in-nav-bar="as-colored-text" show-curl-before-try="true"
+              allow-server-selection="false" allow-authentication="false"
+              sort-tags="{% if sort_tags %}true{% else %}false{% endif %}"
     >
-      <img slot="nav-logo" src="{% static 'images/logo/Logo_512.png' %}"/>
+      <div slot="nav-logo" class="rapidoc-logo">
+        <img src="{% static 'images/logo/Logo_64.png' %}" alt="">
+        <span>{{ title|default:default_title }}</span>
+      </div>
+      <header class="docs-navbar" id="docs-navbar"
+              data-token-url="{% url 'accounts:token_obtain_pair' %}"
+              data-lang="{{ docs_lang }}"
+              data-sort-tags-default="{% if sort_tags %}true{% else %}false{% endif %}"
+              data-text-authenticated="{% trans 'Authenticated' %}"
+              data-text-unauthenticated="{% trans 'Not authenticated' %}"
+              data-text-login-failed="{% trans 'Sign-in failed. Check your username and password.' %}"
+      >
+        <label class="docs-select" title="{% trans 'API server' %}">
+          <svg class="docs-icon"><use href="#icon-server"/></svg>
+          <select id="docs-server" aria-label="{% trans 'API server' %}"></select>
+          <svg class="docs-icon docs-select__chevron"><use href="#icon-chevron-down"/></svg>
+        </label>
+
+        <div class="docs-navbar__actions">
+          <div class="docs-dropdown" data-dropdown>
+            <button type="button" class="docs-btn docs-btn--ghost" id="docs-auth-trigger" data-dropdown-trigger
+                    aria-haspopup="dialog" aria-expanded="false" aria-controls="docs-auth-panel"
+                    title="{% trans 'Authentication' %}">
+              <svg class="docs-icon"><use href="#icon-key-round"/></svg>
+              <span class="docs-status" id="docs-auth-status" data-state="off">
+                <span class="docs-status__dot" aria-hidden="true"></span>
+                <span class="docs-status__text">{% trans 'Not authenticated' %}</span>
+              </span>
+            </button>
+            <div class="docs-panel docs-panel--auth" id="docs-auth-panel" data-dropdown-panel role="dialog"
+                 aria-labelledby="docs-auth-title" hidden>
+              <h2 class="docs-panel__title" id="docs-auth-title">{% trans 'Authentication' %}</h2>
+              <form class="docs-form" id="docs-login-form" novalidate>
+                <label class="docs-field">
+                  <span>{% trans 'Username' %}</span>
+                  <input class="docs-input" type="text" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+                </label>
+                <label class="docs-field">
+                  <span>{% trans 'Password' %}</span>
+                  <input class="docs-input" type="password" name="password" autocomplete="current-password" required>
+                </label>
+                <p class="docs-error" id="docs-login-error" role="alert" hidden></p>
+                <button type="submit" class="docs-btn docs-btn--primary docs-btn--block">
+                  <svg class="docs-icon"><use href="#icon-log-in"/></svg>
+                  <span>{% trans 'Sign in' %}</span>
+                </button>
+              </form>
+              <div class="docs-divider"><span>{% trans 'or paste a token' %}</span></div>
+              <form class="docs-form" id="docs-token-form" novalidate>
+                <label class="docs-field">
+                  <span>{% trans 'Bearer token' %}</span>
+                  <input class="docs-input" type="password" name="token" autocomplete="off" spellcheck="false" required>
+                </label>
+                <button type="submit" class="docs-btn docs-btn--outline docs-btn--block">{% trans 'Apply token' %}</button>
+              </form>
+              <button type="button" class="docs-btn docs-btn--danger-ghost docs-btn--block" id="docs-logout" hidden>
+                <svg class="docs-icon"><use href="#icon-log-out"/></svg>
+                <span>{% trans 'Sign out' %}</span>
+              </button>
+            </div>
+          </div>
+
+          <button type="button" class="docs-btn docs-btn--ghost docs-btn--icon docs-btn--toggle" id="docs-sort-tags"
+                  aria-pressed="{% if sort_tags %}true{% else %}false{% endif %}"
+                  title="{% trans 'Sort tags alphabetically' %}" aria-label="{% trans 'Sort tags alphabetically' %}">
+            <svg class="docs-icon docs-icon--lg"><use href="#icon-arrow-down-a-z"/></svg>
+          </button>
+
+          <div class="docs-dropdown" data-dropdown>
+            <button type="button" class="docs-btn docs-btn--ghost docs-btn--icon" data-dropdown-trigger
+                    aria-haspopup="menu" aria-expanded="false" aria-controls="docs-theme-menu"
+                    title="{% trans 'Change theme' %}" aria-label="{% trans 'Change theme' %}">
+              <svg class="docs-icon docs-icon--lg"><use id="docs-theme-icon" href="#icon-sun"/></svg>
+            </button>
+            <div class="docs-panel docs-menu" id="docs-theme-menu" data-dropdown-panel role="menu" hidden>
+              <button type="button" class="docs-menu__item" role="menuitemradio" aria-checked="false" data-theme-value="light">
+                <svg class="docs-icon docs-icon--lg"><use href="#icon-sun"/></svg>
+                <span>{% trans 'Light' %}</span>
+                <svg class="docs-icon docs-menu__check"><use href="#icon-check"/></svg>
+              </button>
+              <button type="button" class="docs-menu__item" role="menuitemradio" aria-checked="false" data-theme-value="dark">
+                <svg class="docs-icon docs-icon--lg"><use href="#icon-moon"/></svg>
+                <span>{% trans 'Dark' %}</span>
+                <svg class="docs-icon docs-menu__check"><use href="#icon-check"/></svg>
+              </button>
+              <button type="button" class="docs-menu__item" role="menuitemradio" aria-checked="false" data-theme-value="system">
+                <svg class="docs-icon docs-icon--lg"><use href="#icon-monitor"/></svg>
+                <span>{% trans 'System' %}</span>
+                <svg class="docs-icon docs-menu__check"><use href="#icon-check"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="docs-dropdown" data-dropdown>
+            <button type="button" class="docs-btn docs-btn--ghost docs-btn--icon" data-dropdown-trigger
+                    aria-haspopup="menu" aria-expanded="false" aria-controls="docs-language-menu"
+                    title="{% trans 'Change language' %}" aria-label="{% trans 'Change language' %}">
+              <svg class="docs-icon docs-icon--lg"><use href="#icon-languages"/></svg>
+            </button>
+            <div class="docs-panel docs-menu" id="docs-language-menu" data-dropdown-panel role="menu" hidden>
+              {% for language in languages %}
+                <button type="button" class="docs-menu__item" role="menuitemradio" lang="{{ language.code }}"
+                        aria-checked="{% if language.code == docs_lang %}true{% else %}false{% endif %}"
+                        data-locale="{{ language.locale }}">
+                  <span>{{ language.name }}</span>
+                  <svg class="docs-icon docs-menu__check"><use href="#icon-check"/></svg>
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </header>
     </rapi-doc>
+    <script src="{% static 'js/rapidoc/docs-navbar.js' %}"></script>
   </body>
 </html>
+{% endlanguage %}

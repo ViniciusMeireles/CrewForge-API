@@ -43,11 +43,16 @@ PROFILE_AUDIT_EXCLUDE = (
 @extend_schema_view(
     retrieve=extend_schema_retrieve(
         model=User,
-        description=_('Retrieve the authenticated user profile.'),
+        summary=_('Get my profile'),
+        description=_('Return the profile of the authenticated user.'),
     ),
     partial_update=extend_schema_partial_update(
         model=User,
-        description=_('Partially update the authenticated user profile.'),
+        summary=_('Update my profile'),
+        description=_(
+            'Update only the fields sent in the request body of the authenticated '
+            'user profile.'
+        ),
     ),
 )
 class UserProfileViewSet(viewsets.GenericViewSet):
@@ -95,6 +100,7 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         )
 
     @extend_schema(
+        summary=_('List my account activity'),
         description=_(
             'List the account activity of the authenticated user: sign-ins, '
             'password changes, resets, email verification and profile updates.'
@@ -118,7 +124,8 @@ class UserProfileViewSet(viewsets.GenericViewSet):
         return self.get_paginated_response(serializer.data)
 
     @extend_schema(
-        description=_('Change the authenticated user password.'),
+        summary=_('Change password'),
+        description=_('Change the password of the authenticated user.'),
         tags=User.schema_tags(),
         request=ChangePasswordSerializer,
         responses={

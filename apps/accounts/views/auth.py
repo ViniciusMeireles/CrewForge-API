@@ -57,6 +57,7 @@ AUTH_SCHEMA_TAGS = [_('Authentication')]
 
 @extend_schema(
     tags=AUTH_SCHEMA_TAGS,
+    summary=_('Sign in'),
     description=_(
         'Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` '
         'header (browsers) the tokens are set as HttpOnly cookies and omitted from '
@@ -114,6 +115,7 @@ class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
         name='TokenRefreshRequest',
         fields={'refresh': serializers.CharField(required=False)},
     ),
+    summary=_('Refresh tokens'),
     description=_(
         'Rotate the refresh token. Send `refresh` in the body (Bearer clients) or '
         'rely on the refresh cookie (browsers). A refresh read from the cookie is '
@@ -161,6 +163,7 @@ class TokenRefreshView(AuthRefreshThrottleMixin, TokenRefreshViewBase):
             ),
         ),
     },
+    summary=_('Request password reset'),
     description=_("Request a password reset link to be sent to the user's email."),
 )
 class PasswordResetRequestView(AuthThrottleMixin, APIView):
@@ -208,6 +211,7 @@ class PasswordResetRequestView(AuthThrottleMixin, APIView):
             ),
         ),
     },
+    summary=_('Confirm password reset'),
     description=_(
         'Confirm the password reset using the provided token and new password.'
     ),
@@ -279,6 +283,7 @@ class PasswordResetConfirmView(AuthThrottleMixin, APIView):
             description=_('Invalid request.'),
         ),
     },
+    summary=_('Sign out'),
     description=_(
         'Blacklist the refresh token and clear the organization session. Browsers '
         '(refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`; the auth '
@@ -322,6 +327,7 @@ class LogoutView(APIView):
     responses={
         200: OpenApiResponse(response=None, description=_('Email verified.')),
     },
+    summary=_('Confirm email verification'),
     description=_(
         'Confirm the email address with the `uid` and `token` from the verification '
         'link.'
@@ -357,6 +363,7 @@ class EmailVerificationConfirmView(AuthThrottleMixin, APIView):
             description=_('A link was sent recently; retry after the cooldown.'),
         ),
     },
+    summary=_('Resend verification email'),
     description=_('Send a new verification link to the authenticated user email.'),
 )
 class EmailVerificationResendView(AuthThrottleMixin, APIView):
@@ -381,5 +388,13 @@ class EmailVerificationResendView(AuthThrottleMixin, APIView):
 
 
 @extend_schema(tags=AUTH_SCHEMA_TAGS)
+@extend_schema(
+    tags=AUTH_SCHEMA_TAGS,
+    summary=_('Verify token'),
+    description=_(
+        'Check whether a token is valid: `200` when it is, `401` otherwise. It says '
+        'nothing about what the token grants.'
+    ),
+)
 class TokenVerifyView(TokenVerifyViewBase):
     pass

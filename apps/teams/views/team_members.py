@@ -1,15 +1,16 @@
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter
 from rest_framework import serializers, viewsets
 from rest_framework import status as http_status
 
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.audit.choices import AuditActionChoices
-from apps.generics.utils.models import get_verbose_name
-from apps.generics.utils.schema import extend_schema_model_view_set
+from apps.generics.utils.schema import (
+    extend_schema_model_view_set,
+    extend_schema_update,
+)
 from apps.teams.filters.team_member import TeamMemberFilter
 from apps.teams.models.team_member import TeamMember
 from apps.teams.permissions.team_member import TeamMemberPermission
@@ -23,11 +24,8 @@ from apps.teams.serializers.team_member import (
 
 @extend_schema_model_view_set(
     model=TeamMember,
-    update=extend_schema(
-        tags=TeamMember.schema_tags(),
-        description=format_lazy(
-            _('Update a {name}.'), name=get_verbose_name(TeamMember)
-        ),
+    update=extend_schema_update(
+        model=TeamMember,
         request=TeamMemberUpdateSerializer,
         responses={
             http_status.HTTP_200_OK: TeamMemberUpdateSerializer,

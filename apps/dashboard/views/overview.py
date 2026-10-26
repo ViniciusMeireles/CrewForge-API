@@ -13,6 +13,7 @@ from apps.dashboard.serializers.overview import OverviewSerializer
 
 @extend_schema(
     tags=[_('Dashboard')],
+    summary=_('Get organization overview'),
     description=_(
         'Organization overview for the current member. '
         'Sections the member cannot access are null.',

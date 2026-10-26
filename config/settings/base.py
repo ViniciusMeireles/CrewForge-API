@@ -330,6 +330,8 @@ API_DOCS_PUBLIC = (
     else None
 )
 
+API_DOCS_SORT_TAGS = os.environ.get('API_DOCS_SORT_TAGS', 'True').lower() == 'true'
+
 ADMIN_URL = normalize_admin_url(os.environ.get('ADMIN_URL', 'admin/'))
 
 LOGGING = {

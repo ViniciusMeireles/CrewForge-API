@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-23 23:57+0000\n"
+"POT-Creation-Date: 2026-10-26 22:49+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -828,11 +828,16 @@ msgstr "Este tipo de arquivo não é permitido."
 msgid "The file is too large. Maximum size is %(size)s MB."
 msgstr "O arquivo é muito grande. O tamanho máximo é %(size)s MB."
 
-#: apps/accounts/views/auth.py:55
+#: apps/accounts/views/auth.py:55 templates/drf_spectacular/swagger_ui.html:68
+#: templates/drf_spectacular/swagger_ui.html:77
 msgid "Authentication"
 msgstr "Autenticação"
 
-#: apps/accounts/views/auth.py:61
+#: apps/accounts/views/auth.py:60 templates/drf_spectacular/swagger_ui.html:90
+msgid "Sign in"
+msgstr "Entrar"
+
+#: apps/accounts/views/auth.py:62
 msgid ""
 "Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` "
 "header (browsers) the tokens are set as HttpOnly cookies and omitted from "
@@ -843,6 +848,10 @@ msgstr ""
 "omitidos do corpo, e um token CSRF é obrigatório."
 
 #: apps/accounts/views/auth.py:118
+msgid "Refresh tokens"
+msgstr "Renovar tokens"
+
+#: apps/accounts/views/auth.py:120
 msgid ""
 "Rotate the refresh token. Send `refresh` in the body (Bearer clients) or "
 "rely on the refresh cookie (browsers). A refresh read from the cookie is "
@@ -854,19 +863,23 @@ msgstr ""
 "respondida com novos cookies e nunca com tokens no corpo; requer um token "
 "CSRF."
 
-#: apps/accounts/views/auth.py:159
+#: apps/accounts/views/auth.py:161
 msgid ""
 "Password reset link has been sent to your email. Please check your inbox."
 msgstr ""
 "O link de redefinição de senha foi enviado para o seu e-mail. Verifique sua "
 "caixa de entrada."
 
-#: apps/accounts/views/auth.py:164
+#: apps/accounts/views/auth.py:166
+msgid "Request password reset"
+msgstr "Solicitar redefinição de senha"
+
+#: apps/accounts/views/auth.py:167
 msgid "Request a password reset link to be sent to the user's email."
 msgstr ""
 "Solicita o envio de um link de redefinição de senha para o e-mail do usuário."
 
-#: apps/accounts/views/auth.py:191
+#: apps/accounts/views/auth.py:194
 msgid ""
 "If an account exists for this email, a password reset link has been sent to "
 "it. Please check your inbox."
@@ -874,7 +887,7 @@ msgstr ""
 "Se existir uma conta para este e-mail, um link de redefinição de senha foi "
 "enviado para ela. Verifique sua caixa de entrada."
 
-#: apps/accounts/views/auth.py:206 apps/accounts/views/auth.py:239
+#: apps/accounts/views/auth.py:209 apps/accounts/views/auth.py:243
 msgid ""
 "Your password has been successfully reset. You can now log in with your new "
 "password."
@@ -882,36 +895,45 @@ msgstr ""
 "Sua senha foi redefinida com sucesso. Agora você pode entrar com sua nova "
 "senha."
 
-#: apps/accounts/views/auth.py:212
+#: apps/accounts/views/auth.py:214
+msgid "Confirm password reset"
+msgstr "Confirmar redefinição de senha"
+
+#: apps/accounts/views/auth.py:216
 msgid "Confirm the password reset using the provided token and new password."
 msgstr ""
 "Confirma a redefinição de senha usando o token fornecido e a nova senha."
 
-#: apps/accounts/views/auth.py:258
+#: apps/accounts/views/auth.py:262
 msgid "Logout successful."
 msgstr "Sessão encerrada com sucesso."
 
-#: apps/accounts/views/auth.py:269
+#: apps/accounts/views/auth.py:273
 msgid "Missing refresh token"
 msgstr "Token de refresh ausente"
 
-#: apps/accounts/views/auth.py:270 apps/accounts/views/auth.py:308
+#: apps/accounts/views/auth.py:274 apps/accounts/views/auth.py:313
 msgid "Refresh token is required."
 msgstr "O token de refresh é obrigatório."
 
-#: apps/accounts/views/auth.py:274
+#: apps/accounts/views/auth.py:278
 msgid "Invalid or expired token"
 msgstr "Token inválido ou expirado"
 
-#: apps/accounts/views/auth.py:275 apps/accounts/views/auth.py:306
+#: apps/accounts/views/auth.py:279 apps/accounts/views/auth.py:311
 msgid "Token is invalid or expired."
 msgstr "O token é inválido ou expirou."
 
-#: apps/accounts/views/auth.py:279
+#: apps/accounts/views/auth.py:283
 msgid "Invalid request."
 msgstr "Requisição inválida."
 
-#: apps/accounts/views/auth.py:283
+#: apps/accounts/views/auth.py:286
+#: templates/drf_spectacular/swagger_ui.html:103
+msgid "Sign out"
+msgstr "Sair"
+
+#: apps/accounts/views/auth.py:288
 msgid ""
 "Blacklist the refresh token and clear the organization session. Browsers "
 "(refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`; the auth "
@@ -922,61 +944,85 @@ msgstr ""
 "`refresh`; os cookies de autenticação são sempre limpos e um token CSRF é "
 "obrigatório."
 
-#: apps/accounts/views/auth.py:323
+#: apps/accounts/views/auth.py:328
 msgid "Email verified."
 msgstr "E-mail verificado."
 
-#: apps/accounts/views/auth.py:326
+#: apps/accounts/views/auth.py:330
+msgid "Confirm email verification"
+msgstr "Confirmar verificação de e-mail"
+
+#: apps/accounts/views/auth.py:332
 msgid ""
 "Confirm the email address with the `uid` and `token` from the verification "
 "link."
 msgstr ""
 "Confirma o endereço de e-mail com o `uid` e o `token` do link de verificação."
 
-#: apps/accounts/views/auth.py:345
+#: apps/accounts/views/auth.py:351
 msgid "Your email has been verified."
 msgstr "Seu e-mail foi verificado."
 
-#: apps/accounts/views/auth.py:354
+#: apps/accounts/views/auth.py:360
 msgid "Verification email sent."
 msgstr "E-mail de verificação enviado."
 
-#: apps/accounts/views/auth.py:357
+#: apps/accounts/views/auth.py:363
 msgid "A link was sent recently; retry after the cooldown."
 msgstr ""
 "Um link foi enviado recentemente; tente novamente após o intervalo de "
 "reenvio."
 
-#: apps/accounts/views/auth.py:360
+#: apps/accounts/views/auth.py:366 apps/platform/views.py:314
+msgid "Resend verification email"
+msgstr "Reenviar e-mail de verificação"
+
+#: apps/accounts/views/auth.py:367
 msgid "Send a new verification link to the authenticated user email."
 msgstr ""
 "Envia um novo link de verificação para o e-mail do usuário autenticado."
 
-#: apps/accounts/views/auth.py:367
+#: apps/accounts/views/auth.py:374
 msgid "Your email is already verified."
 msgstr "Seu e-mail já está verificado."
 
-#: apps/accounts/views/auth.py:371
+#: apps/accounts/views/auth.py:378
 msgid "Please wait before requesting a new link."
 msgstr "Aguarde antes de solicitar um novo link."
 
-#: apps/accounts/views/auth.py:379
+#: apps/accounts/views/auth.py:386
 msgid "A new verification link has been sent to your email."
 msgstr "Um novo link de verificação foi enviado para o seu e-mail."
 
-#: apps/accounts/views/files.py:41
-msgid "Download a file."
-msgstr "Baixa um arquivo."
+#: apps/accounts/views/auth.py:393
+msgid "Verify token"
+msgstr "Verificar token"
 
-#: apps/accounts/views/files.py:45
+#: apps/accounts/views/auth.py:395
+msgid ""
+"Check whether a token is valid: `200` when it is, `401` otherwise. It says "
+"nothing about what the token grants."
+msgstr ""
+"Verifica se um token é válido: `200` quando é, `401` caso contrário. Não "
+"informa o que o token permite."
+
+#: apps/accounts/views/files.py:41
+msgid "Download file"
+msgstr "Baixar arquivo"
+
+#: apps/accounts/views/files.py:42
+msgid "Return the content of the stored file."
+msgstr "Retorna o conteúdo do arquivo armazenado."
+
+#: apps/accounts/views/files.py:46
 msgid "The file content."
 msgstr "O conteúdo do arquivo."
 
-#: apps/accounts/views/files.py:48
+#: apps/accounts/views/files.py:49
 msgid "File not found."
 msgstr "Arquivo não encontrado."
 
-#: apps/accounts/views/files.py:56
+#: apps/accounts/views/files.py:57
 msgid ""
 "Download as an attachment. Only raster images are ever served inline; every "
 "other type is always an attachment."
@@ -984,54 +1030,83 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:140
+#: apps/accounts/views/files.py:141
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:144
+#: apps/accounts/views/files.py:145
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
 #: apps/accounts/views/invitations.py:55
-msgid "Send an invitation email."
-msgstr "Envia um e-mail de convite."
+msgid "Send invitation email"
+msgstr "Enviar e-mail do convite"
 
-#: apps/accounts/views/invitations.py:73
+#: apps/accounts/views/invitations.py:57
+msgid ""
+"Email the invitation to its recipient again. A cooldown applies between "
+"sends."
+msgstr ""
+"Envia o convite por e-mail ao destinatário novamente. Há um intervalo mínimo "
+"entre envios."
+
+#: apps/accounts/views/invitations.py:77
 msgid "The invitation email has been sent successfully."
 msgstr "O e-mail de convite foi enviado com sucesso."
 
-#: apps/accounts/views/invitations.py:101 apps/accounts/views/members.py:87
+#: apps/accounts/views/invitations.py:105 apps/accounts/views/members.py:90
 msgid "The invitation is expired or the user is already a member."
 msgstr "O convite expirou ou o usuário já é membro."
 
-#: apps/accounts/views/invitations.py:128
+#: apps/accounts/views/invitations.py:132
 msgid "The invitation email cooldown is active."
 msgstr "O intervalo de reenvio do e-mail de convite está ativo."
 
-#: apps/accounts/views/invitations.py:134
-msgid "List received invitations for the authenticated user."
-msgstr "Lista os convites recebidos pelo usuário autenticado."
+#: apps/accounts/views/invitations.py:138
+msgid "List received invitations"
+msgstr "Listar convites recebidos"
 
-#: apps/accounts/views/invitations.py:141
-msgid "Retrieve a received invitation detail."
-msgstr "Obtém os detalhes de um convite recebido."
+#: apps/accounts/views/invitations.py:140
+msgid ""
+"Paginated list of the invitations addressed to the authenticated user, from "
+"any organization."
+msgstr ""
+"Lista paginada dos convites destinados ao usuário autenticado, de qualquer "
+"organização."
 
 #: apps/accounts/views/invitations.py:149
-#: apps/accounts/views/invitations.py:183
-#: apps/accounts/views/invitations.py:265
-#: apps/accounts/views/invitations.py:340
+msgid "Get received invitation"
+msgstr "Obter convite recebido"
+
+#: apps/accounts/views/invitations.py:150
+msgid "Return an invitation addressed to the authenticated user."
+msgstr "Retorna um convite destinado ao usuário autenticado."
+
+#: apps/accounts/views/invitations.py:158
+#: apps/accounts/views/invitations.py:195
+#: apps/accounts/views/invitations.py:278
+#: apps/accounts/views/invitations.py:356
 msgid "Invitation not found."
 msgstr "Convite não encontrado."
 
-#: apps/accounts/views/invitations.py:159 apps/accounts/views/members.py:51
+#: apps/accounts/views/invitations.py:168 apps/accounts/views/members.py:52
 msgid "The secret key of the invitation."
 msgstr "A chave secreta do convite."
 
-#: apps/accounts/views/invitations.py:164
-msgid "Retrieve an invitation by its secret key."
-msgstr "Obtém um convite pela sua chave secreta."
+#: apps/accounts/views/invitations.py:173
+msgid "Get invitation by key"
+msgstr "Obter convite pela chave"
 
-#: apps/accounts/views/invitations.py:191
+#: apps/accounts/views/invitations.py:175
+msgid ""
+"Return the invitation identified by the secret key of its invitation link."
+msgstr "Retorna o convite identificado pela chave secreta do link de convite."
+
+#: apps/accounts/views/invitations.py:202
+msgid "Accept invitation"
+msgstr "Aceitar convite"
+
+#: apps/accounts/views/invitations.py:204
 msgid ""
 "Accept an invitation and create a member record, or reactivate the removed "
 "member of the user (readmission)."
@@ -1039,47 +1114,79 @@ msgstr ""
 "Aceita um convite e cria um registro de membro, ou reativa o membro removido "
 "do usuário (readmissão)."
 
-#: apps/accounts/views/invitations.py:247
+#: apps/accounts/views/invitations.py:260
 msgid "The invitation is no longer acceptable."
 msgstr "O convite não pode mais ser aceito."
 
-#: apps/accounts/views/invitations.py:272
-msgid "Decline an invitation."
-msgstr "Recusa um convite."
+#: apps/accounts/views/invitations.py:285
+msgid "Decline invitation"
+msgstr "Recusar convite"
 
-#: apps/accounts/views/invitations.py:286
+#: apps/accounts/views/invitations.py:287
+msgid "Decline a pending invitation addressed to the authenticated user."
+msgstr "Recusa um convite pendente destinado ao usuário autenticado."
+
+#: apps/accounts/views/invitations.py:302
 msgid "The invitation has been declined successfully."
 msgstr "O convite foi recusado com sucesso."
 
-#: apps/accounts/views/invitations.py:322
+#: apps/accounts/views/invitations.py:338
 msgid "The invitation is not in a pending state."
 msgstr "O convite não está pendente."
 
-#: apps/accounts/views/invitations.py:603
+#: apps/accounts/views/invitations.py:387
+msgid "Received invitations filter options"
+msgstr "Opções de filtro dos convites recebidos"
+
+#: apps/accounts/views/invitations.py:389
+msgid ""
+"Return the choices of each filter of the received invitations list. Send a "
+"field name as query parameter to get only that field."
+msgstr ""
+"Retorna as opções de cada filtro da lista de convites recebidos. Envie o "
+"nome de um campo como parâmetro de consulta para obter apenas esse campo."
+
+#: apps/accounts/views/invitations.py:628
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
 #: apps/accounts/views/members.py:57
-#, python-brace-format
-msgid "Create a new {name} with an invitation."
-msgstr "Cria um novo {name} com um convite."
+msgid "Join with invitation"
+msgstr "Entrar com convite"
 
-#: apps/accounts/views/members.py:106
+#: apps/accounts/views/members.py:59
+msgid ""
+"Create the member of the authenticated user from the invitation identified "
+"by its secret key."
+msgstr ""
+"Cria o membro do usuário autenticado a partir do convite identificado pela "
+"chave secreta."
+
+#: apps/accounts/views/members.py:109
 msgid "Invitation not found or already accepted/expired."
 msgstr "Convite não encontrado, já aceito ou expirado."
 
-#: apps/accounts/views/members.py:120
-#, python-brace-format
-msgid "Update the role of a {name}."
-msgstr "Atualiza a função de um {name}."
+#: apps/accounts/views/members.py:122
+msgid "Update member role"
+msgstr "Atualizar função do membro"
 
-#: apps/accounts/views/members.py:130 apps/generics/utils/schema.py:50
-#: apps/teams/views/team_members.py:29
-#, python-brace-format
-msgid "Update a {name}."
-msgstr "Atualiza uma instância de {name}."
+#: apps/accounts/views/members.py:123
+msgid "Change the role of the member."
+msgstr "Altera a função do membro."
 
-#: apps/accounts/views/members.py:191
+#: apps/accounts/views/members.py:156
+msgid "Role form options"
+msgstr "Opções do formulário de função"
+
+#: apps/accounts/views/members.py:158
+msgid ""
+"Return the choices of the member role form. Send a field name as query "
+"parameter to get only that field."
+msgstr ""
+"Retorna as opções do formulário de função do membro. Envie o nome de um "
+"campo como parâmetro de consulta para obter apenas esse campo."
+
+#: apps/accounts/views/members.py:201
 msgid ""
 "This route is not available anymore. Use the `create_with_invite` route "
 "instead."
@@ -1090,26 +1197,34 @@ msgid "Whether to show the dark logo or not."
 msgstr "Se deve exibir o logo escuro ou não."
 
 #: apps/accounts/views/organizations.py:48
-msgid "Login to the organization."
-msgstr "Realiza login na organização."
+msgid "Enter organization"
+msgstr "Entrar na organização"
 
-#: apps/accounts/views/organizations.py:61
+#: apps/accounts/views/organizations.py:50
+msgid ""
+"Set the organization of the current session: organization-scoped routes act "
+"on it. Suspended organizations are refused."
+msgstr ""
+"Define a organização da sessão atual: as rotas da organização passam a atuar "
+"nela. Organizações suspensas são recusadas."
+
+#: apps/accounts/views/organizations.py:65
 msgid "Organization not found"
 msgstr "Organização não encontrada"
 
-#: apps/accounts/views/organizations.py:62
 #: apps/accounts/views/organizations.py:66
-#: apps/accounts/views/organizations.py:156
+#: apps/accounts/views/organizations.py:70
+#: apps/accounts/views/organizations.py:160
 msgid "Organization not found."
 msgstr "Organização não encontrada."
 
-#: apps/accounts/views/organizations.py:77
+#: apps/accounts/views/organizations.py:81
 msgid "User not authenticated"
 msgstr "Usuário não autenticado"
 
-#: apps/accounts/views/organizations.py:78
 #: apps/accounts/views/organizations.py:82
-#: apps/accounts/views/organizations.py:151
+#: apps/accounts/views/organizations.py:86
+#: apps/accounts/views/organizations.py:155
 msgid "User not authenticated."
 msgstr "Usuário não autenticado."
 
@@ -1118,14 +1233,26 @@ msgid "Sessions"
 msgstr "Sessões"
 
 #: apps/accounts/views/session.py:15
-msgid "Get current session data."
-msgstr "Obtém os dados da sessão atual."
+msgid "Get session"
+msgstr "Obter sessão"
+
+#: apps/accounts/views/session.py:17
+msgid ""
+"Return the authenticated user, their active organizations and the "
+"organization and member of the current session."
+msgstr ""
+"Retorna o usuário autenticado, suas organizações ativas e a organização e o "
+"membro da sessão atual."
 
 #: apps/accounts/views/session_config.py:13
 msgid "Session"
 msgstr "Sessão"
 
-#: apps/accounts/views/session_config.py:15
+#: apps/accounts/views/session_config.py:14
+msgid "Get session configuration"
+msgstr "Obter configuração da sessão"
+
+#: apps/accounts/views/session_config.py:16
 msgid ""
 "Return whether the organization session is configured and set the CSRF "
 "cookie. This endpoint is intentionally public so the frontend can verify "
@@ -1137,23 +1264,43 @@ msgstr ""
 "a conectividade antes da autenticação. Diagnósticos de cookie, CORS e debug "
 "só são incluídos quando DEBUG está habilitado."
 
-#: apps/accounts/views/signup.py:19
+#: apps/accounts/views/signup.py:20
 msgid "Signup"
 msgstr "Cadastro"
 
-#: apps/accounts/views/signup.py:19
-msgid "Create a new account."
-msgstr "Cria uma nova conta."
+#: apps/accounts/views/signup.py:21
+msgid "Sign up"
+msgstr "Cadastrar-se"
+
+#: apps/accounts/views/signup.py:22
+msgid "Create a user account."
+msgstr "Cria uma conta de usuário."
 
 #: apps/accounts/views/user_profile.py:46
-msgid "Retrieve the authenticated user profile."
-msgstr "Obtém o perfil do usuário autenticado."
+msgid "Get my profile"
+msgstr "Obter meu perfil"
 
-#: apps/accounts/views/user_profile.py:50
-msgid "Partially update the authenticated user profile."
-msgstr "Atualiza parcialmente o perfil do usuário autenticado."
+#: apps/accounts/views/user_profile.py:47
+msgid "Return the profile of the authenticated user."
+msgstr "Retorna o perfil do usuário autenticado."
 
-#: apps/accounts/views/user_profile.py:99
+#: apps/accounts/views/user_profile.py:51
+msgid "Update my profile"
+msgstr "Atualizar meu perfil"
+
+#: apps/accounts/views/user_profile.py:53
+msgid ""
+"Update only the fields sent in the request body of the authenticated user "
+"profile."
+msgstr ""
+"Atualiza apenas os campos enviados no corpo da requisição no perfil do "
+"usuário autenticado."
+
+#: apps/accounts/views/user_profile.py:103
+msgid "List my account activity"
+msgstr "Listar atividade da minha conta"
+
+#: apps/accounts/views/user_profile.py:105
 msgid ""
 "List the account activity of the authenticated user: sign-ins, password "
 "changes, resets, email verification and profile updates."
@@ -1161,12 +1308,16 @@ msgstr ""
 "Lista a atividade da conta do usuário autenticado: entradas, alterações de "
 "senha, redefinições, verificação de e-mail e atualizações do perfil."
 
-#: apps/accounts/views/user_profile.py:121
-msgid "Change the authenticated user password."
+#: apps/accounts/views/user_profile.py:127
+msgid "Change password"
+msgstr "Alterar senha"
+
+#: apps/accounts/views/user_profile.py:128
+msgid "Change the password of the authenticated user."
 msgstr "Altera a senha do usuário autenticado."
 
-#: apps/accounts/views/user_profile.py:126
-#: apps/accounts/views/user_profile.py:154
+#: apps/accounts/views/user_profile.py:133
+#: apps/accounts/views/user_profile.py:161
 msgid "Password changed successfully."
 msgstr "Senha alterada com sucesso."
 
@@ -1370,11 +1521,11 @@ msgstr "E-mail de verificação reenviado"
 msgid "Password reset forced"
 msgstr "Redefinição de senha forçada"
 
-#: apps/audit/choices.py:107 apps/platform/apps.py:8 apps/platform/views.py:56
+#: apps/audit/choices.py:107 apps/platform/apps.py:8 apps/platform/views.py:57
 msgid "Platform"
 msgstr "Plataforma"
 
-#: apps/audit/choices.py:108
+#: apps/audit/choices.py:108 templates/drf_spectacular/swagger_ui.html:133
 msgid "System"
 msgstr "Sistema"
 
@@ -1522,7 +1673,11 @@ msgstr "Eventos de auditoria"
 msgid "Dashboard"
 msgstr "Painel"
 
-#: apps/dashboard/views/overview.py:17
+#: apps/dashboard/views/overview.py:16
+msgid "Get organization overview"
+msgstr "Obter visão geral da organização"
+
+#: apps/dashboard/views/overview.py:18
 msgid ""
 "Organization overview for the current member. Sections the member cannot "
 "access are null."
@@ -1601,7 +1756,7 @@ msgstr "Opções de formulário para criar {name}."
 msgid "Form options to update a {name}."
 msgstr "Opções de formulário para atualizar {name}."
 
-#: apps/generics/mixins/views.py:78 apps/generics/utils/schema.py:83
+#: apps/generics/mixins/views.py:78
 #, python-brace-format
 msgid "Filter options for listing {name}."
 msgstr "Opções de filtro para listar {name}."
@@ -1646,42 +1801,120 @@ msgstr "Usuário que atualizou o registro pela última vez"
 msgid "The start date must be before the end date."
 msgstr "A data inicial deve ser anterior à data final."
 
-#: apps/generics/utils/schema.py:18
+#: apps/generics/utils/schema.py:39
 #, python-brace-format
-msgid "Retrieve a specific {name}."
-msgstr "Obtém uma instância específica de {name}."
+msgid "Get {name}"
+msgstr "Obter {name}"
 
-#: apps/generics/utils/schema.py:26
+#: apps/generics/utils/schema.py:40
 #, python-brace-format
-msgid "List all {name}."
-msgstr "Lista todas as instâncias de {name}."
+msgid "Return the {name} with the given identifier."
+msgstr "Retorna o registro de {name} com o identificador informado."
 
-#: apps/generics/utils/schema.py:34
+#: apps/generics/utils/schema.py:49
 #, python-brace-format
-msgid "Create a new {name}."
-msgstr "Cria uma nova instância de {name}."
+msgid "List {name}"
+msgstr "Listar {name}"
 
-#: apps/generics/utils/schema.py:42
+#: apps/generics/utils/schema.py:51
 #, python-brace-format
-msgid "Delete a {name}."
-msgstr "Exclui uma instância de {name}."
+msgid ""
+"Paginated list of the {name} the authenticated user can access. The query "
+"parameters filter and order the results."
+msgstr ""
+"Lista paginada de {name} que o usuário autenticado pode acessar. Os "
+"parâmetros de consulta filtram e ordenam os resultados."
 
-#: apps/generics/utils/schema.py:58
+#: apps/generics/utils/schema.py:62
 #, python-brace-format
-msgid "Partially update a {name}."
-msgstr "Atualiza parcialmente uma instância de {name}."
+msgid "Create {name}"
+msgstr "Criar {name}"
 
-#: apps/generics/utils/schema.py:66
+#: apps/generics/utils/schema.py:63
 #, python-brace-format
-msgid "Create options for a {name}."
-msgstr "Cria opções para {name}."
+msgid "Create the {name} sent in the request body and return it."
+msgstr "Cria o registro de {name} enviado no corpo da requisição e o retorna."
+
+#: apps/generics/utils/schema.py:72
+#, python-brace-format
+msgid "Delete {name}"
+msgstr "Excluir {name}"
 
 #: apps/generics/utils/schema.py:74
 #, python-brace-format
-msgid "Update options for a {name}."
-msgstr "Atualiza opções para {name}."
+msgid ""
+"Delete the {name}. Records that can be deactivated are deactivated instead "
+"of erased."
+msgstr ""
+"Exclui o registro de {name}. Registros que podem ser desativados são "
+"desativados em vez de apagados."
 
-#: apps/generics/utils/schema.py:96
+#: apps/generics/utils/schema.py:85
+#, python-brace-format
+msgid "Update {name}"
+msgstr "Atualizar {name}"
+
+#: apps/generics/utils/schema.py:87
+#, python-brace-format
+msgid ""
+"Replace the editable fields of the {name} with the request body and return "
+"it."
+msgstr ""
+"Substitui os campos editáveis do registro de {name} pelo corpo da requisição "
+"e o retorna."
+
+#: apps/generics/utils/schema.py:98
+#, python-brace-format
+msgid "Partially update {name}"
+msgstr "Atualizar parcialmente {name}"
+
+#: apps/generics/utils/schema.py:99
+#, python-brace-format
+msgid "Update only the fields sent in the request body and return the {name}."
+msgstr ""
+"Atualiza apenas os campos enviados no corpo da requisição e retorna o "
+"registro de {name}."
+
+#: apps/generics/utils/schema.py:108
+msgid "Creation form options"
+msgstr "Opções do formulário de criação"
+
+#: apps/generics/utils/schema.py:110
+#, python-brace-format
+msgid ""
+"Return the choices of each field of the {name} creation form. Send a field "
+"name as query parameter to get only that field."
+msgstr ""
+"Retorna as opções de cada campo do formulário de criação de {name}. Envie o "
+"nome de um campo como parâmetro de consulta para obter apenas esse campo."
+
+#: apps/generics/utils/schema.py:121
+msgid "Edit form options"
+msgstr "Opções do formulário de edição"
+
+#: apps/generics/utils/schema.py:123
+#, python-brace-format
+msgid ""
+"Return the choices of each field of the {name} edit form. Send a field name "
+"as query parameter to get only that field."
+msgstr ""
+"Retorna as opções de cada campo do formulário de edição de {name}. Envie o "
+"nome de um campo como parâmetro de consulta para obter apenas esse campo."
+
+#: apps/generics/utils/schema.py:134
+msgid "Filter options"
+msgstr "Opções de filtro"
+
+#: apps/generics/utils/schema.py:136
+#, python-brace-format
+msgid ""
+"Return the choices of each filter of the {name} list. Send a field name as "
+"query parameter to get only that field."
+msgstr ""
+"Retorna as opções de cada filtro da lista de {name}. Envie o nome de um "
+"campo como parâmetro de consulta para obter apenas esse campo."
+
+#: apps/generics/utils/schema.py:150
 #, python-brace-format
 msgid ""
 "Return only `{field}`. Search is disabled on this route: the value is "
@@ -1690,7 +1923,7 @@ msgstr ""
 "Retorna apenas `{field}`. A busca está desativada nesta rota: o valor é "
 "ignorado."
 
-#: apps/generics/utils/schema.py:104
+#: apps/generics/utils/schema.py:158
 #, python-brace-format
 msgid ""
 "Return only `{field}`. A non-empty value is a regular expression matched "
@@ -1700,7 +1933,7 @@ msgstr ""
 "comparada com o rótulo ou o valor de cada opção, sem diferenciar maiúsculas "
 "e acentos."
 
-#: apps/generics/utils/schema.py:113
+#: apps/generics/utils/schema.py:167
 #, python-brace-format
 msgid ""
 "Return only `{field}` (paginated). A non-empty value filters its options by "
@@ -1709,7 +1942,7 @@ msgstr ""
 "Retorna apenas `{field}` (paginado). Um valor não vazio filtra as opções "
 "pelo rótulo (`{lookup}`)."
 
-#: apps/generics/utils/schema.py:121
+#: apps/generics/utils/schema.py:175
 #, python-brace-format
 msgid ""
 "Return only `{field}` (paginated). Search is not enabled for this field: the "
@@ -1718,7 +1951,7 @@ msgstr ""
 "Retorna apenas `{field}` (paginado). A busca não está habilitada para este "
 "campo: o valor é ignorado."
 
-#: apps/generics/utils/schema.py:133
+#: apps/generics/utils/schema.py:187
 msgid ""
 "Applies to every paginated field in the response; combine with `?<field>` to "
 "paginate a single one."
@@ -1726,7 +1959,7 @@ msgstr ""
 "Aplica-se a todos os campos paginados da resposta; combine com `?<field>` "
 "para paginar apenas um."
 
-#: apps/generics/utils/schema.py:141
+#: apps/generics/utils/schema.py:195
 #, python-brace-format
 msgid "Maximum: {max}."
 msgstr "Máximo: {max}."
@@ -1805,10 +2038,189 @@ msgstr "O e-mail deste usuário já está verificado."
 msgid "Wait {seconds} seconds before sending again."
 msgstr "Aguarde {seconds} segundos para enviar novamente."
 
-#: apps/platform/views.py:67
+#: apps/platform/views.py:68
+msgid "Get platform overview"
+msgstr "Obter visão geral da plataforma"
+
+#: apps/platform/views.py:69
 msgid "Platform numbers, computed when requested (platform staff)."
 msgstr ""
 "Números da plataforma, calculados na requisição (equipe da plataforma)."
+
+#: apps/platform/views.py:156
+msgid "Platform admins only; a reason is recorded."
+msgstr "Apenas administradores da plataforma; um motivo é registrado."
+
+#: apps/platform/views.py:165
+msgid "List organizations"
+msgstr "Listar organizações"
+
+#: apps/platform/views.py:166
+msgid "Paginated list of every organization, for platform staff."
+msgstr "Lista paginada de todas as organizações, para a equipe da plataforma."
+
+#: apps/platform/views.py:169
+msgid "Get organization"
+msgstr "Obter organização"
+
+#: apps/platform/views.py:170
+msgid "Return any organization with its owner and status, for platform staff."
+msgstr ""
+"Retorna qualquer organização com seu proprietário e status, para a equipe da "
+"plataforma."
+
+#: apps/platform/views.py:173
+msgid "List organization members"
+msgstr "Listar membros da organização"
+
+#: apps/platform/views.py:174
+msgid "Paginated list of the members of the organization, for platform staff."
+msgstr ""
+"Lista paginada dos membros da organização, para a equipe da plataforma."
+
+#: apps/platform/views.py:179
+msgid "List organization teams"
+msgstr "Listar equipes da organização"
+
+#: apps/platform/views.py:180
+msgid "Paginated list of the teams of the organization, for platform staff."
+msgstr ""
+"Lista paginada das equipes da organização, para a equipe da plataforma."
+
+#: apps/platform/views.py:184
+msgid "List organization invitations"
+msgstr "Listar convites da organização"
+
+#: apps/platform/views.py:185
+msgid ""
+"Paginated list of the invitations of the organization, for platform staff."
+msgstr ""
+"Lista paginada dos convites da organização, para a equipe da plataforma."
+
+#: apps/platform/views.py:191
+msgid "Suspend organization"
+msgstr "Suspender organização"
+
+#: apps/platform/views.py:193
+msgid ""
+"Suspend the organization: its members can no longer use it until it is "
+"reactivated. The owner is emailed. The reason is required."
+msgstr ""
+"Suspende a organização: seus membros não podem mais usá-la até que seja "
+"reativada. O proprietário é avisado por e-mail. O motivo é obrigatório."
+
+#: apps/platform/views.py:200
+msgid "Reactivate organization"
+msgstr "Reativar organização"
+
+#: apps/platform/views.py:201
+msgid "Lift the suspension of the organization. The owner is emailed."
+msgstr ""
+"Retira a suspensão da organização. O proprietário é avisado por e-mail."
+
+#: apps/platform/views.py:206
+msgid "Transfer ownership"
+msgstr "Transferir propriedade"
+
+#: apps/platform/views.py:208
+msgid ""
+"Make another member the owner of the organization; the previous owner "
+"becomes an admin. Both are emailed."
+msgstr ""
+"Torna outro membro o proprietário da organização; o proprietário anterior "
+"passa a ser administrador. Ambos são avisados por e-mail."
+
+#: apps/platform/views.py:280
+msgid "List users"
+msgstr "Listar usuários"
+
+#: apps/platform/views.py:281
+msgid "Paginated list of every user account, for platform staff."
+msgstr ""
+"Lista paginada de todas as contas de usuário, para a equipe da plataforma."
+
+#: apps/platform/views.py:284
+msgid "Get user"
+msgstr "Obter usuário"
+
+#: apps/platform/views.py:285
+msgid "Return any user account with its status, for platform staff."
+msgstr ""
+"Retorna qualquer conta de usuário com seu status, para a equipe da "
+"plataforma."
+
+#: apps/platform/views.py:290
+msgid "Block user"
+msgstr "Bloquear usuário"
+
+#: apps/platform/views.py:292
+msgid ""
+"Block the account: its sessions end and sign-in is refused until it is "
+"unblocked. The reason is required."
+msgstr ""
+"Bloqueia a conta: suas sessões são encerradas e o acesso é recusado até que "
+"seja desbloqueada. O motivo é obrigatório."
+
+#: apps/platform/views.py:299
+msgid "Unblock user"
+msgstr "Desbloquear usuário"
+
+#: apps/platform/views.py:301
+msgid ""
+"Allow the account to sign in again; the sessions ended by the block stay "
+"ended."
+msgstr ""
+"Permite que a conta entre novamente; as sessões encerradas pelo bloqueio "
+"continuam encerradas."
+
+#: apps/platform/views.py:308
+msgid "End user sessions"
+msgstr "Encerrar sessões do usuário"
+
+#: apps/platform/views.py:309
+msgid "End every session of the account; it must sign in again."
+msgstr "Encerra todas as sessões da conta; ela precisa entrar novamente."
+
+#: apps/platform/views.py:315
+msgid "Send a new email verification link to the account. A cooldown applies."
+msgstr ""
+"Envia um novo link de verificação de e-mail para a conta. Há um intervalo "
+"mínimo entre envios."
+
+#: apps/platform/views.py:320
+msgid "Force password reset"
+msgstr "Forçar redefinição de senha"
+
+#: apps/platform/views.py:322
+msgid ""
+"The current password stops working, every session ends and a password reset "
+"link is emailed."
+msgstr ""
+"A senha atual deixa de funcionar, todas as sessões são encerradas e um link "
+"de redefinição de senha é enviado por e-mail."
+
+#: apps/platform/views.py:369
+msgid "List audit events"
+msgstr "Listar eventos de auditoria"
+
+#: apps/platform/views.py:371
+msgid ""
+"Paginated audit events of every organization and account, for platform staff."
+msgstr ""
+"Eventos de auditoria paginados de todas as organizações e contas, para a "
+"equipe da plataforma."
+
+#: apps/platform/views.py:376
+msgid "Get audit event"
+msgstr "Obter evento de auditoria"
+
+#: apps/platform/views.py:377
+msgid "Return any audit event, for platform staff."
+msgstr "Retorna qualquer evento de auditoria, para a equipe da plataforma."
+
+#: apps/platform/views.py:380
+msgid "Audit events filter options"
+msgstr "Opções de filtro dos eventos de auditoria"
 
 #: apps/teams/apps.py:10 apps/teams/models/team.py:34
 msgid "Teams"
@@ -1892,7 +2304,7 @@ msgstr "Você não tem permissão para adicionar um membro a esta equipe."
 msgid "Not allowed to change the member."
 msgstr "Não é permitido alterar o membro."
 
-#: apps/teams/views/team_members.py:60
+#: apps/teams/views/team_members.py:58
 msgid ""
 "Team the form is for: `role` lists only the roles the caller may assign in "
 "it and `member` hides members already in it. Without a valid team only "
@@ -1927,7 +2339,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:412
+#: config/settings/base.py:414
 msgid "CrewForge"
 msgstr "CrewForge"
 
@@ -1938,6 +2350,64 @@ msgstr "Swagger"
 #: templates/drf_spectacular/swagger_ui.html:5
 msgid "API documentation"
 msgstr "Documentação da API"
+
+#: templates/drf_spectacular/swagger_ui.html:54
+msgid "Authenticated"
+msgstr "Autenticado"
+
+#: templates/drf_spectacular/swagger_ui.html:55
+#: templates/drf_spectacular/swagger_ui.html:72
+msgid "Not authenticated"
+msgstr "Não autenticado"
+
+#: templates/drf_spectacular/swagger_ui.html:56
+msgid "Sign-in failed. Check your username and password."
+msgstr "Falha ao entrar. Verifique seu usuário e sua senha."
+
+#: templates/drf_spectacular/swagger_ui.html:58
+#: templates/drf_spectacular/swagger_ui.html:60
+msgid "API server"
+msgstr "Servidor da API"
+
+#: templates/drf_spectacular/swagger_ui.html:80
+msgid "Username"
+msgstr "Usuário"
+
+#: templates/drf_spectacular/swagger_ui.html:84
+msgid "Password"
+msgstr "Senha"
+
+#: templates/drf_spectacular/swagger_ui.html:93
+msgid "or paste a token"
+msgstr "ou cole um token"
+
+#: templates/drf_spectacular/swagger_ui.html:96
+msgid "Bearer token"
+msgstr "Token Bearer"
+
+#: templates/drf_spectacular/swagger_ui.html:99
+msgid "Apply token"
+msgstr "Aplicar token"
+
+#: templates/drf_spectacular/swagger_ui.html:110
+msgid "Sort tags alphabetically"
+msgstr "Ordenar tags em ordem alfabética"
+
+#: templates/drf_spectacular/swagger_ui.html:117
+msgid "Change theme"
+msgstr "Alterar tema"
+
+#: templates/drf_spectacular/swagger_ui.html:123
+msgid "Light"
+msgstr "Claro"
+
+#: templates/drf_spectacular/swagger_ui.html:128
+msgid "Dark"
+msgstr "Escuro"
+
+#: templates/drf_spectacular/swagger_ui.html:142
+msgid "Change language"
+msgstr "Alterar idioma"
 
 #: templates/emails/base.html:110
 msgid "All rights reserved"
@@ -1959,3 +2429,25 @@ msgstr ""
 "%(theme_color|default:'#002180')s; text-decoration:none;\">clique aqui para "
 "cancelar a inscrição</a>.\n"
 "                    "
+
+#, python-brace-format
+#~ msgid "Create a new {name} with an invitation."
+#~ msgstr "Cria um novo {name} com um convite."
+
+#~ msgid "Login to the organization."
+#~ msgstr "Realiza login na organização."
+
+#~ msgid "Get current session data."
+#~ msgstr "Obtém os dados da sessão atual."
+
+#, python-brace-format
+#~ msgid "Retrieve a specific {name}."
+#~ msgstr "Obtém uma instância específica de {name}."
+
+#, python-brace-format
+#~ msgid "Create options for a {name}."
+#~ msgstr "Cria opções para {name}."
+
+#, python-brace-format
+#~ msgid "Update options for a {name}."
+#~ msgstr "Atualiza opções para {name}."
