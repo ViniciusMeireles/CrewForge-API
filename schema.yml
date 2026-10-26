@@ -11,8 +11,9 @@ paths:
   /api/accounts/invitations/:
     get:
       operationId: accounts_invitations_list
-      description: List all Invitations.
-      summary: List all Invitations.
+      description: Paginated list of the invitations the authenticated user can access.
+        The query parameters filter and order the results.
+      summary: List invitations
       parameters:
       - in: query
         name: email
@@ -156,8 +157,8 @@ paths:
           description: ''
     post:
       operationId: accounts_invitations_create
-      description: Create a new Invitation.
-      summary: Create a new Invitation.
+      description: Create the invitation sent in the request body and return it.
+      summary: Create invitation
       tags:
       - Invitations
       requestBody:
@@ -187,6 +188,7 @@ paths:
       operationId: accounts_invitations_accept_create
       description: Accept an invitation and create a member record, or reactivate
         the removed member of the user (readmission).
+      summary: Accept invitation
       parameters:
       - in: path
         name: invitation_pk
@@ -254,7 +256,8 @@ paths:
   /api/accounts/invitations/{invitation_pk}/decline/:
     post:
       operationId: accounts_invitations_decline_create
-      description: Decline an invitation.
+      description: Decline a pending invitation addressed to the authenticated user.
+      summary: Decline invitation
       parameters:
       - in: path
         name: invitation_pk
@@ -312,8 +315,8 @@ paths:
   /api/accounts/invitations/{id}/:
     get:
       operationId: accounts_invitations_retrieve
-      description: Retrieve a specific Invitation.
-      summary: Retrieve a specific Invitation.
+      description: Return the invitation with the given identifier.
+      summary: Get invitation
       parameters:
       - in: path
         name: id
@@ -335,8 +338,9 @@ paths:
           description: ''
     put:
       operationId: accounts_invitations_update
-      description: Update a Invitation.
-      summary: Update a Invitation.
+      description: Replace the editable fields of the invitation with the request
+        body and return it.
+      summary: Update invitation
       parameters:
       - in: path
         name: id
@@ -370,8 +374,9 @@ paths:
           description: ''
     delete:
       operationId: accounts_invitations_destroy
-      description: Delete a Invitation.
-      summary: Delete a Invitation.
+      description: Delete the invitation. Records that can be deactivated are deactivated
+        instead of erased.
+      summary: Delete invitation
       parameters:
       - in: path
         name: id
@@ -390,7 +395,9 @@ paths:
   /api/accounts/invitations/{id}/send-email/:
     post:
       operationId: accounts_invitations_send_email_create
-      description: Send an invitation email.
+      description: Email the invitation to its recipient again. A cooldown applies
+        between sends.
+      summary: Send invitation email
       parameters:
       - in: path
         name: id
@@ -448,7 +455,9 @@ paths:
   /api/accounts/invitations/by-key/{invitation_key}/:
     get:
       operationId: accounts_invitations_by_key_retrieve
-      description: Retrieve an invitation by its secret key.
+      description: Return the invitation identified by the secret key of its invitation
+        link.
+      summary: Get invitation by key
       parameters:
       - in: path
         name: invitation_key
@@ -484,8 +493,9 @@ paths:
   /api/accounts/invitations/filter-options/:
     get:
       operationId: accounts_invitations_filter_options_retrieve
-      description: Filter options for listing Invitations.
-      summary: Filter options for listing Invitations.
+      description: Return the choices of each filter of the invitations list. Send
+        a field name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: order_by
@@ -523,8 +533,9 @@ paths:
   /api/accounts/invitations/form-options-create/:
     get:
       operationId: accounts_invitations_form_options_create_retrieve
-      description: Create options for a Invitation.
-      summary: Create options for a Invitation.
+      description: Return the choices of each field of the invitation creation form.
+        Send a field name as query parameter to get only that field.
+      summary: Creation form options
       parameters:
       - in: query
         name: role
@@ -548,8 +559,9 @@ paths:
   /api/accounts/invitations/form-options-update/:
     get:
       operationId: accounts_invitations_form_options_update_retrieve
-      description: Update options for a Invitation.
-      summary: Update options for a Invitation.
+      description: Return the choices of each field of the invitation edit form. Send
+        a field name as query parameter to get only that field.
+      summary: Edit form options
       parameters:
       - in: query
         name: role
@@ -573,7 +585,9 @@ paths:
   /api/accounts/invitations/received/:
     get:
       operationId: accounts_invitations_received_list
-      description: List received invitations for the authenticated user.
+      description: Paginated list of the invitations addressed to the authenticated
+        user, from any organization.
+      summary: List received invitations
       parameters:
       - in: query
         name: email
@@ -727,7 +741,8 @@ paths:
   /api/accounts/invitations/received/{invitation_pk}/:
     get:
       operationId: accounts_invitations_received_retrieve
-      description: Retrieve a received invitation detail.
+      description: Return an invitation addressed to the authenticated user.
+      summary: Get received invitation
       parameters:
       - in: path
         name: invitation_pk
@@ -756,8 +771,9 @@ paths:
   /api/accounts/invitations/received/filter-options/:
     get:
       operationId: accounts_invitations_received_filter_options_retrieve
-      description: Filter options for listing Invitations.
-      summary: Filter options for listing Invitations.
+      description: Return the choices of each filter of the received invitations list.
+        Send a field name as query parameter to get only that field.
+      summary: Received invitations filter options
       parameters:
       - in: query
         name: order_by
@@ -795,8 +811,9 @@ paths:
   /api/accounts/members/:
     get:
       operationId: accounts_members_list
-      description: List all Members.
-      summary: List all Members.
+      description: Paginated list of the members the authenticated user can access.
+        The query parameters filter and order the results.
+      summary: List members
       parameters:
       - in: query
         name: email__icontains
@@ -954,8 +971,8 @@ paths:
   /api/accounts/members/{id}/:
     get:
       operationId: accounts_members_retrieve
-      description: Retrieve a specific Member.
-      summary: Retrieve a specific Member.
+      description: Return the member with the given identifier.
+      summary: Get member
       parameters:
       - in: path
         name: id
@@ -977,7 +994,9 @@ paths:
           description: ''
     put:
       operationId: accounts_members_update
-      description: Update a Member.
+      description: Replace the editable fields of the member with the request body
+        and return it.
+      summary: Update member
       parameters:
       - in: path
         name: id
@@ -1016,8 +1035,9 @@ paths:
           description: ''
     patch:
       operationId: accounts_members_partial_update
-      description: Partially update a Member.
-      summary: Partially update a Member.
+      description: Update only the fields sent in the request body and return the
+        member.
+      summary: Partially update member
       parameters:
       - in: path
         name: id
@@ -1050,8 +1070,9 @@ paths:
           description: ''
     delete:
       operationId: accounts_members_destroy
-      description: Delete a Member.
-      summary: Delete a Member.
+      description: Delete the member. Records that can be deactivated are deactivated
+        instead of erased.
+      summary: Delete member
       parameters:
       - in: path
         name: id
@@ -1070,7 +1091,8 @@ paths:
   /api/accounts/members/{id}/update-role/:
     patch:
       operationId: accounts_members_update_role_partial_update
-      description: Update the role of a Member.
+      description: Change the role of the member.
+      summary: Update member role
       parameters:
       - in: path
         name: id
@@ -1109,7 +1131,9 @@ paths:
   /api/accounts/members/create-with-invite/{invitation_key}/:
     post:
       operationId: accounts_members_create_with_invite_create
-      description: Create a new Member with an invitation.
+      description: Create the member of the authenticated user from the invitation
+        identified by its secret key.
+      summary: Join with invitation
       parameters:
       - in: path
         name: invitation_key
@@ -1171,8 +1195,9 @@ paths:
   /api/accounts/members/filter-options/:
     get:
       operationId: accounts_members_filter_options_retrieve
-      description: Filter options for listing Members.
-      summary: Filter options for listing Members.
+      description: Return the choices of each filter of the members list. Send a field
+        name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: order_by
@@ -1236,8 +1261,9 @@ paths:
   /api/accounts/members/form-options-update-role/:
     get:
       operationId: accounts_members_form_options_update_role_retrieve
-      description: Update options for a Member.
-      summary: Update options for a Member.
+      description: Return the choices of the member role form. Send a field name as
+        query parameter to get only that field.
+      summary: Role form options
       parameters:
       - in: query
         name: role
@@ -1261,8 +1287,9 @@ paths:
   /api/accounts/organization-images/:
     get:
       operationId: accounts_organization_images_list
-      description: List all Organization Images.
-      summary: List all Organization Images.
+      description: Paginated list of the organization images the authenticated user
+        can access. The query parameters filter and order the results.
+      summary: List organization images
       parameters:
       - in: query
         name: image_type
@@ -1363,8 +1390,9 @@ paths:
           description: ''
     post:
       operationId: accounts_organization_images_create
-      description: Create a new Organization Image.
-      summary: Create a new Organization Image.
+      description: Create the organization image sent in the request body and return
+        it.
+      summary: Create organization image
       tags:
       - Organization images
       requestBody:
@@ -1389,8 +1417,8 @@ paths:
   /api/accounts/organization-images/{id}/:
     get:
       operationId: accounts_organization_images_retrieve
-      description: Retrieve a specific Organization Image.
-      summary: Retrieve a specific Organization Image.
+      description: Return the organization image with the given identifier.
+      summary: Get organization image
       parameters:
       - in: path
         name: id
@@ -1412,8 +1440,9 @@ paths:
           description: ''
     put:
       operationId: accounts_organization_images_update
-      description: Update a Organization Image.
-      summary: Update a Organization Image.
+      description: Replace the editable fields of the organization image with the
+        request body and return it.
+      summary: Update organization image
       parameters:
       - in: path
         name: id
@@ -1444,8 +1473,9 @@ paths:
           description: ''
     patch:
       operationId: accounts_organization_images_partial_update
-      description: Partially update a Organization Image.
-      summary: Partially update a Organization Image.
+      description: Update only the fields sent in the request body and return the
+        organization image.
+      summary: Partially update organization image
       parameters:
       - in: path
         name: id
@@ -1475,8 +1505,9 @@ paths:
           description: ''
     delete:
       operationId: accounts_organization_images_destroy
-      description: Delete a Organization Image.
-      summary: Delete a Organization Image.
+      description: Delete the organization image. Records that can be deactivated
+        are deactivated instead of erased.
+      summary: Delete organization image
       parameters:
       - in: path
         name: id
@@ -1495,8 +1526,9 @@ paths:
   /api/accounts/organization-images/filter-options/:
     get:
       operationId: accounts_organization_images_filter_options_retrieve
-      description: Filter options for listing Organization Images.
-      summary: Filter options for listing Organization Images.
+      description: Return the choices of each filter of the organization images list.
+        Send a field name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: image_type
@@ -1545,8 +1577,9 @@ paths:
   /api/accounts/organization-images/form-options-create/:
     get:
       operationId: accounts_organization_images_form_options_create_retrieve
-      description: Create options for a Organization Image.
-      summary: Create options for a Organization Image.
+      description: Return the choices of each field of the organization image creation
+        form. Send a field name as query parameter to get only that field.
+      summary: Creation form options
       parameters:
       - in: query
         name: image_type
@@ -1569,8 +1602,9 @@ paths:
   /api/accounts/organization-images/form-options-update/:
     get:
       operationId: accounts_organization_images_form_options_update_retrieve
-      description: Update options for a Organization Image.
-      summary: Update options for a Organization Image.
+      description: Return the choices of each field of the organization image edit
+        form. Send a field name as query parameter to get only that field.
+      summary: Edit form options
       parameters:
       - in: query
         name: image_type
@@ -1593,8 +1627,9 @@ paths:
   /api/accounts/organization-profiles/:
     get:
       operationId: accounts_organization_profiles_list
-      description: List all Organization Profiles.
-      summary: List all Organization Profiles.
+      description: Paginated list of the organization profiles the authenticated user
+        can access. The query parameters filter and order the results.
+      summary: List organization profiles
       parameters:
       - in: query
         name: description
@@ -1667,8 +1702,8 @@ paths:
   /api/accounts/organization-profiles/{id}/:
     get:
       operationId: accounts_organization_profiles_retrieve
-      description: Retrieve a specific Organization Profile.
-      summary: Retrieve a specific Organization Profile.
+      description: Return the organization profile with the given identifier.
+      summary: Get organization profile
       parameters:
       - in: path
         name: id
@@ -1690,8 +1725,9 @@ paths:
           description: ''
     put:
       operationId: accounts_organization_profiles_update
-      description: Update a Organization Profile.
-      summary: Update a Organization Profile.
+      description: Replace the editable fields of the organization profile with the
+        request body and return it.
+      summary: Update organization profile
       parameters:
       - in: path
         name: id
@@ -1724,8 +1760,9 @@ paths:
           description: ''
     patch:
       operationId: accounts_organization_profiles_partial_update
-      description: Partially update a Organization Profile.
-      summary: Partially update a Organization Profile.
+      description: Update only the fields sent in the request body and return the
+        organization profile.
+      summary: Partially update organization profile
       parameters:
       - in: path
         name: id
@@ -1758,8 +1795,9 @@ paths:
           description: ''
     delete:
       operationId: accounts_organization_profiles_destroy
-      description: Delete a Organization Profile.
-      summary: Delete a Organization Profile.
+      description: Delete the organization profile. Records that can be deactivated
+        are deactivated instead of erased.
+      summary: Delete organization profile
       parameters:
       - in: path
         name: id
@@ -1778,8 +1816,9 @@ paths:
   /api/accounts/organization-profiles/filter-options/:
     get:
       operationId: accounts_organization_profiles_filter_options_retrieve
-      description: Filter options for listing Organization Profiles.
-      summary: Filter options for listing Organization Profiles.
+      description: Return the choices of each filter of the organization profiles
+        list. Send a field name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: order_by
@@ -1803,8 +1842,9 @@ paths:
   /api/accounts/organizations/:
     get:
       operationId: accounts_organizations_list
-      description: List all Organizations.
-      summary: List all Organizations.
+      description: Paginated list of the organizations the authenticated user can
+        access. The query parameters filter and order the results.
+      summary: List organizations
       parameters:
       - in: query
         name: dark_logo
@@ -1893,8 +1933,8 @@ paths:
           description: ''
     post:
       operationId: accounts_organizations_create
-      description: Create a new Organization.
-      summary: Create a new Organization.
+      description: Create the organization sent in the request body and return it.
+      summary: Create organization
       tags:
       - Organizations
       requestBody:
@@ -1922,8 +1962,8 @@ paths:
   /api/accounts/organizations/{id}/:
     get:
       operationId: accounts_organizations_retrieve
-      description: Retrieve a specific Organization.
-      summary: Retrieve a specific Organization.
+      description: Return the organization with the given identifier.
+      summary: Get organization
       parameters:
       - in: query
         name: dark_logo
@@ -1950,8 +1990,9 @@ paths:
           description: ''
     put:
       operationId: accounts_organizations_update
-      description: Update a Organization.
-      summary: Update a Organization.
+      description: Replace the editable fields of the organization with the request
+        body and return it.
+      summary: Update organization
       parameters:
       - in: path
         name: id
@@ -1985,8 +2026,9 @@ paths:
           description: ''
     patch:
       operationId: accounts_organizations_partial_update
-      description: Partially update a Organization.
-      summary: Partially update a Organization.
+      description: Update only the fields sent in the request body and return the
+        organization.
+      summary: Partially update organization
       parameters:
       - in: path
         name: id
@@ -2019,8 +2061,9 @@ paths:
           description: ''
     delete:
       operationId: accounts_organizations_destroy
-      description: Delete a Organization.
-      summary: Delete a Organization.
+      description: Delete the organization. Records that can be deactivated are deactivated
+        instead of erased.
+      summary: Delete organization
       parameters:
       - in: path
         name: id
@@ -2039,7 +2082,9 @@ paths:
   /api/accounts/organizations/{id}/login/:
     post:
       operationId: accounts_organizations_login_create
-      description: Login to the organization.
+      description: 'Set the organization of the current session: organization-scoped
+        routes act on it. Suspended organizations are refused.'
+      summary: Enter organization
       parameters:
       - in: path
         name: id
@@ -2084,8 +2129,9 @@ paths:
   /api/accounts/organizations/filter-options/:
     get:
       operationId: accounts_organizations_filter_options_retrieve
-      description: Filter options for listing Organizations.
-      summary: Filter options for listing Organizations.
+      description: Return the choices of each filter of the organizations list. Send
+        a field name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: order_by
@@ -2109,7 +2155,9 @@ paths:
   /api/accounts/session/:
     get:
       operationId: accounts_session_retrieve
-      description: Get current session data.
+      description: Return the authenticated user, their active organizations and the
+        organization and member of the current session.
+      summary: Get session
       tags:
       - Sessions
       security:
@@ -2129,6 +2177,7 @@ paths:
         CSRF cookie. This endpoint is intentionally public so the frontend can verify
         connectivity before authentication is established. Cookie, CORS and debug
         diagnostics are only included when DEBUG is enabled.
+      summary: Get session configuration
       tags:
       - Session
       security:
@@ -2145,7 +2194,8 @@ paths:
   /api/accounts/signup/:
     post:
       operationId: accounts_signup_create
-      description: Create a new account.
+      description: Create a user account.
+      summary: Sign up
       tags:
       - Signup
       requestBody:
@@ -2174,8 +2224,9 @@ paths:
   /api/accounts/stored-files/:
     get:
       operationId: accounts_stored_files_list
-      description: List all Stored Files.
-      summary: List all Stored Files.
+      description: Paginated list of the stored files the authenticated user can access.
+        The query parameters filter and order the results.
+      summary: List stored files
       parameters:
       - in: query
         name: content_type
@@ -2345,8 +2396,8 @@ paths:
           description: ''
     post:
       operationId: accounts_stored_files_create
-      description: Create a new Stored File.
-      summary: Create a new Stored File.
+      description: Create the stored file sent in the request body and return it.
+      summary: Create stored file
       tags:
       - Stored files
       requestBody:
@@ -2371,8 +2422,8 @@ paths:
   /api/accounts/stored-files/{uuid}/:
     get:
       operationId: accounts_stored_files_retrieve
-      description: Retrieve a specific Stored File.
-      summary: Retrieve a specific Stored File.
+      description: Return the stored file with the given identifier.
+      summary: Get stored file
       parameters:
       - in: path
         name: uuid
@@ -2395,8 +2446,9 @@ paths:
           description: ''
     put:
       operationId: accounts_stored_files_update
-      description: Update a Stored File.
-      summary: Update a Stored File.
+      description: Replace the editable fields of the stored file with the request
+        body and return it.
+      summary: Update stored file
       parameters:
       - in: path
         name: uuid
@@ -2428,8 +2480,9 @@ paths:
           description: ''
     patch:
       operationId: accounts_stored_files_partial_update
-      description: Partially update a Stored File.
-      summary: Partially update a Stored File.
+      description: Update only the fields sent in the request body and return the
+        stored file.
+      summary: Partially update stored file
       parameters:
       - in: path
         name: uuid
@@ -2460,8 +2513,9 @@ paths:
           description: ''
     delete:
       operationId: accounts_stored_files_destroy
-      description: Delete a Stored File.
-      summary: Delete a Stored File.
+      description: Delete the stored file. Records that can be deactivated are deactivated
+        instead of erased.
+      summary: Delete stored file
       parameters:
       - in: path
         name: uuid
@@ -2481,7 +2535,8 @@ paths:
   /api/accounts/stored-files/{uuid}/file/:
     get:
       operationId: accounts_stored_files_file_retrieve
-      description: Download a file.
+      description: Return the content of the stored file.
+      summary: Download file
       parameters:
       - in: query
         name: download
@@ -2514,8 +2569,8 @@ paths:
   /api/accounts/users/me/:
     get:
       operationId: accounts_users_me_retrieve
-      description: Retrieve the authenticated user profile.
-      summary: Retrieve a specific user.
+      description: Return the profile of the authenticated user.
+      summary: Get my profile
       tags:
       - Users
       security:
@@ -2530,8 +2585,9 @@ paths:
           description: ''
     patch:
       operationId: accounts_users_me_partial_update
-      description: Partially update the authenticated user profile.
-      summary: Partially update a user.
+      description: Update only the fields sent in the request body of the authenticated
+        user profile.
+      summary: Update my profile
       tags:
       - Users
       requestBody:
@@ -2560,6 +2616,7 @@ paths:
       operationId: accounts_users_me_activity_list
       description: 'List the account activity of the authenticated user: sign-ins,
         password changes, resets, email verification and profile updates.'
+      summary: List my account activity
       parameters:
       - name: page
         required: false
@@ -2588,7 +2645,8 @@ paths:
   /api/accounts/users/me/change-password/:
     post:
       operationId: accounts_users_me_change_password_create
-      description: Change the authenticated user password.
+      description: Change the password of the authenticated user.
+      summary: Change password
       tags:
       - Users
       requestBody:
@@ -2612,8 +2670,9 @@ paths:
   /api/audit/events/:
     get:
       operationId: audit_events_list
-      description: List all Audit Events.
-      summary: List all Audit Events.
+      description: Paginated list of the audit events the authenticated user can access.
+        The query parameters filter and order the results.
+      summary: List audit events
       parameters:
       - in: query
         name: action
@@ -2789,8 +2848,8 @@ paths:
   /api/audit/events/{id}/:
     get:
       operationId: audit_events_retrieve
-      description: Retrieve a specific Audit Event.
-      summary: Retrieve a specific Audit Event.
+      description: Return the audit event with the given identifier.
+      summary: Get audit event
       parameters:
       - in: path
         name: id
@@ -2813,8 +2872,9 @@ paths:
   /api/audit/events/filter-options/:
     get:
       operationId: audit_events_filter_options_retrieve
-      description: Filter options for listing Audit Events.
-      summary: Filter options for listing Audit Events.
+      description: Return the choices of each filter of the audit events list. Send
+        a field name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: action
@@ -2867,6 +2927,7 @@ paths:
       operationId: auth_email_verify_create
       description: Confirm the email address with the `uid` and `token` from the verification
         link.
+      summary: Confirm email verification
       tags:
       - Authentication
       requestBody:
@@ -2892,6 +2953,7 @@ paths:
     post:
       operationId: auth_email_verify_resend_create
       description: Send a new verification link to the authenticated user email.
+      summary: Resend verification email
       tags:
       - Authentication
       security:
@@ -2908,6 +2970,7 @@ paths:
       description: 'Blacklist the refresh token and clear the organization session.
         Browsers (refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`;
         the auth cookies are always cleared and a CSRF token is required.'
+      summary: Sign out
       tags:
       - Authentication
       requestBody:
@@ -2947,6 +3010,7 @@ paths:
     post:
       operationId: auth_password_reset_create
       description: Request a password reset link to be sent to the user's email.
+      summary: Request password reset
       tags:
       - Authentication
       requestBody:
@@ -2973,6 +3037,7 @@ paths:
     post:
       operationId: auth_password_reset_confirm_create
       description: Confirm the password reset using the provided token and new password.
+      summary: Confirm password reset
       tags:
       - Authentication
       requestBody:
@@ -3001,6 +3066,7 @@ paths:
       description: 'Obtain an access/refresh token pair. With the `X-Auth-Transport:
         cookie` header (browsers) the tokens are set as HttpOnly cookies and omitted
         from the body, and a CSRF token is required.'
+      summary: Sign in
       tags:
       - Authentication
       requestBody:
@@ -3029,6 +3095,7 @@ paths:
         or rely on the refresh cookie (browsers). A refresh read from the cookie is
         answered with new cookies and never with tokens in the body; it requires a
         CSRF token.
+      summary: Refresh tokens
       tags:
       - Authentication
       requestBody:
@@ -3052,9 +3119,9 @@ paths:
   /api/auth/token/verify/:
     post:
       operationId: auth_token_verify_create
-      description: |-
-        Takes a token and indicates if it is valid.  This view provides no
-        information about a token's fitness for a particular use.
+      description: 'Check whether a token is valid: `200` when it is, `401` otherwise.
+        It says nothing about what the token grants.'
+      summary: Verify token
       tags:
       - Authentication
       requestBody:
@@ -3081,6 +3148,7 @@ paths:
       operationId: dashboard_overview_retrieve
       description: Organization overview for the current member. Sections the member
         cannot access are null.
+      summary: Get organization overview
       tags:
       - Dashboard
       security:
@@ -3096,7 +3164,9 @@ paths:
   /api/platform/audit-events/:
     get:
       operationId: platform_audit_events_list
-      description: Audit Events of every Organization and account, for platform staff.
+      description: Paginated audit events of every organization and account, for platform
+        staff.
+      summary: List audit events
       parameters:
       - in: query
         name: action
@@ -3285,7 +3355,8 @@ paths:
   /api/platform/audit-events/{id}/:
     get:
       operationId: platform_audit_events_retrieve
-      description: Audit Events of every Organization and account, for platform staff.
+      description: Return any audit event, for platform staff.
+      summary: Get audit event
       parameters:
       - in: path
         name: id
@@ -3308,8 +3379,9 @@ paths:
   /api/platform/audit-events/filter-options/:
     get:
       operationId: platform_audit_events_filter_options_retrieve
-      description: Filter options for listing Audit Events.
-      summary: Filter options for listing Audit Events.
+      description: Return the choices of each filter of the audit events list. Send
+        a field name as query parameter to get only that field.
+      summary: Audit events filter options
       parameters:
       - in: query
         name: action
@@ -3367,8 +3439,8 @@ paths:
   /api/platform/organizations/:
     get:
       operationId: platform_organizations_list
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Paginated list of every organization, for platform staff.
+      summary: List organizations
       parameters:
       - in: query
         name: created_at_after
@@ -3457,8 +3529,9 @@ paths:
   /api/platform/organizations/{id}/:
     get:
       operationId: platform_organizations_retrieve
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Return any organization with its owner and status, for platform
+        staff.
+      summary: Get organization
       parameters:
       - in: path
         name: id
@@ -3481,8 +3554,9 @@ paths:
   /api/platform/organizations/{id}/invitations/:
     get:
       operationId: platform_organizations_invitations_list
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Paginated list of the invitations of the organization, for platform
+        staff.
+      summary: List organization invitations
       parameters:
       - in: query
         name: created_at_after
@@ -3577,8 +3651,9 @@ paths:
   /api/platform/organizations/{id}/members/:
     get:
       operationId: platform_organizations_members_list
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Paginated list of the members of the organization, for platform
+        staff.
+      summary: List organization members
       parameters:
       - in: query
         name: created_at_after
@@ -3680,8 +3755,9 @@ paths:
   /api/platform/organizations/{id}/reactivate/:
     post:
       operationId: platform_organizations_reactivate_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Lift the suspension of the organization. The owner is emailed.
+        Platform admins only; a reason is recorded.
+      summary: Reactivate organization
       parameters:
       - in: path
         name: id
@@ -3715,8 +3791,10 @@ paths:
   /api/platform/organizations/{id}/suspend/:
     post:
       operationId: platform_organizations_suspend_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: 'Suspend the organization: its members can no longer use it until
+        it is reactivated. The owner is emailed. The reason is required. Platform
+        admins only; a reason is recorded.'
+      summary: Suspend organization
       parameters:
       - in: path
         name: id
@@ -3751,8 +3829,8 @@ paths:
   /api/platform/organizations/{id}/teams/:
     get:
       operationId: platform_organizations_teams_list
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Paginated list of the teams of the organization, for platform staff.
+      summary: List organization teams
       parameters:
       - in: query
         name: created_at_after
@@ -3847,8 +3925,10 @@ paths:
   /api/platform/organizations/{id}/transfer-ownership/:
     post:
       operationId: platform_organizations_transfer_ownership_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Make another member the owner of the organization; the previous
+        owner becomes an admin. Both are emailed. Platform admins only; a reason is
+        recorded.
+      summary: Transfer ownership
       parameters:
       - in: path
         name: id
@@ -3884,6 +3964,7 @@ paths:
     get:
       operationId: platform_overview_retrieve
       description: Platform numbers, computed when requested (platform staff).
+      summary: Get platform overview
       tags:
       - Platform
       security:
@@ -3899,8 +3980,8 @@ paths:
   /api/platform/users/:
     get:
       operationId: platform_users_list
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Paginated list of every user account, for platform staff.
+      summary: List users
       parameters:
       - in: query
         name: blocked
@@ -3997,8 +4078,8 @@ paths:
   /api/platform/users/{id}/:
     get:
       operationId: platform_users_retrieve
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Return any user account with its status, for platform staff.
+      summary: Get user
       parameters:
       - in: path
         name: id
@@ -4021,8 +4102,10 @@ paths:
   /api/platform/users/{id}/block/:
     post:
       operationId: platform_users_block_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: 'Block the account: its sessions end and sign-in is refused until
+        it is unblocked. The reason is required. Platform admins only; a reason is
+        recorded.'
+      summary: Block user
       parameters:
       - in: path
         name: id
@@ -4057,8 +4140,9 @@ paths:
   /api/platform/users/{id}/end-sessions/:
     post:
       operationId: platform_users_end_sessions_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: End every session of the account; it must sign in again. Platform
+        admins only; a reason is recorded.
+      summary: End user sessions
       parameters:
       - in: path
         name: id
@@ -4092,8 +4176,9 @@ paths:
   /api/platform/users/{id}/force-password-reset/:
     post:
       operationId: platform_users_force_password_reset_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: The current password stops working, every session ends and a password
+        reset link is emailed. Platform admins only; a reason is recorded.
+      summary: Force password reset
       parameters:
       - in: path
         name: id
@@ -4127,8 +4212,9 @@ paths:
   /api/platform/users/{id}/resend-verification/:
     post:
       operationId: platform_users_resend_verification_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Send a new email verification link to the account. A cooldown applies.
+        Platform admins only; a reason is recorded.
+      summary: Resend verification email
       parameters:
       - in: path
         name: id
@@ -4162,8 +4248,9 @@ paths:
   /api/platform/users/{id}/unblock/:
     post:
       operationId: platform_users_unblock_create
-      description: Reads for staff; ``post`` only reaches the account actions (no
-        ``create``).
+      description: Allow the account to sign in again; the sessions ended by the block
+        stay ended. Platform admins only; a reason is recorded.
+      summary: Unblock user
       parameters:
       - in: path
         name: id
@@ -4197,8 +4284,9 @@ paths:
   /api/teams/team-members/:
     get:
       operationId: teams_team_members_list
-      description: List all Team Members.
-      summary: List all Team Members.
+      description: Paginated list of the team members the authenticated user can access.
+        The query parameters filter and order the results.
+      summary: List team members
       parameters:
       - in: query
         name: is_active
@@ -4319,8 +4407,8 @@ paths:
           description: ''
     post:
       operationId: teams_team_members_create
-      description: Create a new Team Member.
-      summary: Create a new Team Member.
+      description: Create the team member sent in the request body and return it.
+      summary: Create team member
       tags:
       - Team members
       requestBody:
@@ -4348,8 +4436,8 @@ paths:
   /api/teams/team-members/{id}/:
     get:
       operationId: teams_team_members_retrieve
-      description: Retrieve a specific Team Member.
-      summary: Retrieve a specific Team Member.
+      description: Return the team member with the given identifier.
+      summary: Get team member
       parameters:
       - in: path
         name: id
@@ -4371,7 +4459,9 @@ paths:
           description: ''
     put:
       operationId: teams_team_members_update
-      description: Update a Team Member.
+      description: Replace the editable fields of the team member with the request
+        body and return it.
+      summary: Update team member
       parameters:
       - in: path
         name: id
@@ -4409,8 +4499,9 @@ paths:
           description: ''
     delete:
       operationId: teams_team_members_destroy
-      description: Delete a Team Member.
-      summary: Delete a Team Member.
+      description: Delete the team member. Records that can be deactivated are deactivated
+        instead of erased.
+      summary: Delete team member
       parameters:
       - in: path
         name: id
@@ -4429,8 +4520,9 @@ paths:
   /api/teams/team-members/filter-options/:
     get:
       operationId: teams_team_members_filter_options_retrieve
-      description: Filter options for listing Team Members.
-      summary: Filter options for listing Team Members.
+      description: Return the choices of each filter of the team members list. Send
+        a field name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: member
@@ -4494,8 +4586,9 @@ paths:
   /api/teams/team-members/form-options-create/:
     get:
       operationId: teams_team_members_form_options_create_retrieve
-      description: Create options for a Team Member.
-      summary: Create options for a Team Member.
+      description: Return the choices of each field of the team member creation form.
+        Send a field name as query parameter to get only that field.
+      summary: Creation form options
       parameters:
       - in: query
         name: member
@@ -4552,8 +4645,9 @@ paths:
   /api/teams/team-members/form-options-update/:
     get:
       operationId: teams_team_members_form_options_update_retrieve
-      description: Update options for a Team Member.
-      summary: Update options for a Team Member.
+      description: Return the choices of each field of the team member edit form.
+        Send a field name as query parameter to get only that field.
+      summary: Edit form options
       parameters:
       - in: query
         name: role
@@ -4584,8 +4678,9 @@ paths:
   /api/teams/teams/:
     get:
       operationId: teams_teams_list
-      description: List all Teams.
-      summary: List all Teams.
+      description: Paginated list of the teams the authenticated user can access.
+        The query parameters filter and order the results.
+      summary: List teams
       parameters:
       - in: query
         name: is_active
@@ -4689,8 +4784,8 @@ paths:
           description: ''
     post:
       operationId: teams_teams_create
-      description: Create a new Team.
-      summary: Create a new Team.
+      description: Create the team sent in the request body and return it.
+      summary: Create team
       tags:
       - Teams
       requestBody:
@@ -4718,8 +4813,8 @@ paths:
   /api/teams/teams/{id}/:
     get:
       operationId: teams_teams_retrieve
-      description: Retrieve a specific Team.
-      summary: Retrieve a specific Team.
+      description: Return the team with the given identifier.
+      summary: Get team
       parameters:
       - in: path
         name: id
@@ -4741,8 +4836,9 @@ paths:
           description: ''
     put:
       operationId: teams_teams_update
-      description: Update a Team.
-      summary: Update a Team.
+      description: Replace the editable fields of the team with the request body and
+        return it.
+      summary: Update team
       parameters:
       - in: path
         name: id
@@ -4776,8 +4872,9 @@ paths:
           description: ''
     delete:
       operationId: teams_teams_destroy
-      description: Delete a Team.
-      summary: Delete a Team.
+      description: Delete the team. Records that can be deactivated are deactivated
+        instead of erased.
+      summary: Delete team
       parameters:
       - in: path
         name: id
@@ -4796,8 +4893,9 @@ paths:
   /api/teams/teams/filter-options/:
     get:
       operationId: teams_teams_filter_options_retrieve
-      description: Filter options for listing Teams.
-      summary: Filter options for listing Teams.
+      description: Return the choices of each filter of the teams list. Send a field
+        name as query parameter to get only that field.
+      summary: Filter options
       parameters:
       - in: query
         name: order_by

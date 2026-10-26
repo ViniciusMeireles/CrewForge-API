@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django_filters import utils as filter_utils
 from django_filters.rest_framework import DjangoFilterBackend
@@ -64,6 +65,7 @@ MEMBER_PARAMETERS = [
 
 @extend_schema(
     tags=PLATFORM_TAGS,
+    summary=_('Get platform overview'),
     description=_('Platform numbers, computed when requested (platform staff).'),
     responses={200: PlatformOverviewSerializer},
 )
@@ -140,36 +142,72 @@ class PlatformActionsViewSet(PlatformViewSetMixin, viewsets.ReadOnlyModelViewSet
         return super().get_serializer_class()
 
 
-def action_schema(request, response):
+def read_schema(summary, description, **kwargs):
+    return extend_schema(
+        tags=PLATFORM_TAGS, summary=summary, description=description, **kwargs
+    )
+
+
+def action_schema(request, response, summary, description):
     return extend_schema(
         tags=PLATFORM_TAGS,
+        summary=summary,
+        description=format_lazy(
+            '{} {}', description, _('Platform admins only; a reason is recorded.')
+        ),
         request=request,
         responses={200: response},
     )
 
 
 @extend_schema_view(
-    list=extend_schema(tags=PLATFORM_TAGS),
-    retrieve=extend_schema(tags=PLATFORM_TAGS),
-    members=extend_schema(
-        tags=PLATFORM_TAGS,
+    list=read_schema(
+        _('List organizations'),
+        _('Paginated list of every organization, for platform staff.'),
+    ),
+    retrieve=read_schema(
+        _('Get organization'),
+        _('Return any organization with its owner and status, for platform staff.'),
+    ),
+    members=read_schema(
+        _('List organization members'),
+        _('Paginated list of the members of the organization, for platform staff.'),
         parameters=MEMBER_PARAMETERS,
         responses=PlatformMemberSerializer(many=True),
     ),
-    teams=extend_schema(
-        tags=PLATFORM_TAGS, responses=PlatformTeamSerializer(many=True)
+    teams=read_schema(
+        _('List organization teams'),
+        _('Paginated list of the teams of the organization, for platform staff.'),
+        responses=PlatformTeamSerializer(many=True),
     ),
-    invitations=extend_schema(
-        tags=PLATFORM_TAGS, responses=PlatformInvitationSerializer(many=True)
+    invitations=read_schema(
+        _('List organization invitations'),
+        _('Paginated list of the invitations of the organization, for platform staff.'),
+        responses=PlatformInvitationSerializer(many=True),
     ),
     suspend=action_schema(
-        ReasonRequiredSerializer, PlatformOrganizationDetailSerializer
+        ReasonRequiredSerializer,
+        PlatformOrganizationDetailSerializer,
+        _('Suspend organization'),
+        _(
+            'Suspend the organization: its members can no longer use it until it is '
+            'reactivated. The owner is emailed. The reason is required.'
+        ),
     ),
     reactivate=action_schema(
-        ReasonOptionalSerializer, PlatformOrganizationDetailSerializer
+        ReasonOptionalSerializer,
+        PlatformOrganizationDetailSerializer,
+        _('Reactivate organization'),
+        _('Lift the suspension of the organization. The owner is emailed.'),
     ),
     transfer_ownership=action_schema(
-        OwnershipTransferSerializer, PlatformOrganizationDetailSerializer
+        OwnershipTransferSerializer,
+        PlatformOrganizationDetailSerializer,
+        _('Transfer ownership'),
+        _(
+            'Make another member the owner of the organization; the previous owner '
+            'becomes an admin. Both are emailed.'
+        ),
     ),
 )
 class PlatformOrganizationViewSet(PlatformActionsViewSet):
@@ -238,16 +276,52 @@ class PlatformOrganizationViewSet(PlatformActionsViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(tags=PLATFORM_TAGS),
-    retrieve=extend_schema(tags=PLATFORM_TAGS),
-    block=action_schema(ReasonRequiredSerializer, PlatformUserDetailSerializer),
-    unblock=action_schema(ReasonOptionalSerializer, PlatformUserDetailSerializer),
-    end_sessions=action_schema(ReasonOptionalSerializer, PlatformUserDetailSerializer),
+    list=read_schema(
+        _('List users'),
+        _('Paginated list of every user account, for platform staff.'),
+    ),
+    retrieve=read_schema(
+        _('Get user'),
+        _('Return any user account with its status, for platform staff.'),
+    ),
+    block=action_schema(
+        ReasonRequiredSerializer,
+        PlatformUserDetailSerializer,
+        _('Block user'),
+        _(
+            'Block the account: its sessions end and sign-in is refused until it is '
+            'unblocked. The reason is required.'
+        ),
+    ),
+    unblock=action_schema(
+        ReasonOptionalSerializer,
+        PlatformUserDetailSerializer,
+        _('Unblock user'),
+        _(
+            'Allow the account to sign in again; the sessions ended by the block '
+            'stay ended.'
+        ),
+    ),
+    end_sessions=action_schema(
+        ReasonOptionalSerializer,
+        PlatformUserDetailSerializer,
+        _('End user sessions'),
+        _('End every session of the account; it must sign in again.'),
+    ),
     resend_verification=action_schema(
-        ReasonOptionalSerializer, PlatformUserDetailSerializer
+        ReasonOptionalSerializer,
+        PlatformUserDetailSerializer,
+        _('Resend verification email'),
+        _('Send a new email verification link to the account. A cooldown applies.'),
     ),
     force_password_reset=action_schema(
-        ReasonOptionalSerializer, PlatformUserDetailSerializer
+        ReasonOptionalSerializer,
+        PlatformUserDetailSerializer,
+        _('Force password reset'),
+        _(
+            'The current password stops working, every session ends and a password '
+            'reset link is emailed.'
+        ),
     ),
 )
 class PlatformUserViewSet(PlatformActionsViewSet):
@@ -291,9 +365,20 @@ class PlatformUserViewSet(PlatformActionsViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(tags=PLATFORM_TAGS),
-    retrieve=extend_schema(tags=PLATFORM_TAGS),
-    filter_options=extend_schema(tags=PLATFORM_TAGS),
+    list=read_schema(
+        _('List audit events'),
+        _(
+            'Paginated audit events of every organization and account, for platform '
+            'staff.'
+        ),
+    ),
+    retrieve=read_schema(
+        _('Get audit event'),
+        _('Return any audit event, for platform staff.'),
+    ),
+    filter_options=extend_schema(
+        tags=PLATFORM_TAGS, summary=_('Audit events filter options')
+    ),
 )
 class PlatformAuditEventViewSet(OptionsModelMixin, PlatformReadOnlyViewSet):
     """Audit Events of every Organization and account, for platform staff."""

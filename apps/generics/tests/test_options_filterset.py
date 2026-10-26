@@ -336,9 +336,8 @@ class FilterOptionsSchemaTestCase(SimpleTestCase):
             {p['name'] for p in operation['parameters']},
             {'team', 'member', 'role', 'role__in', 'order_by', 'page', 'page_size'},
         )
-        self.assertEqual(
-            str(operation['summary']), 'Filter options for listing Team Members.'
-        )
+        self.assertEqual(str(operation['summary']), 'Filter options')
+        self.assertIn('team members list', str(operation['description']))
 
     def test_invitations_parameters(self):
         operation = self.schema['paths']['/api/accounts/invitations/filter-options/'][

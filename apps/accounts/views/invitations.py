@@ -52,7 +52,11 @@ from apps.generics.utils.schema import extend_schema_model_view_set
     send_email=extend_schema(
         request=OpenApiTypes.NONE,
         tags=Invitation.schema_tags(),
-        description=_('Send an invitation email.'),
+        summary=_('Send invitation email'),
+        description=_(
+            'Email the invitation to its recipient again. A cooldown applies between '
+            'sends.'
+        ),
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=inline_serializer(
@@ -131,14 +135,19 @@ from apps.generics.utils.schema import extend_schema_model_view_set
     ),
     received=extend_schema(
         tags=Invitation.schema_tags(),
-        description=_('List received invitations for the authenticated user.'),
+        summary=_('List received invitations'),
+        description=_(
+            'Paginated list of the invitations addressed to the authenticated user, '
+            'from any organization.'
+        ),
         responses={
             status.HTTP_200_OK: InvitationReceivedSerializer(many=True),
         },
     ),
     received_detail=extend_schema(
         tags=Invitation.schema_tags(),
-        description=_('Retrieve a received invitation detail.'),
+        summary=_('Get received invitation'),
+        description=_('Return an invitation addressed to the authenticated user.'),
         responses={
             status.HTTP_200_OK: InvitationReceivedDetailSerializer,
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
@@ -161,7 +170,10 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             ),
         ],
         tags=Invitation.schema_tags(),
-        description=_('Retrieve an invitation by its secret key.'),
+        summary=_('Get invitation by key'),
+        description=_(
+            'Return the invitation identified by the secret key of its invitation link.'
+        ),
         responses={
             status.HTTP_200_OK: InvitationByKeySerializer,
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
@@ -187,6 +199,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
     accept=extend_schema(
         request=InvitationAcceptSerializer,
         tags=Invitation.schema_tags(),
+        summary=_('Accept invitation'),
         description=_(
             'Accept an invitation and create a member record, or reactivate the '
             'removed member of the user (readmission).'
@@ -269,7 +282,10 @@ from apps.generics.utils.schema import extend_schema_model_view_set
     decline=extend_schema(
         request=OpenApiTypes.NONE,
         tags=Invitation.schema_tags(),
-        description=_('Decline an invitation.'),
+        summary=_('Decline invitation'),
+        description=_(
+            'Decline a pending invitation addressed to the authenticated user.'
+        ),
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=inline_serializer(
@@ -366,6 +382,15 @@ class InvitationViewSet(
     filter_backends = [backends.DjangoFilterBackend]
     auto_orderable_filter = True
     options_actions = ('create', 'update', 'list', 'received')
+    options_schema = {
+        'received': {
+            'summary': _('Received invitations filter options'),
+            'description': _(
+                'Return the choices of each filter of the received invitations list. '
+                'Send a field name as query parameter to get only that field.'
+            ),
+        },
+    }
 
     def get_queryset(self):
         return (

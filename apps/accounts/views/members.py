@@ -1,5 +1,4 @@
 from django.utils import timezone
-from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.utils import (
@@ -35,8 +34,10 @@ from apps.accounts.utils.auth_cookies import (
 )
 from apps.accounts.utils.security_log import log_security_event
 from apps.audit.choices import AuditActionChoices
-from apps.generics.utils.models import get_verbose_name
-from apps.generics.utils.schema import extend_schema_model_view_set
+from apps.generics.utils.schema import (
+    extend_schema_model_view_set,
+    extend_schema_update,
+)
 
 
 @extend_schema_model_view_set(
@@ -53,8 +54,10 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             ),
         ],
         tags=Member.schema_tags(),
-        description=format_lazy(
-            _('Create a new {name} with an invitation.'), name=get_verbose_name(Member)
+        summary=_('Join with invitation'),
+        description=_(
+            'Create the member of the authenticated user from the invitation '
+            'identified by its secret key.'
         ),
         responses={
             http_status.HTTP_200_OK: MemberWithInviteCreateSerializer,
@@ -116,18 +119,16 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             http_status.HTTP_400_BAD_REQUEST: OpenApiTypes.NONE,
         },
         tags=Member.schema_tags(),
-        description=format_lazy(
-            _('Update the role of a {name}.'), name=get_verbose_name(Member)
-        ),
+        summary=_('Update member role'),
+        description=_('Change the role of the member.'),
     ),
-    update=extend_schema(
+    update=extend_schema_update(
+        model=Member,
         request=MemberUpdateSerializer,
         responses={
             http_status.HTTP_200_OK: MemberUpdateSerializer,
             http_status.HTTP_400_BAD_REQUEST: OpenApiTypes.NONE,
         },
-        tags=Member.schema_tags(),
-        description=format_lazy(_('Update a {name}.'), name=get_verbose_name(Member)),
     ),
 )
 class MemberViewSet(
@@ -150,6 +151,15 @@ class MemberViewSet(
     # No create/update form options: ``create`` is deprecated and ``user`` is a
     # nested serializer. ``update_role`` gets ``form-options-update-role/``.
     options_actions = ('list', 'update_role')
+    options_schema = {
+        'update_role': {
+            'summary': _('Role form options'),
+            'description': _(
+                'Return the choices of the member role form. Send a field name as '
+                'query parameter to get only that field.'
+            ),
+        },
+    }
 
     base_filters = {'is_active': True}
 

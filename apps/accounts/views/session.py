@@ -12,7 +12,11 @@ from apps.accounts.utils.requests import clear_suspended_organization_context
 
 @extend_schema(
     tags=[_('Sessions')],
-    description=_('Get current session data.'),
+    summary=_('Get session'),
+    description=_(
+        'Return the authenticated user, their active organizations and the '
+        'organization and member of the current session.'
+    ),
     responses={200: SessionSerializer},
 )
 class SessionView(OrganizationScopedRequestMixin, APIView):
