@@ -228,7 +228,7 @@ def block_user(request, user, reason: str):
         update_fields=['blocked_at', 'blocked_by', 'blocked_reason', 'updated_at']
     )
     revoke_sessions(user)
-    end_impersonations_of(user, ImpersonationEndReasonChoices.USER_BLOCKED, request)
+    end_impersonations_of(user, ImpersonationEndReasonChoices.USER_BLOCKED)
     _record_account_event(request, AuditActionChoices.USER_BLOCKED, user, reason)
     return user
 

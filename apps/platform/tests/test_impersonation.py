@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.test import SimpleTestCase
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status as http_status
@@ -14,6 +15,7 @@ from apps.accounts.factories.users import UserFactory
 from apps.audit.choices import AuditActionChoices, AuditActorTypeChoices
 from apps.audit.models.audit_event import AuditEvent
 from apps.platform.choices import ImpersonationEndReasonChoices
+from apps.platform.impersonation import resolve_impersonation
 from apps.platform.models import Impersonation
 
 REASON = 'Checking why invitations do not show up.'
@@ -276,6 +278,53 @@ class ImpersonationTestCase(APITestCase):
         self.assertEqual(started['action_display'], 'Viewed by platform support')
         self.assertEqual(started['metadata'], {'reason': REASON})
 
+    def test_ending_leaves_the_users_organization(self):
+        MemberFactory(organization=self.organization, user=self.staff)
+        self.start()
+        self.enter_organization()
+        self.staff_client.post(reverse('platform:impersonation-exit'))
+
+        self.assertNotIn('organization_id', self.staff_client.session)
+        session = self.session().data
+        self.assertIsNone(session['organization'])
+        self.assertIsNone(session['member'])
+
+    def test_deleted_target_ends_it_as_expired(self):
+        self.start()
+        self.target.is_active = False
+        self.target.save(update_fields=['is_active'])
+
+        response = self.session()
+
+        self.assertEqual(response.data['error']['details']['reason'], 'expired')
+        self.assertEqual(
+            response.data['error']['message'], 'The viewing session ended.'
+        )
+
+    def test_bearer_logout_without_refresh_still_ends_it(self):
+        self.start()
+        response = self.staff_client.post(reverse('accounts:logout'), format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            Impersonation.objects.get().end_reason,
+            ImpersonationEndReasonChoices.SIGNED_OUT,
+        )
+
+    def test_block_ends_it_without_the_admins_address(self):
+        self.start()
+        signed_in(UserFactory(platform_role='admin')).post(
+            reverse('platform:users-block', args=[self.target.id]),
+            data={'reason': 'Abuse'},
+            format='json',
+            REMOTE_ADDR='203.0.113.9',
+        )
+        event = AuditEvent.objects.get(
+            action=AuditActionChoices.USER_IMPERSONATION_ENDED
+        )
+        self.assertEqual(event.actor_user_id, self.staff.id)
+        self.assertIsNone(event.ip)
+        self.assertEqual(event.metadata, {'end_reason': 'user_blocked'})
+
 
 class ImpersonationCookieTestCase(APITestCase):
     def test_browser_session_acts_as_the_user(self):
@@ -304,3 +353,15 @@ class ImpersonationCookieTestCase(APITestCase):
             HTTP_X_CSRFTOKEN=csrf,
         )
         self.assertEqual(refused.data['error']['code'], 'READ_ONLY_IMPERSONATION')
+
+
+class ResolveWithoutSessionCookieTestCase(SimpleTestCase):
+    def test_the_session_store_is_not_touched(self):
+        class Request:
+            COOKIES = {}
+
+            @property
+            def session(self):
+                raise AssertionError('session loaded')
+
+        self.assertIsNone(resolve_impersonation(Request(), staff=object()))

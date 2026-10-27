@@ -313,11 +313,11 @@ class LogoutView(APIView):
         else:
             error = _('Refresh token is required.')
 
+        user_logged_out.send(sender=type(self), request=request, user=request.user)
         if error and not cookie_mode:
             return Response({'detail': error}, status=http_status.HTTP_400_BAD_REQUEST)
 
         log_security_event('auth.logout', request, user_id=user_id)
-        user_logged_out.send(sender=type(self), request=request, user=request.user)
         request.session.flush()
         response = Response(status=http_status.HTTP_204_NO_CONTENT)
         return clear_auth_cookies(response) if cookie_mode else response

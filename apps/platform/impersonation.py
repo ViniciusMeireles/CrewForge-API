@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -37,13 +39,18 @@ def _session(request):
     return getattr(request, 'session', None)
 
 
+def _leave(session) -> None:
+    session.pop(IMPERSONATION_SESSION_KEY, None)
+    session.pop('organization_id', None)
+
+
 def _clear_session(request, impersonation_id: int) -> None:
     session = _session(request)
     if (
         session is not None
         and session.get(IMPERSONATION_SESSION_KEY) == impersonation_id
     ):
-        session.pop(IMPERSONATION_SESSION_KEY, None)
+        _leave(session)
 
 
 def can_be_impersonated(staff, target) -> bool:
@@ -58,6 +65,7 @@ def can_be_impersonated(staff, target) -> bool:
 @transaction.atomic
 def start_impersonation(request, target, reason: str) -> Impersonation:
     staff = request.user
+    get_user_model().objects.select_for_update().filter(pk=staff.pk).first()
     if not can_be_impersonated(staff, target):
         raise InvalidState(
             _("This user can't be viewed (platform staff, blocked or deleted).")
@@ -148,6 +156,8 @@ def resolve_impersonation(request, staff):
     The target the request acts as, or ``None`` without an impersonation. An
     expired one, or one whose target was blocked meanwhile, is ended and refused.
     """
+    if settings.SESSION_COOKIE_NAME not in request.COOKIES:
+        return None
     session = _session(request)
     impersonation_id = session.get(IMPERSONATION_SESSION_KEY) if session else None
     if not impersonation_id:
@@ -158,16 +168,20 @@ def resolve_impersonation(request, staff):
         .first()
     )
     if impersonation is None:
-        session.pop(IMPERSONATION_SESSION_KEY, None)
+        _leave(session)
         return None
     if not impersonation.is_active:
-        session.pop(IMPERSONATION_SESSION_KEY, None)
+        _leave(session)
         raise ended_error(impersonation)
     target = impersonation.target
-    if impersonation.is_expired() or not staff.is_platform_staff:
-        reason = ImpersonationEndReasonChoices.EXPIRED
-    elif target.is_blocked or not target.is_active:
+    if target.is_blocked:
         reason = ImpersonationEndReasonChoices.USER_BLOCKED
+    elif (
+        impersonation.is_expired()
+        or not staff.is_platform_staff
+        or not target.is_active
+    ):
+        reason = ImpersonationEndReasonChoices.EXPIRED
     else:
         return impersonation
     raise ended_error(end_impersonation(impersonation, reason, request=request))
