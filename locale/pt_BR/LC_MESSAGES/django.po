@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 22:49+0000\n"
+"POT-Creation-Date: 2026-10-27 15:58+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -483,7 +483,7 @@ msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
 #: apps/accounts/models/invitation.py:89 apps/accounts/models/member.py:25
-#: apps/audit/choices.py:106 apps/platform/filters.py:128
+#: apps/audit/choices.py:118 apps/platform/filters.py:128
 msgid "User"
 msgstr "Usuário"
 
@@ -828,16 +828,16 @@ msgstr "Este tipo de arquivo não é permitido."
 msgid "The file is too large. Maximum size is %(size)s MB."
 msgstr "O arquivo é muito grande. O tamanho máximo é %(size)s MB."
 
-#: apps/accounts/views/auth.py:55 templates/drf_spectacular/swagger_ui.html:68
+#: apps/accounts/views/auth.py:56 templates/drf_spectacular/swagger_ui.html:68
 #: templates/drf_spectacular/swagger_ui.html:77
 msgid "Authentication"
 msgstr "Autenticação"
 
-#: apps/accounts/views/auth.py:60 templates/drf_spectacular/swagger_ui.html:90
+#: apps/accounts/views/auth.py:61 templates/drf_spectacular/swagger_ui.html:90
 msgid "Sign in"
 msgstr "Entrar"
 
-#: apps/accounts/views/auth.py:62
+#: apps/accounts/views/auth.py:63
 msgid ""
 "Obtain an access/refresh token pair. With the `X-Auth-Transport: cookie` "
 "header (browsers) the tokens are set as HttpOnly cookies and omitted from "
@@ -847,11 +847,11 @@ msgstr ""
 "cookie` (navegadores), os tokens são definidos como cookies HttpOnly e "
 "omitidos do corpo, e um token CSRF é obrigatório."
 
-#: apps/accounts/views/auth.py:118
+#: apps/accounts/views/auth.py:119
 msgid "Refresh tokens"
 msgstr "Renovar tokens"
 
-#: apps/accounts/views/auth.py:120
+#: apps/accounts/views/auth.py:121
 msgid ""
 "Rotate the refresh token. Send `refresh` in the body (Bearer clients) or "
 "rely on the refresh cookie (browsers). A refresh read from the cookie is "
@@ -863,23 +863,23 @@ msgstr ""
 "respondida com novos cookies e nunca com tokens no corpo; requer um token "
 "CSRF."
 
-#: apps/accounts/views/auth.py:161
+#: apps/accounts/views/auth.py:162
 msgid ""
 "Password reset link has been sent to your email. Please check your inbox."
 msgstr ""
 "O link de redefinição de senha foi enviado para o seu e-mail. Verifique sua "
 "caixa de entrada."
 
-#: apps/accounts/views/auth.py:166
+#: apps/accounts/views/auth.py:167
 msgid "Request password reset"
 msgstr "Solicitar redefinição de senha"
 
-#: apps/accounts/views/auth.py:167
+#: apps/accounts/views/auth.py:168
 msgid "Request a password reset link to be sent to the user's email."
 msgstr ""
 "Solicita o envio de um link de redefinição de senha para o e-mail do usuário."
 
-#: apps/accounts/views/auth.py:194
+#: apps/accounts/views/auth.py:195
 msgid ""
 "If an account exists for this email, a password reset link has been sent to "
 "it. Please check your inbox."
@@ -887,7 +887,7 @@ msgstr ""
 "Se existir uma conta para este e-mail, um link de redefinição de senha foi "
 "enviado para ela. Verifique sua caixa de entrada."
 
-#: apps/accounts/views/auth.py:209 apps/accounts/views/auth.py:243
+#: apps/accounts/views/auth.py:210 apps/accounts/views/auth.py:244
 msgid ""
 "Your password has been successfully reset. You can now log in with your new "
 "password."
@@ -895,45 +895,45 @@ msgstr ""
 "Sua senha foi redefinida com sucesso. Agora você pode entrar com sua nova "
 "senha."
 
-#: apps/accounts/views/auth.py:214
+#: apps/accounts/views/auth.py:215
 msgid "Confirm password reset"
 msgstr "Confirmar redefinição de senha"
 
-#: apps/accounts/views/auth.py:216
+#: apps/accounts/views/auth.py:217
 msgid "Confirm the password reset using the provided token and new password."
 msgstr ""
 "Confirma a redefinição de senha usando o token fornecido e a nova senha."
 
-#: apps/accounts/views/auth.py:262
+#: apps/accounts/views/auth.py:263
 msgid "Logout successful."
 msgstr "Sessão encerrada com sucesso."
 
-#: apps/accounts/views/auth.py:273
+#: apps/accounts/views/auth.py:274
 msgid "Missing refresh token"
 msgstr "Token de refresh ausente"
 
-#: apps/accounts/views/auth.py:274 apps/accounts/views/auth.py:313
+#: apps/accounts/views/auth.py:275 apps/accounts/views/auth.py:314
 msgid "Refresh token is required."
 msgstr "O token de refresh é obrigatório."
 
-#: apps/accounts/views/auth.py:278
+#: apps/accounts/views/auth.py:279
 msgid "Invalid or expired token"
 msgstr "Token inválido ou expirado"
 
-#: apps/accounts/views/auth.py:279 apps/accounts/views/auth.py:311
+#: apps/accounts/views/auth.py:280 apps/accounts/views/auth.py:312
 msgid "Token is invalid or expired."
 msgstr "O token é inválido ou expirou."
 
-#: apps/accounts/views/auth.py:283
+#: apps/accounts/views/auth.py:284
 msgid "Invalid request."
 msgstr "Requisição inválida."
 
-#: apps/accounts/views/auth.py:286
+#: apps/accounts/views/auth.py:287
 #: templates/drf_spectacular/swagger_ui.html:103
 msgid "Sign out"
 msgstr "Sair"
 
-#: apps/accounts/views/auth.py:288
+#: apps/accounts/views/auth.py:289
 msgid ""
 "Blacklist the refresh token and clear the organization session. Browsers "
 "(refresh cookie or `X-Auth-Transport: cookie`) may omit `refresh`; the auth "
@@ -944,61 +944,61 @@ msgstr ""
 "`refresh`; os cookies de autenticação são sempre limpos e um token CSRF é "
 "obrigatório."
 
-#: apps/accounts/views/auth.py:328
+#: apps/accounts/views/auth.py:330
 msgid "Email verified."
 msgstr "E-mail verificado."
 
-#: apps/accounts/views/auth.py:330
+#: apps/accounts/views/auth.py:332
 msgid "Confirm email verification"
 msgstr "Confirmar verificação de e-mail"
 
-#: apps/accounts/views/auth.py:332
+#: apps/accounts/views/auth.py:334
 msgid ""
 "Confirm the email address with the `uid` and `token` from the verification "
 "link."
 msgstr ""
 "Confirma o endereço de e-mail com o `uid` e o `token` do link de verificação."
 
-#: apps/accounts/views/auth.py:351
+#: apps/accounts/views/auth.py:353
 msgid "Your email has been verified."
 msgstr "Seu e-mail foi verificado."
 
-#: apps/accounts/views/auth.py:360
+#: apps/accounts/views/auth.py:362
 msgid "Verification email sent."
 msgstr "E-mail de verificação enviado."
 
-#: apps/accounts/views/auth.py:363
+#: apps/accounts/views/auth.py:365
 msgid "A link was sent recently; retry after the cooldown."
 msgstr ""
 "Um link foi enviado recentemente; tente novamente após o intervalo de "
 "reenvio."
 
-#: apps/accounts/views/auth.py:366 apps/platform/views.py:314
+#: apps/accounts/views/auth.py:368 apps/platform/views.py:320
 msgid "Resend verification email"
 msgstr "Reenviar e-mail de verificação"
 
-#: apps/accounts/views/auth.py:367
+#: apps/accounts/views/auth.py:369
 msgid "Send a new verification link to the authenticated user email."
 msgstr ""
 "Envia um novo link de verificação para o e-mail do usuário autenticado."
 
-#: apps/accounts/views/auth.py:374
+#: apps/accounts/views/auth.py:376
 msgid "Your email is already verified."
 msgstr "Seu e-mail já está verificado."
 
-#: apps/accounts/views/auth.py:378
+#: apps/accounts/views/auth.py:380
 msgid "Please wait before requesting a new link."
 msgstr "Aguarde antes de solicitar um novo link."
 
-#: apps/accounts/views/auth.py:386
+#: apps/accounts/views/auth.py:388
 msgid "A new verification link has been sent to your email."
 msgstr "Um novo link de verificação foi enviado para o seu e-mail."
 
-#: apps/accounts/views/auth.py:393
+#: apps/accounts/views/auth.py:395
 msgid "Verify token"
 msgstr "Verificar token"
 
-#: apps/accounts/views/auth.py:395
+#: apps/accounts/views/auth.py:397
 msgid ""
 "Check whether a token is valid: `200` when it is, `401` otherwise. It says "
 "nothing about what the token grants."
@@ -1461,7 +1461,7 @@ msgstr "Entrou na conta"
 msgid "Failed sign-in attempt"
 msgstr "Tentativa de entrada com falha"
 
-#: apps/audit/choices.py:58
+#: apps/audit/choices.py:58 apps/platform/choices.py:9
 msgid "Signed out"
 msgstr "Saiu da conta"
 
@@ -1521,19 +1521,31 @@ msgstr "E-mail de verificação reenviado"
 msgid "Password reset forced"
 msgstr "Redefinição de senha forçada"
 
-#: apps/audit/choices.py:107 apps/platform/apps.py:8 apps/platform/views.py:57
+#: apps/audit/choices.py:105
+msgid "Viewed by platform support"
+msgstr "Visualizada pelo suporte da plataforma"
+
+#: apps/audit/choices.py:109
+msgid "Viewing session ended"
+msgstr "Sessão de visualização encerrada"
+
+#: apps/audit/choices.py:113
+msgid "Viewing session expired"
+msgstr "Sessão de visualização expirada"
+
+#: apps/audit/choices.py:119 apps/platform/apps.py:10 apps/platform/views.py:63
 msgid "Platform"
 msgstr "Plataforma"
 
-#: apps/audit/choices.py:108 templates/drf_spectacular/swagger_ui.html:133
+#: apps/audit/choices.py:120 templates/drf_spectacular/swagger_ui.html:133
 msgid "System"
 msgstr "Sistema"
 
-#: apps/audit/choices.py:114
+#: apps/audit/choices.py:126
 msgid "Previous owner role"
 msgstr "Função anterior do dono"
 
-#: apps/audit/choices.py:115
+#: apps/audit/choices.py:127
 msgid "New owner role"
 msgstr "Função do novo dono"
 
@@ -1714,6 +1726,14 @@ msgid "Invalid state"
 msgstr "Estado inválido"
 
 #: apps/generics/choices.py:16
+msgid "Read-only impersonation"
+msgstr "Visualização somente leitura"
+
+#: apps/generics/choices.py:17
+msgid "Impersonation ended"
+msgstr "Visualização encerrada"
+
+#: apps/generics/choices.py:18
 msgid "Internal error"
 msgstr "Erro interno"
 
@@ -1964,6 +1984,22 @@ msgstr ""
 msgid "Maximum: {max}."
 msgstr "Máximo: {max}."
 
+#: apps/platform/choices.py:6
+msgid "Exit"
+msgstr "Saída"
+
+#: apps/platform/choices.py:7
+msgid "Expired"
+msgstr "Expirada"
+
+#: apps/platform/choices.py:8
+msgid "User blocked"
+msgstr "Usuário bloqueado"
+
+#: apps/platform/exceptions.py:9
+msgid "Read-only while viewing as another user"
+msgstr "Somente leitura enquanto vê como outro usuário"
+
 #: apps/platform/filters.py:27 apps/platform/filters.py:60
 #: apps/platform/filters.py:96
 msgid "Search"
@@ -1993,115 +2029,197 @@ msgstr "Escopo"
 msgid "Account"
 msgstr "Conta"
 
-#: apps/platform/serializers.py:278 apps/platform/serializers.py:279
+#: apps/platform/impersonation.py:30
+msgid "The user was blocked, so the viewing session ended."
+msgstr "O usuário foi bloqueado, então a sessão de visualização terminou."
+
+#: apps/platform/impersonation.py:33
+msgid "The viewing session ended."
+msgstr "A sessão de visualização terminou."
+
+#: apps/platform/impersonation.py:63
+msgid "This user can't be viewed (platform staff, blocked or deleted)."
+msgstr ""
+"Não é possível ver este usuário (equipe da plataforma, bloqueado ou "
+"excluído)."
+
+#: apps/platform/impersonation.py:67 apps/platform/models.py:70
+msgid "You already have an active viewing session."
+msgstr "Você já tem uma sessão de visualização ativa."
+
+#: apps/platform/models.py:20
+msgid "Staff"
+msgstr "Equipe"
+
+#: apps/platform/models.py:21
+msgid "Platform staff member viewing as the target"
+msgstr "Membro da equipe da plataforma que vê como o usuário"
+
+#: apps/platform/models.py:27
+msgid "Target"
+msgstr "Usuário visualizado"
+
+#: apps/platform/models.py:28
+msgid "User being viewed"
+msgstr "Usuário sendo visualizado"
+
+#: apps/platform/models.py:32
+msgid "Reason"
+msgstr "Motivo"
+
+#: apps/platform/models.py:33
+msgid "Why the staff member views as the target"
+msgstr "Por que o membro da equipe vê como o usuário"
+
+#: apps/platform/models.py:37
+msgid "Started At"
+msgstr "Iniciada em"
+
+#: apps/platform/models.py:38
+msgid "When the viewing session started"
+msgstr "Quando a sessão de visualização começou"
+
+#: apps/platform/models.py:41
+msgid "Expires At"
+msgstr "Expira em"
+
+#: apps/platform/models.py:42
+msgid "When the viewing session ends at the latest"
+msgstr "Quando a sessão de visualização termina, no máximo"
+
+#: apps/platform/models.py:47
+msgid "Ended At"
+msgstr "Encerrada em"
+
+#: apps/platform/models.py:48
+msgid "When the viewing session ended"
+msgstr "Quando a sessão de visualização terminou"
+
+#: apps/platform/models.py:54
+msgid "End Reason"
+msgstr "Motivo do encerramento"
+
+#: apps/platform/models.py:55
+msgid "Why the viewing session ended"
+msgstr "Por que a sessão de visualização terminou"
+
+#: apps/platform/models.py:61
+msgid "Impersonation"
+msgstr "Visualização como usuário"
+
+#: apps/platform/models.py:62
+msgid "Impersonations"
+msgstr "Visualizações como usuário"
+
+#: apps/platform/serializers.py:273 apps/platform/serializers.py:274
 msgid "Enter a reason."
 msgstr "Informe um motivo."
 
-#: apps/platform/serializers.py:280
+#: apps/platform/serializers.py:275
 msgid "Use at most 500 characters."
 msgstr "Use no máximo 500 caracteres."
 
-#: apps/platform/services.py:84
+#: apps/platform/services.py:86
 msgid "This user account is deleted."
 msgstr "A conta deste usuário foi excluída."
 
-#: apps/platform/services.py:92
+#: apps/platform/services.py:94
 msgid "This organization is already suspended."
 msgstr "Esta organização já está suspensa."
 
-#: apps/platform/services.py:124
+#: apps/platform/services.py:126
 msgid "This organization is already active."
 msgstr "Esta organização já está ativa."
 
-#: apps/platform/services.py:167
+#: apps/platform/services.py:169
 msgid "This member can no longer become the owner."
 msgstr "Este membro não pode mais se tornar o dono."
 
-#: apps/platform/services.py:218
+#: apps/platform/services.py:220
 msgid "You can't block your own account."
 msgstr "Você não pode bloquear a própria conta."
 
-#: apps/platform/services.py:221
+#: apps/platform/services.py:223
 msgid "This user is already blocked."
 msgstr "Este usuário já está bloqueado."
 
-#: apps/platform/services.py:238
+#: apps/platform/services.py:241
 msgid "This user is not blocked."
 msgstr "Este usuário não está bloqueado."
 
-#: apps/platform/services.py:261
+#: apps/platform/services.py:264
 msgid "This user's email is already verified."
 msgstr "O e-mail deste usuário já está verificado."
 
-#: apps/platform/services.py:265
+#: apps/platform/services.py:268
 #, python-brace-format
 msgid "Wait {seconds} seconds before sending again."
 msgstr "Aguarde {seconds} segundos para enviar novamente."
 
-#: apps/platform/views.py:68
+#: apps/platform/views.py:74
 msgid "Get platform overview"
 msgstr "Obter visão geral da plataforma"
 
-#: apps/platform/views.py:69
+#: apps/platform/views.py:75
 msgid "Platform numbers, computed when requested (platform staff)."
 msgstr ""
 "Números da plataforma, calculados na requisição (equipe da plataforma)."
 
-#: apps/platform/views.py:156
+#: apps/platform/views.py:162
 msgid "Platform admins only; a reason is recorded."
 msgstr "Apenas administradores da plataforma; um motivo é registrado."
 
-#: apps/platform/views.py:165
+#: apps/platform/views.py:171
 msgid "List organizations"
 msgstr "Listar organizações"
 
-#: apps/platform/views.py:166
+#: apps/platform/views.py:172
 msgid "Paginated list of every organization, for platform staff."
 msgstr "Lista paginada de todas as organizações, para a equipe da plataforma."
 
-#: apps/platform/views.py:169
+#: apps/platform/views.py:175
 msgid "Get organization"
 msgstr "Obter organização"
 
-#: apps/platform/views.py:170
+#: apps/platform/views.py:176
 msgid "Return any organization with its owner and status, for platform staff."
 msgstr ""
 "Retorna qualquer organização com seu proprietário e status, para a equipe da "
 "plataforma."
 
-#: apps/platform/views.py:173
+#: apps/platform/views.py:179
 msgid "List organization members"
 msgstr "Listar membros da organização"
 
-#: apps/platform/views.py:174
+#: apps/platform/views.py:180
 msgid "Paginated list of the members of the organization, for platform staff."
 msgstr ""
 "Lista paginada dos membros da organização, para a equipe da plataforma."
 
-#: apps/platform/views.py:179
+#: apps/platform/views.py:185
 msgid "List organization teams"
 msgstr "Listar equipes da organização"
 
-#: apps/platform/views.py:180
+#: apps/platform/views.py:186
 msgid "Paginated list of the teams of the organization, for platform staff."
 msgstr ""
 "Lista paginada das equipes da organização, para a equipe da plataforma."
 
-#: apps/platform/views.py:184
+#: apps/platform/views.py:190
 msgid "List organization invitations"
 msgstr "Listar convites da organização"
 
-#: apps/platform/views.py:185
+#: apps/platform/views.py:191
 msgid ""
 "Paginated list of the invitations of the organization, for platform staff."
 msgstr ""
 "Lista paginada dos convites da organização, para a equipe da plataforma."
 
-#: apps/platform/views.py:191
+#: apps/platform/views.py:197
 msgid "Suspend organization"
 msgstr "Suspender organização"
 
-#: apps/platform/views.py:193
+#: apps/platform/views.py:199
 msgid ""
 "Suspend the organization: its members can no longer use it until it is "
 "reactivated. The owner is emailed. The reason is required."
@@ -2109,20 +2227,20 @@ msgstr ""
 "Suspende a organização: seus membros não podem mais usá-la até que seja "
 "reativada. O proprietário é avisado por e-mail. O motivo é obrigatório."
 
-#: apps/platform/views.py:200
+#: apps/platform/views.py:206
 msgid "Reactivate organization"
 msgstr "Reativar organização"
 
-#: apps/platform/views.py:201
+#: apps/platform/views.py:207
 msgid "Lift the suspension of the organization. The owner is emailed."
 msgstr ""
 "Retira a suspensão da organização. O proprietário é avisado por e-mail."
 
-#: apps/platform/views.py:206
+#: apps/platform/views.py:212
 msgid "Transfer ownership"
 msgstr "Transferir propriedade"
 
-#: apps/platform/views.py:208
+#: apps/platform/views.py:214
 msgid ""
 "Make another member the owner of the organization; the previous owner "
 "becomes an admin. Both are emailed."
@@ -2130,30 +2248,30 @@ msgstr ""
 "Torna outro membro o proprietário da organização; o proprietário anterior "
 "passa a ser administrador. Ambos são avisados por e-mail."
 
-#: apps/platform/views.py:280
+#: apps/platform/views.py:286
 msgid "List users"
 msgstr "Listar usuários"
 
-#: apps/platform/views.py:281
+#: apps/platform/views.py:287
 msgid "Paginated list of every user account, for platform staff."
 msgstr ""
 "Lista paginada de todas as contas de usuário, para a equipe da plataforma."
 
-#: apps/platform/views.py:284
+#: apps/platform/views.py:290
 msgid "Get user"
 msgstr "Obter usuário"
 
-#: apps/platform/views.py:285
+#: apps/platform/views.py:291
 msgid "Return any user account with its status, for platform staff."
 msgstr ""
 "Retorna qualquer conta de usuário com seu status, para a equipe da "
 "plataforma."
 
-#: apps/platform/views.py:290
+#: apps/platform/views.py:296
 msgid "Block user"
 msgstr "Bloquear usuário"
 
-#: apps/platform/views.py:292
+#: apps/platform/views.py:298
 msgid ""
 "Block the account: its sessions end and sign-in is refused until it is "
 "unblocked. The reason is required."
@@ -2161,11 +2279,11 @@ msgstr ""
 "Bloqueia a conta: suas sessões são encerradas e o acesso é recusado até que "
 "seja desbloqueada. O motivo é obrigatório."
 
-#: apps/platform/views.py:299
+#: apps/platform/views.py:305
 msgid "Unblock user"
 msgstr "Desbloquear usuário"
 
-#: apps/platform/views.py:301
+#: apps/platform/views.py:307
 msgid ""
 "Allow the account to sign in again; the sessions ended by the block stay "
 "ended."
@@ -2173,25 +2291,25 @@ msgstr ""
 "Permite que a conta entre novamente; as sessões encerradas pelo bloqueio "
 "continuam encerradas."
 
-#: apps/platform/views.py:308
+#: apps/platform/views.py:314
 msgid "End user sessions"
 msgstr "Encerrar sessões do usuário"
 
-#: apps/platform/views.py:309
+#: apps/platform/views.py:315
 msgid "End every session of the account; it must sign in again."
 msgstr "Encerra todas as sessões da conta; ela precisa entrar novamente."
 
-#: apps/platform/views.py:315
+#: apps/platform/views.py:321
 msgid "Send a new email verification link to the account. A cooldown applies."
 msgstr ""
 "Envia um novo link de verificação de e-mail para a conta. Há um intervalo "
 "mínimo entre envios."
 
-#: apps/platform/views.py:320
+#: apps/platform/views.py:326
 msgid "Force password reset"
 msgstr "Forçar redefinição de senha"
 
-#: apps/platform/views.py:322
+#: apps/platform/views.py:328
 msgid ""
 "The current password stops working, every session ends and a password reset "
 "link is emailed."
@@ -2199,28 +2317,51 @@ msgstr ""
 "A senha atual deixa de funcionar, todas as sessões são encerradas e um link "
 "de redefinição de senha é enviado por e-mail."
 
-#: apps/platform/views.py:369
+#: apps/platform/views.py:333
+msgid "View as user"
+msgstr "Ver como usuário"
+
+#: apps/platform/views.py:335
+msgid ""
+"Start viewing the app as this user: read-only, at most 30 minutes, recorded "
+"in their account activity. The response is the session as the user. A reason "
+"is required."
+msgstr "Começa a ver o app como este usuário: somente leitura, no máximo 30 minutos, registrado na atividade da conta dele. A resposta é a sessão como o usuário. O motivo é obrigatório."
+
+#: apps/platform/views.py:405
 msgid "List audit events"
 msgstr "Listar eventos de auditoria"
 
-#: apps/platform/views.py:371
+#: apps/platform/views.py:407
 msgid ""
 "Paginated audit events of every organization and account, for platform staff."
 msgstr ""
 "Eventos de auditoria paginados de todas as organizações e contas, para a "
 "equipe da plataforma."
 
-#: apps/platform/views.py:376
+#: apps/platform/views.py:412
 msgid "Get audit event"
 msgstr "Obter evento de auditoria"
 
-#: apps/platform/views.py:377
+#: apps/platform/views.py:413
 msgid "Return any audit event, for platform staff."
 msgstr "Retorna qualquer evento de auditoria, para a equipe da plataforma."
 
-#: apps/platform/views.py:380
+#: apps/platform/views.py:416
 msgid "Audit events filter options"
 msgstr "Opções de filtro dos eventos de auditoria"
+
+#: apps/platform/views.py:431
+msgid "Exit viewing session"
+msgstr "Sair da sessão de visualização"
+
+#: apps/platform/views.py:434
+msgid "End the current viewing session and return to the staff account."
+msgstr "Encerra a sessão de visualização atual e volta para a conta da equipe."
+
+#: apps/platform/views.py:442
+msgid "There is no active viewing session."
+msgstr "Não há sessão de visualização ativa."
 
 #: apps/teams/apps.py:10 apps/teams/models/team.py:34
 msgid "Teams"

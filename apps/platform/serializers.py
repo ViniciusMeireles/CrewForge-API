@@ -10,6 +10,7 @@ from apps.accounts.serializers.organization import (
     OrganizationProfileDetailRelatedSerializer,
 )
 from apps.audit.serializers.audit_event import AuditEventSerializer
+from apps.platform.impersonation import can_be_impersonated
 from apps.teams.models.team import Team
 
 User = get_user_model()
@@ -243,13 +244,7 @@ class PlatformUserDetailSerializer(PlatformUserListSerializer):
 
     def get_can_impersonate(self, obj) -> bool:
         staff = self._request_user()
-        return bool(
-            staff
-            and staff.pk != obj.pk
-            and obj.is_active
-            and not obj.is_blocked
-            and not obj.is_platform_staff
-        )
+        return bool(staff and can_be_impersonated(staff, obj))
 
     def get_can_block(self, obj) -> bool:
         staff = self._request_user()
@@ -309,3 +304,7 @@ class OwnershipTransferSerializer(ReasonRequiredSerializer):
             .filter(organization=organization, user__is_active=True)
             .exclude(pk=organization.owner_id)
         )
+
+
+class ImpersonationExitSerializer(serializers.Serializer):
+    user = serializers.IntegerField(read_only=True)

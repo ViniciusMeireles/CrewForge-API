@@ -51,11 +51,24 @@ class SessionUserSerializer(UserReadySerializer):
         read_only_fields = fields
 
 
+class SessionPersonSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    full_name = serializers.CharField(read_only=True)
+
+
+class SessionImpersonationSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    target = SessionPersonSerializer(read_only=True)
+    staff = SessionPersonSerializer(read_only=True)
+    expires_at = serializers.DateTimeField(read_only=True)
+
+
 class SessionSerializer(serializers.Serializer):
     user = SessionUserSerializer()
     organizations = OrganizationListSerializer(many=True, read_only=True)
     organization = OrganizationListSerializer(allow_null=True, default=None)
     member = MemberSessionSerializer(allow_null=True, default=None)
+    impersonation = SessionImpersonationSerializer(allow_null=True, default=None)
 
 
 class CookieSettingsSerializer(serializers.Serializer):

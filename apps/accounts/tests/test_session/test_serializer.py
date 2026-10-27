@@ -15,7 +15,7 @@ class SessionSerializerTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(
             set(response.data.keys()),
-            {'user', 'organizations', 'organization', 'member'},
+            {'user', 'organizations', 'organization', 'member', 'impersonation'},
         )
 
     def test_response_keys_with_org_context(self):
@@ -24,7 +24,7 @@ class SessionSerializerTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(
             set(response.data.keys()),
-            {'user', 'organizations', 'organization', 'member'},
+            {'user', 'organizations', 'organization', 'member', 'impersonation'},
         )
 
     def test_user_sub_fields(self):

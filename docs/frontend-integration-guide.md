@@ -758,6 +758,8 @@ identifiers — never match on `message`, always match on `code`.
 | `ACCOUNT_BLOCKED` | 401 | `null` — correct password (or refresh / access token) of a blocked account; message "Your account is blocked. Contact support." |
 | `ORGANIZATION_SUSPENDED` | 403 | `null` — the session's Organization is suspended; the API has already dropped it from the session (go back to the Organization selection) |
 | `INVALID_STATE` | 409 | `null` — the action does not apply to the current state (already suspended, not blocked, own account…); `message` is user-facing |
+| `READ_ONLY_IMPERSONATION` | 403 | `null` — a write while viewing as another user; message "Read-only while viewing as another user" |
+| `IMPERSONATION_ENDED` | 403 | `{"reason": "expired" \| "user_blocked" \| "exit" \| "signed_out", "user": <target id>}` — the viewing session ended (time, blocked user); drop it and go back to `/platform/users/{user}` |
 | `THROTTLED` | 429 | `null`, or `{"retry_after_seconds": n}` for a per-object cooldown (platform resend verification) |
 | `INTERNAL_ERROR` | 500 | `null` |
 
@@ -1292,6 +1294,33 @@ Effects the SPA must handle:
   account is blocked. Deleted accounts refuse every action (`409` "This user account is deleted."). Unblocking does not restore ended sessions. Force reset also makes the current password unusable and emails
   a reset link.
 
+
+### 18.2. View as a user (impersonation)
+
+Platform staff (`support` or `admin`) can view the app as a User, read-only, for at most 30 minutes
+([ADR-009](../../docs/adr/009-platform-access-outside-organization-context.md)). The viewing session lives in the
+staff member's Django session (`sessionid`): their own JWT stays the credential, no token is ever issued for the User.
+
+| Endpoint | Body | Response / errors |
+|---|---|---|
+| `POST /api/platform/users/{id}/impersonate/` | `reason` (required, ≤ 500) | `200` the `Session` payload as the User (`organization: null`); `409` "This user can't be viewed (platform staff, blocked or deleted)." / "You already have an active viewing session." |
+| `POST /api/platform/impersonation/exit/` | — | `200` `{user: <target id>}` (go back to `/platform/users/{user}`); `409` without an active viewing session |
+
+While viewing:
+
+- Every request acts as the User (`request.user`): their Organizations, Roles, `member.access`. The platform panel is
+  not available (the User has no platform role) until exit.
+- `GET /api/accounts/session/` carries `impersonation {id, target {id, full_name}, staff {id, full_name}, expires_at}`
+  (`null` otherwise); the remaining time comes from `expires_at`.
+- Writes answer `403 READ_ONLY_IMPERSONATION`, except entering an Organization
+  (`POST /api/accounts/organizations/{id}/login/`, which keeps the Member's `last_login_at`), logout (ends the viewing
+  session with `signed_out`) and the exit route.
+- A suspended Organization answers `403 ORGANIZATION_SUSPENDED` as for the User; the viewing session goes on.
+- After 30 minutes, or when the User is blocked, the next request answers `403 IMPERSONATION_ENDED`
+  (`details.reason` `expired` | `user_blocked`, `details.user`) and the session is the staff member's again.
+- Start, end and expiry are account events of the User (`user.impersonation_started` with the reason,
+  `user.impersonation_ended`, `user.impersonation_expired`), visible in their account activity; events recorded while
+  viewing carry `impersonator`.
 ---
 
 ## 19. Troubleshooting

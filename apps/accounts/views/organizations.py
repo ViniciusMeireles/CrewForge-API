@@ -169,7 +169,8 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
             'organization.login', request, organization_id=organization.id
         )
 
-        if member := get_member(request):
+        member = get_member(request)
+        if member and not getattr(request, 'impersonator', None):
             member.last_login_at = timezone.now()
             member.save(update_fields=['last_login_at'])
 
@@ -178,6 +179,7 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
             'organizations': user.active_organizations.select_related('profile'),
             'organization': organization,
             'member': member,
+            'impersonation': getattr(request, 'impersonation', None),
         }
         serializer = SessionSerializer(instance=data, context={'request': request})
         return Response(data=serializer.data, status=http_status.HTTP_200_OK)
