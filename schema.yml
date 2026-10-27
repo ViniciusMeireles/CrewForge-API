@@ -2722,6 +2722,9 @@ paths:
           - team_member.removed
           - team_member.updated
           - user.blocked
+          - user.impersonation_ended
+          - user.impersonation_expired
+          - user.impersonation_started
           - user.password_reset_forced
           - user.platform_role_changed
           - user.profile.updated
@@ -2780,6 +2783,9 @@ paths:
           * `user.sessions_ended` - Sessions ended by platform support
           * `user.verification_resent` - Verification email resent
           * `user.password_reset_forced` - Password reset forced
+          * `user.impersonation_started` - Viewed by platform support
+          * `user.impersonation_ended` - Viewing session ended
+          * `user.impersonation_expired` - Viewing session expired
       - in: query
         name: action__in
         schema:
@@ -3216,6 +3222,9 @@ paths:
           - team_member.removed
           - team_member.updated
           - user.blocked
+          - user.impersonation_ended
+          - user.impersonation_expired
+          - user.impersonation_started
           - user.password_reset_forced
           - user.platform_role_changed
           - user.profile.updated
@@ -3274,6 +3283,9 @@ paths:
           * `user.sessions_ended` - Sessions ended by platform support
           * `user.verification_resent` - Verification email resent
           * `user.password_reset_forced` - Password reset forced
+          * `user.impersonation_started` - Viewed by platform support
+          * `user.impersonation_ended` - Viewing session ended
+          * `user.impersonation_expired` - Viewing session expired
       - in: query
         name: action__in
         schema:
@@ -3435,6 +3447,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OptionsListPlatformAuditEvent'
+          description: ''
+  /api/platform/impersonation/exit/:
+    post:
+      operationId: platform_impersonation_exit_create
+      description: End the current viewing session and return to the staff account.
+      summary: Exit viewing session
+      tags:
+      - Platform
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImpersonationExit'
           description: ''
   /api/platform/organizations/:
     get:
@@ -4208,6 +4237,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlatformUserDetail'
+          description: ''
+  /api/platform/users/{id}/impersonate/:
+    post:
+      operationId: platform_users_impersonate_create
+      description: 'Start viewing the app as this user: read-only, at most 30 minutes,
+        recorded in their account activity. The response is the session as the user.
+        A reason is required.'
+      summary: View as user
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReasonRequired'
+        required: true
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
           description: ''
   /api/platform/users/{id}/resend-verification/:
     post:
@@ -4989,6 +5056,9 @@ components:
       - user.sessions_ended
       - user.verification_resent
       - user.password_reset_forced
+      - user.impersonation_started
+      - user.impersonation_ended
+      - user.impersonation_expired
       type: string
       description: |-
         * `organization.created` - Organization created
@@ -5040,6 +5110,9 @@ components:
         * `user.sessions_ended` - Sessions ended by platform support
         * `user.verification_resent` - Verification email resent
         * `user.password_reset_forced` - Password reset forced
+        * `user.impersonation_started` - Viewed by platform support
+        * `user.impersonation_ended` - Viewing session ended
+        * `user.impersonation_expired` - Viewing session expired
     ActorTypeEnum:
       enum:
       - user
@@ -5132,6 +5205,9 @@ components:
             * `user.sessions_ended` - Sessions ended by platform support
             * `user.verification_resent` - Verification email resent
             * `user.password_reset_forced` - Password reset forced
+            * `user.impersonation_started` - Viewed by platform support
+            * `user.impersonation_ended` - Viewing session ended
+            * `user.impersonation_expired` - Viewing session expired
         action_display:
           type: string
         actor_type:
@@ -5354,6 +5430,14 @@ components:
         * `logo_vertical` - Logo Vertical
         * `logo_dark` - Logo Dark
         * `logo_light` - Logo Light
+    ImpersonationExit:
+      type: object
+      properties:
+        user:
+          type: integer
+          readOnly: true
+      required:
+      - user
     Invitation:
       type: object
       description: Mixin to validate the role of a user.
@@ -7557,6 +7641,9 @@ components:
             * `user.sessions_ended` - Sessions ended by platform support
             * `user.verification_resent` - Verification email resent
             * `user.password_reset_forced` - Password reset forced
+            * `user.impersonation_started` - Viewed by platform support
+            * `user.impersonation_ended` - Viewing session ended
+            * `user.impersonation_expired` - Viewing session expired
         action_display:
           type: string
         actor_type:
@@ -8369,6 +8456,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/MemberSession'
           nullable: true
+        impersonation:
+          allOf:
+          - $ref: '#/components/schemas/SessionImpersonation'
+          nullable: true
       required:
       - organizations
       - user
@@ -8389,6 +8480,41 @@ components:
           type: boolean
       required:
       - session_configured
+    SessionImpersonation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        target:
+          allOf:
+          - $ref: '#/components/schemas/SessionPerson'
+          readOnly: true
+        staff:
+          allOf:
+          - $ref: '#/components/schemas/SessionPerson'
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - expires_at
+      - id
+      - staff
+      - target
+    SessionPerson:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+      required:
+      - full_name
+      - id
     SessionUser:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization

@@ -17,6 +17,8 @@ from apps.audit.choices import AuditActionChoices, AuditActorTypeChoices
 from apps.audit.services import label_for, record_audit_event
 from apps.generics.errors import CooldownThrottled, InvalidState
 from apps.generics.utils.db import queue_on_commit
+from apps.platform.choices import ImpersonationEndReasonChoices
+from apps.platform.impersonation import end_impersonations_of
 
 User = get_user_model()
 
@@ -226,6 +228,7 @@ def block_user(request, user, reason: str):
         update_fields=['blocked_at', 'blocked_by', 'blocked_reason', 'updated_at']
     )
     revoke_sessions(user)
+    end_impersonations_of(user, ImpersonationEndReasonChoices.USER_BLOCKED, request)
     _record_account_event(request, AuditActionChoices.USER_BLOCKED, user, reason)
     return user
 

@@ -33,6 +33,7 @@ class SessionView(OrganizationScopedRequestMixin, APIView):
             'organizations': user.active_organizations.select_related('profile'),
             'organization': organization,
             'member': member,
+            'impersonation': getattr(request, 'impersonation', None),
         }
 
         serializer = SessionSerializer(

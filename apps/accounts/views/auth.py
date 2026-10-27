@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_out
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -316,6 +317,7 @@ class LogoutView(APIView):
             return Response({'detail': error}, status=http_status.HTTP_400_BAD_REQUEST)
 
         log_security_event('auth.logout', request, user_id=user_id)
+        user_logged_out.send(sender=type(self), request=request, user=request.user)
         request.session.flush()
         response = Response(status=http_status.HTTP_204_NO_CONTENT)
         return clear_auth_cookies(response) if cookie_mode else response

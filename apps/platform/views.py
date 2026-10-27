@@ -7,20 +7,25 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
+from apps.accounts.serializers.session import SessionSerializer
 from apps.audit.models.audit_event import AuditEvent
+from apps.generics.errors import InvalidState
 from apps.generics.mixins.views import OptionsModelMixin
+from apps.platform.choices import ImpersonationEndReasonChoices
 from apps.platform.filters import (
     PlatformAuditEventFilter,
     PlatformMemberFilter,
     PlatformOrganizationFilter,
     PlatformUserFilter,
 )
+from apps.platform.impersonation import end_impersonation, start_impersonation
 from apps.platform.permissions import IsPlatformAdmin, IsPlatformStaff
 from apps.platform.selectors import (
     organization_detail_queryset,
@@ -29,6 +34,7 @@ from apps.platform.selectors import (
     users_queryset,
 )
 from apps.platform.serializers import (
+    ImpersonationExitSerializer,
     OwnershipTransferSerializer,
     PlatformAuditEventSerializer,
     PlatformInvitationSerializer,
@@ -323,6 +329,16 @@ class PlatformOrganizationViewSet(PlatformActionsViewSet):
             'reset link is emailed.'
         ),
     ),
+    impersonate=read_schema(
+        _('View as user'),
+        _(
+            'Start viewing the app as this user: read-only, at most 30 minutes, '
+            'recorded in their account activity. The response is the session as '
+            'the user. A reason is required.'
+        ),
+        request=ReasonRequiredSerializer,
+        responses={200: SessionSerializer},
+    ),
 )
 class PlatformUserViewSet(PlatformActionsViewSet):
     filterset_class = PlatformUserFilter
@@ -342,6 +358,26 @@ class PlatformUserViewSet(PlatformActionsViewSet):
         if self.action == 'list':
             return PlatformUserListSerializer
         return PlatformUserDetailSerializer
+
+    @action(detail=True, methods=['post'])
+    def impersonate(self, request, *args, **kwargs):
+        target = self.get_object()
+        serializer = ReasonRequiredSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        impersonation = start_impersonation(
+            request, target, serializer.validated_data['reason']
+        )
+        data = {
+            'user': target,
+            'organizations': target.active_organizations.select_related('profile'),
+            'organization': None,
+            'member': None,
+            'impersonation': impersonation,
+        }
+        return Response(
+            data=SessionSerializer(instance=data, context={'request': request}).data,
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=['post'])
     def block(self, request, *args, **kwargs):
@@ -388,3 +424,24 @@ class PlatformAuditEventViewSet(OptionsModelMixin, PlatformReadOnlyViewSet):
     queryset = AuditEvent.objects.select_related('organization', 'impersonator')
     serializer_class = PlatformAuditEventSerializer
     filterset_class = PlatformAuditEventFilter
+
+
+@extend_schema(
+    tags=PLATFORM_TAGS,
+    summary=_('Exit viewing session'),
+    request=None,
+    responses={200: ImpersonationExitSerializer},
+    description=_('End the current viewing session and return to the staff account.'),
+)
+class ImpersonationExitView(APIView):
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post', 'options']
+
+    def post(self, request, *args, **kwargs):
+        if (impersonation := getattr(request, 'impersonation', None)) is None:
+            raise InvalidState(_('There is no active viewing session.'))
+        end_impersonation(impersonation, ImpersonationEndReasonChoices.EXIT, request)
+        return Response(
+            data=ImpersonationExitSerializer({'user': impersonation.target_id}).data,
+            status=status.HTTP_200_OK,
+        )

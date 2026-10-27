@@ -151,10 +151,19 @@ def record_audit_event(
     actor_type: str | None = None,
     actor_member=None,
     subject_user_id: int | None = None,
+    actor_user=None,
 ) -> AuditEvent:
     """Store one audit event; errors propagate to roll back the caller."""
     organization_id = _organization_id(action, request, target, organization_id)
     actor = _actor_fields(request, organization_id, actor_member)
+    if actor_user is not None:
+        actor.update(
+            actor_user=actor_user,
+            actor_member=None,
+            actor_label=label_for(actor_user),
+        )
+        if actor['impersonator'] == actor_user:
+            actor['impersonator'] = None
     if is_account_action(action) and subject_user_id is None and actor['actor_user']:
         subject_user_id = actor['actor_user'].pk
     return AuditEvent.objects.create(

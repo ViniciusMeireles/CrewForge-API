@@ -63,6 +63,7 @@ def user_authentication_rule(user) -> bool:
 
 class JWTCookieAuthenticationScheme(SimpleJWTScheme):
     target_class = 'apps.accounts.authentication.JWTCookieAuthentication'
+    match_subclasses = True
     name = ['jwtAuth', 'jwtCookieAuth']
 
     def get_security_definition(self, auto_schema):

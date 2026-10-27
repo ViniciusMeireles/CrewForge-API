@@ -100,6 +100,18 @@ class AuditActionChoices(models.TextChoices):
         'user.password_reset_forced',
         _('Password reset forced'),
     )
+    USER_IMPERSONATION_STARTED = (
+        'user.impersonation_started',
+        _('Viewed by platform support'),
+    )
+    USER_IMPERSONATION_ENDED = (
+        'user.impersonation_ended',
+        _('Viewing session ended'),
+    )
+    USER_IMPERSONATION_EXPIRED = (
+        'user.impersonation_expired',
+        _('Viewing session expired'),
+    )
 
 
 class AuditActorTypeChoices(models.TextChoices):

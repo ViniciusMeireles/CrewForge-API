@@ -57,6 +57,9 @@ CATALOG = {
     'user.sessions_ended',
     'user.verification_resent',
     'user.password_reset_forced',
+    'user.impersonation_started',
+    'user.impersonation_ended',
+    'user.impersonation_expired',
 }
 
 

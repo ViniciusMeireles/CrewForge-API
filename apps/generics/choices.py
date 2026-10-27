@@ -13,4 +13,6 @@ class ErrorCode(models.TextChoices):
     ACCOUNT_BLOCKED = 'ACCOUNT_BLOCKED', _('Account blocked')
     ORGANIZATION_SUSPENDED = 'ORGANIZATION_SUSPENDED', _('Organization suspended')
     INVALID_STATE = 'INVALID_STATE', _('Invalid state')
+    READ_ONLY_IMPERSONATION = 'READ_ONLY_IMPERSONATION', _('Read-only impersonation')
+    IMPERSONATION_ENDED = 'IMPERSONATION_ENDED', _('Impersonation ended')
     INTERNAL_ERROR = 'INTERNAL_ERROR', _('Internal error')
