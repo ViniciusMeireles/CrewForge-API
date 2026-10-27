@@ -61,9 +61,9 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 
 ### Phase 3: Increment 3 — impersonation (PR D)
 
-- [ ] `Impersonation` model, start/exit services and endpoints, session payload
-- [ ] Authentication swap, `DenyWritesWhileImpersonating`, logout, Organization login without `last_login_at`
-- [ ] Tests (AC-22…AC-27), schema, `make sync-docs`
+- [x] `Impersonation` model, start/exit services and endpoints, session payload
+- [x] Authentication swap, read-only enforcement, logout, Organization login without `last_login_at`
+- [x] Tests (AC-22…AC-27), schema (`make sync-docs` after merge)
 
 ### Phase 4: Docs
 
@@ -78,6 +78,7 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 | 2026-10-22 | Plan created (stage 5, `implementation-planner`) |
 | 2026-10-22 | Phase 1 (PR B) done: platform role, Organization status, read-only `/api/platform/` (overview, Organizations + tabs, Users, audit), session fields, admin/command audited, docs |
 | 2026-10-22 | Phase 0 done: shortcuts removed; Django admin validates StoredFiles with `StoredFileAdminSerializer`; code review clean; 1606 tests pass |
+| 2026-10-27 | Phase 3 (PR D) built: `Impersonation`, start/exit, authentication swap and read-only enforcement, session payload, logout and blocking end it, pt-BR |
 | 2026-10-23 | Phase 2 (PR C) built: blocking/revocation at authentication, suspension enforcement, eight admin actions with audit and owner emails, pt-BR |
 
 ---
@@ -98,6 +99,11 @@ the `is_superuser` shortcut is gone. All AC-1…AC-28 API tests of the test plan
 | Revocation checked before blocking in `JWTCookieAuthentication.get_user` (refines `tech.md`'s order) | Every token of a blocked User predates the block, so a stale cookie becomes anonymous instead of failing logout and public routes with `ACCOUNT_BLOCKED` (review finding); the SPA only needs `ACCOUNT_BLOCKED` at sign-in | `tech.md` order (blocked first) |
 | Blocked sign-in through `USER_AUTHENTICATION_RULE` | simplejwt calls it only after the password or refresh token is accepted (BR-22), in sign-in and refresh | Override `TokenObtainPairSerializer.validate` (tokens already issued by then) |
 | Org/User platform viewsets on `ReadOnlyModelViewSet` + `post` for the actions | `POST` on the lists stays `405` (no `create`) | `ModelViewSet` with `post` allowed |
+| Read-only enforced in `ImpersonationAuthentication` (allow-list by resolved view name) instead of a `DenyWritesWhileImpersonating` permission class | One place for every DRF view; a permission class would have to be added to each view that overrides `permission_classes` (refines the spec) | Global permission class + per-view additions |
+| Impersonation authentication lives in `apps/platform` and is the default class | `apps/accounts` must not import `apps/platform` | Swap inside `JWTCookieAuthentication` |
+| Logout ends the impersonation through Django's `user_logged_out` signal | Same layering rule; `LogoutView` stays in `apps/accounts` | Import platform services in the view |
+| An expired leftover (session lost) is ended when the staff member starts a new one; a staff member who loses the platform role has the session ended | Avoid a 30-minute lock-out; no viewing without the role | Refuse until it expires |
+| One active impersonation per staff member is protected by a partial unique constraint | BR-27 under concurrency | Application check only |
 | One service function per action | Single transaction, reused by views and tests | Logic in views |
 | `StoredFileAdminSerializer` for the StoredFile admin form | ADR-009 keeps Django admin access unchanged while the API serializer has no admin case | Context flag in the API serializer (review finding) |
 

@@ -185,6 +185,14 @@ These rules are non-negotiable:
   the same second as the revocation are kept (`iat` has second precision). Sign-in and refresh use
   `USER_AUTHENTICATION_RULE = user_authentication_rule`: only after the password (or refresh token) is accepted does a
   blocked account get `ACCOUNT_BLOCKED`; a wrong password keeps the generic error (no account enumeration).
+- **View as a user** (ADR-009, BR-26…BR-35): `apps.platform.authentication.ImpersonationAuthentication` (the default
+  authentication class; it extends `JWTCookieAuthentication`, so `apps/accounts` never imports `apps/platform`) reads
+  `impersonation_id` from the staff member's Django session and, for an active `Impersonation` of that staff member,
+  returns the target as `request.user` and sets `request.impersonator`. It is also the single read-only enforcement
+  point: unsafe methods are refused with `403 READ_ONLY_IMPERSONATION` unless the resolved view is the Organization
+  login, logout or the exit route, so no view can forget a permission class. Expired sessions, blocked or deleted
+  targets and staff who lost their platform role end the impersonation on the next request (`403 IMPERSONATION_ENDED`).
+  One active impersonation per staff member (partial unique constraint); logout ends it through `user_logged_out`.
 - **Suspended Organizations** (BR-11): `get_organization` / `get_member` ignore them, and
   `OrganizationScopedRequestMixin.check_permissions` refuses a request whose session Organization is suspended with
   `403 ORGANIZATION_SUSPENDED`, dropping it from the session, before any permission runs. The status query runs only
@@ -303,6 +311,7 @@ event-specific ids — never emails, passwords or tokens.
 | `organization.login`, `invitation.accepted`, `member.readmitted` | INFO | Yes |
 | `account.blocked_sign_in` | WARNING | No |
 | `organization.suspended_context_refused` (with `organization_id`) | INFO | No |
+| `impersonation.started` / `impersonation.ended` / `impersonation.expired` | INFO | No (the account events are recorded separately) |
 
 **Persisted** events are also stored as Audit Events (`apps/audit`) whenever the event name
 is an `AuditActionChoices` value: account events (`auth.*`) with no Organization and the
