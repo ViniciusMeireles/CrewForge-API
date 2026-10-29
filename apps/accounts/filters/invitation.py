@@ -10,7 +10,12 @@ class InvitationFilter(FilterSetMixin, filterset.FilterSet):
     """Filter for the Invitation model."""
 
     status = filters.ChoiceFilter(
-        choices=InvitationStatusChoices.choices, method='filter_status'
+        choices=[
+            choice
+            for choice in InvitationStatusChoices.choices
+            if choice[0] != InvitationStatusChoices.REVOKED
+        ],
+        method='filter_status',
     )
     is_accepted = filters.BooleanFilter(method='filter_is_accepted')
     is_expired = filters.BooleanFilter(method='filter_is_expired')

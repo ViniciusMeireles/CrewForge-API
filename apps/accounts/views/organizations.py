@@ -121,7 +121,11 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
         Override the get_queryset method to filter organizations by the authenticated
         user.
         """
-        queryset = super().get_queryset().with_logo_images().with_owner()
+        queryset = super().get_queryset()
+        if self.action in ('list', 'retrieve'):
+            queryset = queryset.with_logo_images()
+        if self.action in ('retrieve', 'update', 'partial_update'):
+            queryset = queryset.with_owner()
         if self.action == 'create':
             return queryset
         if not self.auth_user:

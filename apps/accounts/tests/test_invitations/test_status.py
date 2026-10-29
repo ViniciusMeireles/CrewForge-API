@@ -56,6 +56,13 @@ class InvitationStatusModelTestCase(TestCase):
         invitation.refresh_from_db()
         self.assertEqual(invitation.status, InvitationStatusChoices.REVOKED)
 
+    def test_inactivate_keeps_a_closed_outcome(self):
+        invitation = InvitationFactory(is_accepted=True)
+        invitation.inactivate()
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.status, InvitationStatusChoices.ACCEPTED)
+        self.assertFalse(invitation.is_active)
+
     def test_pending_past_expiry_reads_expired_without_writing(self):
         invitation = _past(InvitationFactory())
         with CaptureQueriesContext(connection) as queries:
@@ -273,10 +280,16 @@ class InvitationUniquenessMigrationTestCase(TransactionTestCase):
         organization = Organization.objects.create(name=slug, slug=slug)
         key = uuid.uuid4()
         older = OldInvitation.objects.create(
-            organization=organization, email='foo@x.com', key=key
+            organization=organization,
+            email='foo@x.com',
+            key=key,
+            expired_at=timezone.now() + timedelta(days=3),
         )
         newer = OldInvitation.objects.create(
-            organization=organization, email='FOO@x.com', key=key
+            organization=organization,
+            email='FOO@x.com',
+            key=key,
+            expired_at=timezone.now() - timedelta(days=1),
         )
         try:
             executor = MigrationExecutor(connection)
@@ -287,8 +300,8 @@ class InvitationUniquenessMigrationTestCase(TransactionTestCase):
             )
             older = Invitation.objects.get(pk=older.pk)
             newer = Invitation.objects.get(pk=newer.pk)
-            self.assertEqual(older.status, 'revoked')
-            self.assertEqual(newer.status, 'pending')
+            self.assertEqual(older.status, 'pending')
+            self.assertEqual(newer.status, 'revoked')
             self.assertNotEqual(older.key, newer.key)
         finally:
             executor = MigrationExecutor(connection)

@@ -144,7 +144,6 @@ paths:
           - declined
           - expired
           - pending
-          - revoked
         description: |-
           Lifecycle state of the invitation
 
@@ -152,7 +151,6 @@ paths:
           * `accepted` - Accepted
           * `declined` - Declined
           * `expired` - Expired
-          * `revoked` - Revoked
       tags:
       - Invitations
       security:
@@ -744,7 +742,6 @@ paths:
           - declined
           - expired
           - pending
-          - revoked
         description: |-
           Lifecycle state of the invitation
 
@@ -752,7 +749,6 @@ paths:
           * `accepted` - Accepted
           * `declined` - Declined
           * `expired` - Expired
-          * `revoked` - Revoked
       tags:
       - Invitations
       security:

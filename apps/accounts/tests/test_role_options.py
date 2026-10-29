@@ -31,7 +31,11 @@ class AssignableByTestCase(APITestCaseMixin, APITestCase):
         }
         for role, roles in expected.items():
             with self.subTest(role=role):
-                member = MemberFactory(organization=self.organization, role=role)
+                member = MemberFactory(
+                    organization=self.organization,
+                    role=role,
+                    replace_owner=role == MemberRoleChoices.OWNER,
+                )
                 self.assertEqual(set(MemberRoleChoices.assignable_by(member)), roles)
 
     def test_inactive_or_missing_member_assigns_nothing(self):
@@ -95,7 +99,11 @@ class MemberRoleOptionsTestCase(APITestCaseMixin, APITestCase):
         self.filter_url = reverse('accounts:members-filter-options')
 
     def _login(self, role):
-        member = MemberFactory(organization=self.organization, role=role)
+        member = MemberFactory(
+            organization=self.organization,
+            role=role,
+            replace_owner=role == MemberRoleChoices.OWNER,
+        )
         self.client.force_authenticate(member=member)
 
     def test_update_role_options_per_requester(self):

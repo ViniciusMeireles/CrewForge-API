@@ -1,6 +1,5 @@
 from django.db import migrations
-from django.db.models import OuterRef, Subquery, Value
-from django.db.models.functions import Coalesce, Concat, Trim
+from django.db.models import OuterRef, Subquery
 
 
 def forwards(apps, schema_editor):
@@ -15,22 +14,13 @@ def forwards(apps, schema_editor):
             ]
         )
     )
-    label = Trim(
-        Concat(
-            'email',
-            Value(' · '),
-            Coalesce('first_name', Value('')),
-            Value(' '),
-            Coalesce('last_name', Value('')),
-        )
-    )
-    events.filter(subject_user__isnull=False).update(
-        subject_label=Subquery(
-            User.objects.filter(pk=OuterRef('subject_user_id'))
-            .annotate(label=label)
-            .values('label')[:1]
-        )
-    )
+    subject_ids = events.filter(subject_user__isnull=False).values('subject_user_id')
+    for user in User.objects.filter(pk__in=subject_ids).only(
+        'email', 'first_name', 'last_name'
+    ):
+        name = ' '.join(filter(None, [user.first_name, user.last_name]))
+        label = ' · '.join(filter(None, [user.email, name]))[:300]
+        events.filter(subject_user_id=user.pk).update(subject_label=label)
 
 
 class Migration(migrations.Migration):

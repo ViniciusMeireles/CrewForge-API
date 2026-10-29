@@ -239,7 +239,8 @@ class Invitation(BaseModel):
         )
 
     def inactivate(self):
-        self.status = InvitationStatusChoices.REVOKED
+        if self.status == InvitationStatusChoices.PENDING:
+            self.status = InvitationStatusChoices.REVOKED
         super().inactivate()
 
     def clean(self):

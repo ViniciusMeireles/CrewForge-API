@@ -25,6 +25,11 @@ class SingleOwnerConstraintTestCase(TestCase):
                 role=MemberRoleChoices.OWNER,
             )
 
+    def test_factory_does_not_hide_a_second_owner(self):
+        organization = OrganizationFactory()
+        with self.assertRaises(IntegrityError):
+            MemberFactory(organization=organization, role=MemberRoleChoices.OWNER)
+
     def test_inactive_owner_does_not_count(self):
         organization = OrganizationFactory()
         organization.owner.role = MemberRoleChoices.ADMIN
@@ -32,7 +37,9 @@ class SingleOwnerConstraintTestCase(TestCase):
         MemberFactory(
             organization=organization, role=MemberRoleChoices.OWNER, is_active=False
         )
-        MemberFactory(organization=organization, role=MemberRoleChoices.OWNER)
+        MemberFactory(
+            organization=organization, role=MemberRoleChoices.OWNER, replace_owner=True
+        )
 
     def test_duplicate_membership_is_refused(self):
         member = MemberFactory()

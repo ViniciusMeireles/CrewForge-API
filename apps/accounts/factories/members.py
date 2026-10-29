@@ -22,11 +22,15 @@ class MemberFactory(ModelFactoryMixin):
     class Meta:
         model = Member
 
+    replace_owner = False
+
     @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        if kwargs.get('role') == MemberRoleChoices.OWNER and kwargs.get(
-            'is_active', True
-        ):
+    def _build(cls, model_class, *args, replace_owner=False, **kwargs):
+        return super()._build(model_class, *args, **kwargs)
+
+    @classmethod
+    def _create(cls, model_class, *args, replace_owner=False, **kwargs):
+        if replace_owner:
             model_class.objects.filter(
                 organization=kwargs['organization'],
                 role=MemberRoleChoices.OWNER,

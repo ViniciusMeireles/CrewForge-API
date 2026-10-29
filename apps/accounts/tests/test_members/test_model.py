@@ -22,7 +22,9 @@ class MemberModelTestCase(TestCase):
     def test_role_label_expression_uses_translated_label(self):
         for role in MemberRoleChoices:
             with self.subTest(role=role):
-                member = MemberFactory(role=role)
+                member = MemberFactory(
+                    role=role, replace_owner=role == MemberRoleChoices.OWNER
+                )
                 label = (
                     Member.objects.filter(id=member.id)
                     .annotate(role_label=Member.role_label_expression())
@@ -32,7 +34,7 @@ class MemberModelTestCase(TestCase):
                 self.assertEqual(label, str(role.label))
 
     def test_is_owner_true(self):
-        member = MemberFactory(role=MemberRoleChoices.OWNER)
+        member = MemberFactory(role=MemberRoleChoices.OWNER, replace_owner=True)
         self.assertTrue(member.is_owner)
 
     def test_is_owner_false_when_inactive(self):
@@ -56,7 +58,7 @@ class MemberModelTestCase(TestCase):
         self.assertTrue(member.is_member)
 
     def test_has_owner_permission(self):
-        member = MemberFactory(role=MemberRoleChoices.OWNER)
+        member = MemberFactory(role=MemberRoleChoices.OWNER, replace_owner=True)
         self.assertTrue(member.has_owner_permission)
 
     def test_has_owner_permission_inactive(self):
@@ -72,7 +74,7 @@ class MemberModelTestCase(TestCase):
         self.assertTrue(member.has_member_permission)
 
     def test_has_admin_permission_owner(self):
-        member = MemberFactory(role=MemberRoleChoices.OWNER)
+        member = MemberFactory(role=MemberRoleChoices.OWNER, replace_owner=True)
         self.assertTrue(member.has_admin_permission)
 
     def test_has_admin_permission_admin(self):
@@ -111,7 +113,9 @@ class MemberModelTestCase(TestCase):
         }
         for role, values in expected.items():
             with self.subTest(role=role):
-                member = MemberFactory(role=role)
+                member = MemberFactory(
+                    role=role, replace_owner=role == MemberRoleChoices.OWNER
+                )
                 self.assertEqual(
                     (
                         member.has_members_access,

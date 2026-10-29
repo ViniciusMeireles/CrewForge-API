@@ -58,6 +58,7 @@ class OverviewScopeTestCase(APITestCaseMixin, APITestCase):
         owner_member = MemberFactory(
             organization=self.organization,
             role=MemberRoleChoices.OWNER,
+            replace_owner=True,
         )
         InvitationFactory(
             organization=self.organization,

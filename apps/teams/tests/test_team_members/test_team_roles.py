@@ -33,6 +33,7 @@ class TeamRolesTestMixin(APITestCaseMixin):
         return reverse('teams:team_members-detail', args=[team_member.pk])
 
     def org_member(self, role=MemberRoleChoices.MEMBER, **kwargs):
+        kwargs.setdefault('replace_owner', role == MemberRoleChoices.OWNER)
         return MemberFactory(organization=self.organization, role=role, **kwargs)
 
     def team_member(self, team_role=TeamRole.MEMBER, org_role=MemberRoleChoices.MEMBER):

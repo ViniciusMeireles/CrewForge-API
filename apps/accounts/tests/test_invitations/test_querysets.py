@@ -26,6 +26,9 @@ class InvitationQuerySetVisibleToTestCase(TestCase):
         )
 
     def _new_member(self, **kwargs):
+        kwargs.setdefault(
+            'replace_owner', kwargs.get('role') == MemberRoleChoices.OWNER
+        )
         return MemberFactory(organization=self.organization, **kwargs)
 
     def test_none_member_returns_empty(self):
