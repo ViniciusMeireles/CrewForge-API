@@ -1,6 +1,5 @@
 from functools import cached_property
 
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.utils import (
@@ -16,7 +15,7 @@ from rest_framework import status as http_status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.accounts.choices import InvitationErrorMessages
+from apps.accounts.choices import InvitationErrorMessages, InvitationStatusChoices
 from apps.accounts.consts import INVITATION_LOOKUP_URL_KWARG
 from apps.accounts.filters.members import MemberFilter
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
@@ -190,15 +189,8 @@ class MemberViewSet(
     def invitation(self) -> Invitation | None:
         """The pending invitation of the URL key."""
         return (
-            Invitation.objects.filter(
-                key=self.kwargs.get(INVITATION_LOOKUP_URL_KWARG),
-                is_active=True,
-                is_expired=False,
-                is_accepted=False,
-            )
-            .exclude(
-                expired_at__lt=timezone.now(),
-            )
+            Invitation.objects.filter_effective_status(InvitationStatusChoices.PENDING)
+            .filter(key=self.kwargs.get(INVITATION_LOOKUP_URL_KWARG), is_active=True)
             .get_or_none()
         )
 

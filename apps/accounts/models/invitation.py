@@ -7,7 +7,11 @@ from django.db.models.functions import Upper
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.accounts.choices import InvitationErrorMessages, MemberRoleChoices
+from apps.accounts.choices import (
+    InvitationErrorMessages,
+    InvitationStatusChoices,
+    MemberRoleChoices,
+)
 from apps.accounts.consts import INVITATION_ACCEPT_URL_PATH
 from apps.accounts.managers.invitation import InvitationManager
 from apps.generics.errors import InvalidState
@@ -22,20 +26,13 @@ class Invitation(BaseModel):
         null=False,
         blank=False,
     )
-    is_accepted = models.BooleanField(
-        default=False,
-        verbose_name=_('Is Accepted'),
-        help_text=_('Is the invitation accepted by the user'),
-    )
-    is_expired = models.BooleanField(
-        default=False,
-        verbose_name=_('Is Expired'),
-        help_text=_('Is the invitation expired'),
-    )
-    is_declined = models.BooleanField(
-        default=False,
-        verbose_name=_('Is Declined'),
-        help_text=_('Whether the invitation was declined by the user'),
+    status = models.CharField(
+        max_length=16,
+        choices=InvitationStatusChoices.choices,
+        default=InvitationStatusChoices.PENDING,
+        db_index=True,
+        verbose_name=_('Status'),
+        help_text=_('Lifecycle state of the invitation'),
     )
     expired_at = models.DateTimeField(
         verbose_name=_('Expired At'),
@@ -106,9 +103,43 @@ class Invitation(BaseModel):
         verbose_name = _('Invitation')
         verbose_name_plural = _('Invitations')
         indexes = [models.Index(Upper('email'), name='invitation_email_upper_idx')]
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(status=InvitationStatusChoices.ACCEPTED)
+                | models.Q(accepted_at__isnull=False),
+                name='invitation_accepted_has_date',
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(status=InvitationStatusChoices.DECLINED)
+                | models.Q(declined_at__isnull=False),
+                name='invitation_declined_has_date',
+            ),
+        ]
 
     def __str__(self):
         return self.email
+
+    @property
+    def effective_status(self) -> str:
+        if (
+            self.status == InvitationStatusChoices.PENDING
+            and self.expired_at
+            and self.expired_at <= timezone.now()
+        ):
+            return InvitationStatusChoices.EXPIRED
+        return self.status
+
+    @property
+    def is_accepted(self) -> bool:
+        return self.status == InvitationStatusChoices.ACCEPTED
+
+    @property
+    def is_declined(self) -> bool:
+        return self.status == InvitationStatusChoices.DECLINED
+
+    @property
+    def is_expired(self) -> bool:
+        return self.effective_status == InvitationStatusChoices.EXPIRED
 
     def get_user(self):
         """Get the user associated with the invitation email."""
@@ -134,10 +165,6 @@ class Invitation(BaseModel):
         if self.is_declined:
             return False, str(InvitationErrorMessages.INVITATION_DECLINED.label)
         if self.is_expired:
-            return False, str(InvitationErrorMessages.INVITATION_EXPIRED.label)
-        elif self.expired_at and self.expired_at <= timezone.now():
-            self.is_expired = True
-            self.save()
             return False, str(InvitationErrorMessages.INVITATION_EXPIRED.label)
         elif not self.organization.is_active:
             return False, str(InvitationErrorMessages.ORGANIZATION_INACTIVE.label)
@@ -167,13 +194,13 @@ class Invitation(BaseModel):
 
         self.member = member
         self.user_id = member.user_id
-        self.is_accepted = True
+        self.status = InvitationStatusChoices.ACCEPTED
         self.accepted_at = timezone.now()
         self.save(
             update_fields=[
                 'member',
                 'user_id',
-                'is_accepted',
+                'status',
                 'accepted_at',
                 'updated_at',
             ],
@@ -189,16 +216,20 @@ class Invitation(BaseModel):
                 raise ValueError(message)
 
         self.user = user
-        self.is_declined = True
+        self.status = InvitationStatusChoices.DECLINED
         self.declined_at = timezone.now()
         self.save(
             update_fields=[
                 'user',
-                'is_declined',
+                'status',
                 'declined_at',
                 'updated_at',
             ]
         )
+
+    def inactivate(self):
+        self.status = InvitationStatusChoices.REVOKED
+        super().inactivate()
 
     def clean(self):
         """

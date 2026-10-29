@@ -184,6 +184,14 @@ class PreferredLanguageChoices(models.TextChoices):
     PT_BR = 'pt-br', 'Português (Brasil)'
 
 
+class InvitationStatusChoices(models.TextChoices):
+    PENDING = 'pending', _('Pending')
+    ACCEPTED = 'accepted', _('Accepted')
+    DECLINED = 'declined', _('Declined')
+    EXPIRED = 'expired', _('Expired')
+    REVOKED = 'revoked', _('Revoked')
+
+
 class InvitationErrorMessages(models.TextChoices):
     INVITATION_EXPIRED = 'invitation_expired', _('Invitation is expired')
     INVITATION_NOT_FOUND = 'invitation_not_found', _('Invitation not found or expired')

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from django.db.models import BooleanField, Exists, ExpressionWrapper, OuterRef, Q
 from django.utils import timezone
 
-from apps.accounts.choices import MemberRoleChoices
+from apps.accounts.choices import InvitationStatusChoices, MemberRoleChoices
 from apps.generics.managers.querysets import BaseManager, BaseQuerySet
 
 if TYPE_CHECKING:
@@ -38,22 +38,23 @@ class InvitationQuerySet(BaseQuerySet):
     def filter_acceptable(self):
         return self.filter_pending().exclude_already_members()
 
+    def filter_effective_status(self, status: str):
+        now = timezone.now()
+        not_expired = Q(expired_at__isnull=True) | Q(expired_at__gt=now)
+        pending = Q(status=InvitationStatusChoices.PENDING)
+        if status == InvitationStatusChoices.PENDING:
+            return self.filter(pending & not_expired)
+        if status == InvitationStatusChoices.EXPIRED:
+            return self.filter(
+                Q(status=InvitationStatusChoices.EXPIRED) | (pending & ~not_expired)
+            )
+        return self.filter(status=status)
+
     def filter_pending(self):
         return (
-            self.exclude(
-                is_accepted=True,
-            )
-            .exclude(
-                is_declined=True,
-            )
-            .exclude(
-                is_expired=True,
-            )
+            self.filter_effective_status(InvitationStatusChoices.PENDING)
             .exclude(
                 is_active=False,
-            )
-            .exclude(
-                expired_at__lte=timezone.now(),
             )
             .exclude(
                 member__isnull=False,

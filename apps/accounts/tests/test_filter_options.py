@@ -13,7 +13,7 @@ UNAUTHORIZED = http_status.HTTP_401_UNAUTHORIZED
 FORBIDDEN = http_status.HTTP_403_FORBIDDEN
 
 RESOURCES = {
-    'invitations': {'role', 'role__in', 'order_by'},
+    'invitations': {'status', 'role', 'role__in', 'order_by'},
     'members': {'organization', 'user', 'role', 'role__in', 'order_by'},
     'organization_images': {'image_type', 'organization', 'order_by'},
     'organizations': {'order_by'},

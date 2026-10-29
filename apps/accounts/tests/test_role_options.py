@@ -154,7 +154,7 @@ class ReceivedInvitationFilterOptionsTestCase(APITestCaseMixin, APITestCase):
     def test_user_without_organization_session(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(set(response.data), {'role', 'role__in', 'order_by'})
+        self.assertEqual(set(response.data), {'status', 'role', 'role__in', 'order_by'})
         self.assertEqual(_role_values(response), ALL_ROLES)
         self.assertEqual(_role_values(response, 'role__in'), ALL_ROLES)
 

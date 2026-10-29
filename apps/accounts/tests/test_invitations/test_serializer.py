@@ -27,6 +27,7 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         expected_fields = {
             'id',
             'email',
+            'status',
             'is_expired',
             'is_accepted',
             'is_declined',
@@ -49,6 +50,7 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         expected_fields = {
             'id',
             'email',
+            'status',
             'is_expired',
             'is_accepted',
             'is_declined',

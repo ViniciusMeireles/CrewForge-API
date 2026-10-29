@@ -5,7 +5,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.accounts.choices import InvitationErrorMessages
+from apps.accounts.choices import InvitationErrorMessages, InvitationStatusChoices
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.organization import Organization
@@ -42,12 +42,21 @@ class InvitationSerializer(
         default=False,
     )
     is_former_member = serializers.SerializerMethodField()
+    status = serializers.ChoiceField(
+        choices=InvitationStatusChoices.choices,
+        source='effective_status',
+        read_only=True,
+    )
+    is_expired = serializers.BooleanField(read_only=True)
+    is_accepted = serializers.BooleanField(read_only=True)
+    is_declined = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Invitation
         fields = [
             'id',
             'email',
+            'status',
             'is_expired',
             'is_accepted',
             'is_declined',
@@ -64,9 +73,6 @@ class InvitationSerializer(
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
             'id',
             'organization',
-            'is_expired',
-            'is_accepted',
-            'is_declined',
             'declined_at',
             'accepted_at',
             'last_email_sent_at',
@@ -80,15 +86,12 @@ class InvitationSerializer(
 
     def validate_email(self, value):
         if value and not self.instance:
-            invitation_queryset = Invitation.objects.filter(
+            invitation_queryset = Invitation.objects.filter_effective_status(
+                InvitationStatusChoices.PENDING
+            ).filter(
                 email__iexact=value,
                 is_active=True,
-                is_expired=False,
-                is_accepted=False,
-                is_declined=False,
                 organization_id=self.auth_organization_id,
-            ).exclude(
-                expired_at__lt=timezone.now(),
             )
             if invitation_queryset.exists():
                 raise serializers.ValidationError(

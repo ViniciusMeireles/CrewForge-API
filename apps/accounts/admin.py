@@ -57,11 +57,10 @@ class InvitationAdmin(admin.ModelAdmin):
         'email',
         'organization',
         'role',
-        'is_accepted',
-        'is_expired',
+        'status',
         'created_at',
     )
-    list_filter = ('is_accepted', 'is_expired', 'role', 'organization')
+    list_filter = ('status', 'role', 'organization')
     search_fields = ('email', 'organization__name')
     readonly_fields = ('key',)
     list_select_related = ('organization',)
