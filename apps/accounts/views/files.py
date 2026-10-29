@@ -95,15 +95,25 @@ class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelV
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        conditions = Q(viewing_permission=StoredFileAccess.PUBLIC)
+        auth_member = self.auth_member
+        has_organization = bool(
+            auth_member and auth_member.is_active and auth_member.organization_id
+        )
+        conditions = Q(pk__in=[])
+        if self.action != 'list':
+            conditions |= Q(viewing_permission=StoredFileAccess.PUBLIC)
+        elif has_organization:
+            conditions |= Q(
+                viewing_permission=StoredFileAccess.PUBLIC,
+                organization_id=auth_member.organization_id,
+            )
         if auth_user := self.auth_user:
             conditions |= Q(
                 viewing_permission=StoredFileAccess.OWNER,
                 owner_id=auth_user.id,
             )
 
-        auth_member = self.auth_member
-        if auth_member and auth_member.is_active and auth_member.organization_id:
+        if has_organization:
             allowed_permissions = []
             if max_org_level := StoredFileAccess.max_org_level(member=auth_member):
                 allowed_permissions = StoredFileAccess.permissions_levels_viewing.get(

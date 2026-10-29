@@ -28,16 +28,25 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         return image
 
     def test_not_authenticated_list(self):
+        self._create_image()
         self.client.logout()
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_list_returns_only_session_organization_images(self):
+        own = self._create_image()
+        OrganizationImageFactory(profile=OrganizationFactory().get_profile())
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual([item['id'] for item in response.data['results']], [own.id])
 
     def test_not_authenticated_retrieve(self):
         image = self._create_image()
         self.client.logout()
         url = self._detail_url(image)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_not_authenticated_create(self):
         self.client.logout()
@@ -97,7 +106,7 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.patch(
             url, data={'image_type': 'cover'}, format='multipart'
         )
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_not_active_member_delete(self):
         image = self._create_image()
@@ -109,7 +118,7 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=member)
         url = self._detail_url(image)
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_not_active_member_retrieve(self):
         image = self._create_image()
@@ -121,7 +130,7 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=member)
         url = self._detail_url(image)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def _create_payload(self, image_type=OrganizationImageTypeChoices.COVER):
         return {
@@ -291,7 +300,7 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=other_member)
         url = self._detail_url(image)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_cross_org_member_update(self):
         other_org = OrganizationFactory()
@@ -304,7 +313,7 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.patch(
             url, data={'image_type': 'cover'}, format='multipart'
         )
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_cross_org_member_delete(self):
         other_org = OrganizationFactory()
@@ -315,4 +324,4 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=other_admin)
         url = self._detail_url(image)
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)

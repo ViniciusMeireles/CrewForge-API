@@ -14,6 +14,10 @@ class OrganizationImagePermission(permissions.BasePermission):
     organization_lookup = 'profile.organization_id'
 
     def has_permission(self, request, view) -> bool:
+        if request.method not in permissions.SAFE_METHODS and not (
+            request.user and request.user.is_authenticated
+        ):
+            return False
         if not StoredFilePermission().has_permission(request=request, view=view):
             return False
         if request.method.upper() == 'POST':
