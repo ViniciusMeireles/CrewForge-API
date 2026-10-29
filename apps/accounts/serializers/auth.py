@@ -13,6 +13,7 @@ from rest_framework_simplejwt.serializers import (
 
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.user import UserReadySerializer, run_password_validators
+from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.email_verification import email_verification_token
 from apps.accounts.utils.password_reset import password_reset_uid_token
 
@@ -33,6 +34,7 @@ class TokenObtainPairSerializer(
     TokenObtainPairBaseSerializer,
 ):
     auth_user = serializers.SerializerMethodField()
+    token_class = VersionedRefreshToken
 
     @extend_schema_field(UserReadySerializer)
     def get_auth_user(self, obj=None):

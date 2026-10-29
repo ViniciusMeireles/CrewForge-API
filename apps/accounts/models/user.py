@@ -117,6 +117,11 @@ class User(AbstractUser, BaseModel):
         verbose_name=_('Blocked Reason'),
         help_text=_('Internal reason, never shown to the user'),
     )
+    token_version = models.PositiveIntegerField(
+        default=0,
+        verbose_name=_('Token Version'),
+        help_text=_('Tokens issued for another version are refused'),
+    )
     sessions_revoked_at = models.DateTimeField(
         null=True,
         blank=True,

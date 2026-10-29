@@ -39,6 +39,7 @@ from apps.accounts.serializers.invitation import (
     InvitationReceivedSerializer,
     InvitationSerializer,
 )
+from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
 from apps.accounts.utils.security_log import log_security_event
 from apps.audit.choices import AuditActionChoices
@@ -586,9 +587,7 @@ class InvitationViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        from rest_framework_simplejwt.tokens import RefreshToken
-
-        refresh = RefreshToken.for_user(request.user)
+        refresh = VersionedRefreshToken.for_user(request.user)
         response = Response(
             data={
                 'access': str(refresh.access_token),

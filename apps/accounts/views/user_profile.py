@@ -9,12 +9,12 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.serializers.user_profile import (
     ChangePasswordSerializer,
     UserProfileSerializer,
 )
+from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.auth_cookies import set_auth_cookies, wants_cookie_transport
 from apps.accounts.utils.security_log import log_security_event
 from apps.accounts.utils.sessions import revoke_sessions
@@ -162,6 +162,6 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             status=status.HTTP_200_OK,
         )
         if wants_cookie_transport(request):
-            refresh = RefreshToken.for_user(request.user)
+            refresh = VersionedRefreshToken.for_user(request.user)
             set_auth_cookies(response, str(refresh.access_token), str(refresh))
         return response
