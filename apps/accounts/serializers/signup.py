@@ -88,7 +88,4 @@ class SignupSerializer(
                 'updated_by': user,
             }
         )
-        instance = super().create(validated_data)
-        organization.owner = instance
-        organization.save(update_fields=['owner'])
-        return instance
+        return super().create(validated_data)

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -72,11 +73,7 @@ def _queue_organization_notice(email_class_name: str, user, **kwargs) -> None:
 
 
 def _locked_organization(organization_id: int) -> Organization:
-    return (
-        Organization.objects.select_for_update(of=('self',))
-        .select_related('owner__user')
-        .get(pk=organization_id)
-    )
+    return Organization.objects.select_for_update(of=('self',)).get(pk=organization_id)
 
 
 def _locked_user(user_id: int):
@@ -157,17 +154,21 @@ def transfer_ownership(
 ):
     """New owner becomes Owner, the previous one Admin, all or nothing (BR-18)."""
     organization = _locked_organization(organization.pk)
-    new_owner = (
-        Member.objects.select_for_update(of=('self',))
+    members = {
+        m.pk: m
+        for m in Member.objects.select_for_update(of=('self',))
         .select_related('user')
         .filter_actives()
-        .filter(pk=member.pk, organization=organization)
-        .exclude(pk=organization.owner_id)
-        .first()
-    )
-    if new_owner is None:
+        .filter(organization=organization)
+        .filter(Q(pk=member.pk) | Q(role=MemberRoleChoices.OWNER))
+        .order_by('pk')
+    }
+    new_owner = members.get(member.pk)
+    if new_owner is None or new_owner.role == MemberRoleChoices.OWNER:
         raise InvalidState(_('This member can no longer become the owner.'))
-    previous_owner = organization.owner
+    previous_owner = next(
+        (m for m in members.values() if m.role == MemberRoleChoices.OWNER), None
+    )
     changes = [
         {'field': 'owner', 'before': _ref(previous_owner), 'after': _ref(new_owner)},
     ]
@@ -190,8 +191,6 @@ def transfer_ownership(
     )
     new_owner.role = MemberRoleChoices.OWNER
     new_owner.save(update_fields=['role', 'updated_at'])
-    organization.owner = new_owner
-    organization.save(update_fields=['owner', 'updated_at'])
     _record_organization_event(
         request,
         AuditActionChoices.ORGANIZATION_OWNERSHIP_TRANSFERRED,

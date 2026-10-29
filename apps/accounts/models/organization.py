@@ -1,8 +1,11 @@
+from functools import cached_property
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.choices import (
+    MemberRoleChoices,
     OrganizationImageTypeChoices,
     OrganizationStatusChoices,
 )
@@ -20,15 +23,6 @@ class Organization(BaseModel):
     )
     slug = models.SlugField(
         unique=True, verbose_name=_('Slug'), help_text=_('Organization slug')
-    )
-    owner = models.ForeignKey(
-        to='accounts.Member',
-        on_delete=models.SET_NULL,
-        related_name='owned_organizations',
-        verbose_name=_('Owner'),
-        help_text=_('Owner of the organization'),
-        null=True,
-        blank=True,
     )
     status = models.CharField(
         max_length=16,
@@ -69,6 +63,21 @@ class Organization(BaseModel):
 
     def __str__(self):
         return self.name
+
+    @cached_property
+    def owner(self):
+        if hasattr(self, 'active_owners'):
+            return self.active_owners[0] if self.active_owners else None
+        return (
+            self.members.filter(role=MemberRoleChoices.OWNER, is_active=True)
+            .select_related('user')
+            .first()
+        )
+
+    def refresh_from_db(self, *args, **kwargs):
+        self.__dict__.pop('owner', None)
+        self.__dict__.pop('active_owners', None)
+        super().refresh_from_db(*args, **kwargs)
 
     @property
     def is_suspended(self) -> bool:

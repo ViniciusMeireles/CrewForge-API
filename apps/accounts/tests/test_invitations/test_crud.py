@@ -55,6 +55,7 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
             [
                 {'value': value, 'label': str(label)}
                 for value, label in MemberRoleChoices.choices
+                if value != MemberRoleChoices.OWNER
             ],
         )
 

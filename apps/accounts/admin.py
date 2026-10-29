@@ -31,7 +31,7 @@ class OrganizationProfileInline(NestedStackedInline):
 @admin.register(Organization)
 class OrganizationAdmin(NestedModelAdmin):
     list_display = ('name', 'slug', 'owner', 'is_active', 'created_at')
-    search_fields = ('name', 'slug', 'owner__user__email')
+    search_fields = ('name', 'slug')
     list_filter = ('is_active', 'status')
     readonly_fields = (
         'slug',

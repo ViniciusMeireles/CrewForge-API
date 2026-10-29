@@ -91,7 +91,7 @@ class FilterOptionsContentTestCase(
 
     def test_role_choices(self):
         response = self.client.get(self.filter_options_url('invitations'))
-        expected = set(MemberRoleChoices.values)
+        expected = set(MemberRoleChoices.values) - {MemberRoleChoices.OWNER}
         self.assertEqual(self.option_values(response, 'role'), expected)
         self.assertEqual(self.option_values(response, 'role__in'), expected)
 

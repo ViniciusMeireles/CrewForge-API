@@ -43,7 +43,8 @@ def _active_members():
 
 def organizations_queryset() -> QuerySet[Organization]:
     return (
-        Organization.objects.select_related('owner__user', 'profile', 'suspended_by')
+        Organization.objects.with_owner()
+        .select_related('profile', 'suspended_by')
         .annotate(
             active_members_count=_subquery_aggregate(_active_members(), Count('id')),
             last_access_at=Subquery(

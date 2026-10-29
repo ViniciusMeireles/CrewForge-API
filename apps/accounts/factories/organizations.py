@@ -32,11 +32,9 @@ class OrganizationFactory(ModelFactoryMixin):
         from apps.accounts.factories.members import MemberFactory
         from apps.accounts.factories.users import UserFactory
 
-        owner_user = UserFactory()
-        self.owner = MemberFactory(
-            user=owner_user, organization=self, role=MemberRoleChoices.OWNER.value
+        MemberFactory(
+            user=UserFactory(), organization=self, role=MemberRoleChoices.OWNER.value
         )
-        self.save()
 
 
 class OrganizationProfileFactory(ModelFactoryMixin):

@@ -139,7 +139,7 @@ class PlatformOrganizationActionTestCase(
         self.organization.refresh_from_db()
         new_owner.refresh_from_db()
         self.owner.refresh_from_db()
-        self.assertEqual(self.organization.owner_id, new_owner.id)
+        self.assertEqual(self.organization.owner.pk, new_owner.id)
         self.assertEqual(new_owner.role, MemberRoleChoices.OWNER)
         self.assertEqual(self.owner.role, MemberRoleChoices.ADMIN)
         self.assertTrue(self.owner.is_active)
@@ -182,7 +182,7 @@ class PlatformOrganizationActionTestCase(
                 self.assertIn('member', response.data['error']['details'])
                 apply_async.assert_not_called()
         self.organization.refresh_from_db()
-        self.assertEqual(self.organization.owner_id, self.owner.id)
+        self.assertEqual(self.organization.owner.pk, self.owner.id)
         self.assertFalse(
             AuditEvent.objects.filter(
                 action=AuditActionChoices.ORGANIZATION_OWNERSHIP_TRANSFERRED

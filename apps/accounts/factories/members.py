@@ -21,3 +21,15 @@ class MemberFactory(ModelFactoryMixin):
 
     class Meta:
         model = Member
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        if kwargs.get('role') == MemberRoleChoices.OWNER and kwargs.get(
+            'is_active', True
+        ):
+            model_class.objects.filter(
+                organization=kwargs['organization'],
+                role=MemberRoleChoices.OWNER,
+                is_active=True,
+            ).update(role=MemberRoleChoices.ADMIN)
+        return super()._create(model_class, *args, **kwargs)
