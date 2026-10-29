@@ -4,6 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 from corsheaders.defaults import default_headers as default_cors_headers
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy
@@ -416,6 +417,20 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+CELERY_BEAT_SCHEDULE = {
+    'flush-expired-tokens': {
+        'task': 'apps.accounts.tasks.flush_expired_tokens',
+        'schedule': crontab(minute=0, hour=3),
+    },
+    'clear-sessions': {
+        'task': 'apps.accounts.tasks.clear_sessions',
+        'schedule': crontab(minute=15, hour=3),
+    },
+    'expire-invitations': {
+        'task': 'apps.accounts.tasks.expire_invitations',
+        'schedule': timedelta(hours=1),
+    },
+}
 CELERY_TASK_IGNORE_RESULT = (
     os.environ.get('CELERY_TASK_IGNORE_RESULT', 'False').lower() == 'true'
 )
