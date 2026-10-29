@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
 from rest_framework import serializers
 
 from apps.accounts.consts import INVITATION_LOOKUP_URL_KWARG
@@ -146,28 +145,23 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
 
 
 class UserUpdateSerializer(UserSerializer):
-    """Serializer for updating the User model."""
+    """Read-only User of a Member update: identity is changed by the User only."""
 
     class Meta(UserSerializer.Meta):
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
-        read_only_fields = UserSerializer.Meta.read_only_fields + ['email']
+        read_only_fields = fields
 
 
 class MemberUpdateSerializer(MemberModelSerializer):
     """Serializer for updating the Member model."""
 
-    user = UserUpdateSerializer()
+    user = UserUpdateSerializer(read_only=True)
 
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
-        extra_kwargs = {
-            'user': {
-                'required': False,
-                'help_text': gettext_lazy(
-                    'User data to update, if not provided, will not update the user.'
-                ),
-            },
-        }
+
+    def save(self, **kwargs):
+        return super(MemberModelSerializer, self).save(**kwargs)
 
 
 class MemberRoleUpdateSerializer(

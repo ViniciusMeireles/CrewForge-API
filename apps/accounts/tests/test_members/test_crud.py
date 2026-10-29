@@ -159,6 +159,24 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         member.refresh_from_db()
         self.assertEqual(member.nickname, 'updated_nick')
 
+    def test_admin_update_ignores_user_fields(self):
+        target = MemberFactory(organization=self.organization)
+        first_name, username = target.user.first_name, target.user.username
+        response = self.client.patch(
+            self._detail_url(target),
+            data={
+                'nickname': 'renamed',
+                'user': {'first_name': 'Hijacked', 'username': 'hijacked'},
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        target.refresh_from_db()
+        target.user.refresh_from_db()
+        self.assertEqual(target.nickname, 'renamed')
+        self.assertEqual(target.user.first_name, first_name)
+        self.assertEqual(target.user.username, username)
+
     def test_delete_member(self):
         member = MemberFactory(organization=self.organization)
         url = self._detail_url(member)
