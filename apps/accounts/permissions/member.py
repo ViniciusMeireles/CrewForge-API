@@ -1,8 +1,13 @@
+import logging
+
+from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
 
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.permissions.generics import OrganizationScopedPermission
 from apps.accounts.utils.requests import get_member
+from apps.accounts.utils.security_log import log_security_event
 
 
 class MemberPermission(OrganizationScopedPermission):
@@ -22,6 +27,19 @@ class MemberPermission(OrganizationScopedPermission):
     def has_object_permission(self, request, view, obj):
         if not super().has_object_permission(request, view, obj):
             return False
+
+        if obj.role == MemberRoleChoices.OWNER and (
+            request.method == 'DELETE' or view.action == 'update_role'
+        ):
+            log_security_event(
+                'member.owner_protected',
+                request,
+                level=logging.WARNING,
+                member_id=obj.pk,
+            )
+            raise PermissionDenied(
+                _('The Owner cannot be removed or demoted; transfer ownership first.')
+            )
 
         auth_member = get_member(request)
         if (
