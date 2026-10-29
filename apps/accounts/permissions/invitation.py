@@ -31,7 +31,7 @@ class InvitationAcceptDeclinePermission(IsAuthenticated):
             (
                 obj.email
                 and request.user.email_verified
-                and request.user.email == obj.email
+                and request.user.email.casefold() == obj.email.casefold()
                 and obj.member_id is None
             )
             or (obj.member_id and obj.member == get_member(request))

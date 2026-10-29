@@ -64,6 +64,7 @@ class InvitationSerializer(
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
             'id',
             'organization',
+            'is_expired',
             'is_accepted',
             'is_declined',
             'declined_at',

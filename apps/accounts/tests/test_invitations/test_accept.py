@@ -51,6 +51,23 @@ class InvitationAcceptTestCase(APITestCaseMixin, APITestCase):
         ).exists()
         self.assertTrue(member_exists)
 
+    def test_revoked_returns_404(self):
+        invitation = self._create_invitation(is_active=False)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self._accept_url(invitation), format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+        self.assertFalse(
+            Member.objects.filter(
+                user=self.user, organization=self.organization
+            ).exists()
+        )
+
+    def test_accept_email_case_insensitive(self):
+        invitation = self._create_invitation(email=self.user.email.upper())
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self._accept_url(invitation), format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
     def test_accept_sets_nickname_when_provided(self):
         invitation = self._create_invitation()
         self.client.force_authenticate(user=self.user)

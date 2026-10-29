@@ -114,6 +114,30 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
+    def test_create_with_revoked_invite_returns_404(self):
+        user_data = UserFactory.build()
+        invite = InvitationFactory.create(
+            organization=self.organization,
+            email=user_data.email,
+            is_active=False,
+        )
+        payload = self._member_payload(
+            user__username=user_data.username,
+            user__email=user_data.email,
+        )
+        url = reverse(self.create_with_invite_url_name, args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_create_with_unknown_key_returns_404(self):
+        payload = self._member_payload()
+        url = reverse(
+            self.create_with_invite_url_name,
+            args=['00000000-0000-0000-0000-000000000000'],
+        )
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
     def test_standard_create_returns_405(self):
         payload = self._member_payload()
         response = self.client.post(self.list_url, data=payload, format='json')

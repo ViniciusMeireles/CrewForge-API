@@ -553,7 +553,9 @@ class InvitationViewSet(
     )
     def accept(self, request, *args, **kwargs):
         invitation_pk = kwargs.get('invitation_pk')
-        invitation = get_object_or_404(Invitation, pk=invitation_pk)
+        invitation = get_object_or_404(
+            Invitation.objects.filter_actives(), pk=invitation_pk
+        )
         self.check_object_permissions(request, invitation)
         invitation.ensure_organization_not_suspended()
 
@@ -607,7 +609,9 @@ class InvitationViewSet(
     )
     def decline(self, request, *args, **kwargs):
         invitation_pk = kwargs.get('invitation_pk')
-        invitation = get_object_or_404(Invitation, pk=invitation_pk)
+        invitation = get_object_or_404(
+            Invitation.objects.filter_actives(), pk=invitation_pk
+        )
         self.check_object_permissions(request, invitation)
 
         is_declinable, message = invitation.is_declinable()
