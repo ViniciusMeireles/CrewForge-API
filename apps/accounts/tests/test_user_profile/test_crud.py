@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta, timezone
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status as http_status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
+from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.factories.users import UserFactory
 
@@ -163,6 +166,31 @@ class UserProfileCRUDTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
         self.assertIn('new_password', response.data['error']['details'])
+
+    def test_change_password_common_password(self):
+        response = self.client.post(
+            self.change_password_url,
+            data={'current_password': 'passWord*123', 'new_password': '1234567890'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('new_password', response.data['error']['details'])
+
+    def test_change_password_revokes_other_access_tokens(self):
+        other_access = AccessToken.for_user(self.user)
+        other_access.set_iat(
+            at_time=datetime.now(tz=timezone.utc) - timedelta(seconds=5)
+        )
+        response = self.client.post(
+            self.change_password_url,
+            data={'current_password': 'passWord*123', 'new_password': 'newPass*456'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        other_client = APIClient()
+        other_client.credentials(HTTP_AUTHORIZATION=f'Bearer {other_access}')
+        response = other_client.get(self.profile_url)
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
     def test_change_password_wrong_method(self):
         response = self.client.get(self.change_password_url)

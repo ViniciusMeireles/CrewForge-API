@@ -85,13 +85,12 @@ class UserSerializerSaveTestCase(TestCase):
         user = serializer.save()
         self.assertTrue(user.check_password('NewPassWord*123'))
 
-    def test_create_without_password(self):
+    def test_create_without_password_is_invalid(self):
         payload = _payload()
         del payload['password']
         serializer = UserSerializer(data=payload)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        self.assertFalse(user.has_usable_password() and user.check_password(''))
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('password', serializer.errors)
 
     def test_update_hashes_password(self):
         user = UserFactory()

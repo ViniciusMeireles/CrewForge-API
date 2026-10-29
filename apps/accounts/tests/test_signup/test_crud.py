@@ -88,6 +88,40 @@ class SignupCRUDTestCase(APITestCase):
 
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
+    def _signup_payload(self, **user_overrides):
+        user_data = UserFactory.build()
+        organization_data = OrganizationFactory.build()
+        user = {
+            'username': user_data.username,
+            'email': user_data.email,
+            'first_name': user_data.first_name,
+            'last_name': user_data.last_name,
+            'password': user_data.password,
+        }
+        user.update(user_overrides)
+        return {
+            'user': user,
+            'organization': {
+                'name': organization_data.name,
+                'slug': organization_data.slug,
+            },
+        }
+
+    def test_create_account_without_password(self):
+        payload = self._signup_payload()
+        del payload['user']['password']
+        response = self.client.post(path=self.url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(
+            User.objects.filter(username=payload['user']['username']).exists()
+        )
+
+    def test_create_account_common_password(self):
+        payload = self._signup_payload(password='1234567890')
+        response = self.client.post(path=self.url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('user', response.data['error']['details'])
+
     def test_create_account_empty_password(self):
         user_data = UserFactory.build()
         organization_data = OrganizationFactory.build()

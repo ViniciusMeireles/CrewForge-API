@@ -8,7 +8,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.accounts.factories.users import DEFAULT_PASSWORD
 from apps.accounts.tests.mixins import APITestCaseMixin
@@ -320,6 +320,33 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
         )
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
         self.assertIn('new_password', response.data['error']['details'])
+
+    def _reset_confirm(self, user, new_password):
+        return self.client.post(
+            self.password_reset_confirm_url,
+            data={
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+                'new_password': new_password,
+            },
+            format='json',
+        )
+
+    def test_password_reset_confirm_common_password(self):
+        response = self._reset_confirm(self.organization.owner.user, '1234567890')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertIn('new_password', response.data['error']['details'])
+
+    def test_password_reset_confirm_revokes_access_tokens(self):
+        user = self.organization.owner.user
+        access = AccessToken.for_user(user)
+        access.set_iat(at_time=datetime.now(tz=timezone.utc) - timedelta(seconds=5))
+        response = self._reset_confirm(user, 'Newpass*123')
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.client.logout()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
+        response = self.client.get(reverse('accounts:users-me'))
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
     def test_logout_with_expired_refresh_token(self):
         member = self.organization.owner

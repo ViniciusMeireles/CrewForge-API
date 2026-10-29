@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
+from apps.accounts.serializers.user import validate_new_password
 from apps.accounts.utils.email_verification import send_verification_email
 
 User = get_user_model()
@@ -59,6 +60,10 @@ class ChangePasswordSerializer(serializers.Serializer):
                 self.default_error_messages['incorrect_password'],
                 code='incorrect_password',
             )
+        return value
+
+    def validate_new_password(self, value):
+        validate_new_password(value, self.context['request'].user)
         return value
 
     def validate(self, attrs):

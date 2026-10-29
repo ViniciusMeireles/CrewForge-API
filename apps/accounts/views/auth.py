@@ -51,7 +51,7 @@ from apps.accounts.utils.email_verification import (
 from apps.accounts.utils.language import resolve_recipient_language
 from apps.accounts.utils.password_reset import password_reset_link
 from apps.accounts.utils.security_log import log_security_event
-from apps.accounts.utils.tokens import revoke_refresh_tokens
+from apps.accounts.utils.sessions import revoke_sessions
 
 AUTH_SCHEMA_TAGS = [_('Authentication')]
 
@@ -235,7 +235,7 @@ class PasswordResetConfirmView(AuthThrottleMixin, APIView):
 
         user.set_password(new_password)
         user.save()
-        revoke_refresh_tokens(user)
+        revoke_sessions(user)
         log_security_event('auth.password_reset.completed', request, user_id=user.pk)
 
         return Response(
