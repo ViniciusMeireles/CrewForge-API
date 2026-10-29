@@ -137,6 +137,36 @@ def _actor_type(actor: dict, subject_user_id) -> str:
     return AuditActorTypeChoices.SYSTEM
 
 
+def _organization_name(request, organization_id: int | None) -> str:
+    if organization_id is None:
+        return ''
+    member = get_member(request) if request is not None else None
+    if member is not None and member.organization_id == organization_id:
+        return member.organization.name
+    from apps.accounts.models.organization import Organization
+
+    return (
+        Organization.objects.filter(pk=organization_id)
+        .values_list('name', flat=True)
+        .first()
+        or ''
+    )
+
+
+def _subject_label(subject_user_id: int | None, actor_user) -> str:
+    if subject_user_id is None:
+        return ''
+    user = actor_user if actor_user and actor_user.pk == subject_user_id else None
+    if user is None:
+        from django.contrib.auth import get_user_model
+
+        user = get_user_model().objects.filter(pk=subject_user_id).first()
+    if user is None:
+        return ''
+    name = ' '.join(filter(None, [user.first_name, user.last_name]))
+    return ' · '.join(filter(None, [user.email, name]))[:300]
+
+
 def record_audit_event(
     action: str,
     *,
@@ -170,7 +200,9 @@ def record_audit_event(
         action=action,
         actor_type=actor_type or _actor_type(actor, subject_user_id),
         organization_id=organization_id,
+        organization_name=_organization_name(request, organization_id),
         subject_user_id=subject_user_id,
+        subject_label=_subject_label(subject_user_id, actor['actor_user']),
         changes=list(changes),
         metadata=metadata or {},
         **actor,

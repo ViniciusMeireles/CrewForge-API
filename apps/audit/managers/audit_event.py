@@ -7,6 +7,12 @@ from apps.audit.choices import ACCOUNT_ACTION_PREFIXES
 
 
 class AuditEventQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        raise RuntimeError('Audit events are immutable.')
+
+    def delete(self):
+        raise RuntimeError('Audit events are immutable.')
+
     def for_organization(self, organization_id: int | None) -> 'AuditEventQuerySet':
         return self.filter(organization_id=organization_id)
 

@@ -15,7 +15,7 @@ class UserActivityTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.client.force_authenticate(user=self.user)
-        AuditEvent.objects.all().delete()
+        AuditEvent._base_manager.all().delete()
 
     def activity(self, **params):
         return self.client.get(reverse(URL), params)

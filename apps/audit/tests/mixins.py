@@ -15,7 +15,7 @@ class AuditAPITestCaseMixin(APITestCaseMixin):
 
     @staticmethod
     def clear_events():
-        AuditEvent.objects.all().delete()
+        AuditEvent._base_manager.all().delete()
 
     def list_events(self, **params):
         return self.client.get(reverse(LIST_URL), params)

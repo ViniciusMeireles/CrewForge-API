@@ -16,12 +16,18 @@ class AuditEvent(models.Model):
     )
     organization = models.ForeignKey(
         to='accounts.Organization',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='audit_events',
         null=True,
         blank=True,
         verbose_name=_('Organization'),
         help_text=_('Organization of the event; empty for account events'),
+    )
+    organization_name = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name=_('Organization Name'),
+        help_text=_('Organization name when the event happened'),
     )
     action = models.CharField(
         max_length=64,
@@ -62,12 +68,18 @@ class AuditEvent(models.Model):
     )
     subject_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='account_audit_events',
         null=True,
         blank=True,
         verbose_name=_('Subject User'),
         help_text=_('User an account event belongs to'),
+    )
+    subject_label = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name=_('Subject Label'),
+        help_text=_('Subject user (email and name) when the event happened'),
     )
     impersonator = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,

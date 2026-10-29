@@ -42,6 +42,8 @@ class AuditEventSerializer(serializers.ModelSerializer):
             'actor',
             'impersonator',
             'organization_id',
+            'organization_name',
+            'subject_label',
             'target_type',
             'target_id',
             'target_label',
