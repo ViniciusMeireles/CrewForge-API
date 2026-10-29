@@ -33,6 +33,12 @@ def require_num_proxies(rest_framework: dict) -> int:
     return num_proxies
 
 
+def require_media_root(media_root: str | None) -> str:
+    if not media_root:
+        raise ImproperlyConfigured('MEDIA_ROOT must be set.')
+    return media_root
+
+
 def normalize_admin_url(value: str) -> str:
     path = value.strip().strip('/')
     if not path:

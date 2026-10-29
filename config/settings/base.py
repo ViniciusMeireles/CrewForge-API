@@ -1,5 +1,4 @@
 import os
-import sys
 import warnings
 from datetime import timedelta
 from pathlib import Path
@@ -8,12 +7,8 @@ import dj_database_url
 from corsheaders.defaults import default_headers as default_cors_headers
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy
-from dotenv import load_dotenv
 
 from .checks import normalize_admin_url
-
-load_dotenv()
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -27,7 +22,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-TESTING = 'test' in sys.argv
+TESTING = False
 ENVIRONMENT = os.getenv('ENVIRONMENT', None)
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
@@ -131,7 +126,20 @@ if os.environ.get('SECURE_PROXY_SSL_HEADER', 'False').lower() == 'true':
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))}
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=int(os.environ.get('CONN_MAX_AGE', 60)),
+        conn_health_checks=True,
+    )
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.environ.get('CACHE_URL', 'redis://redis:6379/1'),
+    }
+}
 
 
 # Password validation
@@ -181,7 +189,7 @@ STATICFILES_DIRS = [
 ]
 
 MEDIA_URL = os.environ.get('MEDIA_URL', '/media/')
-MEDIA_ROOT = os.environ.get('MEDIA_ROOT', '/media/')
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
 
 STORED_FILE_MAX_SIZE = int(os.environ.get('STORED_FILE_MAX_SIZE', 10 * 1024 * 1024))
 STORED_FILE_IMAGE_CONTENT_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
@@ -313,6 +321,8 @@ SPECTACULAR_SETTINGS = {
         'apps.accounts.urls',
         'apps.teams.urls',
         'apps.dashboard.urls',
+        'apps.audit.urls',
+        'apps.platform.urls',
     ],
     'ENUM_NAME_OVERRIDES': {
         'StoredFileAccess': 'apps.accounts.choices.StoredFileAccess',
