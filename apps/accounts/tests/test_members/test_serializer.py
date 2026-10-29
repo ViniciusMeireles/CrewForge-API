@@ -314,13 +314,13 @@ class MemberRoleUpdateSerializerTestCase(APITestCaseMixin, APITestCase):
 
     # --- Owner can set any role ---
 
-    def test_owner_can_set_owner_role(self):
+    def test_owner_cannot_set_owner_role(self):
         target = self._create_target()
         payload = {'role': MemberRoleChoices.OWNER}
         response = self.client.patch(
             self._update_role_url(target), data=payload, format='json'
         )
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
     def test_owner_can_set_admin_role(self):
         target = self._create_target()

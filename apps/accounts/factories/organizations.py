@@ -23,6 +23,11 @@ class OrganizationFactory(ModelFactoryMixin):
         model = Organization
         skip_postgeneration_save = True
 
+    profile = factory.RelatedFactory(
+        'apps.accounts.factories.organizations.OrganizationProfileFactory',
+        factory_related_name='organization',
+    )
+
     @factory.post_generation
     def owner(self, create, extracted, **kwargs):
         """Create an owner for the organization if requested."""
@@ -32,15 +37,13 @@ class OrganizationFactory(ModelFactoryMixin):
         from apps.accounts.factories.members import MemberFactory
         from apps.accounts.factories.users import UserFactory
 
-        owner_user = UserFactory()
-        self.owner = MemberFactory(
-            user=owner_user, organization=self, role=MemberRoleChoices.OWNER.value
+        MemberFactory(
+            user=UserFactory(), organization=self, role=MemberRoleChoices.OWNER.value
         )
-        self.save()
 
 
 class OrganizationProfileFactory(ModelFactoryMixin):
-    organization = factory.SubFactory(OrganizationFactory)
+    organization = factory.SubFactory(OrganizationFactory, profile=None)
     website = factory.Faker('url')
     description = factory.Faker('text')
 

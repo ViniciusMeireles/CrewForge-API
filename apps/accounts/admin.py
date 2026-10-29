@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from nested_admin import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
+from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.forms.files import StoredFileModelForm
 from apps.accounts.models.files import StoredFile
 from apps.accounts.models.invitation import Invitation
@@ -31,8 +32,25 @@ class OrganizationProfileInline(NestedStackedInline):
 @admin.register(Organization)
 class OrganizationAdmin(NestedModelAdmin):
     list_display = ('name', 'slug', 'owner', 'is_active', 'created_at')
-    search_fields = ('name', 'slug', 'owner__user__email')
+    search_fields = ('name', 'slug')
     list_filter = ('is_active', 'status')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).with_owner()
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, may_have_duplicates = super().get_search_results(
+            request, queryset, search_term
+        )
+        if search_term:
+            owners = Member.objects.filter(
+                role=MemberRoleChoices.OWNER,
+                is_active=True,
+                user__email__icontains=search_term,
+            ).values('organization_id')
+            queryset |= self.get_queryset(request).filter(pk__in=owners)
+        return queryset, may_have_duplicates
+
     readonly_fields = (
         'slug',
         'status',
@@ -57,11 +75,10 @@ class InvitationAdmin(admin.ModelAdmin):
         'email',
         'organization',
         'role',
-        'is_accepted',
-        'is_expired',
+        'status',
         'created_at',
     )
-    list_filter = ('is_accepted', 'is_expired', 'role', 'organization')
+    list_filter = ('status', 'role', 'organization')
     search_fields = ('email', 'organization__name')
     readonly_fields = ('key',)
     list_select_related = ('organization',)

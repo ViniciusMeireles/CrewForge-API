@@ -22,7 +22,7 @@ class JWTCookieAuthentication(JWTAuthentication):
 
     def get_user(self, validated_token):
         user = super().get_user(validated_token)
-        if is_token_revoked(user, validated_token.get('iat')):
+        if is_token_revoked(user, validated_token):
             raise AuthenticationFailed(_('Your session has ended. Sign in again.'))
         if user.is_blocked:
             raise AccountBlocked()

@@ -13,7 +13,7 @@ UNAUTHORIZED = http_status.HTTP_401_UNAUTHORIZED
 FORBIDDEN = http_status.HTTP_403_FORBIDDEN
 
 RESOURCES = {
-    'invitations': {'role', 'role__in', 'order_by'},
+    'invitations': {'status', 'role', 'role__in', 'order_by'},
     'members': {'organization', 'user', 'role', 'role__in', 'order_by'},
     'organization_images': {'image_type', 'organization', 'order_by'},
     'organizations': {'order_by'},
@@ -91,7 +91,7 @@ class FilterOptionsContentTestCase(
 
     def test_role_choices(self):
         response = self.client.get(self.filter_options_url('invitations'))
-        expected = set(MemberRoleChoices.values)
+        expected = set(MemberRoleChoices.values) - {MemberRoleChoices.OWNER}
         self.assertEqual(self.option_values(response, 'role'), expected)
         self.assertEqual(self.option_values(response, 'role__in'), expected)
 

@@ -16,6 +16,7 @@ class OverviewPermissionTestCase(APITestCaseMixin, APITestCase):
         member = MemberFactory(
             organization=self.organization,
             role=role,
+            replace_owner=role == MemberRoleChoices.OWNER,
             **kwargs,
         )
         self.client.force_authenticate(member=member)

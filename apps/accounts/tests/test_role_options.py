@@ -10,6 +10,7 @@ from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.accounts.utils.requests import get_member
 
 ALL_ROLES = set(MemberRoleChoices.values)
+OWNER_ROLES = ALL_ROLES - {MemberRoleChoices.OWNER}
 ADMIN_ROLES = {MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER}
 
 
@@ -23,14 +24,18 @@ class AssignableByTestCase(APITestCaseMixin, APITestCase):
 
     def test_assignable_roles_per_role(self):
         expected = {
-            MemberRoleChoices.OWNER: ALL_ROLES,
+            MemberRoleChoices.OWNER: OWNER_ROLES,
             MemberRoleChoices.ADMIN: ADMIN_ROLES,
             MemberRoleChoices.MANAGER: {MemberRoleChoices.MEMBER},
             MemberRoleChoices.MEMBER: set(),
         }
         for role, roles in expected.items():
             with self.subTest(role=role):
-                member = MemberFactory(organization=self.organization, role=role)
+                member = MemberFactory(
+                    organization=self.organization,
+                    role=role,
+                    replace_owner=role == MemberRoleChoices.OWNER,
+                )
                 self.assertEqual(set(MemberRoleChoices.assignable_by(member)), roles)
 
     def test_inactive_or_missing_member_assigns_nothing(self):
@@ -57,8 +62,8 @@ class InvitationRoleOptionsTestCase(APITestCaseMixin, APITestCase):
                 self.assertEqual(response.status_code, http_status.HTTP_200_OK)
                 self.assertEqual(_role_values(response, field_name), expected)
 
-    def test_owner_gets_every_role(self):
-        self._assert_roles(ALL_ROLES)
+    def test_owner_gets_every_role_but_owner(self):
+        self._assert_roles(OWNER_ROLES)
 
     def test_admin_gets_manager_and_member(self):
         admin = MemberFactory(
@@ -73,7 +78,7 @@ class InvitationRoleOptionsTestCase(APITestCaseMixin, APITestCase):
         ) as spy:
             response = self.client.get(reverse('accounts:invitations-filter-options'))
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(_role_values(response, 'role__in'), ALL_ROLES)
+        self.assertEqual(_role_values(response, 'role__in'), OWNER_ROLES)
         self.assertEqual(spy.call_count, 1)
 
     def test_search_applies_after_permission(self):
@@ -94,7 +99,11 @@ class MemberRoleOptionsTestCase(APITestCaseMixin, APITestCase):
         self.filter_url = reverse('accounts:members-filter-options')
 
     def _login(self, role):
-        member = MemberFactory(organization=self.organization, role=role)
+        member = MemberFactory(
+            organization=self.organization,
+            role=role,
+            replace_owner=role == MemberRoleChoices.OWNER,
+        )
         self.client.force_authenticate(member=member)
 
     def test_update_role_options_per_requester(self):
@@ -106,7 +115,7 @@ class MemberRoleOptionsTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(self.update_role_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(set(response.data), {'role'})
-        self.assertEqual(_role_values(response), ALL_ROLES)
+        self.assertEqual(_role_values(response), OWNER_ROLES)
         for role, roles in expected.items():
             with self.subTest(role=role):
                 self._login(role)
@@ -154,7 +163,7 @@ class ReceivedInvitationFilterOptionsTestCase(APITestCaseMixin, APITestCase):
     def test_user_without_organization_session(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(set(response.data), {'role', 'role__in', 'order_by'})
+        self.assertEqual(set(response.data), {'status', 'role', 'role__in', 'order_by'})
         self.assertEqual(_role_values(response), ALL_ROLES)
         self.assertEqual(_role_values(response, 'role__in'), ALL_ROLES)
 

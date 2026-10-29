@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
@@ -302,7 +303,7 @@ class OwnershipTransferSerializer(ReasonRequiredSerializer):
         self.fields['member'].queryset = (
             Member.objects.filter_actives()
             .filter(organization=organization, user__is_active=True)
-            .exclude(pk=organization.owner_id)
+            .exclude(role=MemberRoleChoices.OWNER)
         )
 
 

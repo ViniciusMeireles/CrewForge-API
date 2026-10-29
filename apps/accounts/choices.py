@@ -21,7 +21,7 @@ class MemberRoleChoices(models.TextChoices):
             return []
         roles = []
         if member.has_owner_permission:
-            roles.extend([cls.OWNER, cls.ADMIN])
+            roles.append(cls.ADMIN)
         if member.has_admin_permission:
             roles.append(cls.MANAGER)
         if member.has_manager_permission:
@@ -182,6 +182,14 @@ class StoredFileAccess(models.TextChoices):
 class PreferredLanguageChoices(models.TextChoices):
     EN = 'en', 'English'
     PT_BR = 'pt-br', 'Português (Brasil)'
+
+
+class InvitationStatusChoices(models.TextChoices):
+    PENDING = 'pending', _('Pending')
+    ACCEPTED = 'accepted', _('Accepted')
+    DECLINED = 'declined', _('Declined')
+    EXPIRED = 'expired', _('Expired')
+    REVOKED = 'revoked', _('Revoked')
 
 
 class InvitationErrorMessages(models.TextChoices):

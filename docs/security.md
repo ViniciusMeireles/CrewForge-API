@@ -192,11 +192,14 @@ These rules are non-negotiable:
   issued before it stops working and every refresh token is blacklisted. Password
   change then issues fresh cookies to the current browser session; bearer
   clients sign in again.
-- **Blocking and revocation** (platform admin actions, ADR-009): `JWTCookieAuthentication.get_user` first treats a
-  token whose `iat` is before `User.sessions_revoked_at` as invalid (a stale cookie is ignored, so logout and public
-  routes keep working), then refuses a blocked User with `401 ACCOUNT_BLOCKED` (bearer and cookie paths). Block, end sessions and force password reset call `revoke_sessions`
-  (`apps/accounts/utils/sessions.py`): `sessions_revoked_at = now` plus every refresh token blacklisted. Tokens issued in
-  the same second as the revocation are kept (`iat` has second precision). Sign-in and refresh use
+- **Blocking and revocation** (platform admin actions, ADR-009, ADR-010): every token carries the User's
+  `token_version` as the claim `tv` (`apps/accounts/tokens.py` › `VersionedRefreshToken`, the only class allowed to
+  mint tokens — a test scans the code). `JWTCookieAuthentication.get_user` first treats a token whose `tv` differs from
+  `User.token_version` as invalid (a missing claim counts as 0; a stale cookie is ignored, so logout and public routes
+  keep working), then refuses a blocked User with `401 ACCOUNT_BLOCKED` (bearer and cookie paths). Block, end sessions,
+  force password reset, password reset and password change call `revoke_sessions` (`apps/accounts/utils/sessions.py`):
+  `token_version + 1` and `sessions_revoked_at = now` in one update, plus every refresh token blacklisted. Revocation
+  is exact: a token minted in the same second before it is refused, one minted after it works. Sign-in and refresh use
   `USER_AUTHENTICATION_RULE = user_authentication_rule`: only after the password (or refresh token) is accepted does a
   blocked account get `ACCOUNT_BLOCKED`; a wrong password keeps the generic error (no account enumeration).
 - **View as a user** (ADR-009, BR-26…BR-35): `apps.platform.authentication.ImpersonationAuthentication` (the default

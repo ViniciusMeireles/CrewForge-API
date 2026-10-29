@@ -27,6 +27,7 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         expected_fields = {
             'id',
             'email',
+            'status',
             'is_expired',
             'is_accepted',
             'is_declined',
@@ -49,6 +50,7 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         expected_fields = {
             'id',
             'email',
+            'status',
             'is_expired',
             'is_accepted',
             'is_declined',
@@ -253,9 +255,8 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
 
-    def test_owner_can_set_any_role(self):
+    def test_owner_can_set_any_role_but_owner(self):
         for role in [
-            MemberRoleChoices.OWNER,
             MemberRoleChoices.ADMIN,
             MemberRoleChoices.MANAGER,
             MemberRoleChoices.MEMBER,

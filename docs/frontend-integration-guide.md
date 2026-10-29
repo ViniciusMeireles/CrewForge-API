@@ -575,7 +575,7 @@ Email and role are taken from the invitation itself (not from the request body).
 | Action | Endpoint | Permission |
 |---|---|---|
 | List | `GET /api/accounts/invitations/` | Admins see MANAGER+MEMBER; owners see all roles |
-| Create | `POST /api/accounts/invitations/` | Admin+ (owner for OWNER/ADMIN roles) |
+| Create | `POST /api/accounts/invitations/` | Admin+ (owner for the ADMIN role; OWNER cannot be invited) |
 | Retrieve | `GET /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Update | `PUT /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
 | Delete | `DELETE /api/accounts/invitations/{id}/` | Owner: any role; Admin: MANAGER+MEMBER only |
@@ -591,6 +591,8 @@ Email and role are taken from the invitation itself (not from the request body).
 | Decline | `POST /api/accounts/invitations/{invitation_pk}/decline/` | The invitee (verified email matching the invitation) |
 
 Received invitations (`/api/accounts/invitations/received/`, `accept`, `decline`) match the invitation email only for users with a **verified** email (see [4.3](#43-email-verification)).
+
+**Status.** Every invitation response has a read-only `status`: `pending`, `accepted`, `declined`, `expired` or `revoked` (a pending invitation past `expired_at` already reads `expired`). `is_accepted`, `is_declined` and `is_expired` stay as read-only booleans derived from it, and the list accepts `status=<value>` next to the existing `is_*` filters. Deleting an invitation revokes it (`status: revoked`). One pending invitation exists per organization and email (case-insensitive): a second one answers **400** "An invitation with this email already exists.", also under concurrent requests. The role `owner` cannot be invited nor set through `update-role` (form options list Admin, Manager and Member); ownership moves only through the platform transfer. Two concurrent accepts (or accept and decline) of one invitation leave one outcome: the other request gets **400** with the message of the new state.
 
 Invitations of a deactivated (soft-deleted) organization are not listed as received and cannot be accepted or declined (**400** "The organization is no longer active."). An invitation is pending (acceptable) only while it is active, not accepted, declined or expired, `expired_at` is in the future, and the invitee — the linked user, or the active user with the invitation email — is not an **active** member of the organization (`accept` answers **400** "User is already a member").
 
@@ -1197,6 +1199,8 @@ return `405`.
 | `target_id` | `42` | Requires `target_type` or `target_type__in` (`400` otherwise) |
 
 Order is fixed (newest first); pagination is the standard `{count, next, previous, results}`.
+Each event also carries `organization_name` and `subject_label` (email · name), snapshots taken when it was recorded:
+events survive the deletion of their Organization or subject User (`organization_id` / the subject become empty).
 `GET /api/audit/events/filter-options/` describes the `actor`, `action` and `target_type`
 filters (paginated `actor`).
 

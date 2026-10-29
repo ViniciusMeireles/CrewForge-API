@@ -62,23 +62,19 @@ paths:
             - -email
             - -expired_at
             - -id
-            - -is_accepted
-            - -is_declined
-            - -is_expired
             - -last_email_sent_at
             - -organization
             - -role
+            - -status
             - accepted_at
             - declined_at
             - email
             - expired_at
             - id
-            - is_accepted
-            - is_declined
-            - is_expired
             - last_email_sent_at
             - organization
             - role
+            - status
         description: |-
           Ordering
 
@@ -92,18 +88,14 @@ paths:
           * `-expired_at` - Descending Expired At
           * `id` - ID
           * `-id` - Descending ID
-          * `is_accepted` - Is Accepted
-          * `-is_accepted` - Descending Is Accepted
-          * `is_declined` - Is Declined
-          * `-is_declined` - Descending Is Declined
-          * `is_expired` - Is Expired
-          * `-is_expired` - Descending Is Expired
           * `last_email_sent_at` - Last Email Sent At
           * `-last_email_sent_at` - Descending Last Email Sent At
           * `organization` - Organization
           * `-organization` - Descending Organization
           * `role` - Role
           * `-role` - Descending Role
+          * `status` - Status
+          * `-status` - Descending Status
         explode: false
         style: form
       - name: page
@@ -143,6 +135,22 @@ paths:
         description: Multiple values may be separated by commas.
         explode: false
         style: form
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - accepted
+          - declined
+          - expired
+          - pending
+        description: |-
+          Lifecycle state of the invitation
+
+          * `pending` - Pending
+          * `accepted` - Accepted
+          * `declined` - Declined
+          * `expired` - Expired
       tags:
       - Invitations
       security:
@@ -518,6 +526,13 @@ paths:
         description: Return only `role__in`. A non-empty value is a regular expression
           matched against the label or the value of each option, ignoring case and
           accents.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Return only `status`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
       tags:
       - Invitations
       security:
@@ -641,25 +656,21 @@ paths:
             - -email
             - -expired_at
             - -id
-            - -is_accepted
-            - -is_declined
-            - -is_expired
             - -key
             - -last_email_sent_at
             - -organization
             - -role
+            - -status
             - accepted_at
             - declined_at
             - email
             - expired_at
             - id
-            - is_accepted
-            - is_declined
-            - is_expired
             - key
             - last_email_sent_at
             - organization
             - role
+            - status
         description: |-
           Ordering
 
@@ -673,12 +684,6 @@ paths:
           * `-expired_at` - Descending Expired At
           * `id` - ID
           * `-id` - Descending ID
-          * `is_accepted` - Is Accepted
-          * `-is_accepted` - Descending Is Accepted
-          * `is_declined` - Is Declined
-          * `-is_declined` - Descending Is Declined
-          * `is_expired` - Is Expired
-          * `-is_expired` - Descending Is Expired
           * `key` - Key
           * `-key` - Descending Key
           * `last_email_sent_at` - Last Email Sent At
@@ -687,6 +692,8 @@ paths:
           * `-organization` - Descending Organization
           * `role` - Role
           * `-role` - Descending Role
+          * `status` - Status
+          * `-status` - Descending Status
         explode: false
         style: form
       - name: page
@@ -726,6 +733,22 @@ paths:
         description: Multiple values may be separated by commas.
         explode: false
         style: form
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - accepted
+          - declined
+          - expired
+          - pending
+        description: |-
+          Lifecycle state of the invitation
+
+          * `pending` - Pending
+          * `accepted` - Accepted
+          * `declined` - Declined
+          * `expired` - Expired
       tags:
       - Invitations
       security:
@@ -794,6 +817,13 @@ paths:
         schema:
           type: string
         description: Return only `role__in`. A non-empty value is a regular expression
+          matched against the label or the value of each option, ignoring case and
+          accents.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Return only `status`. A non-empty value is a regular expression
           matched against the label or the value of each option, ignoring case and
           accents.
       tags:
@@ -5234,6 +5264,14 @@ components:
           nullable: true
           description: Organization of the event; empty for account events
           readOnly: true
+        organization_name:
+          type: string
+          readOnly: true
+          description: Organization name when the event happened
+        subject_label:
+          type: string
+          readOnly: true
+          description: Subject user (email and name) when the event happened
         target_type:
           type: string
           readOnly: true
@@ -5272,6 +5310,8 @@ components:
       - ip
       - metadata
       - organization_id
+      - organization_name
+      - subject_label
       - target_id
       - target_label
       - target_type
@@ -5449,18 +5489,19 @@ components:
           format: email
           description: Email of the user to invite
           maxLength: 254
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusDe4Enum'
+          readOnly: true
         is_expired:
           type: boolean
           readOnly: true
-          description: Is the invitation expired
         is_accepted:
           type: boolean
           readOnly: true
-          description: Is the invitation accepted by the user
         is_declined:
           type: boolean
           readOnly: true
-          description: Whether the invitation was declined by the user
         expired_at:
           type: string
           format: date-time
@@ -5520,6 +5561,7 @@ components:
       - last_email_sent_at
       - organization
       - role_label
+      - status
     InvitationAccept:
       type: object
       properties:
@@ -5636,18 +5678,19 @@ components:
           format: email
           readOnly: true
           description: Email of the user to invite
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusDe4Enum'
+          readOnly: true
         is_expired:
           type: boolean
           readOnly: true
-          description: Is the invitation expired
         is_accepted:
           type: boolean
           readOnly: true
-          description: Is the invitation accepted by the user
         is_declined:
           type: boolean
           readOnly: true
-          description: Whether the invitation was declined by the user
         expired_at:
           type: string
           format: date-time
@@ -5718,6 +5761,7 @@ components:
       - organization_name
       - role
       - role_label
+      - status
     InvitationReceivedDetail:
       type: object
       description: Mixin to validate the role of a user.
@@ -5730,18 +5774,19 @@ components:
           format: email
           description: Email of the user to invite
           maxLength: 254
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusDe4Enum'
+          readOnly: true
         is_expired:
           type: boolean
           readOnly: true
-          description: Is the invitation expired
         is_accepted:
           type: boolean
           readOnly: true
-          description: Is the invitation accepted by the user
         is_declined:
           type: boolean
           readOnly: true
-          description: Whether the invitation was declined by the user
         expired_at:
           type: string
           format: date-time
@@ -5797,6 +5842,7 @@ components:
       - last_email_sent_at
       - organization
       - role_label
+      - status
     InvitationsSection:
       type: object
       properties:
@@ -5874,6 +5920,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string
@@ -5893,6 +5940,7 @@ components:
         role:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
+          default: member
           description: |-
             User role in the organization
 
@@ -6042,6 +6090,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string
@@ -6062,6 +6111,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
           readOnly: true
+          default: member
           description: |-
             User role in the organization
 
@@ -6122,6 +6172,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string
@@ -6142,6 +6193,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
           readOnly: true
+          default: member
           description: |-
             User role in the organization
 
@@ -6310,6 +6362,10 @@ components:
           items:
             $ref: '#/components/schemas/ChoiceOptionStr'
           description: Multiple values may be separated by commas.
+        status:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
         order_by:
           type: array
           items:
@@ -6437,6 +6493,10 @@ components:
           items:
             $ref: '#/components/schemas/ChoiceOptionStr'
           description: Multiple values may be separated by commas.
+        status:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChoiceOptionStr'
         order_by:
           type: array
           items:
@@ -6487,6 +6547,10 @@ components:
           readOnly: true
         profile:
           $ref: '#/components/schemas/OrganizationProfileRelated'
+        owner:
+          type: integer
+          nullable: true
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -6512,7 +6576,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/StatusE75Enum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -6529,11 +6593,6 @@ components:
           readOnly: true
           nullable: true
           description: User who last updated the record
-        owner:
-          type: integer
-          readOnly: true
-          nullable: true
-          description: Owner of the organization
       required:
       - created_at
       - created_by
@@ -6581,7 +6640,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/StatusE75Enum'
           description: |-
             Suspended organizations cannot be entered
 
@@ -6598,11 +6657,12 @@ components:
         owner:
           type: integer
           nullable: true
-          description: Owner of the organization
+          readOnly: true
       required:
       - created_at
       - id
       - name
+      - owner
       - profile
       - slug
       - updated_at
@@ -6651,7 +6711,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/StatusE75Enum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -7309,6 +7369,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string
@@ -7329,6 +7390,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
           readOnly: true
+          default: member
           description: |-
             User role in the organization
 
@@ -7370,6 +7432,10 @@ components:
           readOnly: true
         profile:
           $ref: '#/components/schemas/OrganizationProfileRelated'
+        owner:
+          type: integer
+          nullable: true
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -7395,7 +7461,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/StatusE75Enum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -7412,11 +7478,6 @@ components:
           readOnly: true
           nullable: true
           description: User who last updated the record
-        owner:
-          type: integer
-          readOnly: true
-          nullable: true
-          description: Owner of the organization
     PatchedOrganizationImage:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -7678,6 +7739,14 @@ components:
           nullable: true
           description: Organization of the event; empty for account events
           readOnly: true
+        organization_name:
+          type: string
+          readOnly: true
+          description: Organization name when the event happened
+        subject_label:
+          type: string
+          readOnly: true
+          description: Subject user (email and name) when the event happened
         target_type:
           type: string
           readOnly: true
@@ -7727,6 +7796,8 @@ components:
       - metadata
       - organization
       - organization_id
+      - organization_name
+      - subject_label
       - subject_user
       - target_id
       - target_label
@@ -7857,6 +7928,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
           readOnly: true
+          default: member
           description: |-
             User role in the organization
 
@@ -7867,6 +7939,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         joined_at:
           type: string
@@ -7891,7 +7964,7 @@ components:
           description: Organization name
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/StatusE75Enum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -7950,7 +8023,7 @@ components:
           nullable: true
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/StatusE75Enum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -8025,7 +8098,7 @@ components:
           nullable: true
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/StatusE75Enum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -8591,6 +8664,7 @@ components:
         is_active:
           type: boolean
           readOnly: true
+          default: true
           description: Is this record active or not
         created_at:
           type: string
@@ -8611,6 +8685,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
           readOnly: true
+          default: member
           description: |-
             User role in the organization
 
@@ -8653,7 +8728,21 @@ components:
       - updated_at
       - updated_by
       - user
-    StatusEnum:
+    StatusDe4Enum:
+      enum:
+      - pending
+      - accepted
+      - declined
+      - expired
+      - revoked
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `accepted` - Accepted
+        * `declined` - Declined
+        * `expired` - Expired
+        * `revoked` - Revoked
+    StatusE75Enum:
       enum:
       - active
       - suspended

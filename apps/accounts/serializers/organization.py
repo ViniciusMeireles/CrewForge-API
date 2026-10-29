@@ -1,4 +1,5 @@
 from django.db import transaction
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -61,8 +62,20 @@ class OrganizationProfileDetailRelatedSerializer(
         fields = ['id', 'website', 'description', 'logo_url']
 
 
+@extend_schema_field({'type': 'integer', 'nullable': True, 'readOnly': True})
+class OwnerIdField(serializers.Field):
+    def __init__(self, **kwargs):
+        kwargs.update(read_only=True, source='*')
+        super().__init__(**kwargs)
+
+    def to_representation(self, organization: Organization) -> int | None:
+        owner = organization.owner
+        return owner.pk if owner else None
+
+
 class OrganizationDetailSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     profile = OrganizationProfileDetailRelatedSerializer(read_only=True)
+    owner = OwnerIdField()
 
     class Meta:
         model = Organization
@@ -94,12 +107,12 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     """Serializer for the Organization model."""
 
     profile = OrganizationProfileRelatedSerializer(required=False)
+    owner = OwnerIdField()
 
     class Meta:
         model = Organization
         exclude = SUSPENSION_INTERNAL_FIELDS
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
-            'owner',
             'status',
         ]
         extra_kwargs = {
@@ -132,16 +145,14 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         creating = not bool(self.instance)
         instance: Organization = super().save(**kwargs)
         if creating:
-            member = Member.objects.create(
+            Member.objects.create(
                 user=self.auth_user,
                 organization=instance,
                 role=MemberRoleChoices.OWNER,
                 created_by=self.auth_user,
                 updated_by=self.auth_user,
             )
-            instance.owner = member
-            instance.save(update_fields=['owner'])
-        instance.get_profile()
+        OrganizationProfile.objects.get_or_create(organization=instance)
         if profile_data:
             profile_serializer = self._get_profile_serializer(profile_data)
             if not profile_serializer.is_valid():

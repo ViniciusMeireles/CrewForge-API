@@ -239,10 +239,10 @@ class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
 
     # --- Owner role ---
 
-    def test_owner_can_create_any_role(self):
+    def test_owner_cannot_invite_an_owner(self):
         payload = self._invitation_payload(role=MemberRoleChoices.OWNER)
         response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
     def test_owner_can_retrieve_owner_invite(self):
         invite = self._create_invitation(role=MemberRoleChoices.OWNER)

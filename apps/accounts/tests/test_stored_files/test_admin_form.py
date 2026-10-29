@@ -63,7 +63,9 @@ class StoredFileModelFormTestCase(TestCase):
 
     def test_admin_blank_organization_is_not_taken_from_the_session(self):
         user = UserFactory(is_superuser=True, is_staff=True)
-        member = MemberFactory(user=user, role=MemberRoleChoices.OWNER)
+        member = MemberFactory(
+            user=user, role=MemberRoleChoices.OWNER, replace_owner=True
+        )
         form = self.form(
             upload_too_large=False,
             user=user,

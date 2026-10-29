@@ -58,7 +58,12 @@ class SessionAccessTestCase(APITestCaseMixin, APITestCase):
         cls.organization = OrganizationFactory()
 
     def new_member(self, role: MemberRoleChoices, **kwargs) -> Member:
-        return MemberFactory(organization=self.organization, role=role, **kwargs)
+        return MemberFactory(
+            organization=self.organization,
+            role=role,
+            replace_owner=role == MemberRoleChoices.OWNER,
+            **kwargs,
+        )
 
     def test_session_access_by_role(self):
         for role, expected in EXPECTED_ACCESS.items():

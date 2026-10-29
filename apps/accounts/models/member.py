@@ -58,7 +58,20 @@ class Member(BaseModel):
         ordering = ['-id']
         verbose_name = _('Member')
         verbose_name_plural = _('Members')
-        unique_together = [['user', 'organization'], ['nickname', 'organization']]
+        unique_together = [['nickname', 'organization']]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'organization'],
+                name='member_unique_user_organization',
+                violation_error_message=_('User is already a member'),
+            ),
+            models.UniqueConstraint(
+                fields=['organization'],
+                condition=models.Q(role=MemberRoleChoices.OWNER, is_active=True),
+                name='member_single_active_owner',
+                violation_error_message=_('The organization already has an owner.'),
+            ),
+        ]
 
     def __str__(self):
         return f'{self.user} - {self.organization}'

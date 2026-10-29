@@ -80,7 +80,7 @@ class AuditEventPermissionTestCase(AuditAPITestCaseMixin, APITestCase):
         )
 
     def test_cross_org_owner_does_not_see_events(self):
-        other_owner = MemberFactory(role=MemberRoleChoices.OWNER)
+        other_owner = MemberFactory(role=MemberRoleChoices.OWNER, replace_owner=True)
         self.client.force_authenticate(member=other_owner)
         self.clear_events()
         self.assertEqual(self.list_events().data['count'], 0)

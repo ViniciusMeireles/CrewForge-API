@@ -345,5 +345,5 @@ class FilterOptionsSchemaTestCase(SimpleTestCase):
         ]
         self.assertEqual(
             {p['name'] for p in operation['parameters']},
-            {'role', 'role__in', 'order_by'},
+            {'status', 'role', 'role__in', 'order_by'},
         )

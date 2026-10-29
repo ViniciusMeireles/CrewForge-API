@@ -11,7 +11,7 @@ from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
-from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.mixins import APITestCaseMixin, run_on_commit_immediately
 
 
 class InvitationIntegrationTestCase(APITestCaseMixin, APITestCase):
@@ -55,6 +55,7 @@ class InvitationIntegrationTestCase(APITestCaseMixin, APITestCase):
         delete_resp = self.client.delete(detail_url, format='json')
         self.assertEqual(delete_resp.status_code, http_status.HTTP_204_NO_CONTENT)
 
+    @run_on_commit_immediately
     def test_create_then_send_email(self):
         invitation_data = InvitationFactory.build()
         payload = {

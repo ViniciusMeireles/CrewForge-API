@@ -39,6 +39,7 @@ from apps.accounts.serializers.invitation import (
     InvitationReceivedSerializer,
     InvitationSerializer,
 )
+from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
 from apps.accounts.utils.security_log import log_security_event
 from apps.audit.choices import AuditActionChoices
@@ -469,9 +470,8 @@ class InvitationViewSet(
                     status=status.HTTP_429_TOO_MANY_REQUESTS,
                 )
 
-        invitation.send_email()
-
         with transaction.atomic():
+            transaction.on_commit(invitation.send_email)
             invitation.last_email_sent_at = timezone.now()
             invitation.save(update_fields=['last_email_sent_at', 'updated_at'])
             record_audit_event(
@@ -544,6 +544,14 @@ class InvitationViewSet(
         serializer = self.get_serializer(invitation)
         return Response(data=serializer.data)
 
+    def _locked_invitation(self, request, kwargs) -> Invitation:
+        invitation = get_object_or_404(
+            Invitation.objects.select_for_update(of=('self',)).filter_actives(),
+            pk=kwargs.get('invitation_pk'),
+        )
+        self.check_object_permissions(request, invitation)
+        return invitation
+
     @action(
         detail=False,
         methods=['post'],
@@ -552,26 +560,17 @@ class InvitationViewSet(
         serializer_class=InvitationAcceptSerializer,
     )
     def accept(self, request, *args, **kwargs):
-        invitation_pk = kwargs.get('invitation_pk')
-        invitation = get_object_or_404(
-            Invitation.objects.filter_actives(), pk=invitation_pk
-        )
-        self.check_object_permissions(request, invitation)
-        invitation.ensure_organization_not_suspended()
-
-        is_acceptable, message = invitation.is_acceptable()
-        if not is_acceptable:
-            return Response(
-                data={'detail': message},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         from apps.accounts.models.member import Member
 
         accept_serializer = InvitationAcceptSerializer(data=request.data)
         accept_serializer.is_valid(raise_exception=True)
         try:
             with transaction.atomic():
+                invitation = self._locked_invitation(request, kwargs)
+                invitation.ensure_organization_not_suspended()
+                is_acceptable, message = invitation.is_acceptable()
+                if not is_acceptable:
+                    raise ValueError(message)
                 member, readmitted = Member.objects.admit(
                     user=request.user,
                     organization=invitation.organization,
@@ -588,9 +587,7 @@ class InvitationViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        from rest_framework_simplejwt.tokens import RefreshToken
-
-        refresh = RefreshToken.for_user(request.user)
+        refresh = VersionedRefreshToken.for_user(request.user)
         response = Response(
             data={
                 'access': str(refresh.access_token),
@@ -608,20 +605,14 @@ class InvitationViewSet(
         permission_classes=[InvitationAcceptDeclinePermission],
     )
     def decline(self, request, *args, **kwargs):
-        invitation_pk = kwargs.get('invitation_pk')
-        invitation = get_object_or_404(
-            Invitation.objects.filter_actives(), pk=invitation_pk
-        )
-        self.check_object_permissions(request, invitation)
-
-        is_declinable, message = invitation.is_declinable()
-        if not is_declinable:
-            return Response(
-                data={'detail': message},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         with transaction.atomic():
+            invitation = self._locked_invitation(request, kwargs)
+            is_declinable, message = invitation.is_declinable()
+            if not is_declinable:
+                return Response(
+                    data={'detail': message},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             invitation.decline(user=self.auth_user, check=False)
             record_audit_event(
                 AuditActionChoices.INVITATION_DECLINED,

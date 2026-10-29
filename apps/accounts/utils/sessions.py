@@ -1,18 +1,23 @@
+from django.contrib.auth import get_user_model
+from django.db.models import F
 from django.utils import timezone
 
+from apps.accounts.tokens import VERSION_CLAIM
 from apps.accounts.utils.tokens import revoke_refresh_tokens
 
 
 def revoke_sessions(user) -> None:
-    """End every session of ``user``: older access tokens, refresh tokens."""
-    user.sessions_revoked_at = timezone.now()
-    user.save(update_fields=['sessions_revoked_at', 'updated_at'])
+    """End every session of ``user``: bump the token version, blacklist refresh."""
+    now = timezone.now()
+    get_user_model().objects.filter(pk=user.pk).update(
+        token_version=F('token_version') + 1,
+        sessions_revoked_at=now,
+        updated_at=now,
+    )
+    user.refresh_from_db(fields=['token_version', 'sessions_revoked_at', 'updated_at'])
     revoke_refresh_tokens(user)
 
 
-def is_token_revoked(user, issued_at: int | None) -> bool:
-    """Whether a token issued at ``issued_at`` (epoch seconds) predates a revocation."""
-    revoked_at = user.sessions_revoked_at
-    if revoked_at is None or issued_at is None:
-        return False
-    return issued_at < int(revoked_at.timestamp())
+def is_token_revoked(user, validated_token) -> bool:
+    """Whether the token was issued for an older ``token_version`` of ``user``."""
+    return validated_token.get(VERSION_CLAIM, 0) != user.token_version

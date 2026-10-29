@@ -36,7 +36,9 @@ class InvitationReceivedTestCase(APITestCaseMixin, APITestCase):
 
     def test_received_filters_by_email(self):
         self._create_invitation(email=self.user.email)
-        self._create_invitation(email=self.user.email)
+        self._create_invitation(
+            email=self.user.email, organization=OrganizationFactory()
+        )
         self._create_invitation(email='other@example.com')
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.received_url)

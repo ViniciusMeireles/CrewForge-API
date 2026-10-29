@@ -1,9 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.db.models import F, Q
+from django.db.models import Exists, OuterRef, Q
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import filters, filterset
 
-from apps.accounts.choices import OrganizationStatusChoices, PlatformRoleChoices
+from apps.accounts.choices import (
+    MemberRoleChoices,
+    OrganizationStatusChoices,
+    PlatformRoleChoices,
+)
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
 from apps.audit.models.audit_event import AuditEvent
@@ -45,7 +49,14 @@ class PlatformOrganizationFilter(
         return queryset.filter(
             Q(name__icontains=value)
             | Q(slug__icontains=value)
-            | Q(owner__user__email__icontains=value)
+            | Exists(
+                Member.objects.filter(
+                    organization=OuterRef('pk'),
+                    role=MemberRoleChoices.OWNER,
+                    is_active=True,
+                    user__email__icontains=value,
+                )
+            )
         )
 
     def filter_noop(self, queryset, name, value):
@@ -113,7 +124,7 @@ class PlatformMemberFilter(filterset.FilterSet):
     def filter_exclude_owner(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.exclude(owned_organizations__id=F('organization_id'))
+        return queryset.exclude(role=MemberRoleChoices.OWNER)
 
 
 class PlatformAuditEventFilter(PeriodValidationMixin, filterset.FilterSet):

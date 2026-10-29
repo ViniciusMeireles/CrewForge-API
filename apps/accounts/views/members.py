@@ -1,6 +1,6 @@
 from functools import cached_property
 
-from django.utils import timezone
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.utils import (
@@ -16,7 +16,7 @@ from rest_framework import status as http_status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.accounts.choices import InvitationErrorMessages
+from apps.accounts.choices import InvitationErrorMessages, InvitationStatusChoices
 from apps.accounts.consts import INVITATION_LOOKUP_URL_KWARG
 from apps.accounts.filters.members import MemberFilter
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
@@ -136,7 +136,7 @@ from apps.generics.utils.schema import (
 class MemberViewSet(
     OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
 ):
-    queryset = Member.objects.all()
+    queryset = Member.objects.select_related('user')
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
     audit_actions = {
         'create_with_invite': AuditActionChoices.MEMBER_JOINED,
@@ -186,21 +186,15 @@ class MemberViewSet(
             context['invitation'] = invitation
         return context
 
+    def _pending_invitations(self):
+        return Invitation.objects.filter_effective_status(
+            InvitationStatusChoices.PENDING
+        ).filter(key=self.kwargs.get(INVITATION_LOOKUP_URL_KWARG), is_active=True)
+
     @cached_property
     def invitation(self) -> Invitation | None:
         """The pending invitation of the URL key."""
-        return (
-            Invitation.objects.filter(
-                key=self.kwargs.get(INVITATION_LOOKUP_URL_KWARG),
-                is_active=True,
-                is_expired=False,
-                is_accepted=False,
-            )
-            .exclude(
-                expired_at__lt=timezone.now(),
-            )
-            .get_or_none()
-        )
+        return self._pending_invitations().get_or_none()
 
     def create(self, request, *args, **kwargs):
         """Deprecated create action."""
@@ -221,22 +215,26 @@ class MemberViewSet(
     )
     def create_with_invite(self, request, *args, **kwargs):
         """Create a new member."""
-        if not (invitation := self.invitation):
-            return Response(
-                data={'detail': InvitationErrorMessages.INVITATION_NOT_FOUND.label},
-                status=http_status.HTTP_404_NOT_FOUND,
-            )
-        invitation.ensure_organization_not_suspended()
-
-        is_acceptable, message = invitation.is_acceptable()
-        if not is_acceptable:
-            return Response(
-                data={'detail': message}, status=http_status.HTTP_400_BAD_REQUEST
-            )
-
         if wants_cookie_transport(request):
             enforce_csrf(request)
-        response = super().create(request, *args, **kwargs)
+        with transaction.atomic():
+            invitation = self.__dict__['invitation'] = (
+                Invitation.objects.select_for_update(of=('self',))
+                .filter(pk__in=self._pending_invitations().values('pk'))
+                .get_or_none()
+            )
+            if invitation is None:
+                return Response(
+                    data={'detail': InvitationErrorMessages.INVITATION_NOT_FOUND.label},
+                    status=http_status.HTTP_404_NOT_FOUND,
+                )
+            invitation.ensure_organization_not_suspended()
+            is_acceptable, message = invitation.is_acceptable()
+            if not is_acceptable:
+                return Response(
+                    data={'detail': message}, status=http_status.HTTP_400_BAD_REQUEST
+                )
+            response = super().create(request, *args, **kwargs)
         log_security_event(
             'auth.signup',
             request,

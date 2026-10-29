@@ -1,5 +1,6 @@
 from django.core.management import BaseCommand
 
+from apps.accounts.choices import InvitationStatusChoices
 from apps.accounts.models.invitation import Invitation
 
 
@@ -10,10 +11,9 @@ class Command(BaseCommand):
         from django.utils import timezone
 
         expired_invites = Invitation.objects.filter(
-            is_active=True,
-            is_expired=False,
-            expired_at__lt=timezone.now(),
+            status=InvitationStatusChoices.PENDING,
+            expired_at__lte=timezone.now(),
         )
 
-        count_expired = expired_invites.update(is_expired=True)
+        count_expired = expired_invites.update(status=InvitationStatusChoices.EXPIRED)
         self.stdout.write(self.style.SUCCESS(f'Expired {count_expired} invites.'))

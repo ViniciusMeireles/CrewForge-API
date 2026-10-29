@@ -35,4 +35,5 @@ class InvitationAcceptDeclinePermission(IsAuthenticated):
                 and obj.member_id is None
             )
             or (obj.member_id and obj.member == get_member(request))
+            or (obj.user_id is not None and obj.user_id == request.user.id)
         )

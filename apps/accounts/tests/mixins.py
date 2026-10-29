@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.urls import reverse
 
 from apps.accounts.factories.organizations import OrganizationFactory
@@ -5,6 +7,10 @@ from apps.accounts.models.organization import Organization
 from apps.accounts.tests.client import CustomAPIClient
 
 PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+
+run_on_commit_immediately = mock.patch(
+    'django.db.transaction.on_commit', lambda func, *args, **kwargs: func()
+)
 
 
 class APITestCaseMixin:

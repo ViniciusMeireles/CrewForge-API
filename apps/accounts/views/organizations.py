@@ -122,6 +122,10 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
         user.
         """
         queryset = super().get_queryset()
+        if self.action in ('list', 'retrieve'):
+            queryset = queryset.with_logo_images()
+        if self.action in ('retrieve', 'update', 'partial_update'):
+            queryset = queryset.with_owner()
         if self.action == 'create':
             return queryset
         if not self.auth_user:
