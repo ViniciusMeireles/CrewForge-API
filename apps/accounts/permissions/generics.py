@@ -36,12 +36,12 @@ class OrganizationScopedPermission(IsActiveMember):
         return get_member(request)
 
     @classmethod
-    def get_session_organization_id(cls, request):
+    def get_scope_organization_id(cls, request):
         return get_organization_id(request)
 
     @classmethod
     def has_organization_scope(cls, request, obj) -> bool:
-        organization_id = cls.get_session_organization_id(request)
+        organization_id = cls.get_scope_organization_id(request)
         return is_same_organization_scope(
             obj=obj,
             organization_id=organization_id,

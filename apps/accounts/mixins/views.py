@@ -121,13 +121,12 @@ class OrganizationScopedViewSetMixin(OrganizationScopedRequestMixin):
         return {self.organization_filter: self.auth_organization_id}
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(
-                **self.get_organization_filter_kwargs(),
-                **self.get_base_queryset_filters(),
-            )
+        queryset = super().get_queryset()
+        if self.auth_organization_id is None:
+            return queryset.none()
+        return queryset.filter(
+            **self.get_organization_filter_kwargs(),
+            **self.get_base_queryset_filters(),
         )
 
 

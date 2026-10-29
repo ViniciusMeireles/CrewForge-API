@@ -12,7 +12,7 @@ from rest_framework_simplejwt.serializers import (
 )
 
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
-from apps.accounts.serializers.user import UserReadySerializer
+from apps.accounts.serializers.user import UserReadySerializer, run_password_validators
 from apps.accounts.utils.email_verification import email_verification_token
 from apps.accounts.utils.password_reset import password_reset_uid_token
 
@@ -101,6 +101,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         if not default_token_generator.check_token(user, token):
             raise serializers.ValidationError(_('Invalid token.'))
+        try:
+            run_password_validators(attrs['new_password'], user)
+        except serializers.ValidationError as exc:
+            raise serializers.ValidationError({'new_password': exc.detail}) from exc
         self.user = user
         return attrs
 

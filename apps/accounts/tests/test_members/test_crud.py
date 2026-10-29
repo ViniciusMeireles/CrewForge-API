@@ -1,3 +1,5 @@
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 from rest_framework import status as http_status
@@ -114,6 +116,58 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
+    def test_create_with_revoked_invite_returns_404(self):
+        user_data = UserFactory.build()
+        invite = InvitationFactory.create(
+            organization=self.organization,
+            email=user_data.email,
+            is_active=False,
+        )
+        payload = self._member_payload(
+            user__username=user_data.username,
+            user__email=user_data.email,
+        )
+        url = reverse(self.create_with_invite_url_name, args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_create_with_unknown_key_returns_404(self):
+        payload = self._member_payload()
+        url = reverse(
+            self.create_with_invite_url_name,
+            args=['00000000-0000-0000-0000-000000000000'],
+        )
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_create_with_invite_rejects_password_similar_to_invitation_email(self):
+        invite = InvitationFactory.create(
+            organization=self.organization, email='maria.silva@example.com'
+        )
+        payload = self._member_payload()
+        payload['user']['password'] = 'maria.silva@example'
+        url = reverse(self.create_with_invite_url_name, args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_create_with_invite_reads_the_invitation_once(self):
+        user_data = UserFactory.build()
+        invite = InvitationFactory.create(
+            organization=self.organization, email=user_data.email
+        )
+        url = reverse(self.create_with_invite_url_name, args=[invite.key])
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.post(url, data=self._member_payload(), format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        invitation_reads = [
+            query['sql']
+            for query in queries.captured_queries
+            if query['sql'].startswith('SELECT')
+            and 'FROM "accounts_invitation"' in query['sql']
+            and '"accounts_invitation"."key"' in query['sql']
+        ]
+        self.assertEqual(len(invitation_reads), 1)
+
     def test_standard_create_returns_405(self):
         payload = self._member_payload()
         response = self.client.post(self.list_url, data=payload, format='json')
@@ -134,6 +188,24 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         member.refresh_from_db()
         self.assertEqual(member.nickname, 'updated_nick')
+
+    def test_admin_update_ignores_user_fields(self):
+        target = MemberFactory(organization=self.organization)
+        first_name, username = target.user.first_name, target.user.username
+        response = self.client.patch(
+            self._detail_url(target),
+            data={
+                'nickname': 'renamed',
+                'user': {'first_name': 'Hijacked', 'username': 'hijacked'},
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        target.refresh_from_db()
+        target.user.refresh_from_db()
+        self.assertEqual(target.nickname, 'renamed')
+        self.assertEqual(target.user.first_name, first_name)
+        self.assertEqual(target.user.username, username)
 
     def test_delete_member(self):
         member = MemberFactory(organization=self.organization)

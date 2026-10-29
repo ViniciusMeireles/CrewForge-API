@@ -208,15 +208,15 @@ class StoredFileCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 3)
 
-    def test_list_shows_only_visible_to_anonymous(self):
+    def test_list_hides_public_files_from_anonymous(self):
         StoredFileFactory.create(public=True, organization=self.organization)
         StoredFileFactory.create(organization=self.organization, owner=self.owner_user)
         self.client.force_authenticate(user=None)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['count'], 0)
 
-    def test_list_shows_owner_and_public_to_authenticated(self):
+    def test_list_shows_only_own_files_without_organization_context(self):
         StoredFileFactory.create(public=True, organization=self.organization)
         StoredFileFactory.create(organization=self.organization, owner=self.owner_user)
         StoredFileFactory.create(
@@ -227,7 +227,17 @@ class StoredFileCRUDTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(user=self.owner_user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_list_excludes_other_organization_public_files(self):
+        own_public = StoredFileFactory.create(
+            public=True, organization=self.organization, owner=UserFactory()
+        )
+        StoredFileFactory.create(public=True, organization=OrganizationFactory())
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        uuids = [item['uuid'] for item in response.data['results']]
+        self.assertEqual(uuids, [str(own_public.uuid)])
 
     def test_retrieve_file(self):
         stored_file = StoredFileFactory.create(

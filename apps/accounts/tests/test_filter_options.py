@@ -39,6 +39,7 @@ class AccountsFilterOptionsTestMixin(FilterOptionsTestMixin):
         'anonymous': _status(
             invitations=UNAUTHORIZED,
             members=UNAUTHORIZED,
+            organizations=UNAUTHORIZED,
             organization_profiles=UNAUTHORIZED,
         ),
     }

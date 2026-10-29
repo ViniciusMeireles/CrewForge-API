@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
 from rest_framework import serializers
 
 from apps.accounts.consts import INVITATION_LOOKUP_URL_KWARG
@@ -18,6 +17,18 @@ from apps.accounts.serializers.user import UserSerializer
 from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 
 User = get_user_model()
+
+
+def get_context_invitation(serializer) -> Invitation:
+    context = serializer.context
+    if 'invitation' not in context:
+        invitation_key = (
+            context.get('request')
+            .parser_context.get('kwargs')
+            .get(INVITATION_LOOKUP_URL_KWARG)
+        )
+        context['invitation'] = Invitation.objects.get(key=invitation_key)
+    return context['invitation']
 
 
 class UserCreateWithInviteSerializer(UserSerializer):
@@ -36,32 +47,21 @@ class UserCreateWithInviteSerializer(UserSerializer):
         ]
         extra_kwargs = {
             'email': {'read_only': True},
-            'password': {'write_only': True, 'required': False},
+            'password': {'write_only': True, 'required': True},
             'auth_token': {'read_only': True},
         }
 
-    def _get_invitation(self) -> Invitation:
-        invitation_key = (
-            self.context.get('request')
-            .parser_context.get('kwargs')
-            .get(INVITATION_LOOKUP_URL_KWARG)
-        )
-        return Invitation.objects.get(key=invitation_key)
+    def get_password_user(self, attrs):
+        user = super().get_password_user(attrs)
+        user.email = get_context_invitation(self).email
+        return user
 
     def validate(self, attrs):
         attrs = super().validate(attrs=attrs)
-        invitation = self._get_invitation()
-        is_acceptable, message = invitation.is_acceptable()
+        is_acceptable, message = get_context_invitation(self).is_acceptable()
         if not is_acceptable:
             raise serializers.ValidationError(detail=message)
         return attrs
-
-    @transaction.atomic
-    def save(self, **kwargs):
-        invitation = self._get_invitation()
-        kwargs.update({'email': invitation.email, 'email_verified_at': timezone.now()})
-        instance = super().save(**kwargs)
-        return instance
 
 
 class MemberModelSerializer(
@@ -100,20 +100,6 @@ class MemberModelSerializer(
             )
         return value
 
-    @transaction.atomic
-    def save(self, **kwargs):
-        user_serializer = self.fields['user']
-        user_serializer.initial_data = self.initial_data.get('user', {})
-        user_serializer.partial = self.partial
-        user_serializer._context = self.context
-        if self.instance and self.instance.user_id:
-            user_serializer.instance = self.instance.user
-        user_serializer.is_valid(raise_exception=True)
-
-        kwargs['user'] = user_serializer.save()
-        instance = super().save(**kwargs)
-        return instance
-
 
 class MemberWithInviteCreateSerializer(MemberModelSerializer):
     """Serializer for creating the Member model."""
@@ -123,19 +109,19 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
 
-    def _get_invitation(self) -> Invitation:
-        invitation_key = (
-            self.context.get('request')
-            .parser_context.get('kwargs')
-            .get(INVITATION_LOOKUP_URL_KWARG)
-        )
-        return Invitation.objects.get(key=invitation_key)
-
     @transaction.atomic
     def save(self, **kwargs):
-        invitation = self._get_invitation()
+        invitation = get_context_invitation(self)
+        user = self.fields['user'].create(
+            {
+                **self.validated_data['user'],
+                'email': invitation.email,
+                'email_verified_at': timezone.now(),
+            }
+        )
         kwargs.update(
             {
+                'user': user,
                 'role': invitation.role,
                 'organization_id': invitation.organization_id,
             }
@@ -146,28 +132,20 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
 
 
 class UserUpdateSerializer(UserSerializer):
-    """Serializer for updating the User model."""
+    """Read-only User of a Member update: identity is changed by the User only."""
 
     class Meta(UserSerializer.Meta):
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
-        read_only_fields = UserSerializer.Meta.read_only_fields + ['email']
+        read_only_fields = fields
 
 
 class MemberUpdateSerializer(MemberModelSerializer):
     """Serializer for updating the Member model."""
 
-    user = UserUpdateSerializer()
+    user = UserUpdateSerializer(read_only=True)
 
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
-        extra_kwargs = {
-            'user': {
-                'required': False,
-                'help_text': gettext_lazy(
-                    'User data to update, if not provided, will not update the user.'
-                ),
-            },
-        }
 
 
 class MemberRoleUpdateSerializer(

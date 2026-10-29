@@ -43,6 +43,14 @@ class InvitationDeclineTestCase(APITestCaseMixin, APITestCase):
         self.assertTrue(invitation.is_declined)
         self.assertIsNotNone(invitation.declined_at)
 
+    def test_revoked_returns_404(self):
+        invitation = self._create_invitation(is_active=False)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self._decline_url(invitation), format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+        invitation.refresh_from_db()
+        self.assertFalse(invitation.is_declined)
+
     def test_decline_requires_authentication(self):
         invitation = self._create_invitation()
         url = self._decline_url(invitation)

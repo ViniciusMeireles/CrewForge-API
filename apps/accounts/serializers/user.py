@@ -1,4 +1,5 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -6,6 +7,13 @@ from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.utils.language import current_language
 
 User = get_user_model()
+
+
+def run_password_validators(password: str, user) -> None:
+    try:
+        password_validation.validate_password(password, user=user)
+    except DjangoValidationError as exc:
+        raise serializers.ValidationError(list(exc.messages)) from exc
 
 
 class UserReadySerializer(ModelSerializerMixin, serializers.ModelSerializer):
@@ -49,6 +57,21 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         elif value and self.instance and self.instance != self.auth_user:
             raise serializers.ValidationError(_('Not allowed to change the password.'))
         return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if password := attrs.get('password'):
+            try:
+                run_password_validators(password, self.get_password_user(attrs))
+            except serializers.ValidationError as exc:
+                raise serializers.ValidationError({'password': exc.detail}) from exc
+        return attrs
+
+    def get_password_user(self, attrs):
+        if self.instance:
+            return self.instance
+        fields = ('username', 'email', 'first_name', 'last_name')
+        return User(**{field: attrs.get(field) or '' for field in fields})
 
     def create(self, validated_data):
         validated_data.setdefault('preferred_language', current_language())

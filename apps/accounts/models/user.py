@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.expressions import Case, Value, When
 from django.db.models.fields.generated import GeneratedField
-from django.db.models.functions import Concat
+from django.db.models.functions import Concat, Upper
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.choices import PlatformRoleChoices, PreferredLanguageChoices
@@ -125,6 +125,9 @@ class User(AbstractUser, BaseModel):
     )
 
     objects = UserManager()
+
+    class Meta(AbstractUser.Meta):
+        indexes = [models.Index(Upper('email'), name='user_email_upper_idx')]
 
     @property
     def is_blocked(self) -> bool:

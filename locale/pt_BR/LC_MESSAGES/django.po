@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 15:58+0000\n"
+"POT-Creation-Date: 2026-10-29 16:20+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -44,7 +44,7 @@ msgstr "Administrador"
 msgid "Manager"
 msgstr "Gerente"
 
-#: apps/accounts/choices.py:15 apps/accounts/models/invitation.py:81
+#: apps/accounts/choices.py:15 apps/accounts/models/invitation.py:82
 #: apps/accounts/models/member.py:59 apps/teams/choices.py:9
 #: apps/teams/models/team_member.py:21
 msgid "Member"
@@ -308,7 +308,7 @@ msgid "This organization is suspended. Contact support."
 msgstr "Esta organização está suspensa. Fale com o suporte."
 
 #: apps/accounts/filters/organization_image.py:12
-#: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:68
+#: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:69
 #: apps/accounts/models/member.py:32 apps/accounts/models/organization.py:67
 #: apps/accounts/models/organization.py:86 apps/audit/models/audit_event.py:23
 #: apps/platform/filters.py:126 apps/platform/filters.py:134
@@ -401,113 +401,113 @@ msgstr "Arquivo armazenado"
 msgid "Stored Files"
 msgstr "Arquivos armazenados"
 
-#: apps/accounts/models/invitation.py:19
+#: apps/accounts/models/invitation.py:20
 msgid "Email"
 msgstr "E-mail"
 
-#: apps/accounts/models/invitation.py:20
+#: apps/accounts/models/invitation.py:21
 msgid "Email of the user to invite"
 msgstr "E-mail do usuário a convidar"
 
-#: apps/accounts/models/invitation.py:26
+#: apps/accounts/models/invitation.py:27
 msgid "Is Accepted"
 msgstr "Foi aceito"
 
-#: apps/accounts/models/invitation.py:27
+#: apps/accounts/models/invitation.py:28
 msgid "Is the invitation accepted by the user"
 msgstr "Se o convite foi aceito pelo usuário"
 
-#: apps/accounts/models/invitation.py:31
+#: apps/accounts/models/invitation.py:32
 msgid "Is Expired"
 msgstr "Está expirado"
 
-#: apps/accounts/models/invitation.py:32
+#: apps/accounts/models/invitation.py:33
 msgid "Is the invitation expired"
 msgstr "Se o convite está expirado"
 
-#: apps/accounts/models/invitation.py:36
+#: apps/accounts/models/invitation.py:37
 msgid "Is Declined"
 msgstr "Foi recusado"
 
-#: apps/accounts/models/invitation.py:37
+#: apps/accounts/models/invitation.py:38
 msgid "Whether the invitation was declined by the user"
 msgstr "Se o convite foi recusado pelo usuário"
 
-#: apps/accounts/models/invitation.py:40
+#: apps/accounts/models/invitation.py:41
 msgid "Expired At"
 msgstr "Expira em"
 
-#: apps/accounts/models/invitation.py:41
+#: apps/accounts/models/invitation.py:42
 msgid "Date and time when the invitation will expire"
 msgstr "Data e hora em que o convite expirará"
 
-#: apps/accounts/models/invitation.py:46
+#: apps/accounts/models/invitation.py:47
 msgid "Declined At"
 msgstr "Recusado em"
 
-#: apps/accounts/models/invitation.py:47
+#: apps/accounts/models/invitation.py:48
 msgid "When the invitation was declined"
 msgstr "Quando o convite foi recusado"
 
-#: apps/accounts/models/invitation.py:52
+#: apps/accounts/models/invitation.py:53
 msgid "Accepted At"
 msgstr "Aceito em"
 
-#: apps/accounts/models/invitation.py:53
+#: apps/accounts/models/invitation.py:54
 msgid "When the invitation was accepted"
 msgstr "Quando o convite foi aceito"
 
-#: apps/accounts/models/invitation.py:61 apps/accounts/models/member.py:39
+#: apps/accounts/models/invitation.py:62 apps/accounts/models/member.py:39
 #: apps/teams/filters/team_member.py:68 apps/teams/models/team_member.py:26
 msgid "Role"
 msgstr "Função"
 
-#: apps/accounts/models/invitation.py:62 apps/accounts/models/member.py:40
+#: apps/accounts/models/invitation.py:63 apps/accounts/models/member.py:40
 msgid "User role in the organization"
 msgstr "Função do usuário na organização"
 
-#: apps/accounts/models/invitation.py:69
+#: apps/accounts/models/invitation.py:70
 msgid "Organization to which the user is invited"
 msgstr "Organização para a qual o usuário é convidado"
 
-#: apps/accounts/models/invitation.py:74
+#: apps/accounts/models/invitation.py:75
 msgid "Key"
 msgstr "Chave"
 
-#: apps/accounts/models/invitation.py:75
+#: apps/accounts/models/invitation.py:76
 msgid "Key for the invitation"
 msgstr "Chave do convite"
 
-#: apps/accounts/models/invitation.py:82
+#: apps/accounts/models/invitation.py:83
 msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
-#: apps/accounts/models/invitation.py:89 apps/accounts/models/member.py:25
+#: apps/accounts/models/invitation.py:90 apps/accounts/models/member.py:25
 #: apps/audit/choices.py:118 apps/platform/filters.py:128
 msgid "User"
 msgstr "Usuário"
 
-#: apps/accounts/models/invitation.py:90
+#: apps/accounts/models/invitation.py:91
 msgid "User associated with the invitation"
 msgstr "Usuário associado ao convite"
 
-#: apps/accounts/models/invitation.py:95
+#: apps/accounts/models/invitation.py:96
 msgid "Last Email Sent At"
 msgstr "Último e-mail enviado em"
 
-#: apps/accounts/models/invitation.py:96
+#: apps/accounts/models/invitation.py:97
 msgid "Date and time when the last invitation email was sent"
 msgstr "Data e hora em que o último e-mail de convite foi enviado"
 
-#: apps/accounts/models/invitation.py:105
+#: apps/accounts/models/invitation.py:106
 msgid "Invitation"
 msgstr "Convite"
 
-#: apps/accounts/models/invitation.py:106
+#: apps/accounts/models/invitation.py:107
 msgid "Invitations"
 msgstr "Convites"
 
-#: apps/accounts/models/invitation.py:205
+#: apps/accounts/models/invitation.py:209
 msgid "Expired date must be greater than now"
 msgstr "A data de expiração deve ser posterior ao momento atual"
 
@@ -740,6 +740,12 @@ msgstr "Sessões revogadas em"
 msgid "Access tokens issued before this moment are refused"
 msgstr "Tokens de acesso emitidos antes deste momento são recusados"
 
+#: apps/accounts/permissions/member.py:41
+msgid "The Owner cannot be removed or demoted; transfer ownership first."
+msgstr ""
+"O proprietário não pode ser removido nem rebaixado; transfira a propriedade "
+"antes."
+
 #: apps/accounts/serializers/auth.py:100
 msgid "Invalid UID."
 msgstr "UID inválido."
@@ -748,7 +754,7 @@ msgstr "UID inválido."
 msgid "Invalid token."
 msgstr "Token inválido."
 
-#: apps/accounts/serializers/auth.py:121 apps/accounts/serializers/auth.py:124
+#: apps/accounts/serializers/auth.py:125 apps/accounts/serializers/auth.py:128
 msgid "Invalid verification link."
 msgstr "Link de verificação inválido."
 
@@ -764,19 +770,13 @@ msgstr "O proprietário não está ativo."
 msgid "Organization is not active."
 msgstr "A organização não está ativa."
 
-#: apps/accounts/serializers/invitation.py:94
+#: apps/accounts/serializers/invitation.py:95
 msgid "An invitation with this email already exists."
 msgstr "Já existe um convite com este e-mail."
 
 #: apps/accounts/serializers/member.py:99
 msgid "User is already a member of the organization."
 msgstr "O usuário já é membro da organização."
-
-#: apps/accounts/serializers/member.py:167
-msgid "User data to update, if not provided, will not update the user."
-msgstr ""
-"Dados do usuário a atualizar; se não fornecidos, o usuário não será "
-"atualizado."
 
 #: apps/accounts/serializers/mixins.py:23
 msgid "Not allowed to change your own role."
@@ -788,19 +788,19 @@ msgstr "Não é permitido alterar sua própria função."
 msgid "Not allowed to set the %(role)s role."
 msgstr "Não é permitido definir a função %(role)s."
 
-#: apps/accounts/serializers/user.py:48
+#: apps/accounts/serializers/user.py:56
 msgid "Password cannot be empty."
 msgstr "A senha não pode ficar vazia."
 
-#: apps/accounts/serializers/user.py:50
+#: apps/accounts/serializers/user.py:58
 msgid "Not allowed to change the password."
 msgstr "Não é permitido alterar a senha."
 
-#: apps/accounts/serializers/user_profile.py:51
+#: apps/accounts/serializers/user_profile.py:52
 msgid "Current password is incorrect."
 msgstr "A senha atual está incorreta."
 
-#: apps/accounts/serializers/user_profile.py:52
+#: apps/accounts/serializers/user_profile.py:53
 msgid "New password must be different from current password."
 msgstr "A nova senha deve ser diferente da senha atual."
 
@@ -1006,23 +1006,23 @@ msgstr ""
 "Verifica se um token é válido: `200` quando é, `401` caso contrário. Não "
 "informa o que o token permite."
 
-#: apps/accounts/views/files.py:41
+#: apps/accounts/views/files.py:43
 msgid "Download file"
 msgstr "Baixar arquivo"
 
-#: apps/accounts/views/files.py:42
+#: apps/accounts/views/files.py:44
 msgid "Return the content of the stored file."
 msgstr "Retorna o conteúdo do arquivo armazenado."
 
-#: apps/accounts/views/files.py:46
+#: apps/accounts/views/files.py:48
 msgid "The file content."
 msgstr "O conteúdo do arquivo."
 
-#: apps/accounts/views/files.py:49
+#: apps/accounts/views/files.py:51
 msgid "File not found."
 msgstr "Arquivo não encontrado."
 
-#: apps/accounts/views/files.py:57
+#: apps/accounts/views/files.py:59
 msgid ""
 "Download as an attachment. Only raster images are ever served inline; every "
 "other type is always an attachment."
@@ -1030,11 +1030,11 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:141
+#: apps/accounts/views/files.py:158
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:145
+#: apps/accounts/views/files.py:162
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
@@ -1054,7 +1054,7 @@ msgstr ""
 msgid "The invitation email has been sent successfully."
 msgstr "O e-mail de convite foi enviado com sucesso."
 
-#: apps/accounts/views/invitations.py:105 apps/accounts/views/members.py:90
+#: apps/accounts/views/invitations.py:105 apps/accounts/views/members.py:92
 msgid "The invitation is expired or the user is already a member."
 msgstr "O convite expirou ou o usuário já é membro."
 
@@ -1089,7 +1089,7 @@ msgstr "Retorna um convite destinado ao usuário autenticado."
 msgid "Invitation not found."
 msgstr "Convite não encontrado."
 
-#: apps/accounts/views/invitations.py:168 apps/accounts/views/members.py:52
+#: apps/accounts/views/invitations.py:168 apps/accounts/views/members.py:54
 msgid "The secret key of the invitation."
 msgstr "A chave secreta do convite."
 
@@ -1146,15 +1146,15 @@ msgstr ""
 "Retorna as opções de cada filtro da lista de convites recebidos. Envie o "
 "nome de um campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/accounts/views/invitations.py:628
+#: apps/accounts/views/invitations.py:632
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
-#: apps/accounts/views/members.py:57
+#: apps/accounts/views/members.py:59
 msgid "Join with invitation"
 msgstr "Entrar com convite"
 
-#: apps/accounts/views/members.py:59
+#: apps/accounts/views/members.py:61
 msgid ""
 "Create the member of the authenticated user from the invitation identified "
 "by its secret key."
@@ -1162,23 +1162,23 @@ msgstr ""
 "Cria o membro do usuário autenticado a partir do convite identificado pela "
 "chave secreta."
 
-#: apps/accounts/views/members.py:109
+#: apps/accounts/views/members.py:111
 msgid "Invitation not found or already accepted/expired."
 msgstr "Convite não encontrado, já aceito ou expirado."
 
-#: apps/accounts/views/members.py:122
+#: apps/accounts/views/members.py:124
 msgid "Update member role"
 msgstr "Atualizar função do membro"
 
-#: apps/accounts/views/members.py:123
+#: apps/accounts/views/members.py:125
 msgid "Change the role of the member."
 msgstr "Altera a função do membro."
 
-#: apps/accounts/views/members.py:156
+#: apps/accounts/views/members.py:158
 msgid "Role form options"
 msgstr "Opções do formulário de função"
 
-#: apps/accounts/views/members.py:158
+#: apps/accounts/views/members.py:160
 msgid ""
 "Return the choices of the member role form. Send a field name as query "
 "parameter to get only that field."
@@ -1186,7 +1186,7 @@ msgstr ""
 "Retorna as opções do formulário de função do membro. Envie o nome de um "
 "campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/accounts/views/members.py:201
+#: apps/accounts/views/members.py:210
 msgid ""
 "This route is not available anymore. Use the `create_with_invite` route "
 "instead."
@@ -2029,21 +2029,21 @@ msgstr "Escopo"
 msgid "Account"
 msgstr "Conta"
 
-#: apps/platform/impersonation.py:30
+#: apps/platform/impersonation.py:32
 msgid "The user was blocked, so the viewing session ended."
 msgstr "O usuário foi bloqueado, então a sessão de visualização terminou."
 
-#: apps/platform/impersonation.py:33
+#: apps/platform/impersonation.py:35
 msgid "The viewing session ended."
 msgstr "A sessão de visualização terminou."
 
-#: apps/platform/impersonation.py:63
+#: apps/platform/impersonation.py:71
 msgid "This user can't be viewed (platform staff, blocked or deleted)."
 msgstr ""
 "Não é possível ver este usuário (equipe da plataforma, bloqueado ou "
 "excluído)."
 
-#: apps/platform/impersonation.py:67 apps/platform/models.py:70
+#: apps/platform/impersonation.py:75 apps/platform/models.py:70
 msgid "You already have an active viewing session."
 msgstr "Você já tem uma sessão de visualização ativa."
 
@@ -2326,7 +2326,10 @@ msgid ""
 "Start viewing the app as this user: read-only, at most 30 minutes, recorded "
 "in their account activity. The response is the session as the user. A reason "
 "is required."
-msgstr "Começa a ver o app como este usuário: somente leitura, no máximo 30 minutos, registrado na atividade da conta dele. A resposta é a sessão como o usuário. O motivo é obrigatório."
+msgstr ""
+"Começa a ver o app como este usuário: somente leitura, no máximo 30 minutos, "
+"registrado na atividade da conta dele. A resposta é a sessão como o usuário. "
+"O motivo é obrigatório."
 
 #: apps/platform/views.py:405
 msgid "List audit events"
@@ -2570,6 +2573,14 @@ msgstr ""
 "%(theme_color|default:'#002180')s; text-decoration:none;\">clique aqui para "
 "cancelar a inscrição</a>.\n"
 "                    "
+
+#~ msgid "Password is required."
+#~ msgstr "A senha é obrigatória."
+
+#~ msgid "User data to update, if not provided, will not update the user."
+#~ msgstr ""
+#~ "Dados do usuário a atualizar; se não fornecidos, o usuário não será "
+#~ "atualizado."
 
 #, python-brace-format
 #~ msgid "Create a new {name} with an invitation."

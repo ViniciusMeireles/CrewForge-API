@@ -230,12 +230,54 @@ class MemberPermissionTestCase(APITestCaseMixin, APITestCase):
 
     # --- Role update permissions ---
 
-    def test_owner_can_update_role_self(self):
+    def test_owner_cannot_update_role_self(self):
         self.client.force_authenticate(member=self.organization.owner)
         url = reverse(self.update_role_url_name, args=[self.organization.owner.id])
         payload = {'role': MemberRoleChoices.ADMIN}
         response = self.client.patch(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+
+    def test_admin_cannot_update_owner_role(self):
+        admin = self._create_target_member(role=MemberRoleChoices.ADMIN)
+        self.client.force_authenticate(member=admin)
+        url = self._update_role_url(self.organization.owner)
+        payload = {'role': MemberRoleChoices.MEMBER}
+        response = self.client.patch(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.organization.owner.refresh_from_db()
+        self.assertEqual(self.organization.owner.role, MemberRoleChoices.OWNER)
+
+    # --- Owner protection ---
+
+    def test_admin_cannot_delete_owner(self):
+        admin = self._create_target_member(role=MemberRoleChoices.ADMIN)
+        self.client.force_authenticate(member=admin)
+        response = self.client.delete(self._detail_url(self.organization.owner))
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.organization.owner.refresh_from_db()
+        self.assertTrue(self.organization.owner.is_active)
+
+    def test_owner_cannot_delete_self(self):
+        self.client.force_authenticate(member=self.organization.owner)
+        response = self.client.delete(self._detail_url(self.organization.owner))
+        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.organization.owner.refresh_from_db()
+        self.assertTrue(self.organization.owner.is_active)
+
+    def test_owner_protection_error_message(self):
+        admin = self._create_target_member(role=MemberRoleChoices.ADMIN)
+        self.client.force_authenticate(member=admin)
+        response = self.client.delete(self._detail_url(self.organization.owner))
+        self.assertEqual(
+            str(response.data['error']['message']),
+            'The Owner cannot be removed or demoted; transfer ownership first.',
+        )
+
+    def test_member_can_still_delete_self(self):
+        member = self._create_target_member()
+        self.client.force_authenticate(member=member)
+        response = self.client.delete(self._detail_url(member))
+        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
 
     def test_admin_can_update_role_lower(self):
         admin = MemberFactory(

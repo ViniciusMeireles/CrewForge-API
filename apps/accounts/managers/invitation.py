@@ -18,7 +18,7 @@ class InvitationQuerySet(BaseQuerySet):
     def filter_received_by_user(self, user: 'User'):
         condition = Q(member__user=user)
         if user.email_verified:
-            condition |= Q(email=user.email, member__isnull=True)
+            condition |= Q(email__iexact=user.email, member__isnull=True)
         return self.filter(condition, organization__is_active=True)
 
     def filter_visible_to(self, member: 'Member | None'):

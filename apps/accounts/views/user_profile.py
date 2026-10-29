@@ -17,7 +17,7 @@ from apps.accounts.serializers.user_profile import (
 )
 from apps.accounts.utils.auth_cookies import set_auth_cookies, wants_cookie_transport
 from apps.accounts.utils.security_log import log_security_event
-from apps.accounts.utils.tokens import revoke_refresh_tokens
+from apps.accounts.utils.sessions import revoke_sessions
 from apps.audit.choices import AuditActionChoices
 from apps.audit.models.audit_event import AuditEvent
 from apps.audit.serializers.audit_event import AuditEventSerializer
@@ -155,7 +155,7 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             )
             raise
         serializer.save()
-        revoke_refresh_tokens(request.user)
+        revoke_sessions(request.user)
         log_security_event('auth.password.changed', request)
         response = Response(
             data={'detail': _('Password changed successfully.')},

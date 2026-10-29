@@ -30,7 +30,7 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
     def test_not_authenticated_list(self):
         self.client.logout()
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
     def test_not_authenticated_create(self):
         self.client.logout()
@@ -42,7 +42,7 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.logout()
         url = self._detail_url(self.organization)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
     def test_not_authenticated_update(self):
         self.client.logout()
@@ -64,6 +64,14 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=member)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        ids = [org['id'] for org in response.data['results']]
+        self.assertNotIn(self.organization.id, ids)
+
+    def test_not_active_member_retrieve_returns_404(self):
+        member = MemberFactory(organization=self.organization, is_active=False)
+        self.client.force_authenticate(member=member)
+        response = self.client.get(self._detail_url(self.organization))
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_not_active_member_create(self):
         member = MemberFactory(organization=self.organization, is_active=False)
@@ -78,14 +86,14 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
         url = self._detail_url(self.organization)
         payload = self._org_payload()
         response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_not_active_member_delete(self):
         member = MemberFactory(organization=self.organization, is_active=False)
         self.client.force_authenticate(member=member)
         url = self._detail_url(self.organization)
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     # --- Owner ---
 
@@ -199,30 +207,36 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
 
     # --- Cross-org ---
 
-    def test_cross_org_member_update_returns_403(self):
+    def test_cross_org_member_update_returns_404(self):
         other_org = OrganizationFactory()
         other_owner = other_org.owner
         self.client.force_authenticate(member=other_owner)
         url = self._detail_url(self.organization)
         payload = self._org_payload()
         response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
-    def test_cross_org_member_retrieve_returns_200(self):
+    def test_cross_org_member_retrieve_returns_404(self):
         other_org = OrganizationFactory()
         other_owner = other_org.owner
         self.client.force_authenticate(member=other_owner)
         url = self._detail_url(self.organization)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
-    def test_cross_org_member_delete_returns_403(self):
+    def test_cross_org_member_delete_returns_404(self):
         other_org = OrganizationFactory()
         other_owner = other_org.owner
         self.client.force_authenticate(member=other_owner)
         url = self._detail_url(self.organization)
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_user_without_organization_context_retrieve_returns_404(self):
+        other_org = OrganizationFactory()
+        self.client.force_authenticate(user=other_org.owner.user)
+        response = self.client.get(self._detail_url(self.organization))
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def test_cross_org_inactive_member_returns_200(self):
         MemberFactory(is_active=False)
@@ -248,11 +262,26 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
 
     # --- Cross-org ---
 
-    def test_cross_org_member_list_returns_empty(self):
+    def test_cross_org_member_list_returns_only_own_organization(self):
         other_org = OrganizationFactory()
         other_owner = other_org.owner
         self.client.force_authenticate(member=other_owner)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        # Organization list is global, cross-org members see all orgs
-        self.assertGreater(response.data['count'], 0)
+        ids = [org['id'] for org in response.data['results']]
+        self.assertEqual(ids, [other_org.id])
+
+    def test_list_returns_only_active_member_organizations(self):
+        user = self.organization.owner.user
+        suspended = OrganizationFactory(suspended=True)
+        MemberFactory(organization=suspended, user=user)
+        inactive = OrganizationFactory(is_active=False)
+        MemberFactory(organization=inactive, user=user)
+        removed_from = OrganizationFactory()
+        MemberFactory(organization=removed_from, user=user, is_active=False)
+        OrganizationFactory()
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        ids = {org['id'] for org in response.data['results']}
+        self.assertEqual(ids, {self.organization.id, suspended.id})

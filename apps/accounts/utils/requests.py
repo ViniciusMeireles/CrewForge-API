@@ -7,24 +7,24 @@ from apps.accounts.models.organization import Organization
 MEMBER_CACHE_ATTRIBUTE = '_auth_member_cache'
 
 
-def get_organization_id(request: Request) -> int | None:
-    """Get the organization ID from the request."""
+def get_session_organization_id(request: Request) -> int | None:
+    """The organization ID stored in the session, not checked against the user."""
     if not request or not request.user.is_authenticated or not request.user.is_active:
         return None
     return request.session.get('organization_id')
 
 
+def get_organization_id(request: Request) -> int | None:
+    """The organization ID of the request's active Member, ``None`` without one."""
+    member = get_member(request)
+    return member.organization_id if member else None
+
+
 def get_organization(request: Request) -> Organization | None:
     """Get the organization from the request."""
-    if not (organization_id := get_organization_id(request)):
+    if not (member := get_member(request)) or not member.organization.is_active:
         return None
-    return Organization.objects.filter(
-        members__user=request.user,
-        members__is_active=True,
-        is_active=True,
-        status=OrganizationStatusChoices.ACTIVE,
-        id=organization_id,
-    ).get_or_none()
+    return member.organization
 
 
 def get_member(request: Request) -> Member | None:
@@ -36,7 +36,7 @@ def get_member(request: Request) -> Member | None:
         return None
     if not user.is_active:
         return None
-    if not (organization_id := request.session.get('organization_id')):
+    if not (organization_id := get_session_organization_id(request)):
         return None
     key = (user.pk, organization_id)
     cached = getattr(request, MEMBER_CACHE_ATTRIBUTE, None)
@@ -44,6 +44,7 @@ def get_member(request: Request) -> Member | None:
         return cached[1]
     member = (
         Member.objects.filter_actives()
+        .select_related('organization')
         .filter(
             user=user,
             organization_id=organization_id,
@@ -61,7 +62,7 @@ def clear_suspended_organization_context(request: Request) -> int | None:
 
     Returns the id that was dropped, so the caller can refuse the request.
     """
-    if not (organization_id := get_organization_id(request)):
+    if not (organization_id := get_session_organization_id(request)):
         return None
     if get_member(request) is not None:
         return None

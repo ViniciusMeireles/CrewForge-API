@@ -1017,7 +1017,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/MemberUpdate'
-        required: true
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -5452,6 +5451,7 @@ components:
           maxLength: 254
         is_expired:
           type: boolean
+          readOnly: true
           description: Is the invitation expired
         is_accepted:
           type: boolean
@@ -5515,6 +5515,7 @@ components:
       - id
       - is_accepted
       - is_declined
+      - is_expired
       - is_former_member
       - last_email_sent_at
       - organization
@@ -5731,6 +5732,7 @@ components:
           maxLength: 254
         is_expired:
           type: boolean
+          readOnly: true
           description: Is the invitation expired
         is_accepted:
           type: boolean
@@ -5791,6 +5793,7 @@ components:
       - id
       - is_accepted
       - is_declined
+      - is_expired
       - last_email_sent_at
       - organization
       - role_label
@@ -6030,7 +6033,9 @@ components:
           type: integer
           readOnly: true
         user:
-          $ref: '#/components/schemas/UserUpdate'
+          allOf:
+          - $ref: '#/components/schemas/UserUpdate'
+          readOnly: true
         role_label:
           type: string
           readOnly: true
@@ -7295,7 +7300,9 @@ components:
           type: integer
           readOnly: true
         user:
-          $ref: '#/components/schemas/UserUpdate'
+          allOf:
+          - $ref: '#/components/schemas/UserUpdate'
+          readOnly: true
         role_label:
           type: string
           readOnly: true
@@ -9407,6 +9414,7 @@ components:
       required:
       - auth_token
       - id
+      - password
       - username
     UserCreateWithInvite:
       type: object
@@ -9444,6 +9452,7 @@ components:
       - auth_token
       - email
       - id
+      - password
       - username
     UserProfile:
       type: object
@@ -9540,17 +9549,17 @@ components:
       - refresh
     UserUpdate:
       type: object
-      description: Serializer for updating the User model.
+      description: 'Read-only User of a Member update: identity is changed by the
+        User only.'
       properties:
         id:
           type: integer
           readOnly: true
         username:
           type: string
+          readOnly: true
           description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
             only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
         email:
           type: string
           format: email
@@ -9558,13 +9567,15 @@ components:
           title: Email address
         first_name:
           type: string
-          maxLength: 150
+          readOnly: true
         last_name:
           type: string
-          maxLength: 150
+          readOnly: true
       required:
       - email
+      - first_name
       - id
+      - last_name
       - username
   securitySchemes:
     jwtAuth:

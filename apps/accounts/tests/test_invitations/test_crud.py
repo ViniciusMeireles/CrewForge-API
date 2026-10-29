@@ -114,6 +114,20 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
             invitation_data.expired_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
         )
 
+    def test_update_ignores_is_expired(self):
+        invitation = self._create_invitation()
+        url = self._detail_url(invitation)
+        payload = {
+            'email': invitation.email,
+            'role': invitation.role,
+            'expired_at': invitation.expired_at,
+            'is_expired': True,
+        }
+        response = self.client.put(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        invitation.refresh_from_db()
+        self.assertFalse(invitation.is_expired)
+
     def test_delete_invitation(self):
         invitation = self._create_invitation()
         url = self._detail_url(invitation)
@@ -152,6 +166,20 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
         )
         payload = {
             'email': invitation.email,
+            'role': invitation.role,
+            'expired_at': invitation.expired_at,
+        }
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_create_duplicate_invitation_ignores_email_case(self):
+        invitation = self._create_invitation(
+            expired_at=timezone.now() + timedelta(days=1),
+            is_expired=False,
+            is_accepted=False,
+        )
+        payload = {
+            'email': invitation.email.upper(),
             'role': invitation.role,
             'expired_at': invitation.expired_at,
         }

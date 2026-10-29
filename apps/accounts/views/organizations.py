@@ -122,15 +122,15 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
         user.
         """
         queryset = super().get_queryset()
-        if self.action == 'login':
-            if not self.auth_user:
-                return queryset.none()
-            return queryset.filter(
-                members__user_id=self.auth_user.id,
-                members__is_active=True,
-                is_active=True,
-            )
-        return queryset
+        if self.action == 'create':
+            return queryset
+        if not self.auth_user:
+            return queryset.none()
+        return queryset.filter(
+            members__user_id=self.auth_user.id,
+            members__is_active=True,
+            is_active=True,
+        )
 
     def get_audit_organization_id(self, instance) -> int | None:
         return instance.pk

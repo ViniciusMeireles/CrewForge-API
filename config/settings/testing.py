@@ -25,3 +25,5 @@ LOGGING = {
     **LOGGING,  # noqa: F405
     'handlers': {'security': {'class': 'logging.NullHandler'}},
 }
+
+PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']

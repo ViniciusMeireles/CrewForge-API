@@ -1,4 +1,6 @@
 import logging
+import operator
+from functools import reduce
 
 from django.db.models import Q
 from django.http import FileResponse, Http404
@@ -95,15 +97,26 @@ class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelV
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        conditions = Q(viewing_permission=StoredFileAccess.PUBLIC)
+        auth_member = self.auth_member
+        has_organization = bool(
+            auth_member and auth_member.is_active and auth_member.organization_id
+        )
+        conditions = []
+        if self.action != 'list':
+            conditions.append(Q(viewing_permission=StoredFileAccess.PUBLIC))
+        elif has_organization:
+            conditions.append(
+                Q(
+                    viewing_permission=StoredFileAccess.PUBLIC,
+                    organization_id=auth_member.organization_id,
+                )
+            )
         if auth_user := self.auth_user:
-            conditions |= Q(
-                viewing_permission=StoredFileAccess.OWNER,
-                owner_id=auth_user.id,
+            conditions.append(
+                Q(viewing_permission=StoredFileAccess.OWNER, owner_id=auth_user.id)
             )
 
-        auth_member = self.auth_member
-        if auth_member and auth_member.is_active and auth_member.organization_id:
+        if has_organization:
             allowed_permissions = []
             if max_org_level := StoredFileAccess.max_org_level(member=auth_member):
                 allowed_permissions = StoredFileAccess.permissions_levels_viewing.get(
@@ -112,13 +125,17 @@ class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelV
             allowed_permissions = set(allowed_permissions) & set(
                 StoredFileAccess.organization_accesses
             )
-            conditions |= Q(
-                viewing_permission__in=allowed_permissions,
-                organization_id=auth_member.organization_id,
+            conditions.append(
+                Q(
+                    viewing_permission__in=allowed_permissions,
+                    organization_id=auth_member.organization_id,
+                )
             )
 
-        queryset = queryset.filter(conditions, is_active=True)
-        if conditions.connector == Q.OR:
+        if not conditions:
+            return queryset.none()
+        queryset = queryset.filter(reduce(operator.or_, conditions), is_active=True)
+        if len(conditions) > 1:
             queryset = queryset.distinct()
         return queryset
 
