@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.tokens import RefreshToken
 
-TOKEN_VERSION_CLAIM = 'tv'
+VERSION_CLAIM = 'tv'
 
 
 class VersionedRefreshToken(RefreshToken):
@@ -9,5 +9,5 @@ class VersionedRefreshToken(RefreshToken):
     @classmethod
     def for_user(cls, user):
         token = super().for_user(user)
-        token[TOKEN_VERSION_CLAIM] = user.token_version
+        token[VERSION_CLAIM] = user.token_version
         return token

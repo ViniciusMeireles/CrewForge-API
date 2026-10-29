@@ -9,7 +9,7 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.factories.users import DEFAULT_PASSWORD, UserFactory
-from apps.accounts.tokens import TOKEN_VERSION_CLAIM, VersionedRefreshToken
+from apps.accounts.tokens import VERSION_CLAIM, VersionedRefreshToken
 from apps.accounts.utils.sessions import revoke_sessions
 
 
@@ -26,8 +26,8 @@ class TokenVersionTestCase(APITestCase):
 
     def test_issued_tokens_carry_the_user_version(self):
         refresh = VersionedRefreshToken.for_user(self.user)
-        self.assertEqual(refresh[TOKEN_VERSION_CLAIM], 0)
-        self.assertEqual(refresh.access_token[TOKEN_VERSION_CLAIM], 0)
+        self.assertEqual(refresh[VERSION_CLAIM], 0)
+        self.assertEqual(refresh.access_token[VERSION_CLAIM], 0)
 
     def test_revocation_in_the_same_second_refuses_older_tokens(self):
         access = VersionedRefreshToken.for_user(self.user).access_token
@@ -72,7 +72,7 @@ class TokenVersionTestCase(APITestCase):
             reverse('accounts:token_refresh'), {'refresh': refresh}, format='json'
         )
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(AccessToken(response.data['access'])[TOKEN_VERSION_CLAIM], 1)
+        self.assertEqual(AccessToken(response.data['access'])[VERSION_CLAIM], 1)
 
 
 class TokenIssuingPathsTestCase(SimpleTestCase):

@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import F
 from django.utils import timezone
 
-from apps.accounts.tokens import TOKEN_VERSION_CLAIM
+from apps.accounts.tokens import VERSION_CLAIM
 from apps.accounts.utils.tokens import revoke_refresh_tokens
 
 
@@ -20,4 +20,4 @@ def revoke_sessions(user) -> None:
 
 def is_token_revoked(user, validated_token) -> bool:
     """Whether the token was issued for an older ``token_version`` of ``user``."""
-    return validated_token.get(TOKEN_VERSION_CLAIM, 0) != user.token_version
+    return validated_token.get(VERSION_CLAIM, 0) != user.token_version

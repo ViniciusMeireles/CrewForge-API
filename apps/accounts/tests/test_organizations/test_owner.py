@@ -10,6 +10,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
+from apps.accounts.factories.users import DEFAULT_PASSWORD
 from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization
 from apps.accounts.tests.mixins import APITestCaseMixin
@@ -87,7 +88,7 @@ class OwnerApiTestCase(APITestCaseMixin, APITestCase):
                     'email': 'solo@example.com',
                     'first_name': 'Solo',
                     'last_name': 'Owner',
-                    'password': 'passWord*123',
+                    'password': DEFAULT_PASSWORD,
                 },
                 'organization': {'name': 'Solo Org', 'slug': 'solo-org'},
             },
