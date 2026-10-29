@@ -16,6 +16,12 @@ from apps.accounts.managers.organization import (
 from apps.accounts.managers.organization_image import OrganizationImageManager
 from apps.generics.models.abstracts import BaseModel
 
+LOGO_PRIORITY = {
+    OrganizationImageTypeChoices.LOGO_LIGHT: 0,
+    OrganizationImageTypeChoices.LOGO: 1,
+    OrganizationImageTypeChoices.LOGO_DARK: 2,
+}
+
 
 class Organization(BaseModel):
     name = models.CharField(
@@ -83,8 +89,11 @@ class Organization(BaseModel):
     def is_suspended(self) -> bool:
         return self.status == OrganizationStatusChoices.SUSPENDED
 
-    def get_profile(self) -> OrganizationProfile:
-        return OrganizationProfile.objects.get_or_create(organization=self)[0]
+    def get_profile(self) -> OrganizationProfile | None:
+        try:
+            return self.profile
+        except OrganizationProfile.DoesNotExist:
+            return None
 
 
 class OrganizationProfile(BaseModel):
@@ -119,36 +128,19 @@ class OrganizationProfile(BaseModel):
         return f'{self.organization}'
 
     def get_logo_obj(self, dark_priority: bool) -> OrganizationImage | None:
-        logo_query = (
-            self.images.filter(
-                image_type__in=[
-                    OrganizationImageTypeChoices.LOGO,
-                    OrganizationImageTypeChoices.LOGO_DARK,
-                    OrganizationImageTypeChoices.LOGO_LIGHT,
-                ],
-                is_active=True,
+        if hasattr(self, 'logo_images'):
+            logos = sorted(
+                self.logo_images,
+                key=lambda image: (LOGO_PRIORITY.get(image.image_type, 1), image.pk),
             )
-            .annotate(
-                priority=models.Case(
-                    models.When(
-                        image_type=OrganizationImageTypeChoices.LOGO_LIGHT,
-                        then=models.Value(0),
-                    ),
-                    models.When(
-                        image_type=OrganizationImageTypeChoices.LOGO,
-                        then=models.Value(1),
-                    ),
-                    models.When(
-                        image_type=OrganizationImageTypeChoices.LOGO_DARK,
-                        then=models.Value(2),
-                    ),
-                    default=models.Value(1),
-                    output_field=models.IntegerField(),
-                )
+        else:
+            logos = sorted(
+                self.images.filter(image_type__in=LOGO_PRIORITY, is_active=True),
+                key=lambda image: (LOGO_PRIORITY.get(image.image_type, 1), image.pk),
             )
-            .order_by('priority')
-        )
-        return logo_query.last() if dark_priority else logo_query.first()
+        if not logos:
+            return None
+        return logos[-1] if dark_priority else logos[0]
 
 
 class OrganizationImage(BaseModel):

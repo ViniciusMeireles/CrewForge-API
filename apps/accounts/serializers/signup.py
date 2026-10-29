@@ -5,7 +5,7 @@ from rest_framework import serializers
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
-from apps.accounts.models.organization import Organization
+from apps.accounts.models.organization import Organization, OrganizationProfile
 from apps.accounts.serializers.auth import UserTokenSerializer
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.organization import OrganizationSerializer
@@ -75,10 +75,17 @@ class SignupSerializer(
         self.set_tokens_for_user(user)
         send_verification_email(user)
 
+        profile_data = organization_data.pop('profile', None) or {}
         organization = Organization.objects.create(
             created_by=user,
             updated_by=user,
             **organization_data,
+        )
+        OrganizationProfile.objects.create(
+            organization=organization,
+            created_by=user,
+            updated_by=user,
+            **profile_data,
         )
         validated_data.update(
             {

@@ -152,7 +152,7 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
                 created_by=self.auth_user,
                 updated_by=self.auth_user,
             )
-        instance.get_profile()
+        OrganizationProfile.objects.get_or_create(organization=instance)
         if profile_data:
             profile_serializer = self._get_profile_serializer(profile_data)
             if not profile_serializer.is_valid():

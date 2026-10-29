@@ -136,7 +136,7 @@ from apps.generics.utils.schema import (
 class MemberViewSet(
     OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
 ):
-    queryset = Member.objects.all()
+    queryset = Member.objects.select_related('user')
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
     audit_actions = {
         'create_with_invite': AuditActionChoices.MEMBER_JOINED,
