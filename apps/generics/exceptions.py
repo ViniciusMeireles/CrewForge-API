@@ -28,6 +28,9 @@ def _get_error_code(exc: APIException) -> ErrorCode:
         NotAuthenticated: ErrorCode.AUTHENTICATION_ERROR,
         PermissionDenied: ErrorCode.PERMISSION_DENIED,
         Http404: ErrorCode.NOT_FOUND,
+        exceptions.NotFound: ErrorCode.NOT_FOUND,
+        exceptions.ParseError: ErrorCode.PARSE_ERROR,
+        exceptions.UnsupportedMediaType: ErrorCode.UNSUPPORTED_MEDIA_TYPE,
         exceptions.MethodNotAllowed: ErrorCode.METHOD_NOT_ALLOWED,
         exceptions.NotAcceptable: ErrorCode.NOT_ACCEPTABLE,
         exceptions.Throttled: ErrorCode.THROTTLED,
@@ -99,7 +102,8 @@ def custom_exception_handler(exc, context):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    if (code := _get_error_code(exc)) == ErrorCode.INTERNAL_ERROR:
+    code = _get_error_code(exc)
+    if response.status_code >= status.HTTP_500_INTERNAL_SERVER_ERROR:
         logger.exception('Internal server error: %s', exc)
     message = _get_error_message(exc, code)
     details = _get_error_details(exc)

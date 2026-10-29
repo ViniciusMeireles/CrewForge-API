@@ -7,6 +7,8 @@ class ErrorCode(models.TextChoices):
     PERMISSION_DENIED = 'PERMISSION_DENIED', _('Permission denied')
     NOT_FOUND = 'NOT_FOUND', _('Not found')
     METHOD_NOT_ALLOWED = 'METHOD_NOT_ALLOWED', _('Method not allowed')
+    PARSE_ERROR = 'PARSE_ERROR', _('Malformed request')
+    UNSUPPORTED_MEDIA_TYPE = 'UNSUPPORTED_MEDIA_TYPE', _('Unsupported media type')
     NOT_ACCEPTABLE = 'NOT_ACCEPTABLE', _('Not acceptable')
     THROTTLED = 'THROTTLED', _('Throttled')
     VALIDATION_ERROR = 'VALIDATION_ERROR', _('Validation error')

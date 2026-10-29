@@ -82,7 +82,10 @@ MIDDLEWARE_THIRD_PARTY = [
 MIDDLEWARE_LOCAL = []
 
 MIDDLEWARE = (
-    ['apps.generics.middleware.HealthCheckMiddleware']
+    [
+        'apps.generics.middleware.HealthCheckMiddleware',
+        'apps.generics.middleware.RequestIdMiddleware',
+    ]
     + MIDDLEWARE_THIRD_PARTY
     + MIDDLEWARE_DJANGO
     + MIDDLEWARE_LOCAL
@@ -353,21 +356,26 @@ ADMIN_URL = normalize_admin_url(os.environ.get('ADMIN_URL', 'admin/'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'request_id': {'()': 'apps.generics.logging.RequestIdFilter'},
+    },
     'formatters': {
-        'security': {
-            'format': '{asctime} {levelname} {name} {message}',
-            'style': '{',
-        },
+        'json': {'()': 'apps.generics.logging.JsonFormatter'},
     },
     'handlers': {
-        'security': {
+        'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'security',
+            'formatter': 'json',
+            'filters': ['request_id'],
         },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.environ.get('LOG_LEVEL', 'INFO'),
     },
     'loggers': {
         'security': {
-            'handlers': ['security'],
+            'handlers': ['console'],
             'level': os.environ.get('SECURITY_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
