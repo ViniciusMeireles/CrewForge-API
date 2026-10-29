@@ -206,3 +206,91 @@ class InvitationStatusMigrationTestCase(TransactionTestCase):
         self.assertIsNotNone(
             NewInvitation.objects.get(pk=self.ids['accepted_no_date']).accepted_at
         )
+
+
+class InvitationUniquenessTestCase(TestCase):
+    def test_key_is_unique(self):
+        first = InvitationFactory()
+        with self.assertRaises(IntegrityError):
+            InvitationFactory(key=first.key)
+
+    def test_single_pending_per_organization_and_email(self):
+        first = InvitationFactory(email='foo@x.com')
+        with self.assertRaises(IntegrityError):
+            InvitationFactory(organization=first.organization, email='FOO@x.com')
+
+    def test_pending_allowed_beside_closed_invitations(self):
+        first = InvitationFactory(email='foo@x.com', is_declined=True)
+        InvitationFactory(organization=first.organization, email='foo@x.com')
+
+    def test_same_email_pending_in_other_organization(self):
+        InvitationFactory(email='foo@x.com')
+        InvitationFactory(email='foo@x.com')
+
+
+class InvitationReinviteApiTestCase(APITestCaseMixin, APITestCase):
+    def setUp(self):
+        self.organization = self.new_account()
+        self.list_url = reverse('accounts:invitations-list')
+
+    def _payload(self, email):
+        return {
+            'email': email,
+            'role': 'member',
+            'expired_at': timezone.now() + timedelta(days=7),
+        }
+
+    def test_reinvite_after_unpersisted_expiry(self):
+        stale = _past(
+            InvitationFactory(organization=self.organization, email='foo@x.com')
+        )
+        response = self.client.post(
+            self.list_url, data=self._payload('foo@x.com'), format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        stale.refresh_from_db()
+        self.assertEqual(stale.status, InvitationStatusChoices.EXPIRED)
+
+    def test_duplicate_constraint_maps_to_400(self):
+        InvitationFactory(organization=self.organization, email='foo@x.com')
+        response = self.client.post(
+            self.list_url, data=self._payload('Foo@x.com'), format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+
+class InvitationUniquenessMigrationTestCase(TransactionTestCase):
+    before = [('accounts', '0012_invitation_status_constraints')]
+    after = [('accounts', '0014_invitation_uniqueness')]
+
+    def test_repairs_duplicates_before_constraints(self):
+        executor = MigrationExecutor(connection)
+        executor.migrate(self.before)
+        apps = executor.loader.project_state(self.before).apps
+        Organization = apps.get_model('accounts', 'Organization')
+        OldInvitation = apps.get_model('accounts', 'Invitation')
+        slug = f'acme-{uuid.uuid4().hex[:8]}'
+        organization = Organization.objects.create(name=slug, slug=slug)
+        key = uuid.uuid4()
+        older = OldInvitation.objects.create(
+            organization=organization, email='foo@x.com', key=key
+        )
+        newer = OldInvitation.objects.create(
+            organization=organization, email='FOO@x.com', key=key
+        )
+        try:
+            executor = MigrationExecutor(connection)
+            executor.loader.build_graph()
+            executor.migrate(self.after)
+            Invitation = executor.loader.project_state(self.after).apps.get_model(
+                'accounts', 'Invitation'
+            )
+            older = Invitation.objects.get(pk=older.pk)
+            newer = Invitation.objects.get(pk=newer.pk)
+            self.assertEqual(older.status, 'revoked')
+            self.assertEqual(newer.status, 'pending')
+            self.assertNotEqual(older.key, newer.key)
+        finally:
+            executor = MigrationExecutor(connection)
+            executor.loader.build_graph()
+            executor.migrate(executor.loader.graph.leaf_nodes())

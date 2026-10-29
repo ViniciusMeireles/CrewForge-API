@@ -136,6 +136,12 @@ class InvitationSerializer(
 
     def create(self, validated_data):
         send_email = validated_data.pop('send_email', False)
+        Invitation.objects.filter(
+            organization=validated_data.get('organization'),
+            email__iexact=validated_data.get('email'),
+            status=InvitationStatusChoices.PENDING,
+            expired_at__lte=timezone.now(),
+        ).update(status=InvitationStatusChoices.EXPIRED)
         instance: Invitation = super().create(validated_data)
         if send_email and instance.is_acceptable()[0]:
             instance.send_email()

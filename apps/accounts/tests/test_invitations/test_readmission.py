@@ -130,11 +130,11 @@ class InvitationReadmissionTestCase(APITestCaseMixin, APITestCase):
         self.assertIsNotNone(member.joined_at)
 
     def test_second_invitation_after_readmission_returns_400(self):
+        self.assertEqual(self._accept().status_code, http_status.HTTP_200_OK)
         second = InvitationFactory(
             organization=self.organization,
             email=self.user.email,
         )
-        self.assertEqual(self._accept().status_code, http_status.HTTP_200_OK)
         response = self._accept(second)
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
         self.assertEqual(

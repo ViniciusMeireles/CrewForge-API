@@ -69,6 +69,8 @@ class Invitation(BaseModel):
         blank=False,
     )
     key = models.UUIDField(
+        unique=True,
+        default=uuid.uuid4,
         verbose_name=_('Key'),
         help_text=_('Key for the invitation'),
     )
@@ -113,6 +115,15 @@ class Invitation(BaseModel):
                 condition=~models.Q(status=InvitationStatusChoices.DECLINED)
                 | models.Q(declined_at__isnull=False),
                 name='invitation_declined_has_date',
+            ),
+            models.UniqueConstraint(
+                Upper('email'),
+                'organization',
+                condition=models.Q(status=InvitationStatusChoices.PENDING),
+                name='invitation_single_pending',
+                violation_error_message=_(
+                    'An invitation with this email already exists.'
+                ),
             ),
         ]
 
