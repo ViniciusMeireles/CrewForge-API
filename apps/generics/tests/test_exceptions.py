@@ -222,7 +222,7 @@ class ExceptionHandlerIntegrationTestCase(APITestCaseMixin, APITestCase):
         original_rates = SimpleRateThrottle.THROTTLE_RATES
         SimpleRateThrottle.THROTTLE_RATES = api_settings.DEFAULT_THROTTLE_RATES
         try:
-            url = reverse('accounts:organizations-list')
+            url = reverse('accounts:stored_files-list')
             self.client.get(url)
             response = self.client.get(url)
             self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)

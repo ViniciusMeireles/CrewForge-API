@@ -19,6 +19,9 @@ class OrganizationFilterTestCase(APITestCaseMixin, APITestCase):
         self.alpha_org = OrganizationFactory(name='Alpha Corp', slug='alpha-corp')
         self.beta_org = OrganizationFactory(name='Beta Inc', slug='beta-inc')
         self.gamma_org = OrganizationFactory(name='Gamma LLC', slug='gamma-llc')
+        for org in (self.alpha_org, self.beta_org, self.gamma_org):
+            MemberFactory(organization=org, user=self.organization.owner.user)
+        OrganizationFactory(name='Delta Corp', slug='delta-corp')
 
     def test_filter_name_exact(self):
         response = self.client.get(self.list_url, {'name': 'Alpha Corp'})
@@ -43,8 +46,7 @@ class OrganizationFilterTestCase(APITestCaseMixin, APITestCase):
     def test_filter_my_organizations_true(self):
         response = self.client.get(self.list_url, {'my_organizations': 'true'})
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(response.data['results'][0]['id'], self.organization.id)
+        self.assertEqual(response.data['count'], 4)
 
     def test_filter_my_organizations_false(self):
         response = self.client.get(self.list_url, {'my_organizations': 'false'})
@@ -63,8 +65,7 @@ class OrganizationFilterTestCase(APITestCaseMixin, APITestCase):
     def test_filter_my_organizations_unauthenticated(self):
         self.client.logout()
         response = self.client.get(self.list_url, {'my_organizations': 'true'})
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 4)
+        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
     def test_filter_order_by_name_ascending(self):
         response = self.client.get(self.list_url, {'order_by': 'name'})

@@ -66,7 +66,19 @@ class OrganizationDetailSerializer(ModelSerializerMixin, serializers.ModelSerial
 
     class Meta:
         model = Organization
-        exclude = SUSPENSION_INTERNAL_FIELDS
+        fields = [
+            'id',
+            'profile',
+            'is_active',
+            'created_at',
+            'updated_at',
+            'name',
+            'slug',
+            'status',
+            'created_by',
+            'updated_by',
+            'owner',
+        ]
 
 
 class OrganizationProfileRelatedSerializer(

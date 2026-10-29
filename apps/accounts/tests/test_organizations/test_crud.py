@@ -63,7 +63,7 @@ class OrganizationCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertIsNotNone(owner_id)
 
     def test_retrieve_organization(self):
-        org = OrganizationFactory.create()
+        org = self.new_account()
         url = self._detail_url(org)
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
@@ -71,6 +71,7 @@ class OrganizationCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.data['slug'], org.slug)
 
     def test_retrieve_nonexistent(self):
+        self.new_account()
         url = self._detail_url(OrganizationFactory.build(id=99999))
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
@@ -229,4 +230,4 @@ class OrganizationCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertFalse(org.is_active)
         payload = self._org_payload(name='Updated Name')
         response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
