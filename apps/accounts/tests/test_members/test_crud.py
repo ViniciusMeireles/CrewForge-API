@@ -1,3 +1,5 @@
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 from rest_framework import status as http_status
@@ -147,6 +149,24 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         url = reverse(self.create_with_invite_url_name, args=[invite.key])
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
+    def test_create_with_invite_reads_the_invitation_once(self):
+        user_data = UserFactory.build()
+        invite = InvitationFactory.create(
+            organization=self.organization, email=user_data.email
+        )
+        url = reverse(self.create_with_invite_url_name, args=[invite.key])
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.post(url, data=self._member_payload(), format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        invitation_reads = [
+            query['sql']
+            for query in queries.captured_queries
+            if query['sql'].startswith('SELECT')
+            and 'FROM "accounts_invitation"' in query['sql']
+            and '"accounts_invitation"."key"' in query['sql']
+        ]
+        self.assertEqual(len(invitation_reads), 1)
 
     def test_standard_create_returns_405(self):
         payload = self._member_payload()

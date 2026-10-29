@@ -4,6 +4,8 @@ from django.test import TestCase
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.factories.users import UserFactory
+from apps.accounts.serializers.member import UserCreateWithInviteSerializer
+from apps.accounts.serializers.signup import UserCreateSignupSerializer
 from apps.accounts.serializers.user import UserSerializer
 
 
@@ -88,9 +90,13 @@ class UserSerializerSaveTestCase(TestCase):
     def test_create_without_password_is_invalid(self):
         payload = _payload()
         del payload['password']
-        serializer = UserSerializer(data=payload)
-        self.assertFalse(serializer.is_valid())
-        self.assertIn('password', serializer.errors)
+        for serializer_class in (
+            UserCreateSignupSerializer,
+            UserCreateWithInviteSerializer,
+        ):
+            serializer = serializer_class(data=payload)
+            self.assertFalse(serializer.is_valid())
+            self.assertIn('password', serializer.errors)
 
     def test_update_hashes_password(self):
         user = UserFactory()

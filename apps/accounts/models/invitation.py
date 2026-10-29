@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.functions import Upper
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -104,6 +105,7 @@ class Invitation(BaseModel):
         ordering = ['-id']
         verbose_name = _('Invitation')
         verbose_name_plural = _('Invitations')
+        indexes = [models.Index(Upper('email'), name='invitation_email_upper_idx')]
 
     def __str__(self):
         return self.email

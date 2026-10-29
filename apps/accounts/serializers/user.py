@@ -60,12 +60,7 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        password = attrs.get('password')
-        if not self.instance and not password:
-            raise serializers.ValidationError(
-                {'password': [_('Password is required.')]}
-            )
-        if password:
+        if password := attrs.get('password'):
             try:
                 run_password_validators(password, self.get_password_user(attrs))
             except serializers.ValidationError as exc:

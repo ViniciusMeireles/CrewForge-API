@@ -57,9 +57,8 @@ class GetMemberCacheTestCase(SimpleTestCase):
         request = _request(session={'organization_id': 7})
         request.user.pk = 3
         queryset = mock.MagicMock()
-        get_or_none = (
-            queryset.filter_actives.return_value.filter.return_value.get_or_none
-        )
+        members = queryset.filter_actives.return_value.select_related.return_value
+        get_or_none = members.filter.return_value.get_or_none
         get_or_none.side_effect = ['member of 7', 'member of 8']
         with mock.patch('apps.accounts.utils.requests.Member.objects', queryset):
             self.assertEqual(get_member(request), 'member of 7')

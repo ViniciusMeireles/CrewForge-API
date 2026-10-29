@@ -22,15 +22,9 @@ def get_organization_id(request: Request) -> int | None:
 
 def get_organization(request: Request) -> Organization | None:
     """Get the organization from the request."""
-    if not (organization_id := get_organization_id(request)):
+    if not (member := get_member(request)) or not member.organization.is_active:
         return None
-    return Organization.objects.filter(
-        members__user=request.user,
-        members__is_active=True,
-        is_active=True,
-        status=OrganizationStatusChoices.ACTIVE,
-        id=organization_id,
-    ).get_or_none()
+    return member.organization
 
 
 def get_member(request: Request) -> Member | None:
@@ -50,6 +44,7 @@ def get_member(request: Request) -> Member | None:
         return cached[1]
     member = (
         Member.objects.filter_actives()
+        .select_related('organization')
         .filter(
             user=user,
             organization_id=organization_id,

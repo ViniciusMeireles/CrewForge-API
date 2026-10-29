@@ -19,6 +19,18 @@ from apps.generics.mixins.serializers import ModelSerializerFieldsMixin
 User = get_user_model()
 
 
+def get_context_invitation(serializer) -> Invitation:
+    context = serializer.context
+    if 'invitation' not in context:
+        invitation_key = (
+            context.get('request')
+            .parser_context.get('kwargs')
+            .get(INVITATION_LOOKUP_URL_KWARG)
+        )
+        context['invitation'] = Invitation.objects.get(key=invitation_key)
+    return context['invitation']
+
+
 class UserCreateWithInviteSerializer(UserSerializer):
     auth_token = UserTokenSerializer(source='*', read_only=True)
 
@@ -41,31 +53,15 @@ class UserCreateWithInviteSerializer(UserSerializer):
 
     def get_password_user(self, attrs):
         user = super().get_password_user(attrs)
-        user.email = self._get_invitation().email
+        user.email = get_context_invitation(self).email
         return user
-
-    def _get_invitation(self) -> Invitation:
-        invitation_key = (
-            self.context.get('request')
-            .parser_context.get('kwargs')
-            .get(INVITATION_LOOKUP_URL_KWARG)
-        )
-        return Invitation.objects.get(key=invitation_key)
 
     def validate(self, attrs):
         attrs = super().validate(attrs=attrs)
-        invitation = self._get_invitation()
-        is_acceptable, message = invitation.is_acceptable()
+        is_acceptable, message = get_context_invitation(self).is_acceptable()
         if not is_acceptable:
             raise serializers.ValidationError(detail=message)
         return attrs
-
-    @transaction.atomic
-    def save(self, **kwargs):
-        invitation = self._get_invitation()
-        kwargs.update({'email': invitation.email, 'email_verified_at': timezone.now()})
-        instance = super().save(**kwargs)
-        return instance
 
 
 class MemberModelSerializer(
@@ -113,24 +109,19 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
 
-    def _get_invitation(self) -> Invitation:
-        invitation_key = (
-            self.context.get('request')
-            .parser_context.get('kwargs')
-            .get(INVITATION_LOOKUP_URL_KWARG)
-        )
-        return Invitation.objects.get(key=invitation_key)
-
     @transaction.atomic
     def save(self, **kwargs):
-        invitation = self._get_invitation()
-        user_serializer = self.fields['user']
-        user_serializer.initial_data = self.initial_data.get('user', {})
-        user_serializer._context = self.context
-        user_serializer.is_valid(raise_exception=True)
+        invitation = get_context_invitation(self)
+        user = self.fields['user'].create(
+            {
+                **self.validated_data['user'],
+                'email': invitation.email,
+                'email_verified_at': timezone.now(),
+            }
+        )
         kwargs.update(
             {
-                'user': user_serializer.save(),
+                'user': user,
                 'role': invitation.role,
                 'organization_id': invitation.organization_id,
             }

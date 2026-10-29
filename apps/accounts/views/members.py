@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
@@ -178,8 +180,15 @@ class MemberViewSet(
             return {'actor_member': instance}
         return {}
 
-    def get_invitation(self) -> Invitation | None:
-        """Get the invitation object."""
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.action == 'create_with_invite' and (invitation := self.invitation):
+            context['invitation'] = invitation
+        return context
+
+    @cached_property
+    def invitation(self) -> Invitation | None:
+        """The pending invitation of the URL key."""
         return (
             Invitation.objects.filter(
                 key=self.kwargs.get(INVITATION_LOOKUP_URL_KWARG),
@@ -212,7 +221,7 @@ class MemberViewSet(
     )
     def create_with_invite(self, request, *args, **kwargs):
         """Create a new member."""
-        if not (invitation := self.get_invitation()):
+        if not (invitation := self.invitation):
             return Response(
                 data={'detail': InvitationErrorMessages.INVITATION_NOT_FOUND.label},
                 status=http_status.HTTP_404_NOT_FOUND,
