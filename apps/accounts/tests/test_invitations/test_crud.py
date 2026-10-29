@@ -10,7 +10,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.choices import InvitationEmailErrorMessages, MemberRoleChoices
 from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.models.invitation import Invitation
-from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.mixins import APITestCaseMixin, run_on_commit_immediately
 
 
 class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
@@ -187,6 +187,7 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
+    @run_on_commit_immediately
     @override_settings(FRONTEND_URL='http://example.com')
     def test_send_email_success(self):
         invitation = self._create_invitation(
@@ -204,6 +205,7 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
         invitation.refresh_from_db()
         self.assertIsNotNone(invitation.last_email_sent_at)
 
+    @run_on_commit_immediately
     @override_settings(FRONTEND_URL='http://example.com')
     def test_send_email_after_cooldown(self):
         invitation = self._create_invitation(
@@ -218,6 +220,7 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
         five_secs_ago = timezone.now() - timedelta(seconds=5)
         self.assertGreater(invitation.last_email_sent_at, five_secs_ago)
 
+    @run_on_commit_immediately
     @override_settings(FRONTEND_URL='http://example.com')
     def test_create_invitation_with_send_email_true(self):
         invitation_data = InvitationFactory.build()

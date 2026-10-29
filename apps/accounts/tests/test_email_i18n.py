@@ -12,7 +12,7 @@ from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import DEFAULT_PASSWORD, UserFactory
 from apps.accounts.tasks import send_password_reset_email
-from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.mixins import APITestCaseMixin, run_on_commit_immediately
 from apps.accounts.utils.email_verification import send_verification_email
 
 VERIFY_URL = 'http://app.test/auth/verify-email'
@@ -118,6 +118,7 @@ class EmailLanguageTestCase(APITestCaseMixin, APITestCase):
         self.assertIn('Verifique seu endereço de e-mail', text)
         self.assertIn('Verificar e-mail', text)
 
+    @run_on_commit_immediately
     @override_settings(FRONTEND_URL='http://example.com')
     def test_invitation_email_uses_inviter_request_language(self):
         organization = self.new_account()
@@ -144,6 +145,7 @@ class EmailLanguageTestCase(APITestCaseMixin, APITestCase):
         text = _rendered_text(message)
         self.assertIn('Aceitar convite', text)
 
+    @run_on_commit_immediately
     @override_settings(FRONTEND_URL='http://example.com')
     def test_invitation_email_uses_invitee_preferred_language(self):
         organization = self.new_account()
@@ -183,6 +185,7 @@ class EmailLanguageTestCase(APITestCaseMixin, APITestCase):
             f'You have been invited to join {organization.name}',
         )
 
+    @run_on_commit_immediately
     @override_settings(FRONTEND_URL='http://example.com')
     def test_invitation_resend_uses_invitee_preferred_language(self):
         organization = self.new_account()

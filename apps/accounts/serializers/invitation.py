@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.types import OpenApiTypes
@@ -144,7 +145,7 @@ class InvitationSerializer(
         ).update(status=InvitationStatusChoices.EXPIRED)
         instance: Invitation = super().create(validated_data)
         if send_email and instance.is_acceptable()[0]:
-            instance.send_email()
+            transaction.on_commit(instance.send_email)
         return instance
 
 

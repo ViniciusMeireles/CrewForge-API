@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.accounts.choices import InvitationErrorMessages, MemberErrorMessages
@@ -55,12 +55,22 @@ class MemberQuerySet(BaseQuerySet):
                 raise ValueError(str(InvitationErrorMessages.USER_ALREADY_MEMBER.label))
             self._check_nickname(organization, nickname, member)
             if member is None:
-                member = self.create(
-                    user=user,
-                    organization=organization,
-                    role=role,
-                    nickname=nickname,
-                )
+                try:
+                    with transaction.atomic():
+                        member = self.create(
+                            user=user,
+                            organization=organization,
+                            role=role,
+                            nickname=nickname,
+                        )
+                except IntegrityError as exc:
+                    if not self.filter(
+                        user=user, organization=organization, is_active=True
+                    ).exists():
+                        raise
+                    raise ValueError(
+                        str(InvitationErrorMessages.USER_ALREADY_MEMBER.label)
+                    ) from exc
                 return member, False
             member.is_active = True
             member.role = role
