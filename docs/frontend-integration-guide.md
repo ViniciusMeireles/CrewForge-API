@@ -151,27 +151,29 @@ Authorization: Bearer eyJhbGciOiJI...
 
 Parse the results and present the list so the user can pick an organization.
 
+The list requires authentication (anonymous → 401) and only returns active
+Organizations where the user has an active Member (suspended ones included, so
+the selection screen can show their state). Retrieving another Organization
+returns 404.
+
 #### 3.3.1. Filtering Organizations
 
 The list endpoint supports the following query parameters:
 
 | Parameter | Type | Description |
 |---|---|---|
-| `my_organizations` | `boolean` | When `true`, returns only organizations where the authenticated user is an active member (`false` by default) |
+| `my_organizations` | `boolean` | Accepted for compatibility; has no effect, the list is always restricted to the user's Organizations |
 | `name` | `string` | Exact match on name |
 | `name__icontains` | `string` | Case-insensitive name contains |
 | `slug` | `string` | Exact match on slug |
 | `slug__icontains` | `string` | Case-insensitive slug contains |
 | `is_active` | `boolean` | Filter by active status |
 
-**Example — list only organizations the user belongs to:**
+**Example — search the user's organizations by name:**
 
 ```
-GET /api/accounts/organizations/?my_organizations=true
+GET /api/accounts/organizations/?name__icontains=acme
 ```
-
-This is useful for the organization selection screen (Step 2 of the auth flow),
-especially when the user has a large number of organizations.
 
 ### 3.4. Step 3 — Organization Login
 
@@ -504,9 +506,9 @@ Content-Type: application/json
 
 **Response (200):** `{"detail": "Password changed successfully."}`
 
-Validates that the new password differs from the current one and is at least 8 characters long.
+Validates that the new password differs from the current one and passes the password validators (at least 8 characters, not common, not numeric-only, not similar to the user's data); errors come on `new_password`. Signup, signup by invitation and password reset confirm apply the same validators (errors on `user.password` / `password` / `new_password`), and the signup password is required.
 
-Changing the password **revokes every refresh token** of the user (all devices are logged out at their next refresh). In cookie mode the response sets a fresh pair of cookies so the current browser stays logged in; Bearer clients must log in again.
+Changing the password **revokes every session** of the user: access tokens issued before it stop working at once and every refresh token is blacklisted. In cookie mode the response sets a fresh pair of cookies so the current browser stays logged in; Bearer clients must log in again. A password reset revokes every session too.
 
 ---
 
@@ -530,9 +532,9 @@ Changing the password **revokes every refresh token** of the user (all devices a
 |---|---|---|
 | List | `GET /api/accounts/members/` | Member of the org |
 | Retrieve | `GET /api/accounts/members/{id}/` | Member of the org |
-| Update | `PUT/PATCH /api/accounts/members/{id}/` (`role` is read-only here) | Yourself, or admin+ (owner to edit an owner) |
-| Update role | `PATCH /api/accounts/members/{id}/update-role/` | Admin+ (owner to change an owner); never your own role (400); new role must be assignable |
-| Delete | `DELETE /api/accounts/members/{id}/` | Yourself (leave), or admin+ |
+| Update | `PUT/PATCH /api/accounts/members/{id}/` (`role` and the nested `user` are read-only here; users edit their own profile at `/api/accounts/users/me/`) | Yourself, or admin+ (owner to edit an owner) |
+| Update role | `PATCH /api/accounts/members/{id}/update-role/` | Admin+; never your own role (400); new role must be assignable; the Owner's role never changes here (403) |
+| Delete | `DELETE /api/accounts/members/{id}/` | Yourself (leave), or admin+; the Owner is never deleted, not even by itself (403, message: transfer ownership first) |
 | Create via invite | `POST /api/accounts/members/create-with-invite/{invitation_key}/` | No auth required |
 | Filter options | `GET /api/accounts/members/filter-options/` | Same as List (every role listed) |
 | Update-role options | `GET /api/accounts/members/form-options-update-role/` | Member of the org (only roles the caller may assign) |

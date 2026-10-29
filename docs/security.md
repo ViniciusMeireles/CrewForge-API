@@ -130,6 +130,16 @@ These rules are non-negotiable:
    `set_password()`.
 7. **Permission changes** are high-impact: always add tests and review carefully.
 8. **Never put real secrets** in `example.env`. Use placeholder values only.
+9. **Tenant scope is fail-closed.** `OrganizationScopedViewSetMixin` filters by the
+   Organization of the caller's **active Member** (`get_member`), never by the raw
+   `organization_id` left in the session; with no active Member the queryset is
+   empty. Organizations are never listed or retrieved for anonymous callers or
+   non-Members (`OrganizationViewSet` scopes every action but `create`).
+10. **The Owner is protected.** No one, including the Owner, deletes the Owner
+    Member or changes its role through the members API (`403`, security event
+    `member.owner_protected`); ownership moves only through the platform transfer.
+11. **Identity belongs to the User.** Member update never writes the nested User;
+    only the User changes their own profile (`/api/accounts/users/me/`).
 
 ---
 
@@ -140,7 +150,9 @@ These rules are non-negotiable:
 - Password reset uses a 2-step flow:
   1. `POST /api/auth/password/reset/` — sends email with `uid` + `token`
   2. `POST /api/auth/password/reset/confirm/` — with `uid`, `token`, `new_password`
-- Password validation follows Django's `AUTH_PASSWORD_VALIDATORS`.
+- Signup (also signup by invitation key), reset confirm and change password run
+  Django's `AUTH_PASSWORD_VALIDATORS` (`validate_new_password` in
+  `apps/accounts/serializers/user.py`); the signup password is required.
 - The reset request answers the same message whether or not the email exists
   (no user enumeration); the email is sent asynchronously.
 
@@ -176,8 +188,10 @@ These rules are non-negotiable:
 - Behind a TLS-terminating proxy, cookie-mode CSRF needs Django to see HTTPS:
   set `SECURE_PROXY_SSL_HEADER=True` and forward the original
   `X-Forwarded-Proto`, or set `CSRF_TRUSTED_ORIGINS` to the public origin.
-- Changing or resetting the password blacklists every outstanding refresh
-  token of the user (`apps/accounts/utils/tokens.py`).
+- Changing or resetting the password calls `revoke_sessions`: every access token
+  issued before it stops working and every refresh token is blacklisted. Password
+  change then issues fresh cookies to the current browser session; bearer
+  clients sign in again.
 - **Blocking and revocation** (platform admin actions, ADR-009): `JWTCookieAuthentication.get_user` first treats a
   token whose `iat` is before `User.sessions_revoked_at` as invalid (a stale cookie is ignored, so logout and public
   routes keep working), then refuses a blocked User with `401 ACCOUNT_BLOCKED` (bearer and cookie paths). Block, end sessions and force password reset call `revoke_sessions`
@@ -247,7 +261,10 @@ read-only for Organization endpoints, and the internal suspension reason is neve
 
 Accessing another organization's resources returns **404** (not 403) because
 `OrganizationScopedViewSetMixin` filters the queryset before the view executes.
-This prevents resource enumeration.
+This prevents resource enumeration. The same applies to Organizations themselves
+and to Organization images; the stored-file list shows only the caller's own
+files and the current Organization's files (a PUBLIC file is still served by
+uuid to anyone).
 
 ### Default Permission
 

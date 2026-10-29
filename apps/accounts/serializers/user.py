@@ -63,7 +63,7 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         password = attrs.get('password')
         if not self.instance and not password:
             raise serializers.ValidationError(
-                {'password': [_('This field is required.')]}
+                {'password': [_('Password is required.')]}
             )
         if password:
             fields = ('username', 'email', 'first_name', 'last_name')

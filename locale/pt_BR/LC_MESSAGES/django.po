@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 15:58+0000\n"
+"POT-Creation-Date: 2026-10-29 16:00+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -740,6 +740,10 @@ msgstr "Sessões revogadas em"
 msgid "Access tokens issued before this moment are refused"
 msgstr "Tokens de acesso emitidos antes deste momento são recusados"
 
+#: apps/accounts/permissions/member.py:41
+msgid "The Owner cannot be removed or demoted; transfer ownership first."
+msgstr "O proprietário não pode ser removido nem rebaixado; transfira a propriedade antes."
+
 #: apps/accounts/serializers/auth.py:100
 msgid "Invalid UID."
 msgstr "UID inválido."
@@ -748,7 +752,7 @@ msgstr "UID inválido."
 msgid "Invalid token."
 msgstr "Token inválido."
 
-#: apps/accounts/serializers/auth.py:121 apps/accounts/serializers/auth.py:124
+#: apps/accounts/serializers/auth.py:125 apps/accounts/serializers/auth.py:128
 msgid "Invalid verification link."
 msgstr "Link de verificação inválido."
 
@@ -764,19 +768,13 @@ msgstr "O proprietário não está ativo."
 msgid "Organization is not active."
 msgstr "A organização não está ativa."
 
-#: apps/accounts/serializers/invitation.py:94
+#: apps/accounts/serializers/invitation.py:95
 msgid "An invitation with this email already exists."
 msgstr "Já existe um convite com este e-mail."
 
-#: apps/accounts/serializers/member.py:99
+#: apps/accounts/serializers/member.py:98
 msgid "User is already a member of the organization."
 msgstr "O usuário já é membro da organização."
-
-#: apps/accounts/serializers/member.py:167
-msgid "User data to update, if not provided, will not update the user."
-msgstr ""
-"Dados do usuário a atualizar; se não fornecidos, o usuário não será "
-"atualizado."
 
 #: apps/accounts/serializers/mixins.py:23
 msgid "Not allowed to change your own role."
@@ -788,19 +786,23 @@ msgstr "Não é permitido alterar sua própria função."
 msgid "Not allowed to set the %(role)s role."
 msgstr "Não é permitido definir a função %(role)s."
 
-#: apps/accounts/serializers/user.py:48
+#: apps/accounts/serializers/user.py:56
 msgid "Password cannot be empty."
 msgstr "A senha não pode ficar vazia."
 
-#: apps/accounts/serializers/user.py:50
+#: apps/accounts/serializers/user.py:58
 msgid "Not allowed to change the password."
 msgstr "Não é permitido alterar a senha."
 
-#: apps/accounts/serializers/user_profile.py:51
+#: apps/accounts/serializers/user.py:66
+msgid "Password is required."
+msgstr "A senha é obrigatória."
+
+#: apps/accounts/serializers/user_profile.py:52
 msgid "Current password is incorrect."
 msgstr "A senha atual está incorreta."
 
-#: apps/accounts/serializers/user_profile.py:52
+#: apps/accounts/serializers/user_profile.py:53
 msgid "New password must be different from current password."
 msgstr "A nova senha deve ser diferente da senha atual."
 
@@ -1030,11 +1032,11 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:141
+#: apps/accounts/views/files.py:151
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:145
+#: apps/accounts/views/files.py:155
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
@@ -1146,7 +1148,7 @@ msgstr ""
 "Retorna as opções de cada filtro da lista de convites recebidos. Envie o "
 "nome de um campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/accounts/views/invitations.py:628
+#: apps/accounts/views/invitations.py:632
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
@@ -2029,21 +2031,21 @@ msgstr "Escopo"
 msgid "Account"
 msgstr "Conta"
 
-#: apps/platform/impersonation.py:30
+#: apps/platform/impersonation.py:32
 msgid "The user was blocked, so the viewing session ended."
 msgstr "O usuário foi bloqueado, então a sessão de visualização terminou."
 
-#: apps/platform/impersonation.py:33
+#: apps/platform/impersonation.py:35
 msgid "The viewing session ended."
 msgstr "A sessão de visualização terminou."
 
-#: apps/platform/impersonation.py:63
+#: apps/platform/impersonation.py:71
 msgid "This user can't be viewed (platform staff, blocked or deleted)."
 msgstr ""
 "Não é possível ver este usuário (equipe da plataforma, bloqueado ou "
 "excluído)."
 
-#: apps/platform/impersonation.py:67 apps/platform/models.py:70
+#: apps/platform/impersonation.py:75 apps/platform/models.py:70
 msgid "You already have an active viewing session."
 msgstr "Você já tem uma sessão de visualização ativa."
 
@@ -2326,7 +2328,10 @@ msgid ""
 "Start viewing the app as this user: read-only, at most 30 minutes, recorded "
 "in their account activity. The response is the session as the user. A reason "
 "is required."
-msgstr "Começa a ver o app como este usuário: somente leitura, no máximo 30 minutos, registrado na atividade da conta dele. A resposta é a sessão como o usuário. O motivo é obrigatório."
+msgstr ""
+"Começa a ver o app como este usuário: somente leitura, no máximo 30 minutos, "
+"registrado na atividade da conta dele. A resposta é a sessão como o usuário. "
+"O motivo é obrigatório."
 
 #: apps/platform/views.py:405
 msgid "List audit events"
@@ -2570,6 +2575,11 @@ msgstr ""
 "%(theme_color|default:'#002180')s; text-decoration:none;\">clique aqui para "
 "cancelar a inscrição</a>.\n"
 "                    "
+
+#~ msgid "User data to update, if not provided, will not update the user."
+#~ msgstr ""
+#~ "Dados do usuário a atualizar; se não fornecidos, o usuário não será "
+#~ "atualizado."
 
 #, python-brace-format
 #~ msgid "Create a new {name} with an invitation."
