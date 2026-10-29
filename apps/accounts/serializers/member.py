@@ -35,9 +35,14 @@ class UserCreateWithInviteSerializer(UserSerializer):
         ]
         extra_kwargs = {
             'email': {'read_only': True},
-            'password': {'write_only': True, 'required': False},
+            'password': {'write_only': True, 'required': True},
             'auth_token': {'read_only': True},
         }
+
+    def get_password_user(self, attrs):
+        user = super().get_password_user(attrs)
+        user.email = self._get_invitation().email
+        return user
 
     def _get_invitation(self) -> Invitation:
         invitation_key = (
@@ -99,20 +104,6 @@ class MemberModelSerializer(
             )
         return value
 
-    @transaction.atomic
-    def save(self, **kwargs):
-        user_serializer = self.fields['user']
-        user_serializer.initial_data = self.initial_data.get('user', {})
-        user_serializer.partial = self.partial
-        user_serializer._context = self.context
-        if self.instance and self.instance.user_id:
-            user_serializer.instance = self.instance.user
-        user_serializer.is_valid(raise_exception=True)
-
-        kwargs['user'] = user_serializer.save()
-        instance = super().save(**kwargs)
-        return instance
-
 
 class MemberWithInviteCreateSerializer(MemberModelSerializer):
     """Serializer for creating the Member model."""
@@ -133,8 +124,13 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
     @transaction.atomic
     def save(self, **kwargs):
         invitation = self._get_invitation()
+        user_serializer = self.fields['user']
+        user_serializer.initial_data = self.initial_data.get('user', {})
+        user_serializer._context = self.context
+        user_serializer.is_valid(raise_exception=True)
         kwargs.update(
             {
+                'user': user_serializer.save(),
                 'role': invitation.role,
                 'organization_id': invitation.organization_id,
             }
@@ -159,9 +155,6 @@ class MemberUpdateSerializer(MemberModelSerializer):
 
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
-
-    def save(self, **kwargs):
-        return super(MemberModelSerializer, self).save(**kwargs)
 
 
 class MemberRoleUpdateSerializer(

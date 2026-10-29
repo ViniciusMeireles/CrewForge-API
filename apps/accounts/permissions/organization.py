@@ -14,15 +14,14 @@ class OrganizationPermission(permissions.BasePermission):
         return bool(request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj: Organization):
-        is_member = (
-            request.user.is_active
-            and request.user.members.filter(
-                organization_id=obj.id,
-                is_active=True,
-            ).exists()
-        )
         if request.method in permissions.SAFE_METHODS or view.action == 'login':
-            return is_member
+            return (
+                request.user.is_active
+                and request.user.members.filter(
+                    organization_id=obj.id,
+                    is_active=True,
+                ).exists()
+            )
         auth_member = get_member(request)
         return bool(
             auth_member

@@ -112,7 +112,9 @@ class Invitation(BaseModel):
         """Get the user associated with the invitation email."""
         if self.user_id:
             return self.user
-        return get_object_or_none(get_user_model(), email=self.email, is_active=True)
+        return get_object_or_none(
+            get_user_model(), email__iexact=self.email, is_active=True
+        )
 
     def get_invitation_link(self) -> str:
         """Return the absolute URL for accepting the invitation."""

@@ -138,6 +138,16 @@ class MemberCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
+    def test_create_with_invite_rejects_password_similar_to_invitation_email(self):
+        invite = InvitationFactory.create(
+            organization=self.organization, email='maria.silva@example.com'
+        )
+        payload = self._member_payload()
+        payload['user']['password'] = 'maria.silva@example'
+        url = reverse(self.create_with_invite_url_name, args=[invite.key])
+        response = self.client.post(url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
     def test_standard_create_returns_405(self):
         payload = self._member_payload()
         response = self.client.post(self.list_url, data=payload, format='json')

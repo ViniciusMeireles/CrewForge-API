@@ -9414,6 +9414,7 @@ components:
       required:
       - auth_token
       - id
+      - password
       - username
     UserCreateWithInvite:
       type: object
@@ -9451,6 +9452,7 @@ components:
       - auth_token
       - email
       - id
+      - password
       - username
     UserProfile:
       type: object

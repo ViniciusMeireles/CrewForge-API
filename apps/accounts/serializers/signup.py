@@ -23,6 +23,7 @@ class UserCreateSignupSerializer(UserSerializer):
         model = User
         fields = ['auth_token'] + UserSerializer.Meta.fields
         read_only_fields = ['auth_token'] + UserSerializer.Meta.read_only_fields
+        extra_kwargs = {'password': {'write_only': True, 'required': True}}
 
 
 class SignupSerializer(

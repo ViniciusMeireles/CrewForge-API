@@ -172,6 +172,20 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
+    def test_create_duplicate_invitation_ignores_email_case(self):
+        invitation = self._create_invitation(
+            expired_at=timezone.now() + timedelta(days=1),
+            is_expired=False,
+            is_accepted=False,
+        )
+        payload = {
+            'email': invitation.email.upper(),
+            'role': invitation.role,
+            'expired_at': invitation.expired_at,
+        }
+        response = self.client.post(self.list_url, data=payload, format='json')
+        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
+
     @override_settings(FRONTEND_URL='http://example.com')
     def test_send_email_success(self):
         invitation = self._create_invitation(

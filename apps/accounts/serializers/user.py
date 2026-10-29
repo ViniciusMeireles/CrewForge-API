@@ -9,7 +9,7 @@ from apps.accounts.utils.language import current_language
 User = get_user_model()
 
 
-def validate_new_password(password: str, user) -> None:
+def run_password_validators(password: str, user) -> None:
     try:
         password_validation.validate_password(password, user=user)
     except DjangoValidationError as exc:
@@ -66,15 +66,17 @@ class UserSerializer(ModelSerializerMixin, serializers.ModelSerializer):
                 {'password': [_('Password is required.')]}
             )
         if password:
-            fields = ('username', 'email', 'first_name', 'last_name')
-            user = self.instance or User(
-                **{field: attrs.get(field) or '' for field in fields}
-            )
             try:
-                validate_new_password(password, user)
+                run_password_validators(password, self.get_password_user(attrs))
             except serializers.ValidationError as exc:
                 raise serializers.ValidationError({'password': exc.detail}) from exc
         return attrs
+
+    def get_password_user(self, attrs):
+        if self.instance:
+            return self.instance
+        fields = ('username', 'email', 'first_name', 'last_name')
+        return User(**{field: attrs.get(field) or '' for field in fields})
 
     def create(self, validated_data):
         validated_data.setdefault('preferred_language', current_language())

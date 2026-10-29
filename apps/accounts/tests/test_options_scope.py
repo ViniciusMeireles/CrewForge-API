@@ -89,8 +89,9 @@ class OrganizationLookupBuildTestCase(SimpleTestCase):
 
 
 def _session_request(organization):
-    user = SimpleNamespace(is_authenticated=True, is_active=True)
-    return SimpleNamespace(user=user, session={'organization_id': organization.pk})
+    return SimpleNamespace(
+        user=organization.owner.user, session={'organization_id': organization.pk}
+    )
 
 
 class OrganizationLookupScopeTestCase(TestCase):
@@ -121,6 +122,19 @@ class OrganizationLookupScopeTestCase(TestCase):
         self.assertEqual(
             copy.deepcopy(field).organization_lookup, 'team__organization_id'
         )
+
+    def test_session_organization_of_another_user_scopes_nothing(self):
+        stranger = UserFactory()
+        field = PaginatedOptionsActiveOrganizationSerializer(
+            queryset=User.objects.all(),
+            organization_lookup='members__organization_id',
+        )
+        field._context = {
+            'request': SimpleNamespace(
+                user=stranger, session={'organization_id': self.organization.pk}
+            )
+        }
+        self.assertFalse(field.get_queryset().exists())
 
     def test_only_relation_lookup_is_distinct(self):
         through_relation = PaginatedOptionsActiveOrganizationSerializer(

@@ -130,7 +130,7 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
             members__user_id=self.auth_user.id,
             members__is_active=True,
             is_active=True,
-        ).distinct()
+        )
 
     def get_audit_organization_id(self, instance) -> int | None:
         return instance.pk

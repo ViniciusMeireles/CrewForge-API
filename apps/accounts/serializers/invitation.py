@@ -81,7 +81,7 @@ class InvitationSerializer(
     def validate_email(self, value):
         if value and not self.instance:
             invitation_queryset = Invitation.objects.filter(
-                email=value,
+                email__iexact=value,
                 is_active=True,
                 is_expired=False,
                 is_accepted=False,

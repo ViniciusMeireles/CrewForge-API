@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 16:00+0000\n"
+"POT-Creation-Date: 2026-10-29 16:16+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -507,7 +507,7 @@ msgstr "Convite"
 msgid "Invitations"
 msgstr "Convites"
 
-#: apps/accounts/models/invitation.py:205
+#: apps/accounts/models/invitation.py:207
 msgid "Expired date must be greater than now"
 msgstr "A data de expiração deve ser posterior ao momento atual"
 
@@ -742,7 +742,9 @@ msgstr "Tokens de acesso emitidos antes deste momento são recusados"
 
 #: apps/accounts/permissions/member.py:41
 msgid "The Owner cannot be removed or demoted; transfer ownership first."
-msgstr "O proprietário não pode ser removido nem rebaixado; transfira a propriedade antes."
+msgstr ""
+"O proprietário não pode ser removido nem rebaixado; transfira a propriedade "
+"antes."
 
 #: apps/accounts/serializers/auth.py:100
 msgid "Invalid UID."
@@ -772,7 +774,7 @@ msgstr "A organização não está ativa."
 msgid "An invitation with this email already exists."
 msgstr "Já existe um convite com este e-mail."
 
-#: apps/accounts/serializers/member.py:98
+#: apps/accounts/serializers/member.py:103
 msgid "User is already a member of the organization."
 msgstr "O usuário já é membro da organização."
 
@@ -1008,23 +1010,23 @@ msgstr ""
 "Verifica se um token é válido: `200` quando é, `401` caso contrário. Não "
 "informa o que o token permite."
 
-#: apps/accounts/views/files.py:41
+#: apps/accounts/views/files.py:43
 msgid "Download file"
 msgstr "Baixar arquivo"
 
-#: apps/accounts/views/files.py:42
+#: apps/accounts/views/files.py:44
 msgid "Return the content of the stored file."
 msgstr "Retorna o conteúdo do arquivo armazenado."
 
-#: apps/accounts/views/files.py:46
+#: apps/accounts/views/files.py:48
 msgid "The file content."
 msgstr "O conteúdo do arquivo."
 
-#: apps/accounts/views/files.py:49
+#: apps/accounts/views/files.py:51
 msgid "File not found."
 msgstr "Arquivo não encontrado."
 
-#: apps/accounts/views/files.py:57
+#: apps/accounts/views/files.py:59
 msgid ""
 "Download as an attachment. Only raster images are ever served inline; every "
 "other type is always an attachment."
@@ -1032,11 +1034,11 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:151
+#: apps/accounts/views/files.py:158
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:155
+#: apps/accounts/views/files.py:162
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
