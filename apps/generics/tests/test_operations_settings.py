@@ -81,6 +81,26 @@ class SharedInfrastructureSettingsTestCase(SimpleTestCase):
         self.assertTrue(base.DATABASES['default']['CONN_HEALTH_CHECKS'])
         self.assertFalse(base.TESTING)
 
+    def test_cache_defaults_to_the_broker_redis(self):
+        with fresh_settings(
+            DATABASE_URL=PRODUCTION_ENV['DATABASE_URL'],
+            CELERY_BROKER_URL='redis://localhost:6379/0',
+            unset=('CACHE_URL',),
+        ):
+            import config.settings.base as base
+        self.assertEqual(base.CACHES['default']['LOCATION'], 'redis://localhost:6379/1')
+
+    def test_explicit_cache_url_wins(self):
+        with fresh_settings(
+            DATABASE_URL=PRODUCTION_ENV['DATABASE_URL'],
+            CELERY_BROKER_URL='redis://localhost:6379/0',
+            CACHE_URL='redis://cache.internal:6380/3',
+        ):
+            import config.settings.base as base
+        self.assertEqual(
+            base.CACHES['default']['LOCATION'], 'redis://cache.internal:6380/3'
+        )
+
     def test_empty_conn_max_age_uses_the_default(self):
         with fresh_settings(
             DATABASE_URL=PRODUCTION_ENV['DATABASE_URL'], CONN_MAX_AGE=''

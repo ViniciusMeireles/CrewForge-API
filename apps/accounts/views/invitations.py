@@ -209,8 +209,8 @@ from apps.generics.utils.schema import extend_schema_model_view_set
             status.HTTP_200_OK: inline_serializer(
                 name='InvitationAcceptSuccess',
                 fields={
-                    'access': serializers.CharField(),
-                    'refresh': serializers.CharField(),
+                    'access': serializers.CharField(required=False),
+                    'refresh': serializers.CharField(required=False),
                     'member_id': serializers.IntegerField(),
                     'readmitted': serializers.BooleanField(),
                 },

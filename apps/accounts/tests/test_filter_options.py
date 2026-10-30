@@ -118,8 +118,8 @@ class FilterOptionsContentTestCase(
 
     def test_order_by_labels_sorted_in_request_language(self):
         for language, first_labels in (
-            ('en', ['Accepted At', 'Descending Accepted At', 'Declined At']),
-            ('pt-BR', ['Aceito em', 'Aceito em (decrescente)', 'E-mail']),
+            ('en', ['Accepted At', 'Descending Accepted At', 'Created At']),
+            ('pt-BR', ['Aceito em', 'Aceito em (decrescente)', 'Atualizado em']),
         ):
             with self.subTest(language=language):
                 response = self.client.get(

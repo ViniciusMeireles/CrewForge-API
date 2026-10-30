@@ -108,7 +108,7 @@ All API errors use a standardized JSON envelope implemented by
 
 ## Caching
 
-The default cache is Redis (`CACHE_URL`, default `redis://redis:6379/1`), shared
+The default cache is Redis (`CACHE_URL`; without it, database 1 of the `CELERY_BROKER_URL` server), shared
 by every process, so throttle counters and cooldowns hold across Gunicorn workers
 and Celery. Tests use `LocMemCache`. Database connections are reused for
 `CONN_MAX_AGE` seconds (default `60`) with health checks.
