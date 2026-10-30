@@ -1,9 +1,12 @@
+import importlib
 import os
-import subprocess
+import runpy
 import sys
 from pathlib import Path
+from unittest import mock
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
@@ -15,45 +18,41 @@ PROJECT = Path(settings.BASE_DIR)
 PRODUCTION_ENV = {
     'DJANGO_SECRET_KEY': 'x' * 64,
     'NUM_PROXIES': '1',
-    'MEDIA_ROOT': '/tmp/media',
+    'MEDIA_ROOT': '/srv/media',
     'ENVIRONMENT': 'production',
+    'DATABASE_URL': 'postgres://u:p@localhost:5432/db',
 }
 
 
-def run_python(code: str, **env) -> subprocess.CompletedProcess:
-    clean = {
-        key: value
-        for key, value in os.environ.items()
-        if key not in {'DJANGO_SETTINGS_MODULE', 'MEDIA_ROOT'}
-    }
-    return subprocess.run(
-        [sys.executable, '-c', code],
-        cwd=PROJECT,
-        env={**clean, **env},
-        capture_output=True,
-        text=True,
-        timeout=60,
-    )
+def load_settings(module: str, unset=(), **env):
+    with mock.patch.dict(os.environ, env), mock.patch.dict(sys.modules):
+        for key in ('DJANGO_SETTINGS_MODULE', 'CONN_MAX_AGE', *unset):
+            if key not in env:
+                os.environ.pop(key, None)
+        for name in [m for m in sys.modules if m.startswith('config.settings.')]:
+            del sys.modules[name]
+        return importlib.import_module(module)
 
 
 class EntrypointDefaultsTestCase(SimpleTestCase):
     def test_entrypoints_default_to_production(self):
-        for module in ('config.wsgi', 'config.asgi', 'config.celery'):
-            with self.subTest(module=module):
-                result = run_python(
-                    f'import {module}, os; print(os.environ["DJANGO_SETTINGS_MODULE"])',
-                    **PRODUCTION_ENV,
-                )
-                self.assertEqual(result.returncode, 0, result.stderr)
+        for name in ('wsgi', 'asgi', 'celery'):
+            with self.subTest(module=name), mock.patch.dict(os.environ):
+                os.environ.pop('DJANGO_SETTINGS_MODULE', None)
+                runpy.run_path(str(PROJECT / 'config' / f'{name}.py'))
                 self.assertEqual(
-                    result.stdout.strip().splitlines()[-1], 'config.settings.production'
+                    os.environ['DJANGO_SETTINGS_MODULE'], 'config.settings.production'
                 )
 
     def test_production_requires_media_root(self):
         env = {k: v for k, v in PRODUCTION_ENV.items() if k != 'MEDIA_ROOT'}
-        result = run_python('import config.settings.production', **env)
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn('MEDIA_ROOT', result.stderr)
+        with self.assertRaisesMessage(ImproperlyConfigured, 'MEDIA_ROOT'):
+            load_settings('config.settings.production', unset=('MEDIA_ROOT',), **env)
+
+    def test_production_loads_with_required_env(self):
+        production = load_settings('config.settings.production', **PRODUCTION_ENV)
+        self.assertFalse(production.DEBUG)
+        self.assertEqual(production.MEDIA_ROOT, '/srv/media')
 
     def test_only_local_settings_read_dotenv(self):
         sources = {
@@ -67,29 +66,24 @@ class EntrypointDefaultsTestCase(SimpleTestCase):
 
 class SharedInfrastructureSettingsTestCase(SimpleTestCase):
     def test_base_uses_redis_cache_and_connection_reuse(self):
-        result = run_python(
-            'import config.settings.base as b; '
-            'print(b.CACHES["default"]["BACKEND"]); '
-            'print(b.DATABASES["default"]["CONN_MAX_AGE"]); '
-            'print(b.DATABASES["default"]["CONN_HEALTH_CHECKS"]); '
-            'print(b.TESTING)',
-            DATABASE_URL='postgres://u:p@localhost:5432/db',
+        base = load_settings(
+            'config.settings.base', DATABASE_URL=PRODUCTION_ENV['DATABASE_URL']
         )
-        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
-            result.stdout.split(),
-            ['django.core.cache.backends.redis.RedisCache', '60', 'True', 'False'],
+            base.CACHES['default']['BACKEND'],
+            'django.core.cache.backends.redis.RedisCache',
         )
+        self.assertEqual(base.DATABASES['default']['CONN_MAX_AGE'], 60)
+        self.assertTrue(base.DATABASES['default']['CONN_HEALTH_CHECKS'])
+        self.assertFalse(base.TESTING)
 
     def test_empty_conn_max_age_uses_the_default(self):
-        result = run_python(
-            'import config.settings.base as b; '
-            'print(b.DATABASES["default"]["CONN_MAX_AGE"])',
-            DATABASE_URL='postgres://u:p@localhost:5432/db',
+        base = load_settings(
+            'config.settings.base',
+            DATABASE_URL=PRODUCTION_ENV['DATABASE_URL'],
             CONN_MAX_AGE='',
         )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.split()[-1], '60')
+        self.assertEqual(base.DATABASES['default']['CONN_MAX_AGE'], 60)
 
     def test_celery_keeps_the_json_root_logger(self):
         self.assertFalse(settings.CELERY_WORKER_HIJACK_ROOT_LOGGER)

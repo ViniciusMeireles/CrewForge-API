@@ -14,8 +14,9 @@ UNAVAILABLE = {'status': 'unavailable'}
 
 def _ready() -> bool:
     try:
-        with connection.cursor() as cursor:
-            cursor.execute('SELECT 1')
+        connection.ensure_connection()
+        if not connection.is_usable():
+            return False
         cache.set('readyz', 1, 5)
         return cache.get('readyz') == 1
     except DatabaseError, RedisError, ConnectionError, OSError:

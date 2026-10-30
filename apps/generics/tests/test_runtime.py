@@ -25,7 +25,7 @@ class HealthEndpointsTestCase(APITestCase):
 
     def test_readyz_unavailable_when_database_is_down(self):
         with mock.patch(
-            'apps.generics.middleware.connection.cursor',
+            'apps.generics.middleware.connection.ensure_connection',
             side_effect=OperationalError('down'),
         ):
             response = self.client.get('/readyz')

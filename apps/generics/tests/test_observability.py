@@ -1,6 +1,5 @@
 import json
 import logging
-import sys
 import uuid
 from unittest import mock
 
@@ -106,12 +105,10 @@ class JsonLoggingTestCase(SimpleTestCase):
         self.assertIn('here', self._format(record)['stack'])
 
     def test_exception_is_serialized(self):
-        try:
-            raise ValueError('boom')
-        except ValueError:
-            record = logging.LogRecord(
-                'x', logging.ERROR, __file__, 1, 'failed', (), sys.exc_info()
-            )
+        error = ValueError('boom')
+        record = logging.LogRecord(
+            'x', logging.ERROR, __file__, 1, 'failed', (), (ValueError, error, None)
+        )
         data = self._format(record)
         self.assertIn('ValueError: boom', data['exception'])
 
