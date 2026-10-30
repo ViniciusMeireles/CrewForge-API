@@ -1,5 +1,6 @@
 import logging
-from smtplib import SMTPException
+import socket
+from smtplib import SMTPConnectError
 
 from celery import shared_task
 from django.conf import settings
@@ -15,7 +16,7 @@ ALLOWED_EMAIL_MODULES = ('apps.accounts.emails.',)
 
 @shared_task(
     bind=True,
-    autoretry_for=(SMTPException, OSError),
+    autoretry_for=(SMTPConnectError, ConnectionRefusedError, socket.gaierror),
     retry_backoff=True,
     max_retries=3,
     ignore_result=True,

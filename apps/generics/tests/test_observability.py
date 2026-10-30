@@ -4,7 +4,7 @@ import sys
 import uuid
 from unittest import mock
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -51,6 +51,20 @@ class RequestIdTestCase(APITestCase):
         self.assertEqual(record.request_id, 'late-1')
         self.assertNotIn('request', json.loads(JsonFormatter().format(record)))
 
+    @override_settings(CORS_ALLOWED_ORIGINS=['https://spa.example.com'])
+    def test_id_is_readable_and_sendable_cross_origin(self):
+        response = self.client.get(
+            self._session_url(), HTTP_ORIGIN='https://spa.example.com'
+        )
+        self.assertIn('x-request-id', response['Access-Control-Expose-Headers'].lower())
+        preflight = self.client.options(
+            self._session_url(),
+            HTTP_ORIGIN='https://spa.example.com',
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD='GET',
+            HTTP_ACCESS_CONTROL_REQUEST_HEADERS='x-request-id',
+        )
+        self.assertIn('x-request-id', preflight['Access-Control-Allow-Headers'].lower())
+
     def test_id_is_cleared_after_the_request(self):
         self.client.get(self._session_url(), HTTP_X_REQUEST_ID='abc-123')
         self.assertEqual(request_id_var.get(), '')
@@ -85,6 +99,11 @@ class JsonLoggingTestCase(SimpleTestCase):
         data = self._format(record)
         self.assertEqual(data['level'], 'ERROR')
         self.assertEqual(data['message_extra'], 'kept')
+
+    def test_stack_info_is_serialized(self):
+        record = logging.LogRecord('x', logging.WARNING, __file__, 1, 'm', (), None)
+        record.stack_info = 'Stack (most recent call last):\n  here'
+        self.assertIn('here', self._format(record)['stack'])
 
     def test_exception_is_serialized(self):
         try:

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from smtplib import SMTPException
+from smtplib import SMTPConnectError, SMTPServerDisconnected
 from unittest import mock
 
 from celery.schedules import crontab
@@ -54,11 +54,20 @@ class SendEmailTaskTestCase(TestCase):
     def test_retries_transient_failures(self):
         with mock.patch(
             'apps.generics.mails.bases.EmailBase.send',
-            side_effect=[SMTPException('down'), SMTPException('down'), 1],
+            side_effect=[SMTPConnectError(421, 'down'), ConnectionRefusedError(), 1],
         ) as send:
             result = self._run(self.email_path)
         self.assertTrue(result.successful())
         self.assertEqual(send.call_count, 3)
+
+    def test_does_not_resend_after_a_mid_session_failure(self):
+        with mock.patch(
+            'apps.generics.mails.bases.EmailBase.send',
+            side_effect=SMTPServerDisconnected('lost'),
+        ) as send:
+            result = self._run(self.email_path)
+        self.assertFalse(result.successful())
+        self.assertEqual(send.call_count, 1)
 
     def test_refuses_classes_outside_the_allowlist(self):
         with (

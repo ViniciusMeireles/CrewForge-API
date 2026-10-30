@@ -37,4 +37,6 @@ class JsonFormatter(logging.Formatter):
                 data.setdefault(key, value)
         if record.exc_info:
             data['exception'] = self.formatException(record.exc_info)
+        if record.stack_info:
+            data['stack'] = self.formatStack(record.stack_info)
         return json.dumps(data, default=str)

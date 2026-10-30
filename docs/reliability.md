@@ -212,8 +212,9 @@ Celery beat (`CELERY_BEAT_SCHEDULE` in `config/settings/base.py`) runs:
 | `apps.accounts.tasks.clear_sessions` | `clearsessions` | daily 03:15 |
 | `apps.accounts.tasks.expire_invitations` | `expire_invites` | hourly |
 
-`send_email` retries SMTP and network failures (`SMTPException`, `OSError`) up
-to 3 times with backoff, and refuses email classes outside `apps.accounts.emails`.
+`send_email` retries failures to reach the SMTP server (`SMTPConnectError`,
+refused connection, DNS) up to 3 times with backoff; failures after the session
+started are not retried, so a message the server may have accepted is never sent twice. It refuses email classes outside `apps.accounts.emails`.
 
 ---
 

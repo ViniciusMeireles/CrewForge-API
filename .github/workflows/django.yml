@@ -117,14 +117,6 @@ jobs:
         uv run pytest --cov-report=xml --cov-report=json \
           --junitxml=pytest.xml --reuse-db -n auto
 
-    - name: Check coverage threshold
-      run: |
-        python3 -c "import json; print('Coverage:', json.load(open('coverage.json'))['totals']['percent_covered'])"
-        python3 -c "import json,sys; sys.exit(0 if json.load(open('coverage.json'))['totals']['percent_covered'] >= 88 else 1)" || {
-          echo "Coverage is below the 88% threshold" >&2
-          exit 1
-        }
-
     - name: Upload coverage artifacts
       uses: actions/upload-artifact@v7
       with:
@@ -134,6 +126,14 @@ jobs:
           coverage.json
           pytest.xml
         if-no-files-found: error
+
+    - name: Check coverage threshold
+      run: |
+        python3 -c "import json; print('Coverage:', json.load(open('coverage.json'))['totals']['percent_covered'])"
+        python3 -c "import json,sys; sys.exit(0 if json.load(open('coverage.json'))['totals']['percent_covered'] >= 88 else 1)" || {
+          echo "Coverage is below the 88% threshold" >&2
+          exit 1
+        }
 
   coverage:
     name: Coverage Report

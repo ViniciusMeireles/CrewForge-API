@@ -393,7 +393,9 @@ CORS_ALLOW_HEADERS = (
     *default_cors_headers,
     AUTH_TRANSPORT_HEADER.lower(),
     'accept-language',
+    'x-request-id',
 )
+CORS_EXPOSE_HEADERS = ['x-request-id']
 
 SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
 CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'Lax')
