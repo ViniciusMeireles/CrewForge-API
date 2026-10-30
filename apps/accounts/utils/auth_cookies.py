@@ -5,8 +5,6 @@ from rest_framework.authentication import CSRFCheck
 from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.settings import api_settings as jwt_settings
 
-from apps.generics.tokens import AUTH_TOKEN_FIELD, TOKEN_FIELDS
-
 COOKIE_TRANSPORT = 'cookie'
 
 
@@ -70,8 +68,7 @@ def refresh_cookie(request) -> str | None:
 
 
 def pop_tokens(container: dict) -> tuple[str | None, str | None]:
-    access, refresh = TOKEN_FIELDS
-    return container.pop(access, None), container.pop(refresh, None)
+    return container.pop('access', None), container.pop('refresh', None)
 
 
 def move_tokens_to_cookies(request, response, container: dict | None):
@@ -85,5 +82,5 @@ def move_auth_token_to_cookies(request, response, user_data: dict | None):
     """In cookie transport, move ``user_data['auth_token']`` to cookies."""
     if user_data is None or not wants_cookie_transport(request):
         return response
-    tokens = user_data.pop(AUTH_TOKEN_FIELD, None) or {}
+    tokens = user_data.pop('auth_token', None) or {}
     return set_auth_cookies(response, tokens.get('access'), tokens.get('refresh'))

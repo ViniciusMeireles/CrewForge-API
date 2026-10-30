@@ -51,9 +51,12 @@ class ResponseComponentsTestCase(SimpleTestCase):
             ('Signup', {'access', 'refresh'}),
             ('UserCreateSignup', {'auth_token'}),
             ('UserCreateWithInvite', {'auth_token'}),
+            ('TokenRefresh', {'access', 'refresh'}),
         ):
             with self.subTest(component=name):
-                self.assertFalse(fields & set(self.components[name]['required']))
+                self.assertFalse(
+                    fields & set(self.components[name].get('required', []))
+                )
 
     def test_non_token_fields_named_like_tokens_stay_required(self):
         self.assertIn('access', self.components['MemberSession']['required'])

@@ -33,6 +33,7 @@ def get_context_invitation(serializer) -> Invitation:
 
 class UserCreateWithInviteSerializer(UserSerializer):
     auth_token = UserTokenSerializer(source='*', read_only=True)
+    cookie_transport_fields = ('auth_token',)
 
     class Meta:
         model = User

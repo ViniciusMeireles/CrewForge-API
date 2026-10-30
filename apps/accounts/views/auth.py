@@ -116,6 +116,13 @@ class TokenObtainPairView(AuthThrottleMixin, TokenObtainPairViewBase):
         name='TokenRefreshRequest',
         fields={'refresh': serializers.CharField(required=False)},
     ),
+    responses=inline_serializer(
+        name='TokenRefresh',
+        fields={
+            'access': serializers.CharField(required=False),
+            'refresh': serializers.CharField(required=False),
+        },
+    ),
     summary=_('Refresh tokens'),
     description=_(
         'Rotate the refresh token. Send `refresh` in the body (Bearer clients) or '

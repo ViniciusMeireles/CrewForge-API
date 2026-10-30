@@ -9548,7 +9548,6 @@ components:
       properties:
         access:
           type: string
-          readOnly: true
         refresh:
           type: string
     TokenRefreshRequestRequest:

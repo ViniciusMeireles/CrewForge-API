@@ -18,6 +18,7 @@ User = get_user_model()
 
 class UserCreateSignupSerializer(UserSerializer):
     auth_token = UserTokenSerializer(source='*', read_only=True)
+    cookie_transport_fields = ('auth_token',)
 
     class Meta(UserSerializer.Meta):
         model = User

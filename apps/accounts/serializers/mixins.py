@@ -34,6 +34,7 @@ class UserTokenSerializerMixin(metaclass=SerializerMetaclass):
     """
 
     AUTO_SET_TOKEN = False
+    cookie_transport_fields = ('access', 'refresh')
 
     refresh = serializers.SerializerMethodField()
     access = serializers.SerializerMethodField()
