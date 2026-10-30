@@ -44,6 +44,17 @@ class ResponseComponentsTestCase(SimpleTestCase):
         self.assertEqual(metadata['type'], 'object')
         self.assertIn('additionalProperties', metadata)
 
+    def test_tokens_moved_to_cookies_are_optional_in_bodies(self):
+        for name, fields in (
+            ('TokenObtainPair', {'access', 'refresh'}),
+            ('InvitationAcceptSuccess', {'access', 'refresh'}),
+            ('Signup', {'access', 'refresh'}),
+            ('UserCreateSignup', {'auth_token'}),
+            ('UserCreateWithInvite', {'auth_token'}),
+        ):
+            with self.subTest(component=name):
+                self.assertFalse(fields & set(self.components[name]['required']))
+
     def test_patched_request_components_require_nothing(self):
         patched = self.components['PatchedMemberUpdateRequest']
         self.assertNotIn('required', patched)

@@ -1,0 +1,3 @@
+TOKEN_FIELDS = ('access', 'refresh')
+AUTH_TOKEN_FIELD = 'auth_token'
+BODY_TOKEN_FIELDS = (*TOKEN_FIELDS, AUTH_TOKEN_FIELD)
