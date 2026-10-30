@@ -30,14 +30,14 @@ RUN for po in locale/*/LC_MESSAGES/*.po; do \
         msgfmt -c --check-format -o "${po%.po}.mo" "$po"; \
     done
 
-# Static files and catalogs are part of the immutable image (read-only at runtime).
 RUN DJANGO_SETTINGS_MODULE=config.settings.base DJANGO_SECRET_KEY=build-only-unused \
     python manage.py collectstatic --noinput
 
 RUN groupadd -g ${GROUP_ID} ${USER_NAME} \
     && useradd -u ${USER_ID} -g ${GROUP_ID} -d /app -s /bin/sh -m ${USER_NAME} \
     && mkdir -p /media \
-    && chown ${USER_NAME}:${USER_NAME} /media
+    && chown ${USER_NAME}:${USER_NAME} /media \
+    && chown -R ${USER_NAME}:${USER_NAME} /staticfiles
 
 RUN chown -R ${USER_NAME}:${USER_NAME} /app
 USER ${USER_NAME}

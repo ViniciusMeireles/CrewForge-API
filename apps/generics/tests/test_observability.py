@@ -35,12 +35,15 @@ class RequestIdTestCase(APITestCase):
         self.assertNotEqual(response['X-Request-ID'], 'bad id\nwith newline')
         uuid.UUID(response['X-Request-ID'])
 
+    def test_trailing_newline_id_is_replaced(self):
+        response = self.client.get(self._session_url(), HTTP_X_REQUEST_ID='abc\n')
+        uuid.UUID(response['X-Request-ID'])
+
     def test_probes_carry_the_id(self):
         response = self.client.get('/healthz', HTTP_X_REQUEST_ID='probe-1')
         self.assertEqual(response['X-Request-ID'], 'probe-1')
 
     def test_django_request_logs_carry_the_id(self):
-        # django.request logs 4xx after the middleware chain has returned.
         with self.assertLogs('django.request', level='WARNING') as logs:
             self.client.get('/api/does-not-exist/', HTTP_X_REQUEST_ID='late-1')
         record = logs.records[-1]
@@ -74,6 +77,14 @@ class JsonLoggingTestCase(SimpleTestCase):
         self.assertEqual(data['request_id'], 'req-1')
         self.assertEqual(data['security_event'], {'event': 'x'})
         self.assertIn('timestamp', data)
+
+    def test_extra_fields_do_not_override_core_keys(self):
+        record = logging.LogRecord('x', logging.ERROR, __file__, 1, 'real', (), None)
+        record.level = 'DEBUG'
+        record.message_extra = 'kept'
+        data = self._format(record)
+        self.assertEqual(data['level'], 'ERROR')
+        self.assertEqual(data['message_extra'], 'kept')
 
     def test_exception_is_serialized(self):
         try:

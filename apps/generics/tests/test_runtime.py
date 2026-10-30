@@ -5,6 +5,7 @@ from unittest import mock
 from django.conf import settings
 from django.db import OperationalError
 from django.test import SimpleTestCase, override_settings
+from redis.exceptions import ConnectionError as RedisConnectionError
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
@@ -33,8 +34,14 @@ class HealthEndpointsTestCase(APITestCase):
 
     def test_readyz_unavailable_when_cache_is_down(self):
         with mock.patch(
-            'apps.generics.middleware.cache.set', side_effect=ConnectionError('down')
+            'apps.generics.middleware.cache.set',
+            side_effect=RedisConnectionError('down'),
         ):
+            response = self.client.get('/readyz')
+        self.assertEqual(response.status_code, http_status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    def test_readyz_unavailable_when_cache_loses_writes(self):
+        with mock.patch('apps.generics.middleware.cache.get', return_value=None):
             response = self.client.get('/readyz')
         self.assertEqual(response.status_code, http_status.HTTP_503_SERVICE_UNAVAILABLE)
 
@@ -63,9 +70,14 @@ class StartupScriptsTestCase(SimpleTestCase):
     def test_migrate_script_only_migrates(self):
         script = (PROJECT / 'migrate.sh').read_text()
         self.assertIn('migrate --noinput', script)
-        # A one-shot container's files never reach the API: those belong in the image.
         self.assertNotIn('collectstatic', script)
         self.assertNotIn('compilemessages', script)
+
+    def test_image_static_root_is_writable_by_the_app_user(self):
+        dockerfile = (PROJECT / 'Dockerfile').read_text()
+        self.assertRegex(
+            dockerfile, r'chown -R \$\{USER_NAME\}:\$\{USER_NAME\} [^\n]*/staticfiles'
+        )
 
     def test_image_ships_static_files_and_catalogs(self):
         dockerfile = (PROJECT / 'Dockerfile').read_text()

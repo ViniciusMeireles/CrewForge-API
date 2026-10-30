@@ -141,7 +141,7 @@ and the HTTPS redirect) answers two unauthenticated `GET` probes:
 | Path | Checks | Response |
 |---|---|---|
 | `/healthz` | The process answers | `200 {"status": "ok"}` |
-| `/readyz` | `SELECT 1` and a cache set/get | `200 {"status": "ok"}` or `503 {"status": "unavailable"}` |
+| `/readyz` | `SELECT 1` and a cache write read back | `200 {"status": "ok"}` or `503 {"status": "unavailable"}` |
 
 They reveal nothing else, are never throttled and accept any `Host`, so the
 image `HEALTHCHECK` and orchestrators can call `127.0.0.1:8000`.
@@ -158,13 +158,14 @@ Django logs one JSON object per line on stdout (`apps.generics.logging.JsonForma
 ```
 
 Extra attributes (`extra={...}`, such as `security_event`) become keys, and
-exceptions go under `exception`. Gunicorn's own process and access lines keep
-Gunicorn's format (they do not start with `{`).
+exceptions go under `exception`; extras never override the core keys. Celery
+keeps this root logger (`CELERY_WORKER_HIJACK_ROOT_LOGGER = False`). Gunicorn's
+own process and access lines keep Gunicorn's format (they do not start with `{`).
 
 ### Request ID
 
 `RequestIdMiddleware` keeps an incoming `X-Request-ID` that matches
-`^[A-Za-z0-9._-]{1,64}$`, otherwise generates a UUID. It echoes the id in the
+`[A-Za-z0-9._-]{1,64}` (whole value), otherwise generates a UUID. It echoes the id in the
 response and adds it to every log line of the request (`request_id`), including
 the `django.request` lines written after the middleware chain returns.
 

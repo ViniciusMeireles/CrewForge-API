@@ -138,7 +138,7 @@ if os.environ.get('SECURE_PROXY_SSL_HEADER', 'False').lower() == 'true':
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
-        conn_max_age=int(os.environ.get('CONN_MAX_AGE', 60)),
+        conn_max_age=int(os.environ.get('CONN_MAX_AGE') or 60),
         conn_health_checks=True,
     )
 }
@@ -432,6 +432,8 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+
 CELERY_BEAT_SCHEDULE = {
     'flush-expired-tokens': {
         'task': 'apps.accounts.tasks.flush_expired_tokens',

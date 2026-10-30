@@ -4,6 +4,7 @@ import uuid
 from django.core.cache import cache
 from django.db import DatabaseError, connection
 from django.http import JsonResponse
+from redis.exceptions import RedisError
 
 from apps.generics.logging import request_id_var
 
@@ -16,10 +17,9 @@ def _ready() -> bool:
         with connection.cursor() as cursor:
             cursor.execute('SELECT 1')
         cache.set('readyz', 1, 5)
-        cache.get('readyz')
-    except DatabaseError, ConnectionError, OSError:
+        return cache.get('readyz') == 1
+    except DatabaseError, RedisError, ConnectionError, OSError:
         return False
-    return True
 
 
 class HealthCheckMiddleware:
@@ -39,7 +39,7 @@ class HealthCheckMiddleware:
 
 
 REQUEST_ID_HEADER = 'X-Request-ID'
-VALID_REQUEST_ID = re.compile(r'^[A-Za-z0-9._-]{1,64}$')
+VALID_REQUEST_ID = re.compile(r'[A-Za-z0-9._-]{1,64}')
 
 
 class RequestIdMiddleware:
@@ -50,7 +50,9 @@ class RequestIdMiddleware:
 
     def __call__(self, request):
         incoming = request.headers.get(REQUEST_ID_HEADER, '')
-        request_id = incoming if VALID_REQUEST_ID.match(incoming) else str(uuid.uuid4())
+        request_id = (
+            incoming if VALID_REQUEST_ID.fullmatch(incoming) else str(uuid.uuid4())
+        )
         request.request_id = request_id
         token = request_id_var.set(request_id)
         try:

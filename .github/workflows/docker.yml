@@ -1,6 +1,5 @@
 name: Docker
 
-# Publishes only images whose commit passed Django CI on a push (main or a v* tag).
 on:
   workflow_run:
     workflows: ['Django CI']
@@ -37,7 +36,6 @@ jobs:
       - uses: docker/metadata-action@v6
         id: meta
         with:
-          # Read the checked-out commit, not the workflow_run default-branch context.
           context: git
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |

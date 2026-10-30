@@ -81,6 +81,19 @@ class SharedInfrastructureSettingsTestCase(SimpleTestCase):
             ['django.core.cache.backends.redis.RedisCache', '60', 'True', 'False'],
         )
 
+    def test_empty_conn_max_age_uses_the_default(self):
+        result = run_python(
+            'import config.settings.base as b; '
+            'print(b.DATABASES["default"]["CONN_MAX_AGE"])',
+            DATABASE_URL='postgres://u:p@localhost:5432/db',
+            CONN_MAX_AGE='',
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.split()[-1], '60')
+
+    def test_celery_keeps_the_json_root_logger(self):
+        self.assertFalse(settings.CELERY_WORKER_HIJACK_ROOT_LOGGER)
+
     def test_testing_settings_flag_tests(self):
         self.assertTrue(settings.TESTING)
 
