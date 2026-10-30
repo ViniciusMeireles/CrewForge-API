@@ -749,16 +749,23 @@ All API errors follow a consistent JSON envelope:
 request (`pt-BR` or `en`, default `en`). `code` and `details` keys are stable
 identifiers — never match on `message`, always match on `code`.
 
+Every response carries an `X-Request-ID` header (exposed through CORS). The
+SPA may send its own (`[A-Za-z0-9._-]`, up to 64 characters) or let the API
+generate one; showing it next to an unexpected error lets support find the
+request in the API logs.
+
 ### 13.2. Error Codes
 
 | Error code | HTTP status | `details` value |
 |---|---|---|
 | `VALIDATION_ERROR` | 400 | Per-field dictionary |
+| `PARSE_ERROR` | 400 | `null` — malformed request body (invalid JSON) |
 | `AUTHENTICATION_ERROR` | 401 | `null` |
 | `PERMISSION_DENIED` | 403 | `null` |
 | `NOT_FOUND` | 404 | `null` |
 | `METHOD_NOT_ALLOWED` | 405 | `null` |
 | `NOT_ACCEPTABLE` | 406 | `null` |
+| `UNSUPPORTED_MEDIA_TYPE` | 415 | `null` — the `Content-Type` is not accepted by the endpoint |
 | `ACCOUNT_BLOCKED` | 401 | `null` — correct password (or refresh / access token) of a blocked account; message "Your account is blocked. Contact support." |
 | `ORGANIZATION_SUSPENDED` | 403 | `null` — the session's Organization is suspended; the API has already dropped it from the session (go back to the Organization selection) |
 | `INVALID_STATE` | 409 | `null` — the action does not apply to the current state (already suspended, not blocked, own account…); `message` is user-facing |
