@@ -5,16 +5,22 @@ from datetime import UTC, datetime
 
 request_id_var: ContextVar[str] = ContextVar('request_id', default='')
 
+# ``request`` is the HttpRequest django.request attaches: not serializable.
 _STANDARD_ATTRIBUTES = set(logging.LogRecord('', 0, '', 0, '', (), None).__dict__) | {
     'message',
     'asctime',
     'request_id',
+    'request',
 }
 
 
 class RequestIdFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        record.request_id = request_id_var.get()
+        # django.request logs after the middleware chain returned and reset the
+        # context, so fall back to the id stored on the request it attaches.
+        record.request_id = request_id_var.get() or getattr(
+            getattr(record, 'request', None), 'request_id', ''
+        )
         return True
 
 

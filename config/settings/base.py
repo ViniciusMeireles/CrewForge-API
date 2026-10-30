@@ -83,8 +83,8 @@ MIDDLEWARE_LOCAL = []
 
 MIDDLEWARE = (
     [
-        'apps.generics.middleware.HealthCheckMiddleware',
         'apps.generics.middleware.RequestIdMiddleware',
+        'apps.generics.middleware.HealthCheckMiddleware',
     ]
     + MIDDLEWARE_THIRD_PARTY
     + MIDDLEWARE_DJANGO
@@ -335,6 +335,8 @@ SPECTACULAR_SETTINGS = {
     ],
     'ENUM_NAME_OVERRIDES': {
         'StoredFileAccess': 'apps.accounts.choices.StoredFileAccess',
+        'InvitationStatusEnum': 'apps.accounts.choices.InvitationStatusChoices',
+        'OrganizationStatusEnum': 'apps.accounts.choices.OrganizationStatusChoices',
     },
     'SERVE_PERMISSIONS': ['apps.generics.permissions.ApiDocsPermission'],
     'SERVE_AUTHENTICATION': [

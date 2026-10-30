@@ -35,6 +35,19 @@ class RequestIdTestCase(APITestCase):
         self.assertNotEqual(response['X-Request-ID'], 'bad id\nwith newline')
         uuid.UUID(response['X-Request-ID'])
 
+    def test_probes_carry_the_id(self):
+        response = self.client.get('/healthz', HTTP_X_REQUEST_ID='probe-1')
+        self.assertEqual(response['X-Request-ID'], 'probe-1')
+
+    def test_django_request_logs_carry_the_id(self):
+        # django.request logs 4xx after the middleware chain has returned.
+        with self.assertLogs('django.request', level='WARNING') as logs:
+            self.client.get('/api/does-not-exist/', HTTP_X_REQUEST_ID='late-1')
+        record = logs.records[-1]
+        RequestIdFilter().filter(record)
+        self.assertEqual(record.request_id, 'late-1')
+        self.assertNotIn('request', json.loads(JsonFormatter().format(record)))
+
     def test_id_is_cleared_after_the_request(self):
         self.client.get(self._session_url(), HTTP_X_REQUEST_ID='abc-123')
         self.assertEqual(request_id_var.get(), '')
