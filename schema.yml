@@ -5622,10 +5622,8 @@ components:
         readmitted:
           type: boolean
       required:
-      - access
       - member_id
       - readmitted
-      - refresh
     InvitationByKey:
       type: object
       properties:
@@ -6166,7 +6164,6 @@ components:
           nullable: true
           description: Last time the member logged into the organization
       required:
-      - access
       - id
       - last_login_at
       - nickname
@@ -8821,7 +8818,6 @@ components:
           nullable: true
           description: User who last updated the record
       required:
-      - access
       - created_at
       - created_by
       - id
@@ -8830,7 +8826,6 @@ components:
       - last_login_at
       - nickname
       - organization
-      - refresh
       - role
       - updated_at
       - updated_by
@@ -9531,9 +9526,7 @@ components:
           - $ref: '#/components/schemas/UserReady'
           readOnly: true
       required:
-      - access
       - auth_user
-      - refresh
     TokenObtainPairRequest:
       type: object
       description: Mixin to add access and refresh token fields to a serializer.
@@ -9557,9 +9550,6 @@ components:
           readOnly: true
         refresh:
           type: string
-      required:
-      - access
-      - refresh
     TokenRefreshRequestRequest:
       type: object
       properties:
@@ -9640,7 +9630,6 @@ components:
           type: string
           maxLength: 150
       required:
-      - auth_token
       - email
       - first_name
       - id
@@ -9708,7 +9697,6 @@ components:
           - $ref: '#/components/schemas/UserToken'
           readOnly: true
       required:
-      - auth_token
       - email
       - first_name
       - id
@@ -9833,9 +9821,6 @@ components:
           nullable: true
           description: Return the access token.
           readOnly: true
-      required:
-      - access
-      - refresh
     UserUpdate:
       type: object
       description: 'Read-only User of a Member update: identity is changed by the
