@@ -1,7 +1,7 @@
-import importlib
 import os
 import runpy
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 from unittest import mock
 
@@ -24,14 +24,15 @@ PRODUCTION_ENV = {
 }
 
 
-def load_settings(module: str, unset=(), **env):
+@contextmanager
+def fresh_settings(unset=(), **env):
     with mock.patch.dict(os.environ, env), mock.patch.dict(sys.modules):
         for key in ('DJANGO_SETTINGS_MODULE', 'CONN_MAX_AGE', *unset):
             if key not in env:
                 os.environ.pop(key, None)
         for name in [m for m in sys.modules if m.startswith('config.settings.')]:
             del sys.modules[name]
-        return importlib.import_module(module)
+        yield
 
 
 class EntrypointDefaultsTestCase(SimpleTestCase):
@@ -46,11 +47,15 @@ class EntrypointDefaultsTestCase(SimpleTestCase):
 
     def test_production_requires_media_root(self):
         env = {k: v for k, v in PRODUCTION_ENV.items() if k != 'MEDIA_ROOT'}
-        with self.assertRaisesMessage(ImproperlyConfigured, 'MEDIA_ROOT'):
-            load_settings('config.settings.production', unset=('MEDIA_ROOT',), **env)
+        with (
+            fresh_settings(unset=('MEDIA_ROOT',), **env),
+            self.assertRaisesMessage(ImproperlyConfigured, 'MEDIA_ROOT'),
+        ):
+            import config.settings.production  # noqa: F401
 
     def test_production_loads_with_required_env(self):
-        production = load_settings('config.settings.production', **PRODUCTION_ENV)
+        with fresh_settings(**PRODUCTION_ENV):
+            import config.settings.production as production
         self.assertFalse(production.DEBUG)
         self.assertEqual(production.MEDIA_ROOT, '/srv/media')
 
@@ -66,9 +71,8 @@ class EntrypointDefaultsTestCase(SimpleTestCase):
 
 class SharedInfrastructureSettingsTestCase(SimpleTestCase):
     def test_base_uses_redis_cache_and_connection_reuse(self):
-        base = load_settings(
-            'config.settings.base', DATABASE_URL=PRODUCTION_ENV['DATABASE_URL']
-        )
+        with fresh_settings(DATABASE_URL=PRODUCTION_ENV['DATABASE_URL']):
+            import config.settings.base as base
         self.assertEqual(
             base.CACHES['default']['BACKEND'],
             'django.core.cache.backends.redis.RedisCache',
@@ -78,11 +82,10 @@ class SharedInfrastructureSettingsTestCase(SimpleTestCase):
         self.assertFalse(base.TESTING)
 
     def test_empty_conn_max_age_uses_the_default(self):
-        base = load_settings(
-            'config.settings.base',
-            DATABASE_URL=PRODUCTION_ENV['DATABASE_URL'],
-            CONN_MAX_AGE='',
-        )
+        with fresh_settings(
+            DATABASE_URL=PRODUCTION_ENV['DATABASE_URL'], CONN_MAX_AGE=''
+        ):
+            import config.settings.base as base
         self.assertEqual(base.DATABASES['default']['CONN_MAX_AGE'], 60)
 
     def test_celery_keeps_the_json_root_logger(self):
