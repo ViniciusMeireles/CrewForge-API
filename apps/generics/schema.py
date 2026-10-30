@@ -2,7 +2,13 @@ from drf_spectacular.openapi import AutoSchema as SpectacularAutoSchema
 from rest_framework.serializers import ModelSerializer
 
 from apps.generics.serializers.options import OptionsSerializer
-from apps.generics.tokens import BODY_TOKEN_FIELDS
+from apps.generics.tokens import AUTH_TOKEN_FIELD, TOKEN_FIELDS
+
+
+def _is_body_token(name: str, schema: dict) -> bool:
+    if name == AUTH_TOKEN_FIELD:
+        return True
+    return name in TOKEN_FIELDS and schema.get('type') == 'string'
 
 
 class AutoSchema(SpectacularAutoSchema):
@@ -22,8 +28,11 @@ class AutoSchema(SpectacularAutoSchema):
         ):
             component['required'] = sorted(component['properties'])
         if direction == 'response' and component.get('required'):
+            properties = component['properties']
             component['required'] = [
-                name for name in component['required'] if name not in BODY_TOKEN_FIELDS
+                name
+                for name in component['required']
+                if not _is_body_token(name, properties[name])
             ]
             if not component['required']:
                 del component['required']

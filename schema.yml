@@ -6164,6 +6164,7 @@ components:
           nullable: true
           description: Last time the member logged into the organization
       required:
+      - access
       - id
       - last_login_at
       - nickname

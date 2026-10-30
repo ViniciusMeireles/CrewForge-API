@@ -55,6 +55,9 @@ class ResponseComponentsTestCase(SimpleTestCase):
             with self.subTest(component=name):
                 self.assertFalse(fields & set(self.components[name]['required']))
 
+    def test_non_token_fields_named_like_tokens_stay_required(self):
+        self.assertIn('access', self.components['MemberSession']['required'])
+
     def test_patched_request_components_require_nothing(self):
         patched = self.components['PatchedMemberUpdateRequest']
         self.assertNotIn('required', patched)
