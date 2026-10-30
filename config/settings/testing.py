@@ -1,5 +1,9 @@
 from .local import *  # noqa
 
+TESTING = True
+
+CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}}
+
 CELERY_BROKER_URL = 'memory://'
 CELERY_RESULT_BACKEND = 'cache+memory://'
 CELERY_TASK_ALWAYS_EAGER = True
@@ -23,7 +27,7 @@ REST_FRAMEWORK = {
 
 LOGGING = {
     **LOGGING,  # noqa: F405
-    'handlers': {'security': {'class': 'logging.NullHandler'}},
+    'handlers': {'console': {'class': 'logging.NullHandler'}},
 }
 
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']

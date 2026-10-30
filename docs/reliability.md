@@ -12,8 +12,10 @@ performance guidelines, caching, logging, and observability.
 - [Performance Guidelines](#performance-guidelines)
 - [Database Transactions](#database-transactions)
 - [Caching](#caching)
+- [Health Probes](#health-probes)
 - [Logging](#logging)
 - [Sentry Integration](#sentry-integration)
+- [Housekeeping](#housekeeping)
 - [Rate Limiting](#rate-limiting)
 
 ---
@@ -60,8 +62,10 @@ All API errors use a standardized JSON envelope implemented by
 | `AUTHENTICATION_ERROR` | 401 | `null` |
 | `PERMISSION_DENIED` | 403 | `null` |
 | `NOT_FOUND` | 404 | `null` |
+| `PARSE_ERROR` | 400 | `null` (malformed body) |
 | `METHOD_NOT_ALLOWED` | 405 | `null` |
 | `NOT_ACCEPTABLE` | 406 | `null` |
+| `UNSUPPORTED_MEDIA_TYPE` | 415 | `null` |
 | `THROTTLED` | 429 | `null` |
 | `INTERNAL_ERROR` | 500 | `null` |
 
@@ -104,10 +108,14 @@ All API errors use a standardized JSON envelope implemented by
 
 ## Caching
 
-Caching is planned for future implementation. When implemented, follow:
+The default cache is Redis (`CACHE_URL`, default `redis://redis:6379/1`), shared
+by every process, so throttle counters and cooldowns hold across Gunicorn workers
+and Celery. Tests use `LocMemCache`. Database connections are reused for
+`CONN_MAX_AGE` seconds (default `60`) with health checks.
+
+Response caching is not used yet. When it is:
 
 - Add cache only after profiling identifies bottlenecks.
-- Use Redis as cache backend.
 - Implement cache invalidation on model changes.
 - Cache key naming: `crewforge:{app}:{model}:{action}:{identifier}`
 
@@ -115,7 +123,6 @@ Caching is planned for future implementation. When implemented, follow:
 
 | Data type | TTL |
 |---|---|
-| Sessions | 15 min |
 | List endpoints | 5-15 min |
 | Detail endpoints | 5 min |
 
@@ -126,15 +133,51 @@ Caching is planned for future implementation. When implemented, follow:
 
 ---
 
+## Health Probes
+
+`HealthCheckMiddleware` (after `RequestIdMiddleware`, before host validation
+and the HTTPS redirect) answers two unauthenticated `GET` probes:
+
+| Path | Checks | Response |
+|---|---|---|
+| `/healthz` | The process answers | `200 {"status": "ok"}` |
+| `/readyz` | `SELECT 1` and a cache write read back | `200 {"status": "ok"}` or `503 {"status": "unavailable"}` |
+
+They reveal nothing else, are never throttled and accept any `Host`, so the
+image `HEALTHCHECK` and orchestrators can call `127.0.0.1:8000`.
+
+---
+
 ## Logging
+
+Django logs one JSON object per line on stdout (`apps.generics.logging.JsonFormatter`):
+
+```json
+{"timestamp": "2026-10-30T01:16:01+00:00", "level": "WARNING", "logger": "django.request",
+ "message": "Unauthorized: /api/accounts/invitations/999/", "request_id": "smoke-6", "status_code": 401}
+```
+
+Extra attributes (`extra={...}`, such as `security_event`) become keys, and
+exceptions go under `exception`; extras never override the core keys. Celery
+keeps this root logger (`CELERY_WORKER_HIJACK_ROOT_LOGGER = False`). Gunicorn's
+own process and access lines keep Gunicorn's format (they do not start with `{`).
+
+### Request ID
+
+`RequestIdMiddleware` keeps an incoming `X-Request-ID` that matches
+`[A-Za-z0-9._-]{1,64}` (whole value), otherwise generates a UUID. It echoes the id in the
+response and adds it to every log line of the request (`request_id`), including
+the `django.request` lines written after the middleware chain returns.
 
 ### Standards
 
 - Use `logging.getLogger(__name__)` for all loggers.
 - Never log passwords, tokens, or sensitive data.
-- Add `request_id` or `correlation_id` to API request logs for tracing.
+- Client errors (4xx) log no traceback; the exception handler logs a traceback
+  only for 5xx responses.
 - Authentication events use `log_security_event()` (`security` logger); see
   [`security.md`](./security.md#security-logging).
+- Levels: `LOG_LEVEL` (root, default `INFO`) and `SECURITY_LOG_LEVEL`.
 
 ### Log Levels
 
@@ -143,21 +186,35 @@ Caching is planned for future implementation. When implemented, follow:
 | `DEBUG` | Query strings, debug variables |
 | `INFO` | CRUD operations, login/logout |
 | `WARNING` | Unexpected but non-critical situations |
-| `ERROR` | Treated exceptions (send to Sentry) |
-| `CRITICAL` | Critical failures (send to Sentry + alert) |
+| `ERROR` | Treated exceptions (reach Sentry when enabled) |
+| `CRITICAL` | Critical failures (Sentry + alert) |
 
 ---
 
 ## Sentry Integration
 
-When implementing Sentry error tracking, follow these patterns:
+Optional. `config/settings/observability.py` `init_sentry()` runs from the
+production settings and initializes Sentry only when `SENTRY_DSN` is set:
 
-- Sentry SDK initialization goes in `config/settings/base.py` with environment-based config
-- Use `SENTRY_DSN` environment variable to enable/disable (empty = disabled)
-- Create middleware in `apps/generics/middleware/` to add user and organization context
-- Set `send_default_pii=False` to avoid capturing sensitive user data
-- Use different DSNs for production vs development environments
-- See `specs/sentry_integration_spec.md` for detailed implementation guide
+- `send_default_pii=False`: no user data, cookies or headers;
+- `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` (for example the image tag) tag events;
+- unhandled exceptions and `ERROR` log records are reported; empty DSN = disabled.
+
+---
+
+## Housekeeping
+
+Celery beat (`CELERY_BEAT_SCHEDULE` in `config/settings/base.py`) runs:
+
+| Task | Command | Schedule |
+|---|---|---|
+| `apps.accounts.tasks.flush_expired_tokens` | `flushexpiredtokens` | daily 03:00 |
+| `apps.accounts.tasks.clear_sessions` | `clearsessions` | daily 03:15 |
+| `apps.accounts.tasks.expire_invitations` | `expire_invites` | hourly |
+
+`send_email` retries failures to reach the SMTP server (`SMTPConnectError`,
+refused connection, DNS) up to 3 times with backoff; failures after the session
+started are not retried, so a message the server may have accepted is never sent twice. It refuses email classes outside `apps.accounts.emails`.
 
 ---
 

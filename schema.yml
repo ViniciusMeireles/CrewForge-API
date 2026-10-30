@@ -5491,7 +5491,7 @@ components:
           maxLength: 254
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusDe4Enum'
+          - $ref: '#/components/schemas/InvitationStatusEnum'
           readOnly: true
         is_expired:
           type: boolean
@@ -5680,7 +5680,7 @@ components:
           description: Email of the user to invite
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusDe4Enum'
+          - $ref: '#/components/schemas/InvitationStatusEnum'
           readOnly: true
         is_expired:
           type: boolean
@@ -5776,7 +5776,7 @@ components:
           maxLength: 254
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusDe4Enum'
+          - $ref: '#/components/schemas/InvitationStatusEnum'
           readOnly: true
         is_expired:
           type: boolean
@@ -5843,6 +5843,20 @@ components:
       - organization
       - role_label
       - status
+    InvitationStatusEnum:
+      enum:
+      - pending
+      - accepted
+      - declined
+      - expired
+      - revoked
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `accepted` - Accepted
+        * `declined` - Declined
+        * `expired` - Expired
+        * `revoked` - Revoked
     InvitationsSection:
       type: object
       properties:
@@ -6576,7 +6590,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusE75Enum'
+          - $ref: '#/components/schemas/OrganizationStatusEnum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -6640,7 +6654,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusE75Enum'
+          - $ref: '#/components/schemas/OrganizationStatusEnum'
           description: |-
             Suspended organizations cannot be entered
 
@@ -6711,7 +6725,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusE75Enum'
+          - $ref: '#/components/schemas/OrganizationStatusEnum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -6841,6 +6855,14 @@ components:
       - id
       - name
       - slug
+    OrganizationStatusEnum:
+      enum:
+      - active
+      - suspended
+      type: string
+      description: |-
+        * `active` - Active
+        * `suspended` - Suspended
     Overview:
       type: object
       properties:
@@ -7461,7 +7483,7 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusE75Enum'
+          - $ref: '#/components/schemas/OrganizationStatusEnum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -7964,7 +7986,7 @@ components:
           description: Organization name
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusE75Enum'
+          - $ref: '#/components/schemas/OrganizationStatusEnum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -8023,7 +8045,7 @@ components:
           nullable: true
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusE75Enum'
+          - $ref: '#/components/schemas/OrganizationStatusEnum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -8098,7 +8120,7 @@ components:
           nullable: true
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusE75Enum'
+          - $ref: '#/components/schemas/OrganizationStatusEnum'
           readOnly: true
           description: |-
             Suspended organizations cannot be entered
@@ -8728,28 +8750,6 @@ components:
       - updated_at
       - updated_by
       - user
-    StatusDe4Enum:
-      enum:
-      - pending
-      - accepted
-      - declined
-      - expired
-      - revoked
-      type: string
-      description: |-
-        * `pending` - Pending
-        * `accepted` - Accepted
-        * `declined` - Declined
-        * `expired` - Expired
-        * `revoked` - Revoked
-    StatusE75Enum:
-      enum:
-      - active
-      - suspended
-      type: string
-      description: |-
-        * `active` - Active
-        * `suspended` - Suspended
     StoredFileAccess:
       enum:
       - owners_organization

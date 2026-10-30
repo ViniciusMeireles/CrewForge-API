@@ -1,3 +1,5 @@
+from celery import shared_task
+from django.core.management import call_command
 from django.utils.translation import get_language
 
 from apps.generics.tasks import send_email as send_email_task
@@ -60,3 +62,18 @@ def send_organization_notice_email(
         ),
         countdown=1,
     )
+
+
+@shared_task(ignore_result=True)
+def flush_expired_tokens():
+    call_command('flushexpiredtokens')
+
+
+@shared_task(ignore_result=True)
+def clear_sessions():
+    call_command('clearsessions')
+
+
+@shared_task(ignore_result=True)
+def expire_invitations():
+    call_command('expire_invites')

@@ -1,19 +1,15 @@
 import os
-import sys
 import warnings
 from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 from corsheaders.defaults import default_headers as default_cors_headers
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy
-from dotenv import load_dotenv
 
 from .checks import normalize_admin_url
-
-load_dotenv()
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -27,7 +23,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-TESTING = 'test' in sys.argv
+TESTING = False
 ENVIRONMENT = os.getenv('ENVIRONMENT', None)
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
@@ -85,7 +81,15 @@ MIDDLEWARE_THIRD_PARTY = [
 
 MIDDLEWARE_LOCAL = []
 
-MIDDLEWARE = MIDDLEWARE_THIRD_PARTY + MIDDLEWARE_DJANGO + MIDDLEWARE_LOCAL
+MIDDLEWARE = (
+    [
+        'apps.generics.middleware.RequestIdMiddleware',
+        'apps.generics.middleware.HealthCheckMiddleware',
+    ]
+    + MIDDLEWARE_THIRD_PARTY
+    + MIDDLEWARE_DJANGO
+    + MIDDLEWARE_LOCAL
+)
 
 ROOT_URLCONF = 'config.urls'
 
@@ -131,7 +135,20 @@ if os.environ.get('SECURE_PROXY_SSL_HEADER', 'False').lower() == 'true':
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))}
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=int(os.environ.get('CONN_MAX_AGE') or 60),
+        conn_health_checks=True,
+    )
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.environ.get('CACHE_URL', 'redis://redis:6379/1'),
+    }
+}
 
 
 # Password validation
@@ -181,7 +198,7 @@ STATICFILES_DIRS = [
 ]
 
 MEDIA_URL = os.environ.get('MEDIA_URL', '/media/')
-MEDIA_ROOT = os.environ.get('MEDIA_ROOT', '/media/')
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
 
 STORED_FILE_MAX_SIZE = int(os.environ.get('STORED_FILE_MAX_SIZE', 10 * 1024 * 1024))
 STORED_FILE_IMAGE_CONTENT_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
@@ -313,9 +330,13 @@ SPECTACULAR_SETTINGS = {
         'apps.accounts.urls',
         'apps.teams.urls',
         'apps.dashboard.urls',
+        'apps.audit.urls',
+        'apps.platform.urls',
     ],
     'ENUM_NAME_OVERRIDES': {
         'StoredFileAccess': 'apps.accounts.choices.StoredFileAccess',
+        'InvitationStatusEnum': 'apps.accounts.choices.InvitationStatusChoices',
+        'OrganizationStatusEnum': 'apps.accounts.choices.OrganizationStatusChoices',
     },
     'SERVE_PERMISSIONS': ['apps.generics.permissions.ApiDocsPermission'],
     'SERVE_AUTHENTICATION': [
@@ -337,21 +358,26 @@ ADMIN_URL = normalize_admin_url(os.environ.get('ADMIN_URL', 'admin/'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'request_id': {'()': 'apps.generics.logging.RequestIdFilter'},
+    },
     'formatters': {
-        'security': {
-            'format': '{asctime} {levelname} {name} {message}',
-            'style': '{',
-        },
+        'json': {'()': 'apps.generics.logging.JsonFormatter'},
     },
     'handlers': {
-        'security': {
+        'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'security',
+            'formatter': 'json',
+            'filters': ['request_id'],
         },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.environ.get('LOG_LEVEL', 'INFO'),
     },
     'loggers': {
         'security': {
-            'handlers': ['security'],
+            'handlers': ['console'],
             'level': os.environ.get('SECURITY_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
@@ -367,7 +393,9 @@ CORS_ALLOW_HEADERS = (
     *default_cors_headers,
     AUTH_TRANSPORT_HEADER.lower(),
     'accept-language',
+    'x-request-id',
 )
+CORS_EXPOSE_HEADERS = ['x-request-id']
 
 SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
 CSRF_COOKIE_SAMESITE = os.environ.get('CSRF_COOKIE_SAMESITE', 'Lax')
@@ -406,6 +434,22 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+
+CELERY_BEAT_SCHEDULE = {
+    'flush-expired-tokens': {
+        'task': 'apps.accounts.tasks.flush_expired_tokens',
+        'schedule': crontab(minute=0, hour=3),
+    },
+    'clear-sessions': {
+        'task': 'apps.accounts.tasks.clear_sessions',
+        'schedule': crontab(minute=15, hour=3),
+    },
+    'expire-invitations': {
+        'task': 'apps.accounts.tasks.expire_invitations',
+        'schedule': timedelta(hours=1),
+    },
+}
 CELERY_TASK_IGNORE_RESULT = (
     os.environ.get('CELERY_TASK_IGNORE_RESULT', 'False').lower() == 'true'
 )

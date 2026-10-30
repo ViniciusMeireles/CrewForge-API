@@ -69,6 +69,8 @@ services:
     restart: unless-stopped
     working_dir: /app
     command: sh -c "uv run celery -A config worker -l INFO"
+    healthcheck:
+      disable: true
     networks:
       - crew_forge_network
 
@@ -88,6 +90,8 @@ services:
     restart: unless-stopped
     working_dir: /app
     command: sh -c "uv run celery -A config beat -l INFO"
+    healthcheck:
+      disable: true
     networks:
       - crew_forge_network
 
@@ -108,6 +112,8 @@ services:
       - "127.0.0.1:5555:5555"
     working_dir: /app
     command: sh -c 'uv run celery -A config flower --port=5555 --basic-auth="$${FLOWER_BASIC_AUTH:?FLOWER_BASIC_AUTH is required}"'
+    healthcheck:
+      disable: true
     networks:
       - crew_forge_network
 

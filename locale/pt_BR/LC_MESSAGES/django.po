@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 21:00+0000\n"
+"POT-Creation-Date: 2026-10-30 01:17+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: apps/accounts/admin.py:140
+#: apps/accounts/admin.py:158
 msgid "file"
 msgstr "arquivo"
 
@@ -517,7 +517,7 @@ msgstr "Convites"
 msgid "An invitation with this email already exists."
 msgstr "Já existe um convite com este e-mail."
 
-#: apps/accounts/models/invitation.py:251
+#: apps/accounts/models/invitation.py:252
 msgid "Expired date must be greater than now"
 msgstr "A data de expiração deve ser posterior ao momento atual"
 
@@ -1224,7 +1224,7 @@ msgstr "Organização não encontrada"
 
 #: apps/accounts/views/organizations.py:66
 #: apps/accounts/views/organizations.py:70
-#: apps/accounts/views/organizations.py:160
+#: apps/accounts/views/organizations.py:164
 msgid "Organization not found."
 msgstr "Organização não encontrada."
 
@@ -1234,7 +1234,7 @@ msgstr "Usuário não autenticado"
 
 #: apps/accounts/views/organizations.py:82
 #: apps/accounts/views/organizations.py:86
-#: apps/accounts/views/organizations.py:155
+#: apps/accounts/views/organizations.py:159
 msgid "User not authenticated."
 msgstr "Usuário não autenticado."
 
@@ -1351,7 +1351,7 @@ msgstr "Organização excluída"
 msgid "Organization accessed"
 msgstr "Organização acessada"
 
-#: apps/audit/choices.py:10 apps/generics/choices.py:14
+#: apps/audit/choices.py:10 apps/generics/choices.py:16
 msgid "Organization suspended"
 msgstr "Organização suspensa"
 
@@ -1511,7 +1511,7 @@ msgstr "Perfil atualizado"
 msgid "Platform role changed"
 msgstr "Função na plataforma alterada"
 
-#: apps/audit/choices.py:89 apps/generics/choices.py:13
+#: apps/audit/choices.py:89 apps/generics/choices.py:15
 msgid "Account blocked"
 msgstr "Conta bloqueada"
 
@@ -1736,30 +1736,38 @@ msgid "Method not allowed"
 msgstr "Método não permitido"
 
 #: apps/generics/choices.py:10
+msgid "Malformed request"
+msgstr "Requisição malformada"
+
+#: apps/generics/choices.py:11
+msgid "Unsupported media type"
+msgstr "Tipo de mídia não suportado"
+
+#: apps/generics/choices.py:12
 msgid "Not acceptable"
 msgstr "Não aceitável"
 
-#: apps/generics/choices.py:11
+#: apps/generics/choices.py:13
 msgid "Throttled"
 msgstr "Limite de requisições excedido"
 
-#: apps/generics/choices.py:12
+#: apps/generics/choices.py:14
 msgid "Validation error"
 msgstr "Erro de validação"
 
-#: apps/generics/choices.py:15
+#: apps/generics/choices.py:17
 msgid "Invalid state"
 msgstr "Estado inválido"
 
-#: apps/generics/choices.py:16
+#: apps/generics/choices.py:18
 msgid "Read-only impersonation"
 msgstr "Visualização somente leitura"
 
-#: apps/generics/choices.py:17
+#: apps/generics/choices.py:19
 msgid "Impersonation ended"
 msgstr "Visualização encerrada"
 
-#: apps/generics/choices.py:18
+#: apps/generics/choices.py:20
 msgid "Internal error"
 msgstr "Erro interno"
 
@@ -1767,11 +1775,11 @@ msgstr "Erro interno"
 msgid "This action is not allowed in the current state."
 msgstr "Esta ação não é permitida no estado atual."
 
-#: apps/generics/exceptions.py:45
+#: apps/generics/exceptions.py:48
 msgid "One or more fields are invalid."
 msgstr "Um ou mais campos são inválidos."
 
-#: apps/generics/exceptions.py:95
+#: apps/generics/exceptions.py:98
 msgid "An unexpected error occurred."
 msgstr "Ocorreu um erro inesperado."
 
@@ -2480,11 +2488,11 @@ msgstr ""
 "chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
 "uma equipe válida, apenas gerentes da organização recebem funções."
 
-#: config/settings/base.py:298
+#: config/settings/base.py:315
 msgid "CrewForge API"
 msgstr "CrewForge API"
 
-#: config/settings/base.py:300
+#: config/settings/base.py:317
 msgid ""
 "API service for managing accounts, teams, and permissions with "
 "comprehensive\n"
@@ -2505,7 +2513,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:414
+#: config/settings/base.py:454
 msgid "CrewForge"
 msgstr "CrewForge"
 
