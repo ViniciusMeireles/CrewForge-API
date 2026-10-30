@@ -268,7 +268,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'apps.generics.schema.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'apps.platform.authentication.ImpersonationAuthentication',
     ),
@@ -312,6 +312,7 @@ AUTH_COOKIE_SAMESITE = 'Lax'
 
 # Drf Spectacular
 SPECTACULAR_SETTINGS = {
+    'COMPONENT_SPLIT_REQUEST': True,
     'TITLE': gettext_lazy('CrewForge API'),
     'DESCRIPTION': gettext_lazy(
         """API service for managing accounts, teams, and permissions with comprehensive

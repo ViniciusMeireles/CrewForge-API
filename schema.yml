@@ -181,13 +181,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
         required: true
       security:
       - jwtAuth: []
@@ -218,13 +218,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InvitationAccept'
+              $ref: '#/components/schemas/InvitationAcceptRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/InvitationAccept'
+              $ref: '#/components/schemas/InvitationAcceptRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/InvitationAccept'
+              $ref: '#/components/schemas/InvitationAcceptRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -370,13 +370,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1056,13 +1056,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MemberUpdate'
+              $ref: '#/components/schemas/MemberUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/MemberUpdate'
+              $ref: '#/components/schemas/MemberUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MemberUpdate'
+              $ref: '#/components/schemas/MemberUpdateRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -1096,13 +1096,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedMemberUpdate'
+              $ref: '#/components/schemas/PatchedMemberUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedMemberUpdate'
+              $ref: '#/components/schemas/PatchedMemberUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedMemberUpdate'
+              $ref: '#/components/schemas/PatchedMemberUpdateRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -1151,13 +1151,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedMemberRoleUpdate'
+              $ref: '#/components/schemas/PatchedMemberRoleUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedMemberRoleUpdate'
+              $ref: '#/components/schemas/PatchedMemberRoleUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedMemberRoleUpdate'
+              $ref: '#/components/schemas/PatchedMemberRoleUpdateRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -1193,13 +1193,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MemberWithInviteCreate'
+              $ref: '#/components/schemas/MemberWithInviteCreateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/MemberWithInviteCreate'
+              $ref: '#/components/schemas/MemberWithInviteCreateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/MemberWithInviteCreate'
+              $ref: '#/components/schemas/MemberWithInviteCreateRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1444,10 +1444,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/OrganizationImage'
+              $ref: '#/components/schemas/OrganizationImageRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/OrganizationImage'
+              $ref: '#/components/schemas/OrganizationImageRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1501,10 +1501,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/OrganizationImage'
+              $ref: '#/components/schemas/OrganizationImageRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/OrganizationImage'
+              $ref: '#/components/schemas/OrganizationImageRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1534,10 +1534,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedOrganizationImage'
+              $ref: '#/components/schemas/PatchedOrganizationImageRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedOrganizationImage'
+              $ref: '#/components/schemas/PatchedOrganizationImageRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -1786,13 +1786,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationProfile'
+              $ref: '#/components/schemas/OrganizationProfileRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/OrganizationProfile'
+              $ref: '#/components/schemas/OrganizationProfileRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/OrganizationProfile'
+              $ref: '#/components/schemas/OrganizationProfileRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -1821,13 +1821,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedOrganizationProfile'
+              $ref: '#/components/schemas/PatchedOrganizationProfileRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedOrganizationProfile'
+              $ref: '#/components/schemas/PatchedOrganizationProfileRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedOrganizationProfile'
+              $ref: '#/components/schemas/PatchedOrganizationProfileRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -1986,13 +1986,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
         required: true
       security:
       - jwtAuth: []
@@ -2051,13 +2051,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationRequest'
         required: true
       security:
       - jwtAuth: []
@@ -2087,13 +2087,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedOrganization'
+              $ref: '#/components/schemas/PatchedOrganizationRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedOrganization'
+              $ref: '#/components/schemas/PatchedOrganizationRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedOrganization'
+              $ref: '#/components/schemas/PatchedOrganizationRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -2247,13 +2247,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Signup'
+              $ref: '#/components/schemas/SignupRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Signup'
+              $ref: '#/components/schemas/SignupRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Signup'
+              $ref: '#/components/schemas/SignupRequest'
         required: true
       security:
       - jwtAuth: []
@@ -2449,10 +2449,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+              $ref: '#/components/schemas/StoredFileCreateUpdateModelRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+              $ref: '#/components/schemas/StoredFileCreateUpdateModelRequest'
         required: true
       security:
       - jwtAuth: []
@@ -2508,10 +2508,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+              $ref: '#/components/schemas/StoredFileCreateUpdateModelRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/StoredFileCreateUpdateModel'
+              $ref: '#/components/schemas/StoredFileCreateUpdateModelRequest'
         required: true
       security:
       - jwtAuth: []
@@ -2542,10 +2542,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedStoredFileCreateUpdateModel'
+              $ref: '#/components/schemas/PatchedStoredFileCreateUpdateModelRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedStoredFileCreateUpdateModel'
+              $ref: '#/components/schemas/PatchedStoredFileCreateUpdateModelRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -2639,13 +2639,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedUserProfile'
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedUserProfile'
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedUserProfile'
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -2698,13 +2698,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangePassword'
+              $ref: '#/components/schemas/ChangePasswordRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ChangePassword'
+              $ref: '#/components/schemas/ChangePasswordRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ChangePassword'
+              $ref: '#/components/schemas/ChangePasswordRequest'
         required: true
       security:
       - jwtAuth: []
@@ -2985,13 +2985,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailVerificationConfirm'
+              $ref: '#/components/schemas/EmailVerificationConfirmRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/EmailVerificationConfirm'
+              $ref: '#/components/schemas/EmailVerificationConfirmRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/EmailVerificationConfirm'
+              $ref: '#/components/schemas/EmailVerificationConfirmRequest'
         required: true
       security:
       - jwtAuth: []
@@ -3028,13 +3028,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LogoutRequest'
+              $ref: '#/components/schemas/LogoutRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/LogoutRequest'
+              $ref: '#/components/schemas/LogoutRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/LogoutRequest'
+              $ref: '#/components/schemas/LogoutRequestRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -3068,13 +3068,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
         required: true
       security:
       - jwtAuth: []
@@ -3095,13 +3095,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirm'
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirm'
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirm'
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
         required: true
       security:
       - jwtAuth: []
@@ -3124,13 +3124,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenObtainPair'
+              $ref: '#/components/schemas/TokenObtainPairRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenObtainPair'
+              $ref: '#/components/schemas/TokenObtainPairRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenObtainPair'
+              $ref: '#/components/schemas/TokenObtainPairRequest'
         required: true
       responses:
         '200':
@@ -3153,13 +3153,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              $ref: '#/components/schemas/TokenRefreshRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              $ref: '#/components/schemas/TokenRefreshRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              $ref: '#/components/schemas/TokenRefreshRequestRequest'
       responses:
         '200':
           content:
@@ -3179,21 +3179,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenVerify'
+              $ref: '#/components/schemas/TokenVerifyRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenVerify'
+              $ref: '#/components/schemas/TokenVerifyRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenVerify'
+              $ref: '#/components/schemas/TokenVerifyRequest'
         required: true
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenVerify'
-          description: ''
+          description: No response body
   /api/dashboard/overview/:
     get:
       operationId: dashboard_overview_retrieve
@@ -3845,13 +3841,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -3882,13 +3878,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
         required: true
       security:
       - jwtAuth: []
@@ -4016,13 +4012,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OwnershipTransfer'
+              $ref: '#/components/schemas/OwnershipTransferRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/OwnershipTransfer'
+              $ref: '#/components/schemas/OwnershipTransferRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/OwnershipTransfer'
+              $ref: '#/components/schemas/OwnershipTransferRequest'
         required: true
       security:
       - jwtAuth: []
@@ -4193,13 +4189,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
         required: true
       security:
       - jwtAuth: []
@@ -4230,13 +4226,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -4266,13 +4262,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -4303,13 +4299,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonRequired'
+              $ref: '#/components/schemas/ReasonRequiredRequest'
         required: true
       security:
       - jwtAuth: []
@@ -4340,13 +4336,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -4376,13 +4372,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ReasonOptional'
+              $ref: '#/components/schemas/ReasonOptionalRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -4527,13 +4523,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamMember'
+              $ref: '#/components/schemas/TeamMemberRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TeamMember'
+              $ref: '#/components/schemas/TeamMemberRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TeamMember'
+              $ref: '#/components/schemas/TeamMemberRequest'
         required: true
       security:
       - jwtAuth: []
@@ -4587,13 +4583,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamMemberUpdate'
+              $ref: '#/components/schemas/TeamMemberUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TeamMemberUpdate'
+              $ref: '#/components/schemas/TeamMemberUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TeamMemberUpdate'
+              $ref: '#/components/schemas/TeamMemberUpdateRequest'
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -4904,13 +4900,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Team'
+              $ref: '#/components/schemas/TeamRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Team'
+              $ref: '#/components/schemas/TeamRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Team'
+              $ref: '#/components/schemas/TeamRequest'
         required: true
       security:
       - jwtAuth: []
@@ -4964,13 +4960,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Team'
+              $ref: '#/components/schemas/TeamRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Team'
+              $ref: '#/components/schemas/TeamRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Team'
+              $ref: '#/components/schemas/TeamRequest'
         required: true
       security:
       - jwtAuth: []
@@ -5364,12 +5360,13 @@ components:
           type: string
       required:
       - detail
-    ChangePassword:
+    ChangePasswordRequest:
       type: object
       properties:
         current_password:
           type: string
           writeOnly: true
+          minLength: 1
         new_password:
           type: string
           writeOnly: true
@@ -5420,15 +5417,17 @@ components:
           type: string
       required:
       - detail
-    EmailVerificationConfirm:
+    EmailVerificationConfirmRequest:
       type: object
       properties:
         uid:
           type: string
           writeOnly: true
+          minLength: 1
         token:
           type: string
           writeOnly: true
+          minLength: 1
       required:
       - token
       - uid
@@ -5463,7 +5462,9 @@ components:
           description: Date and time when the invitation will expire
       required:
       - email
+      - expired_at
       - id
+      - role
       - role_label
     ImageTypeEnum:
       enum:
@@ -5558,10 +5559,6 @@ components:
           readOnly: true
           nullable: true
           description: Date and time when the last invitation email was sent
-        send_email:
-          type: boolean
-          writeOnly: true
-          default: false
         is_former_member:
           type: boolean
           readOnly: true
@@ -5580,6 +5577,7 @@ components:
       - created_at
       - declined_at
       - email
+      - expired_at
       - id
       - is_accepted
       - is_declined
@@ -5587,15 +5585,10 @@ components:
       - is_former_member
       - last_email_sent_at
       - organization
+      - role
       - role_label
       - status
       - updated_at
-    InvitationAccept:
-      type: object
-      properties:
-        nickname:
-          type: string
-          maxLength: 100
     InvitationAcceptBadRequest:
       type: object
       properties:
@@ -5610,6 +5603,12 @@ components:
           type: string
       required:
       - detail
+    InvitationAcceptRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+          maxLength: 100
     InvitationAcceptSuccess:
       type: object
       properties:
@@ -5761,10 +5760,6 @@ components:
           readOnly: true
           nullable: true
           description: Date and time when the last invitation email was sent
-        send_email:
-          type: boolean
-          writeOnly: true
-          default: false
         created_at:
           type: string
           format: date-time
@@ -5867,10 +5862,6 @@ components:
           readOnly: true
           nullable: true
           description: Date and time when the last invitation email was sent
-        send_email:
-          type: boolean
-          writeOnly: true
-          default: false
         created_at:
           type: string
           format: date-time
@@ -5886,15 +5877,48 @@ components:
       - created_at
       - declined_at
       - email
+      - expired_at
       - id
       - is_accepted
       - is_declined
       - is_expired
       - last_email_sent_at
       - organization
+      - role
       - role_label
       - status
       - updated_at
+    InvitationRequest:
+      type: object
+      description: Mixin to validate the role of a user.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Email of the user to invite
+          maxLength: 254
+        expired_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date and time when the invitation will expire
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role in the organization
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        send_email:
+          type: boolean
+          writeOnly: true
+          default: false
+      required:
+      - email
     InvitationStatusEnum:
       enum:
       - pending
@@ -5942,11 +5966,12 @@ components:
           type: string
       required:
       - detail
-    LogoutRequest:
+    LogoutRequestRequest:
       type: object
       properties:
         refresh:
           type: string
+          minLength: 1
     MemberAccess:
       type: object
       properties:
@@ -6046,7 +6071,9 @@ components:
       - is_active
       - joined_at
       - last_login_at
+      - nickname
       - organization
+      - role
       - role_label
       - updated_at
       - updated_by
@@ -6101,6 +6128,8 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
+      required:
+      - role
     MemberSession:
       type: object
       properties:
@@ -6138,7 +6167,10 @@ components:
       required:
       - access
       - id
+      - last_login_at
+      - nickname
       - permissions
+      - role
     MemberUpdate:
       type: object
       description: Serializer for updating the Member model.
@@ -6217,12 +6249,22 @@ components:
       - is_active
       - joined_at
       - last_login_at
+      - nickname
       - organization
       - role
       - role_label
       - updated_at
       - updated_by
       - user
+    MemberUpdateRequest:
+      type: object
+      description: Serializer for updating the Member model.
+      properties:
+        nickname:
+          type: string
+          nullable: true
+          description: Nickname of the user in the organization
+          maxLength: 100
     MemberWithInviteCreate:
       type: object
       description: Serializer for creating the Member model.
@@ -6299,11 +6341,25 @@ components:
       - is_active
       - joined_at
       - last_login_at
+      - nickname
       - organization
       - role
       - role_label
       - updated_at
       - updated_by
+      - user
+    MemberWithInviteCreateRequest:
+      type: object
+      description: Serializer for creating the Member model.
+      properties:
+        user:
+          $ref: '#/components/schemas/UserCreateWithInviteRequest'
+        nickname:
+          type: string
+          nullable: true
+          description: Nickname of the user in the organization
+          maxLength: 100
+      required:
       - user
     MembersSection:
       type: object
@@ -6350,6 +6406,7 @@ components:
       - id
       - member_count
       - name
+      - role
       - role_label
       - slug
     OptionInt:
@@ -6666,6 +6723,7 @@ components:
       - is_active
       - name
       - owner
+      - profile
       - slug
       - status
       - updated_at
@@ -6726,12 +6784,16 @@ components:
           readOnly: true
       required:
       - created_at
+      - created_by
       - id
+      - is_active
       - name
       - owner
       - profile
       - slug
+      - status
       - updated_at
+      - updated_by
     OrganizationImage:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -6758,6 +6820,30 @@ components:
           $ref: '#/components/schemas/StoredFileOrgImage'
       required:
       - id
+      - image
+      - image_type
+    OrganizationImageRequest:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        image_type:
+          allOf:
+          - $ref: '#/components/schemas/ImageTypeEnum'
+          description: |-
+            Type of organization image
+
+            * `logo` - Logo
+            * `cover` - Cover
+            * `favicon` - Favicon
+            * `og_image` - Open Graph Image
+            * `logo_horizontal` - Logo Horizontal
+            * `logo_vertical` - Logo Vertical
+            * `logo_dark` - Logo Dark
+            * `logo_light` - Logo Light
+        image:
+          $ref: '#/components/schemas/StoredFileOrgImageRequest'
+      required:
       - image
     OrganizationList:
       type: object
@@ -6818,8 +6904,10 @@ components:
           readOnly: true
           description: Organization to which this profile belongs
       required:
+      - description
       - id
       - organization
+      - website
     OrganizationProfileDetailRelated:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -6846,8 +6934,10 @@ components:
           nullable: true
           readOnly: true
       required:
+      - description
       - id
       - logo_url
+      - website
     OrganizationProfileListRelated:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -6885,7 +6975,45 @@ components:
           nullable: true
           description: Organization description
       required:
+      - description
       - id
+      - website
+    OrganizationProfileRelatedRequest:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        website:
+          nullable: true
+          description: Organization website
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+          description: Organization description
+    OrganizationProfileRequest:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        website:
+          nullable: true
+          description: Organization website
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+          description: Organization description
     OrganizationReady:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -6905,6 +7033,26 @@ components:
           pattern: ^[-a-zA-Z0-9_]+$
       required:
       - id
+      - name
+      - slug
+    OrganizationRequest:
+      type: object
+      description: Serializer for the Organization model.
+      properties:
+        profile:
+          $ref: '#/components/schemas/OrganizationProfileRelatedRequest'
+        name:
+          type: string
+          minLength: 1
+          description: Organization name
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 1
+          description: Organization slug
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
       - name
       - slug
     OrganizationStatusEnum:
@@ -6975,12 +7123,15 @@ components:
       required:
       - created_at
       - id
+      - joined_at
+      - role
       - role_label
-    OwnershipTransfer:
+    OwnershipTransferRequest:
       type: object
       properties:
         reason:
           type: string
+          minLength: 1
           maxLength: 500
         member:
           type: integer
@@ -7377,15 +7528,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TeamMember'
-    PasswordResetConfirm:
+    PasswordResetConfirmRequest:
       type: object
       properties:
         uid:
           type: string
           writeOnly: true
+          minLength: 1
         token:
           type: string
           writeOnly: true
+          minLength: 1
         new_password:
           type: string
           writeOnly: true
@@ -7394,25 +7547,16 @@ components:
       - new_password
       - token
       - uid
-    PasswordResetRequest:
+    PasswordResetRequestRequest:
       type: object
       properties:
         email:
           type: string
           format: email
-        uid:
-          type: string
-          description: Return the UID for the user.
-          readOnly: true
-        token:
-          type: string
-          description: Return the token for the user.
-          readOnly: true
+          minLength: 1
       required:
       - email
-      - token
-      - uid
-    PatchedMemberRoleUpdate:
+    PatchedMemberRoleUpdateRequest:
       type: object
       description: Serializer for updating the role of a member.
       properties:
@@ -7426,140 +7570,20 @@ components:
             * `admin` - Admin
             * `manager` - Manager
             * `member` - Member
-    PatchedMemberUpdate:
+    PatchedMemberUpdateRequest:
       type: object
       description: Serializer for updating the Member model.
       properties:
-        id:
-          type: integer
-          readOnly: true
-        user:
-          allOf:
-          - $ref: '#/components/schemas/UserUpdate'
-          readOnly: true
-        role_label:
-          type: string
-          readOnly: true
-        is_active:
-          type: boolean
-          readOnly: true
-          default: true
-          description: Is this record active or not
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was initially created
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
         nickname:
           type: string
           nullable: true
           description: Nickname of the user in the organization
           maxLength: 100
-        role:
-          allOf:
-          - $ref: '#/components/schemas/RoleEnum'
-          readOnly: true
-          default: member
-          description: |-
-            User role in the organization
-
-            * `owner` - Owner
-            * `admin` - Admin
-            * `manager` - Manager
-            * `member` - Member
-        last_login_at:
-          type: string
-          format: date-time
-          readOnly: true
-          nullable: true
-          description: Last time the member logged into the organization
-        joined_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the current membership started
-        created_by:
-          type: integer
-          readOnly: true
-          nullable: true
-          description: User who created the record
-        updated_by:
-          type: integer
-          readOnly: true
-          nullable: true
-          description: User who last updated the record
-        organization:
-          type: integer
-          readOnly: true
-          description: Organization to which the user belongs
-    PatchedOrganization:
-      type: object
-      description: Serializer for the Organization model.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        profile:
-          $ref: '#/components/schemas/OrganizationProfileRelated'
-        owner:
-          type: integer
-          nullable: true
-          readOnly: true
-        is_active:
-          type: boolean
-          readOnly: true
-          description: Is this record active or not
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was initially created
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        name:
-          type: string
-          description: Organization name
-          maxLength: 255
-        slug:
-          type: string
-          description: Organization slug
-          maxLength: 50
-          pattern: ^[-a-zA-Z0-9_]+$
-        status:
-          allOf:
-          - $ref: '#/components/schemas/OrganizationStatusEnum'
-          readOnly: true
-          description: |-
-            Suspended organizations cannot be entered
-
-            * `active` - Active
-            * `suspended` - Suspended
-        created_by:
-          type: integer
-          readOnly: true
-          nullable: true
-          description: User who created the record
-        updated_by:
-          type: integer
-          readOnly: true
-          nullable: true
-          description: User who last updated the record
-    PatchedOrganizationImage:
+    PatchedOrganizationImageRequest:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
         properties.
       properties:
-        id:
-          type: integer
-          readOnly: true
         image_type:
           allOf:
           - $ref: '#/components/schemas/ImageTypeEnum'
@@ -7575,15 +7599,12 @@ components:
             * `logo_dark` - Logo Dark
             * `logo_light` - Logo Light
         image:
-          $ref: '#/components/schemas/StoredFileOrgImage'
-    PatchedOrganizationProfile:
+          $ref: '#/components/schemas/StoredFileOrgImageRequest'
+    PatchedOrganizationProfileRequest:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
         properties.
       properties:
-        id:
-          type: integer
-          readOnly: true
         website:
           nullable: true
           description: Organization website
@@ -7597,18 +7618,31 @@ components:
           type: string
           nullable: true
           description: Organization description
-        organization:
-          type: integer
-          readOnly: true
-          description: Organization to which this profile belongs
-    PatchedStoredFileCreateUpdateModel:
+    PatchedOrganizationRequest:
+      type: object
+      description: Serializer for the Organization model.
+      properties:
+        profile:
+          $ref: '#/components/schemas/OrganizationProfileRelatedRequest'
+        name:
+          type: string
+          minLength: 1
+          description: Organization name
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 1
+          description: Organization slug
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+    PatchedStoredFileCreateUpdateModelRequest:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
         properties.
       properties:
         file:
           type: string
-          format: uri
+          format: binary
           writeOnly: true
           description: File to be stored
         name:
@@ -7648,49 +7682,11 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
-    PatchedUserProfile:
+    PatchedUserProfileRequest:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
         properties.
       properties:
-        id:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-          readOnly: true
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
         email:
           title: Email address
           oneOf:
@@ -7699,9 +7695,6 @@ components:
             maxLength: 254
           - type: string
             maxLength: 0
-        email_verified:
-          type: boolean
-          readOnly: true
         first_name:
           type: string
           maxLength: 150
@@ -8467,18 +8460,19 @@ components:
       description: |-
         * `en` - English
         * `pt-br` - Português (Brasil)
-    ReasonOptional:
+    ReasonOptionalRequest:
       type: object
       properties:
         reason:
           type: string
           default: ''
           maxLength: 500
-    ReasonRequired:
+    ReasonRequiredRequest:
       type: object
       properties:
         reason:
           type: string
+          minLength: 1
           maxLength: 500
       required:
       - reason
@@ -8539,6 +8533,9 @@ components:
       - email
       - full_name
       - id
+      - joined_at
+      - nickname
+      - role
       - role_label
     RoleCount:
       type: object
@@ -8615,6 +8612,9 @@ components:
           - $ref: '#/components/schemas/SessionImpersonation'
           nullable: true
       required:
+      - impersonation
+      - member
+      - organization
       - organizations
       - user
     SessionConfig:
@@ -8633,6 +8633,10 @@ components:
         debug:
           type: boolean
       required:
+      - cookie_settings
+      - cors_allow_credentials
+      - cors_allowed_origins
+      - debug
       - session_configured
     SessionImpersonation:
       type: object
@@ -8796,11 +8800,28 @@ components:
       - is_active
       - joined_at
       - last_login_at
+      - nickname
       - organization
       - refresh
       - role
       - updated_at
       - updated_by
+      - user
+    SignupRequest:
+      type: object
+      description: Mixin to add access and refresh token fields to a serializer.
+      properties:
+        user:
+          $ref: '#/components/schemas/UserCreateSignupRequest'
+        organization:
+          $ref: '#/components/schemas/OrganizationRequest'
+        nickname:
+          type: string
+          nullable: true
+          description: Nickname of the user in the organization
+          maxLength: 100
+      required:
+      - organization
       - user
     StoredFileAccess:
       enum:
@@ -8818,14 +8839,14 @@ components:
         * `members_organization` - Members of Organization
         * `owner` - Owner
         * `public` - Public
-    StoredFileCreateUpdateModel:
+    StoredFileCreateUpdateModelRequest:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
         properties.
       properties:
         file:
           type: string
-          format: uri
+          format: binary
           writeOnly: true
           description: File to be stored
         name:
@@ -8865,45 +8886,8 @@ components:
           type: integer
           nullable: true
           description: Organization to which the file belongs
-        size:
-          type: integer
-          readOnly: true
-          description: Size of the file
-        file_url:
-          type: string
-          nullable: true
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the record was last updated
-        content_type:
-          type: string
-          readOnly: true
-          description: Content type of the file
-        download_name:
-          type: string
-          description: Return the name to download the file.
-          readOnly: true
-        original_name:
-          type: string
-          readOnly: true
-          description: Original name of the file
-        uuid:
-          type: string
-          format: uuid
-          readOnly: true
-          description: Unique identifier for the file
       required:
-      - content_type
-      - download_name
       - file
-      - file_url
-      - original_name
-      - size
-      - updated_at
-      - uuid
     StoredFileDetailModel:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -8983,7 +8967,9 @@ components:
       - download_name
       - file_url
       - name
+      - organization
       - original_name
+      - owner
       - size
       - updated_at
       - updating_permission
@@ -9043,11 +9029,6 @@ components:
       description: Mixin for ModelSerializer to add user, member, and organization
         properties.
       properties:
-        file:
-          type: string
-          format: uri
-          writeOnly: true
-          description: File to be stored
         name:
           type: string
           nullable: true
@@ -9086,12 +9067,29 @@ components:
       required:
       - content_type
       - download_name
-      - file
       - file_url
+      - name
       - organization
       - original_name
       - size
       - uuid
+    StoredFileOrgImageRequest:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        file:
+          type: string
+          format: binary
+          writeOnly: true
+          description: File to be stored
+        name:
+          type: string
+          nullable: true
+          description: Name of the file
+          maxLength: 255
+      required:
+      - file
     StoredFileOwner:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -9169,6 +9167,7 @@ components:
       required:
       - created_at
       - created_by
+      - description
       - id
       - is_active
       - name
@@ -9232,6 +9231,7 @@ components:
       required:
       - created_at
       - created_by
+      - description
       - id
       - is_active
       - member_count
@@ -9302,6 +9302,7 @@ components:
       - is_active
       - member
       - member_detail
+      - role
       - role_label
       - team
       - updated_at
@@ -9346,6 +9347,29 @@ components:
       - nickname
       - role
       - role_label
+    TeamMemberRequest:
+      type: object
+      description: Serializer for the TeamMember model.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Role of the member in the team
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+        team:
+          type: integer
+          description: Team to which this member belongs
+        member:
+          type: integer
+          description: Member of the team
+      required:
+      - member
+      - team
     TeamMemberUpdate:
       type: object
       description: Serializer for updating a TeamMember.
@@ -9410,10 +9434,41 @@ components:
       - is_active
       - member
       - member_detail
+      - role
       - role_label
       - team
       - updated_at
       - updated_by
+    TeamMemberUpdateRequest:
+      type: object
+      description: Serializer for updating a TeamMember.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Role of the member in the team
+
+            * `owner` - Owner
+            * `admin` - Admin
+            * `manager` - Manager
+            * `member` - Member
+    TeamRequest:
+      type: object
+      description: Mixin for ModelSerializer to add user, member, and organization
+        properties.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Name of the team
+          maxLength: 100
+        description:
+          type: string
+          nullable: true
+          description: Description of the team
+      required:
+      - name
     TeamsSection:
       type: object
       properties:
@@ -9447,17 +9502,24 @@ components:
           allOf:
           - $ref: '#/components/schemas/UserReady'
           readOnly: true
-        username:
-          type: string
-          writeOnly: true
-        password:
-          type: string
-          writeOnly: true
       required:
       - access
       - auth_user
-      - password
       - refresh
+    TokenObtainPairRequest:
+      type: object
+      description: Mixin to add access and refresh token fields to a serializer.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
       - username
     TokenRefresh:
       type: object
@@ -9470,17 +9532,19 @@ components:
       required:
       - access
       - refresh
-    TokenRefreshRequest:
+    TokenRefreshRequestRequest:
       type: object
       properties:
         refresh:
           type: string
-    TokenVerify:
+          minLength: 1
+    TokenVerifyRequest:
       type: object
       properties:
         token:
           type: string
           writeOnly: true
+          minLength: 1
       required:
       - token
     User:
@@ -9510,12 +9574,11 @@ components:
         last_name:
           type: string
           maxLength: 150
-        password:
-          type: string
-          writeOnly: true
-          maxLength: 128
       required:
+      - email
+      - first_name
       - id
+      - last_name
       - username
     UserCreateSignup:
       type: object
@@ -9548,13 +9611,44 @@ components:
         last_name:
           type: string
           maxLength: 150
+      required:
+      - auth_token
+      - email
+      - first_name
+      - id
+      - last_name
+      - username
+    UserCreateSignupRequest:
+      type: object
+      description: Serializer for creating a user.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
         password:
           type: string
           writeOnly: true
+          minLength: 1
           maxLength: 128
       required:
-      - auth_token
-      - id
       - password
       - username
     UserCreateWithInvite:
@@ -9581,10 +9675,6 @@ components:
         last_name:
           type: string
           maxLength: 150
-        password:
-          type: string
-          writeOnly: true
-          maxLength: 128
         auth_token:
           allOf:
           - $ref: '#/components/schemas/UserToken'
@@ -9592,7 +9682,33 @@ components:
       required:
       - auth_token
       - email
+      - first_name
       - id
+      - last_name
+      - username
+    UserCreateWithInviteRequest:
+      type: object
+      description: Serializer for creating a user.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+      required:
       - password
       - username
     UserProfile:
@@ -9634,8 +9750,12 @@ components:
             * `en` - English
             * `pt-br` - Português (Brasil)
       required:
+      - email
       - email_verified
+      - first_name
       - id
+      - last_name
+      - preferred_language
       - username
     UserReady:
       type: object
