@@ -115,6 +115,35 @@ class InvitationCRUDTestCase(APITestCaseMixin, APITestCase):
             invitation_data.expired_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
         )
 
+    def test_list_and_retrieve_include_timestamps(self):
+        invitation = self._create_invitation()
+        expected = {
+            'created_at': invitation.created_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            'updated_at': invitation.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        }
+        listed = self.client.get(self.list_url).data['results'][0]
+        detail = self.client.get(self._detail_url(invitation)).data
+        for data in (listed, detail):
+            with self.subTest(keys=sorted(data)[:3]):
+                self.assertEqual({key: data[key] for key in expected}, expected)
+
+    def test_update_ignores_client_timestamps(self):
+        invitation = self._create_invitation()
+        payload = {
+            'email': invitation.email,
+            'role': invitation.role,
+            'expired_at': invitation.expired_at,
+            'created_at': '2000-01-01T00:00:00Z',
+            'updated_at': '2000-01-01T00:00:00Z',
+        }
+        response = self.client.put(
+            self._detail_url(invitation), data=payload, format='json'
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        invitation.refresh_from_db()
+        self.assertNotEqual(invitation.created_at.year, 2000)
+        self.assertNotEqual(response.data['updated_at'][:4], '2000')
+
     def test_update_ignores_is_expired(self):
         invitation = self._create_invitation()
         url = self._detail_url(invitation)

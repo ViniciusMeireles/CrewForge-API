@@ -70,6 +70,8 @@ class InvitationSerializer(
             'last_email_sent_at',
             'send_email',
             'is_former_member',
+            'created_at',
+            'updated_at',
         ]
         read_only_fields = ModelSerializerMixin._default_read_only_fields + [
             'id',

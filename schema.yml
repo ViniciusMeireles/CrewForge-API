@@ -58,6 +58,7 @@ paths:
             type: string
             enum:
             - -accepted_at
+            - -created_at
             - -declined_at
             - -email
             - -expired_at
@@ -66,7 +67,9 @@ paths:
             - -organization
             - -role
             - -status
+            - -updated_at
             - accepted_at
+            - created_at
             - declined_at
             - email
             - expired_at
@@ -75,11 +78,14 @@ paths:
             - organization
             - role
             - status
+            - updated_at
         description: |-
           Ordering
 
           * `accepted_at` - Accepted At
           * `-accepted_at` - Descending Accepted At
+          * `created_at` - Created At
+          * `-created_at` - Descending Created At
           * `declined_at` - Declined At
           * `-declined_at` - Descending Declined At
           * `email` - Email
@@ -96,6 +102,8 @@ paths:
           * `-role` - Descending Role
           * `status` - Status
           * `-status` - Descending Status
+          * `updated_at` - Updated At
+          * `-updated_at` - Descending Updated At
         explode: false
         style: form
       - name: page
@@ -652,6 +660,7 @@ paths:
             type: string
             enum:
             - -accepted_at
+            - -created_at
             - -declined_at
             - -email
             - -expired_at
@@ -661,7 +670,9 @@ paths:
             - -organization
             - -role
             - -status
+            - -updated_at
             - accepted_at
+            - created_at
             - declined_at
             - email
             - expired_at
@@ -671,11 +682,14 @@ paths:
             - organization
             - role
             - status
+            - updated_at
         description: |-
           Ordering
 
           * `accepted_at` - Accepted At
           * `-accepted_at` - Descending Accepted At
+          * `created_at` - Created At
+          * `-created_at` - Descending Created At
           * `declined_at` - Declined At
           * `-declined_at` - Descending Declined At
           * `email` - Email
@@ -694,6 +708,8 @@ paths:
           * `-role` - Descending Role
           * `status` - Status
           * `-status` - Descending Status
+          * `updated_at` - Updated At
+          * `-updated_at` - Descending Updated At
         explode: false
         style: form
       - name: page
@@ -5549,8 +5565,19 @@ components:
         is_former_member:
           type: boolean
           readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
       required:
       - accepted_at
+      - created_at
       - declined_at
       - email
       - id
@@ -5562,6 +5589,7 @@ components:
       - organization
       - role_label
       - status
+      - updated_at
     InvitationAccept:
       type: object
       properties:
@@ -5737,6 +5765,16 @@ components:
           type: boolean
           writeOnly: true
           default: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
         key:
           type: string
           format: uuid
@@ -5748,6 +5786,7 @@ components:
           nullable: true
       required:
       - accepted_at
+      - created_at
       - declined_at
       - email
       - expired_at
@@ -5762,6 +5801,7 @@ components:
       - role
       - role_label
       - status
+      - updated_at
     InvitationReceivedDetail:
       type: object
       description: Mixin to validate the role of a user.
@@ -5831,8 +5871,19 @@ components:
           type: boolean
           writeOnly: true
           default: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was initially created
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
       required:
       - accepted_at
+      - created_at
       - declined_at
       - email
       - id
@@ -5843,6 +5894,7 @@ components:
       - organization
       - role_label
       - status
+      - updated_at
     InvitationStatusEnum:
       enum:
       - pending

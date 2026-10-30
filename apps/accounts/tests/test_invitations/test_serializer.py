@@ -39,6 +39,8 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
             'organization',
             'last_email_sent_at',
             'is_former_member',
+            'created_at',
+            'updated_at',
         }
         self.assertEqual(set(result.keys()), expected_fields)
 
@@ -62,6 +64,8 @@ class InvitationSerializerTestCase(APITestCaseMixin, APITestCase):
             'organization',
             'last_email_sent_at',
             'is_former_member',
+            'created_at',
+            'updated_at',
         }
         self.assertEqual(set(response.data.keys()), expected_fields)
 
