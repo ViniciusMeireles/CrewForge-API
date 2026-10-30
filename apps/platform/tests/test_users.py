@@ -37,8 +37,8 @@ class PlatformUserListTestCase(PlatformTestMixin, APITestCaseMixin, APITestCase)
 
     def test_organizations_count_and_marks(self):
         MemberFactory(user=self.maria, organization=OrganizationFactory())
-        response = self.client.get(self.list_url, data={'search': 'Maria'})
-        row = response.data['results'][0]
+        response = self.client.get(self.list_url, data={'search': 'Maria Silva'})
+        row = next(r for r in response.data['results'] if r['id'] == self.maria.id)
         self.assertEqual(row['organizations_count'], 1)
         self.assertFalse(row['is_blocked'])
         self.assertEqual(row['platform_role'], 'none')
