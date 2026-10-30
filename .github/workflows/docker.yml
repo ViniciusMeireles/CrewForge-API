@@ -1,9 +1,10 @@
 name: Docker
 
+# Publishes only images whose commit passed Django CI on a push (main or a v* tag).
 on:
-  push:
-    branches: [main]
-    tags: ['v*']
+  workflow_run:
+    workflows: ['Django CI']
+    types: [completed]
 
 env:
   REGISTRY: ghcr.io
@@ -12,6 +13,9 @@ env:
 jobs:
   build-and-push:
     name: Build & Push
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,6 +23,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: docker/setup-buildx-action@v4
 
@@ -31,10 +37,12 @@ jobs:
       - uses: docker/metadata-action@v6
         id: meta
         with:
+          # Read the checked-out commit, not the workflow_run default-branch context.
+          context: git
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
+            type=raw,value=main,enable=${{ github.event.workflow_run.head_branch == 'main' }}
+            type=semver,pattern={{version}},value=${{ github.event.workflow_run.head_branch }},enable=${{ startsWith(github.event.workflow_run.head_branch, 'v') }}
             type=sha,format=long
 
       - uses: docker/build-push-action@v7

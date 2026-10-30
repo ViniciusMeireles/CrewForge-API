@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+    tags: ['v*']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -70,6 +71,22 @@ jobs:
         --ignore "htmlcov" --ignore "media" --ignore "node_modules"
         --ignore "staticfiles"
 
+    - name: Check translation catalog is up to date
+      run: |
+        make l_makemessages
+        git diff --exit-code -I 'POT-Creation-Date' -I '^#: ' -- locale
+
+    - name: Check deploy settings
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+        DJANGO_SETTINGS_MODULE: config.settings.production
+        ENVIRONMENT: production
+        MEDIA_ROOT: /tmp/media
+        NUM_PROXIES: '1'
+      run: |
+        DJANGO_SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(64))") \
+          uv run python manage.py check --deploy --fail-level WARNING
+
     - name: Check migrations
       env:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
@@ -99,6 +116,14 @@ jobs:
       run: |
         uv run pytest --cov-report=xml --cov-report=json \
           --junitxml=pytest.xml --reuse-db -n auto
+
+    - name: Check coverage threshold
+      run: |
+        python3 -c "import json; print('Coverage:', json.load(open('coverage.json'))['totals']['percent_covered'])"
+        python3 -c "import json,sys; sys.exit(0 if json.load(open('coverage.json'))['totals']['percent_covered'] >= 88 else 1)" || {
+          echo "Coverage is below the 88% threshold" >&2
+          exit 1
+        }
 
     - name: Upload coverage artifacts
       uses: actions/upload-artifact@v7
@@ -136,12 +161,3 @@ jobs:
           junitxml-path: pytest.xml
           title: "Backend Coverage"
           badge-title: "Backend Coverage"
-
-      - name: Check coverage threshold
-        run: |
-          coverage=$(python3 -c "import json; print(json.load(open('coverage.json'))['totals']['percent_covered'])")
-          echo "Coverage: ${coverage}%"
-          python3 -c "import json,sys; sys.exit(0 if json.load(open('coverage.json'))['totals']['percent_covered'] >= 88 else 1)" || {
-            echo "Coverage is below the 88% threshold" >&2
-            exit 1
-          }
