@@ -30,6 +30,7 @@ class AuditEventSerializer(serializers.ModelSerializer):
     actor = serializers.SerializerMethodField()
     impersonator = serializers.SerializerMethodField()
     changes = serializers.SerializerMethodField()
+    metadata = serializers.DictField(read_only=True)
 
     class Meta:
         model = AuditEvent

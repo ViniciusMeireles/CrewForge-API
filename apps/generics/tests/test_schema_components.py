@@ -28,6 +28,22 @@ class ResponseComponentsTestCase(SimpleTestCase):
         session_config = self.components['SessionConfig']
         self.assertEqual(session_config['required'], ['session_configured'])
 
+    def test_paginated_options_results_are_a_list(self):
+        results = self.components['PaginatedIntOptions']['properties']['results']
+        self.assertEqual(results['type'], 'array')
+        self.assertEqual(results['items']['$ref'], '#/components/schemas/OptionInt')
+
+    def test_paginated_lists_always_have_next_and_previous(self):
+        page = self.components['PaginatedInvitationList']
+        self.assertEqual(
+            set(page['required']), {'count', 'next', 'previous', 'results'}
+        )
+
+    def test_audit_metadata_is_an_object(self):
+        metadata = self.components['AuditEvent']['properties']['metadata']
+        self.assertEqual(metadata['type'], 'object')
+        self.assertIn('additionalProperties', metadata)
+
     def test_patched_request_components_require_nothing(self):
         patched = self.components['PatchedMemberUpdateRequest']
         self.assertNotIn('required', patched)

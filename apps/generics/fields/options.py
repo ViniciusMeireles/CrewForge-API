@@ -463,7 +463,7 @@ def _build_paginated_options_serializer_class(
     option_serializer_class = _create_option_serializer_class(output_type=output_type)
 
     # Re-declared only to type ``results`` items in the OpenAPI schema.
-    @extend_schema_field(option_serializer_class)
+    @extend_schema_field(option_serializer_class(many=True))
     def get_results(self, instance):
         return base_class.get_results(self=self, instance=instance)
 

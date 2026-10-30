@@ -5302,8 +5302,9 @@ components:
             $ref: '#/components/schemas/AuditEventChange'
           readOnly: true
         metadata:
+          type: object
+          additionalProperties: {}
           readOnly: true
-          description: Extra context of the event
         ip:
           type: string
           readOnly: true
@@ -7142,6 +7143,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7175,8 +7178,9 @@ components:
           type: integer
           readOnly: true
         results:
-          allOf:
-          - $ref: '#/components/schemas/OptionInt'
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionInt'
           readOnly: true
       required:
       - count
@@ -7187,6 +7191,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7210,6 +7216,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7233,6 +7241,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7256,6 +7266,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7279,6 +7291,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7302,6 +7316,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7325,6 +7341,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7348,6 +7366,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7371,6 +7391,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7394,6 +7416,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7417,6 +7441,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7440,6 +7466,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7463,6 +7491,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7486,6 +7516,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7509,6 +7541,8 @@ components:
       type: object
       required:
       - count
+      - next
+      - previous
       - results
       properties:
         count:
@@ -7832,8 +7866,9 @@ components:
             $ref: '#/components/schemas/AuditEventChange'
           readOnly: true
         metadata:
+          type: object
+          additionalProperties: {}
           readOnly: true
-          description: Extra context of the event
         ip:
           type: string
           readOnly: true
