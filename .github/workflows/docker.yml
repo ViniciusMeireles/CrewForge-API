@@ -36,12 +36,13 @@ jobs:
       - uses: docker/metadata-action@v6
         id: meta
         with:
-          context: git
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=main,enable=${{ github.event.workflow_run.head_branch == 'main' }}
             type=semver,pattern={{version}},value=${{ github.event.workflow_run.head_branch }},enable=${{ startsWith(github.event.workflow_run.head_branch, 'v') }}
-            type=sha,format=long
+            type=raw,value=sha-${{ github.event.workflow_run.head_sha }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
 
       - uses: docker/build-push-action@v7
         with:
