@@ -24,6 +24,10 @@ class ResponseComponentsTestCase(SimpleTestCase):
         options = self.components['OptionsCreateInvitation']
         self.assertNotIn('required', options)
 
+    def test_plain_serializers_keep_fields_they_may_omit(self):
+        session_config = self.components['SessionConfig']
+        self.assertEqual(session_config['required'], ['session_configured'])
+
     def test_patched_request_components_require_nothing(self):
         patched = self.components['PatchedMemberUpdateRequest']
         self.assertNotIn('required', patched)

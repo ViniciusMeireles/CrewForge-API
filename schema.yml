@@ -8612,9 +8612,6 @@ components:
           - $ref: '#/components/schemas/SessionImpersonation'
           nullable: true
       required:
-      - impersonation
-      - member
-      - organization
       - organizations
       - user
     SessionConfig:
@@ -8633,10 +8630,6 @@ components:
         debug:
           type: boolean
       required:
-      - cookie_settings
-      - cors_allow_credentials
-      - cors_allowed_origins
-      - debug
       - session_configured
     SessionImpersonation:
       type: object
