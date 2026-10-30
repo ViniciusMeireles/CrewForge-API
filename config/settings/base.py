@@ -2,6 +2,7 @@ import os
 import warnings
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import dj_database_url
 from celery.schedules import crontab
@@ -143,10 +144,14 @@ DATABASES = {
     )
 }
 
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.environ.get('CACHE_URL', 'redis://redis:6379/1'),
+        'LOCATION': os.environ.get('CACHE_URL')
+        or urlsplit(CELERY_BROKER_URL)._replace(path='/1').geturl(),
     }
 }
 
@@ -429,7 +434,6 @@ elif (
     )
 
 # Celery
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
