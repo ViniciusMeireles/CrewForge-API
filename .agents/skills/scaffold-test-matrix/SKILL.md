@@ -88,7 +88,7 @@ If no, use essential mode:
 Essential mode generates:
 - `test_model.py` — Model behavior
 - `test_crud.py` — CRUD operations
-- `test_permission.py` — Permission matrix
+- `test_permission.py` — Permission table (`PermissionMatrixMixin`)
 - `test_choices.py` — Choice enums
 
 Full mode adds:
@@ -165,13 +165,15 @@ Wait for confirmation.
 
 #### Phase 2d: test_permission.py
 
-Present the permission tests. These test:
-- Unauthenticated for all endpoints (401)
-- Inactive member for all actions (403)
-- Role hierarchy write checks
-- All roles can read
-- Cross-org write (403/404)
-- Cross-org read (filtered)
+Generate one `PermissionMatrixMixin` table (template in `references/test-templates.py`,
+rules in `docs/patterns/test-patterns.md` › `test_permission.py`):
+- one `Action` per endpoint action, plus one per target role or access level when
+  the outcome depends on the target (`delete_owner`, `retrieve_admin_invite`);
+- one row per actor: `ANONYMOUS`, `NO_SESSION` where it differs, every Role,
+  `INACTIVE` and `OTHER_ORGANIZATION`;
+- named tests only for content, payload rules, side effects and messages.
+
+Never generate `test_not_authenticated_*` or per-role copies.
 
 Wait for confirmation.
 

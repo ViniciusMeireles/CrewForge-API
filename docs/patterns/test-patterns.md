@@ -139,37 +139,52 @@ from apps.accounts.tests.mixins import APITestCaseMixin
 
 ### `test_permission.py`
 
-Tests the full permission matrix: authentication, role hierarchy, inactive
-members, and cross-org isolation.
+One table per resource: `(actor, action) → expected status`, run by
+`PermissionMatrixMixin` (`apps/accounts/tests/permission_matrix.py`) as subtests.
+Every cell runs in a rolled-back savepoint, so URL and payload builders can
+create objects and destructive requests never leak into the next cell.
 
-**What to test (every endpoint action):**
+- **Actors:** `ANONYMOUS`, `NO_SESSION` (authenticated, no Organization session),
+  `OWNER`, `ADMIN`, `MANAGER`, `MEMBER`, `INACTIVE` (`inactive_role`, a session
+  opened before the deactivation) and `OTHER_ORGANIZATION` (owner of another
+  Organization).
+- **Actions:** `Action(method, url, data=None, format='json')`. `url` and `data`
+  receive the test case: `case.organization`, and `case.actor_member` for
+  self-targeted actions such as editing or leaving.
+- **Target dimension:** name one action per target role or access level, for
+  example `retrieve_admin_invite`, `delete_owner`, `view_admins_file`.
+- **Named tests** stay for what a status cannot express: response content
+  (list isolation, counts), payload rules (which role may be assigned), side
+  effects and messages.
+- **Defensive branches** that scoped querysets make unreachable over HTTP are
+  tested directly on the permission class (`test_permission_guards.py`).
 
-| Scenario | Pattern | Expected |
-|----------|---------|----------|
-| Unauthenticated | `test_not_authenticated_{action}` | 401 |
-| Inactive member | `test_not_active_member_{action}` | 403 |
-| Owner write | `test_owner_can_{action}` | 200/204 |
-| Admin write | `test_admin_can_{action}` | 200/204 |
-| Manager write | `test_manager_cannot_{action}` | 403 |
-| Member write | `test_member_cannot_{action}` | 403 |
-| All roles read | `test_{role}_can_retrieve` | 200 |
-| Cross-org write | `test_cross_org_member_{action}` | 403/404 |
-| Cross-org read | `test_cross_org_member_retrieve` | 200/404 |
-
-**Key conventions:**
-- Create a fresh resource in `setUp` or per-test for isolation
-- `force_authenticate(member=member)` for each role switch
-- Cross-org tests use `MemberFactory` with a different organization
-
-**Standard imports:**
 ```python
-from rest_framework import status as http_status
+class {Resource}PermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    actions = {
+        'list': Action('get', lambda case: LIST),
+        'retrieve': Action('get', _detail),
+        'create': Action('post', lambda case: LIST, _payload),
+        'update': Action('put', _detail, _payload),
+        'delete': Action('delete', _detail),
+    }
+    matrix = {
+        ANONYMOUS: {'list': 401, 'retrieve': 401, 'create': 401, 'update': 401, 'delete': 401},
+        INACTIVE: {'list': 403, 'retrieve': 403, 'create': 403, 'update': 403, 'delete': 403},
+        OWNER: {'retrieve': 200, 'create': 201, 'update': 200, 'delete': 204},
+        ADMIN: {'retrieve': 200, 'create': 201, 'update': 200, 'delete': 204},
+        MANAGER: {'retrieve': 200, 'create': 403, 'update': 403, 'delete': 403},
+        MEMBER: {'retrieve': 200, 'create': 403, 'update': 403, 'delete': 403},
+        OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
+    }
 
-from apps.accounts.choices import MemberRoleChoices
-from apps.accounts.factories.members import MemberFactory
-from apps.accounts.factories.organization_image import OrganizationImageFactory
-from apps.accounts.tests.mixins import APITestCaseMixin
+    def setUp(self):
+        self.organization = OrganizationFactory()
 ```
+
+A wrong cell fails with the actor, the action and the response body.
 
 ---
 
@@ -284,11 +299,7 @@ test_delete_nonexistent
 test_delete_removes_from_list
 test_create_all_{variants}
 
-test_not_authenticated_{action}
-test_not_active_member_{action}
-
-test_owner_can_{action}
-test_admin_can_{action}
+test_permission_matrix               (inherited from PermissionMatrixMixin)
 test_manager_cannot_{action}
 test_member_cannot_{action}
 
@@ -313,8 +324,11 @@ Avoid docstrings — the method name should be descriptive enough.
 ### CustomAPIClient
 
 `APITestCaseMixin` sets `client_class = CustomAPIClient`. The client's
-`force_authenticate(member=member)` performs both JWT auth and organization
-login (step 3 of the auth flow), setting `request.session['organization_id']`.
+`force_authenticate(member=member)` authenticates the user and writes the
+Organization session directly (`session['organization_id']`), without calling
+the login endpoint, in any Member or Organization state: a session opened
+before a later deactivation or suspension. Test the login endpoint itself
+through its own requests (`test_organizations/test_crud.py`).
 
 Always use `force_authenticate(member=member)` instead of
 `force_authenticate(user=user)` to ensure organization context is established.
@@ -350,20 +364,10 @@ class OrganizationImageCRUDTestCase(APITestCaseMixin, APITestCase):
         self.list_url = reverse('accounts:organization_images-list')
 ```
 
-### Anonymous/unauthenticated tests
+### Anonymous/unauthenticated access
 
-```python
-def test_not_authenticated_list(self):
-    self.client.logout()
-    response = self.client.get(self.list_url)
-    self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-```
-
-Or:
-
-```python
-self.client.force_authenticate(user=None)
-```
+Anonymous access is the `ANONYMOUS` row of the permission matrix; do not write
+`test_not_authenticated_*` copies.
 
 ---
 
@@ -599,10 +603,7 @@ these test scenarios:
 | `test_send_email_after_cooldown` | After cooldown passes, 200 is returned and email is sent |
 | `test_send_email_expired_invitation` | Expired invitation returns 400 |
 | `test_send_email_accepted_invitation` | Already accepted invitation returns 400 |
-| `test_not_authenticated_send_email` | 401 for unauthenticated requests |
-| `test_not_active_member_send_email` | 403 for inactive members |
-| `test_not_permission_send_email` | 403 for members with insufficient role |
-| `test_cross_org_send_email` | 404 when accessing from another organization |
+| `send_email` action in the permission matrix | `ANONYMOUS` 401, `INACTIVE` 403, `MEMBER` 403, `OTHER_ORGANIZATION` 404 |
 
 ### Create with Send Email Flag
 
