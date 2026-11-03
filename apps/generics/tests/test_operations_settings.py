@@ -1,4 +1,5 @@
 import os
+import tomllib
 import runpy
 import sys
 from contextlib import contextmanager
@@ -110,6 +111,25 @@ class SharedInfrastructureSettingsTestCase(SimpleTestCase):
 
     def test_celery_keeps_the_json_root_logger(self):
         self.assertFalse(settings.CELERY_WORKER_HIJACK_ROOT_LOGGER)
+
+    def test_testing_settings_keep_production_cookie_flags(self):
+        self.assertFalse(settings.DEBUG)
+        self.assertTrue(settings.SESSION_COOKIE_SECURE)
+        self.assertTrue(settings.CSRF_COOKIE_SECURE)
+        self.assertTrue(settings.AUTH_COOKIE_SECURE)
+        self.assertTrue(settings.AUTH_COOKIE_ACCESS_NAME.startswith('__Host-'))
+        self.assertTrue(settings.AUTH_COOKIE_REFRESH_NAME.startswith('__Secure-'))
+
+    def test_testing_settings_do_not_load_local(self):
+        source = (PROJECT / 'config' / 'settings' / 'testing.py').read_text()
+        self.assertIn('from .base import', source)
+        self.assertNotIn('.local', source)
+
+    def test_coverage_measures_commands_and_skips_migrations(self):
+        config = tomllib.loads((PROJECT / 'pyproject.toml').read_text())
+        omit = config['tool']['coverage']['run']['omit']
+        self.assertIn('*/migrations/*', omit)
+        self.assertFalse(any('commands' in pattern for pattern in omit))
 
     def test_testing_settings_flag_tests(self):
         self.assertTrue(settings.TESTING)

@@ -80,7 +80,7 @@ python_files = [
 [tool.coverage.run]
 branch = true
 omit = [
-    "*/commands/*",
+    "*/migrations/*",
     "*/tests/*",
     "*/__init__.py",
     "*/.agents/skills/*",

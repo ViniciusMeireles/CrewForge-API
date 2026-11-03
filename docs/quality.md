@@ -19,14 +19,18 @@ complete.
 
 ### Minimum Coverage by Module
 
+Ranked by risk: a missed branch in a permission is a data leak, one in a helper is
+usually a crash a view test already catches.
+
 | Module | Minimum Target |
 |--------|----------------|
-| Models | 85% |
-| Views/ViewSets | 70% |
-| Serializers | 60% |
-| Permissions | 50% |
-| Utils/Helpers | 100% |
-| Overall | 88% |
+| Permissions | 100% |
+| Views/ViewSets | 90% |
+| Serializers | 85% |
+| Models and managers | 85% |
+| Management commands | 85% |
+| Utils/Helpers | 80% |
+| Overall (CI gate) | 88% |
 
 ### How to Measure
 
@@ -40,19 +44,24 @@ make l_test_parallel_nocov
 
 Coverage configuration is in `pyproject.toml`:
 
-```ini
+```toml
 [tool.coverage.run]
 branch = true
 omit = [
-    "*/management/*",
+    "*/migrations/*",
     "*/tests/*",
     "*/__init__.py",
-    "*/settings/*",
+    "*/.agents/skills/*",
+    "config/settings/local.py",
+    "config/settings/production.py",
     "manage.py",
     "wsgi.py",
-    "asgi.py",
+    "asgi.py"
 ]
 ```
+
+Management commands are measured; migrations are not (they run once per database
+and would only inflate the total).
 
 ---
 
