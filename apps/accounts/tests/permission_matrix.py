@@ -33,6 +33,7 @@ class Action:
     method: str
     url: Callable[[Any], str]
     data: Callable[[Any], dict] | None = None
+    format: str = 'json'
 
 
 class PermissionMatrixMixin:
@@ -76,7 +77,7 @@ class PermissionMatrixMixin:
 
     def request_action(self, name: str):
         action = self.actions[name]
-        kwargs = {'format': 'json'}
+        kwargs = {'format': action.format}
         if action.data:
             kwargs['data'] = action.data(self)
         return getattr(self.client, action.method)(action.url(self), **kwargs)

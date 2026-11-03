@@ -8,6 +8,78 @@ from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organization_image import OrganizationImageFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import PNG_SIGNATURE, APITestCaseMixin
+from apps.accounts.tests.permission_matrix import (
+    ADMIN,
+    ANONYMOUS,
+    INACTIVE,
+    MANAGER,
+    MEMBER,
+    OTHER_ORGANIZATION,
+    OWNER,
+    Action,
+    PermissionMatrixMixin,
+)
+
+LIST = reverse('accounts:organization_images-list')
+FORM_OPTIONS = reverse('accounts:organization_images-form-options-create')
+
+
+def _detail(case):
+    image = OrganizationImageFactory(profile=case.organization.get_profile())
+    return reverse('accounts:organization_images-detail', args=[image.pk])
+
+
+def _upload(case):
+    return {
+        'image.file': SimpleUploadedFile(
+            name='cover.png',
+            content=PNG_SIGNATURE + b'fake-png-content',
+            content_type='image/png',
+        ),
+        'image_type': OrganizationImageTypeChoices.COVER,
+    }
+
+
+def _image_type(case):
+    return {'image_type': 'cover'}
+
+
+class OrganizationImagePermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    actions = {
+        'list': Action('get', lambda case: LIST),
+        'retrieve': Action('get', _detail),
+        'create': Action('post', lambda case: LIST, _upload, 'multipart'),
+        'update': Action('patch', _detail, _image_type, 'multipart'),
+        'delete': Action('delete', _detail),
+        'form_options': Action('get', lambda case: FORM_OPTIONS),
+    }
+    matrix = {
+        ANONYMOUS: {
+            'list': 200,
+            'retrieve': 404,
+            'create': 401,
+            'update': 401,
+            'delete': 401,
+            'form_options': 200,
+        },
+        INACTIVE: {'create': 403, 'retrieve': 404, 'update': 404, 'delete': 404},
+        OWNER: {'create': 201, 'retrieve': 200, 'update': 200, 'delete': 204},
+        ADMIN: {'create': 201, 'retrieve': 200, 'update': 200, 'delete': 204},
+        MANAGER: {'create': 403, 'retrieve': 200, 'update': 403, 'delete': 403},
+        MEMBER: {
+            'create': 403,
+            'retrieve': 200,
+            'update': 403,
+            'delete': 403,
+            'form_options': 200,
+        },
+        OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
+    }
+
+    def setUp(self):
+        self.organization = OrganizationFactory()
 
 
 class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
@@ -41,40 +113,6 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual([item['id'] for item in response.data['results']], [own.id])
 
-    def test_not_authenticated_retrieve(self):
-        image = self._create_image()
-        self.client.logout()
-        url = self._detail_url(image)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_not_authenticated_create(self):
-        self.client.logout()
-        response = self.client.post(self.list_url, data={}, format='multipart')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_update(self):
-        image = self._create_image()
-        self.client.logout()
-        url = self._detail_url(image)
-        response = self.client.put(
-            url, data={'image_type': 'cover'}, format='multipart'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_delete(self):
-        image = self._create_image()
-        self.client.logout()
-        url = self._detail_url(image)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_form_options(self):
-        self.client.logout()
-        url = reverse(viewname='accounts:organization_images-form-options-create')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
     def test_not_authenticated_form_options_ignores_search(self):
         self.client.logout()
         url = reverse(viewname='accounts:organization_images-form-options-create')
@@ -83,54 +121,6 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(
             len(response.data['image_type']), len(OrganizationImageTypeChoices)
         )
-
-    def test_not_active_member_create(self):
-        member = MemberFactory(
-            organization=self.organization,
-            is_active=False,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=member)
-        response = self.client.post(self.list_url, data={}, format='multipart')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_update(self):
-        image = self._create_image()
-        member = MemberFactory(
-            organization=self.organization,
-            is_active=False,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=member)
-        url = self._detail_url(image)
-        response = self.client.patch(
-            url, data={'image_type': 'cover'}, format='multipart'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_not_active_member_delete(self):
-        image = self._create_image()
-        member = MemberFactory(
-            organization=self.organization,
-            is_active=False,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=member)
-        url = self._detail_url(image)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_not_active_member_retrieve(self):
-        image = self._create_image()
-        member = MemberFactory(
-            organization=self.organization,
-            is_active=False,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=member)
-        url = self._detail_url(image)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
     def _create_payload(self, image_type=OrganizationImageTypeChoices.COVER):
         return {
@@ -150,14 +140,6 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
             self.list_url, data=self._create_payload(), format='multipart'
         )
 
-    def test_owner_can_create(self):
-        response = self._create_as(MemberRoleChoices.OWNER)
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
-    def test_admin_can_create(self):
-        response = self._create_as(MemberRoleChoices.ADMIN)
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
     def test_manager_cannot_create(self):
         response = self._create_as(MemberRoleChoices.MANAGER)
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
@@ -167,161 +149,3 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         response = self._create_as(MemberRoleChoices.MEMBER)
         self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
         self.assertFalse(self.profile.images.exists())
-
-    def test_member_can_read_form_options_create(self):
-        member = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MEMBER
-        )
-        self.client.force_authenticate(member=member)
-        url = reverse(viewname='accounts:organization_images-form-options-create')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_owner_can_update(self):
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.patch(
-            url, data={'image_type': 'cover'}, format='multipart'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_owner_can_delete(self):
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
-
-    def test_admin_can_update(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        self.client.force_authenticate(member=admin)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.patch(
-            url, data={'image_type': 'cover'}, format='multipart'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_can_delete(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        self.client.force_authenticate(member=admin)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
-
-    def test_manager_cannot_update(self):
-        manager = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MANAGER
-        )
-        self.client.force_authenticate(member=manager)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.patch(
-            url, data={'image_type': 'cover'}, format='multipart'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_manager_cannot_delete(self):
-        manager = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MANAGER
-        )
-        self.client.force_authenticate(member=manager)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_member_cannot_update(self):
-        member = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MEMBER
-        )
-        self.client.force_authenticate(member=member)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.patch(
-            url, data={'image_type': 'cover'}, format='multipart'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_member_cannot_delete(self):
-        member = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MEMBER
-        )
-        self.client.force_authenticate(member=member)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_owner_can_retrieve(self):
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_can_retrieve(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        self.client.force_authenticate(member=admin)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_manager_can_retrieve(self):
-        manager = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MANAGER
-        )
-        self.client.force_authenticate(member=manager)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_member_can_retrieve(self):
-        member = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MEMBER
-        )
-        self.client.force_authenticate(member=member)
-        image = self._create_image()
-        url = self._detail_url(image)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_cross_org_member_retrieve(self):
-        other_org = OrganizationFactory()
-        other_member = other_org.owner
-        image = self._create_image()
-        self.client.force_authenticate(member=other_member)
-        url = self._detail_url(image)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_member_update(self):
-        other_org = OrganizationFactory()
-        other_admin = MemberFactory(
-            organization=other_org, role=MemberRoleChoices.ADMIN
-        )
-        image = self._create_image()
-        self.client.force_authenticate(member=other_admin)
-        url = self._detail_url(image)
-        response = self.client.patch(
-            url, data={'image_type': 'cover'}, format='multipart'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_member_delete(self):
-        other_org = OrganizationFactory()
-        other_admin = MemberFactory(
-            organization=other_org, role=MemberRoleChoices.ADMIN
-        )
-        image = self._create_image()
-        self.client.force_authenticate(member=other_admin)
-        url = self._detail_url(image)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
