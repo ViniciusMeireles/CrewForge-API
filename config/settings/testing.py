@@ -1,5 +1,10 @@
+import os
+import secrets
+
 from .base import *  # noqa
 from .base import BASE_DIR
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or secrets.token_urlsafe(64)
 
 ALLOWED_HOSTS = ['*']
 SECURE_SSL_REDIRECT = False
