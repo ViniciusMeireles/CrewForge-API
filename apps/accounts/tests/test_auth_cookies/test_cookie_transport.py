@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import override_settings
@@ -16,8 +17,8 @@ from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import DEFAULT_PASSWORD, UserFactory
 
 USERNAME_FIELD = get_user_model().USERNAME_FIELD
-ACCESS = 'access'
-REFRESH = 'refresh'
+ACCESS = settings.AUTH_COOKIE_ACCESS_NAME
+REFRESH = settings.AUTH_COOKIE_REFRESH_NAME
 COOKIE_HEADER = {'HTTP_X_AUTH_TRANSPORT': 'cookie'}
 TOKEN_KEYS = {'access', 'refresh', 'auth_token'}
 

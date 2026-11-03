@@ -11,10 +11,6 @@ class SessionCRUDTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.session_url = reverse('accounts:session')
 
-    def test_not_authenticated_returns_401(self):
-        response = self.client.get(self.session_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
     def test_authenticated_no_org_returns_user_and_organizations(self):
         organization = self.new_account(organization_login=False)
         response = self.client.get(self.session_url)
@@ -71,7 +67,11 @@ class SessionCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertTrue(permissions['has_owner_permission'])
 
     def test_session_includes_last_login_at(self):
-        self.new_account(organization_login=True)
+        organization = self.new_account(organization_login=False)
+        login = self.client.post(
+            reverse('accounts:organizations-login', args=[organization.pk])
+        )
+        self.assertEqual(login.status_code, http_status.HTTP_200_OK)
         response = self.client.get(self.session_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 

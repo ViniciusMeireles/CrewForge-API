@@ -22,7 +22,7 @@ class AuthPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.organization = self.new_account()
 
-    def test_not_authenticated_password_reset(self):
+    def test_anonymous_can_request_password_reset(self):
         self.client.logout()
         member = self.organization.owner
         payload = {'email': member.user.email}
@@ -32,7 +32,7 @@ class AuthPermissionTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertIn('detail', response.data)
 
-    def test_not_authenticated_logout(self):
+    def test_logout_with_refresh_token_needs_no_session(self):
         self.client.force_authenticate(user=None)
         member = self.organization.owner
         payload = {

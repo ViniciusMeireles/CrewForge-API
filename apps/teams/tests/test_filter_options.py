@@ -63,7 +63,7 @@ class FilterOptionsPermissionTestCase(
         self.client.force_authenticate(user=self.organization.owner.user)
         self.assert_expected_status('no_session')
 
-    def test_not_authenticated(self):
+    def test_anonymous(self):
         self.client.logout()
         self.assert_expected_status('anonymous')
 

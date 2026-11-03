@@ -1,4 +1,15 @@
-from .local import *  # noqa
+import os
+import secrets
+
+from .base import *  # noqa
+from .base import BASE_DIR
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or secrets.token_urlsafe(64)
+
+ALLOWED_HOSTS = ['*']
+SECURE_SSL_REDIRECT = False
+MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 TESTING = True
 
@@ -14,6 +25,7 @@ CELERY_TASK_IGNORE_RESULT = True
 STORAGES = {
     **STORAGES,  # noqa: F405
     'default': {'BACKEND': 'django.core.files.storage.InMemoryStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
 }
 
 REST_FRAMEWORK = {

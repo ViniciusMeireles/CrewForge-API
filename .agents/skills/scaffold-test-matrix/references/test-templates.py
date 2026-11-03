@@ -178,85 +178,43 @@ class {Resource}CRUDTestCase(APITestCaseMixin, APITestCase):
 # test_permission.py — Permission matrix tests
 # ============================================================
 
-class {Resource}PermissionTestCase(APITestCaseMixin, APITestCase):
-    def setUp(self):
-        self.organization = self.new_account()
-        self.list_url = reverse('{app}:{resource}-list')
+from apps.accounts.tests.permission_matrix import (  # noqa: E402
+    ADMIN, ANONYMOUS, INACTIVE, MANAGER, MEMBER, OTHER_ORGANIZATION, OWNER,
+    Action, PermissionMatrixMixin,
+)
 
-    def _detail_url(self, resource):
-        return reverse('{app}:{resource}-detail', args=[resource.id])
+LIST = reverse('{app}:{resource}-list')
 
-    def _payload(self, **overrides):
-        data = {Resource}Factory.build()
-        payload = {'{field1}': data.{field1}, '{field2}': data.{field2}}
-        payload.update(overrides)
-        return payload
 
-    def _create_resource(self):
-        return {Resource}Factory(organization=self.organization)
+def _detail(case):
+    resource = {Resource}Factory(organization=case.organization)
+    return reverse('{app}:{resource}-detail', args=[resource.pk])
 
-    # --- Unauthenticated ---
-    def test_not_authenticated_list(self):
-        self.client.logout()
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_not_authenticated_create(self):
-        self.client.logout()
-        payload = self._payload()
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+def _payload(case):
+    data = {Resource}Factory.build()
+    return {'{field1}': data.{field1}, '{field2}': data.{field2}}
 
-    # --- Inactive member ---
-    def test_inactive_member_list(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # --- Role hierarchy ---
-    def test_member_can_read(self):
-        member = MemberFactory(organization=self.organization, role='member')
-        self.client.force_authenticate(member=member)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_member_cannot_create(self):
-        member = MemberFactory(organization=self.organization, role='member')
-        self.client.force_authenticate(member=member)
-        payload = self._payload()
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_admin_can_create(self):
-        member = MemberFactory(organization=self.organization, role='admin')
-        self.client.force_authenticate(member=member)
-        payload = self._payload()
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    def test_admin_can_delete(self):
-        resource = self._create_resource()
-        member = MemberFactory(organization=self.organization, role='admin')
-        self.client.force_authenticate(member=member)
-        response = self.client.delete(self._detail_url(resource))
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    # --- Cross-org ---
-    def test_cross_org_read_denied(self):
-        other_org = OrganizationFactory()
-        resource = {Resource}Factory(organization=other_org)
-        response = self.client.get(self._detail_url(resource))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_write_denied(self):
-        other_org = OrganizationFactory()
-        resource = {Resource}Factory(organization=other_org)
-        member = MemberFactory(organization=self.organization, role='admin')
-        self.client.force_authenticate(member=member)
-        payload = self._payload()
-        response = self.client.put(self._detail_url(resource), data=payload, format='json')
-        self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND])
+class {Resource}PermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    actions = {
+        'list': Action('get', lambda case: LIST),
+        'retrieve': Action('get', _detail),
+        'create': Action('post', lambda case: LIST, _payload),
+        'update': Action('put', _detail, _payload),
+        'delete': Action('delete', _detail),
+    }
+    matrix = {
+        ANONYMOUS: {'list': 401, 'retrieve': 401, 'create': 401, 'update': 401, 'delete': 401},
+        INACTIVE: {'list': 403, 'retrieve': 403, 'create': 403, 'update': 403, 'delete': 403},
+        OWNER: {'retrieve': 200, 'create': 201, 'update': 200, 'delete': 204},
+        ADMIN: {'retrieve': 200, 'create': 201, 'update': 200, 'delete': 204},
+        MANAGER: {'retrieve': 200, 'create': 403, 'update': 403, 'delete': 403},
+        MEMBER: {'retrieve': 200, 'create': 403, 'update': 403, 'delete': 403},
+        OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
+    }
 
 
 # ============================================================

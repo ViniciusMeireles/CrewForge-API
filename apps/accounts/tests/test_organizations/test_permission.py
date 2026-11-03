@@ -6,6 +6,56 @@ from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.permission_matrix import (
+    ADMIN,
+    ANONYMOUS,
+    INACTIVE,
+    MANAGER,
+    MEMBER,
+    OTHER_ORGANIZATION,
+    OWNER,
+    Action,
+    PermissionMatrixMixin,
+)
+
+LIST = reverse('accounts:organizations-list')
+
+
+def _detail(case):
+    return reverse('accounts:organizations-detail', args=[case.organization.pk])
+
+
+def _payload(case):
+    data = OrganizationFactory.build()
+    return {'name': data.name, 'slug': data.slug}
+
+
+class OrganizationPermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    inactive_role = MemberRoleChoices.MEMBER
+    actions = {
+        'list': Action('get', lambda case: LIST),
+        'create': Action('post', lambda case: LIST, _payload),
+        'retrieve': Action('get', _detail),
+        'update': Action('put', _detail, _payload),
+        'delete': Action('delete', _detail),
+    }
+    matrix = {
+        ANONYMOUS: {
+            'list': 401,
+            'create': 401,
+            'retrieve': 401,
+            'update': 401,
+            'delete': 401,
+        },
+        INACTIVE: {'create': 201, 'retrieve': 404, 'update': 404, 'delete': 404},
+        OWNER: {'list': 200, 'retrieve': 200, 'update': 200, 'delete': 204},
+        ADMIN: {'list': 200, 'retrieve': 200, 'update': 403, 'delete': 403},
+        MANAGER: {'retrieve': 200, 'update': 403, 'delete': 403},
+        MEMBER: {'retrieve': 200, 'update': 403, 'delete': 403},
+        OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
+    }
 
 
 class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
@@ -25,40 +75,6 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
         payload.update(overrides)
         return payload
 
-    # --- Unauthenticated ---
-
-    def test_not_authenticated_list(self):
-        self.client.logout()
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_create(self):
-        self.client.logout()
-        payload = self._org_payload()
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_retrieve(self):
-        self.client.logout()
-        url = self._detail_url(self.organization)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_update(self):
-        self.client.logout()
-        url = self._detail_url(self.organization)
-        payload = self._org_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_delete(self):
-        self.client.logout()
-        url = self._detail_url(self.organization)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    # --- Inactive member ---
-
     def test_not_active_member_list(self):
         member = MemberFactory(organization=self.organization, is_active=False)
         self.client.force_authenticate(member=member)
@@ -67,200 +83,11 @@ class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
         ids = [org['id'] for org in response.data['results']]
         self.assertNotIn(self.organization.id, ids)
 
-    def test_not_active_member_retrieve_returns_404(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        response = self.client.get(self._detail_url(self.organization))
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_not_active_member_create(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        payload = self._org_payload()
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
-    def test_not_active_member_update(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        url = self._detail_url(self.organization)
-        payload = self._org_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_not_active_member_delete(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        url = self._detail_url(self.organization)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    # --- Owner ---
-
-    def test_owner_can_update(self):
-        url = self._detail_url(self.organization)
-        payload = self._org_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_owner_can_delete(self):
-        url = self._detail_url(self.organization)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
-
-    # --- Admin ---
-
-    def test_admin_cannot_update(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        self.client.force_authenticate(member=admin)
-        url = self._detail_url(self.organization)
-        payload = self._org_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_admin_cannot_delete(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        self.client.force_authenticate(member=admin)
-        url = self._detail_url(self.organization)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    # --- Manager ---
-
-    def test_manager_cannot_update(self):
-        manager = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MANAGER
-        )
-        self.client.force_authenticate(member=manager)
-        url = self._detail_url(self.organization)
-        payload = self._org_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_manager_cannot_delete(self):
-        manager = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MANAGER
-        )
-        self.client.force_authenticate(member=manager)
-        url = self._detail_url(self.organization)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    # --- Member ---
-
-    def test_member_cannot_update(self):
-        member_role = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MEMBER
-        )
-        self.client.force_authenticate(member=member_role)
-        url = self._detail_url(self.organization)
-        payload = self._org_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_member_cannot_delete(self):
-        member_role = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MEMBER
-        )
-        self.client.force_authenticate(member=member_role)
-        url = self._detail_url(self.organization)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    # --- All roles can read ---
-
-    def test_owner_can_retrieve(self):
-        url = self._detail_url(self.organization)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_can_retrieve(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        self.client.force_authenticate(member=admin)
-        url = self._detail_url(self.organization)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_manager_can_retrieve(self):
-        manager = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MANAGER
-        )
-        self.client.force_authenticate(member=manager)
-        url = self._detail_url(self.organization)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_member_can_retrieve(self):
-        member_role = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.MEMBER
-        )
-        self.client.force_authenticate(member=member_role)
-        url = self._detail_url(self.organization)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    # --- Cross-org ---
-
-    def test_cross_org_member_update_returns_404(self):
-        other_org = OrganizationFactory()
-        other_owner = other_org.owner
-        self.client.force_authenticate(member=other_owner)
-        url = self._detail_url(self.organization)
-        payload = self._org_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_member_retrieve_returns_404(self):
-        other_org = OrganizationFactory()
-        other_owner = other_org.owner
-        self.client.force_authenticate(member=other_owner)
-        url = self._detail_url(self.organization)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_member_delete_returns_404(self):
-        other_org = OrganizationFactory()
-        other_owner = other_org.owner
-        self.client.force_authenticate(member=other_owner)
-        url = self._detail_url(self.organization)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
     def test_user_without_organization_context_retrieve_returns_404(self):
         other_org = OrganizationFactory()
         self.client.force_authenticate(user=other_org.owner.user)
         response = self.client.get(self._detail_url(self.organization))
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_inactive_member_returns_200(self):
-        MemberFactory(is_active=False)
-        url = self._detail_url(self.organization)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    # --- Choices ---
-
-    # --- List ---
-
-    def test_owner_can_list(self):
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_can_list(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        self.client.force_authenticate(member=admin)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    # --- Cross-org ---
 
     def test_cross_org_member_list_returns_only_own_organization(self):
         other_org = OrganizationFactory()

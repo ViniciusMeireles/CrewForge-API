@@ -376,11 +376,10 @@ class TestMembersAPITestCase(APITestCaseMixin, APITestCase):
         org = self.new_account()
         response = self.client.get('/api/accounts/members/')
         self.assertEqual(response.status_code, 200)
-
-    def test_not_authenticated_list_members(self):
-        response = self.client.get('/api/accounts/members/')
-        self.assertEqual(response.status_code, 401)
 ```
+
+Who may call which action is a permission table, not a test per actor (see
+`test_permission.py` in [Test Patterns](./test-patterns.md)).
 
 > For detailed test structure, naming, coverage matrix, and conventions, see
 > [Test Patterns](./test-patterns.md).

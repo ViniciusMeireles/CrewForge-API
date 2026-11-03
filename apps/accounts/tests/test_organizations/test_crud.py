@@ -204,6 +204,15 @@ class OrganizationCRUDTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
+    def test_login_organization_of_another_user(self):
+        self.new_account()
+        other = OrganizationFactory()
+        response = self.client.post(
+            reverse('accounts:organizations-login', args=[other.pk])
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+        self.assertNotEqual(self.client.session.get('organization_id'), other.pk)
+
     def test_create_organization_without_name(self):
         user = UserFactory.create()
         self.client.force_authenticate(user=user)
