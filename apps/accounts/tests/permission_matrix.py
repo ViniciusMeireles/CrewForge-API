@@ -40,6 +40,7 @@ class PermissionMatrixMixin:
 
     Every cell runs in a rolled-back savepoint, so objects created by the URL or
     payload builders and changes made by the request never leak between cells.
+    Builders can target the acting member through ``case.actor_member``.
     """
 
     actions: dict[str, Action] = {}
@@ -49,26 +50,29 @@ class PermissionMatrixMixin:
     def authenticate_as(self, actor: str) -> None:
         self.client.logout()
         self.client.force_authenticate(user=None)
+        self.actor_member = None
         if actor == ANONYMOUS:
             return
         if actor == NO_SESSION:
             self.client.force_authenticate(user=self.organization.owner.user)
-        elif actor == OWNER:
-            self.client.force_authenticate(member=self.organization.owner)
+            return
+        if actor == OWNER:
+            self.actor_member = self.organization.owner
         elif actor in ROLES:
-            member = MemberFactory(organization=self.organization, role=ROLES[actor])
-            self.client.force_authenticate(member=member)
+            self.actor_member = MemberFactory(
+                organization=self.organization, role=ROLES[actor]
+            )
         elif actor == INACTIVE:
-            member = MemberFactory(
+            self.actor_member = MemberFactory(
                 organization=self.organization,
                 role=self.inactive_role,
                 is_active=False,
             )
-            self.client.force_authenticate(member=member)
         elif actor == OTHER_ORGANIZATION:
-            self.client.force_authenticate(member=OrganizationFactory().owner)
+            self.actor_member = OrganizationFactory().owner
         else:
             raise ValueError(f'Unknown actor {actor!r}; expected one of {ACTORS}')
+        self.client.force_authenticate(member=self.actor_member)
 
     def request_action(self, name: str):
         action = self.actions[name]
