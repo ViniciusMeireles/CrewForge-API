@@ -25,7 +25,7 @@ class UserProfilePermissionMatrixTestCase(
         'update_language': Action(
             'patch', lambda case: PROFILE, lambda case: {'preferred_language': 'pt-br'}
         ),
-        'change_password': Action(
+        'change_credentials': Action(
             'post',
             lambda case: CHANGE_PASSWORD,
             lambda case: {
@@ -40,7 +40,7 @@ class UserProfilePermissionMatrixTestCase(
             'retrieve': 401,
             'update': 401,
             'update_language': 401,
-            'change_password': 401,
+            'change_credentials': 401,
             'activity': 401,
         },
         NO_SESSION: {'retrieve': 200, 'activity': 200},

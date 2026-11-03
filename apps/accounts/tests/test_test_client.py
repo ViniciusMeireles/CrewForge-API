@@ -1,3 +1,4 @@
+import secrets
 from unittest import mock
 
 from django.urls import reverse
@@ -35,8 +36,9 @@ class ForceAuthenticateMemberTestCase(APITestCaseMixin, APITestCase):
 
 class UserFactoryPasswordTestCase(APITestCase):
     def test_given_password_is_stored(self):
-        user = UserFactory(password='S3cret-pass-e2e')
-        self.assertTrue(user.check_password('S3cret-pass-e2e'))
+        given = secrets.token_urlsafe(16)
+        user = UserFactory(password=given)
+        self.assertTrue(user.check_password(given))
 
     def test_default_password_without_argument(self):
         from apps.accounts.factories.users import DEFAULT_PASSWORD
