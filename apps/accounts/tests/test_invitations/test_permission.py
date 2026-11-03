@@ -11,6 +11,116 @@ from apps.accounts.factories.invitations import InvitationFactory
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.permission_matrix import (
+    ADMIN,
+    ANONYMOUS,
+    INACTIVE,
+    MANAGER,
+    MEMBER,
+    NO_SESSION,
+    OTHER_ORGANIZATION,
+    OWNER,
+    Action,
+    PermissionMatrixMixin,
+)
+
+
+def _invitation_url(role=MemberRoleChoices.MEMBER, name='accounts:invitations-detail'):
+    return lambda case: reverse(
+        name, args=[InvitationFactory(organization=case.organization, role=role).pk]
+    )
+
+
+def _payload(role=MemberRoleChoices.MEMBER):
+    def build(case):
+        data = InvitationFactory.build()
+        return {'email': data.email, 'role': role, 'expired_at': data.expired_at}
+
+    return build
+
+
+LIST = reverse('accounts:invitations-list')
+SEND_EMAIL = 'accounts:invitations-send-email'
+FORM_CREATE = reverse('accounts:invitations-form-options-create')
+FORM_UPDATE = reverse('accounts:invitations-form-options-update')
+
+
+class InvitationPermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    actions = {
+        'list': Action('get', lambda case: LIST),
+        'create': Action('post', lambda case: LIST, _payload()),
+        'retrieve': Action('get', _invitation_url()),
+        'update': Action('put', _invitation_url(), _payload(MemberRoleChoices.ADMIN)),
+        'delete': Action('delete', _invitation_url()),
+        'send_email': Action('post', _invitation_url(name=SEND_EMAIL)),
+        'retrieve_owner_invite': Action(
+            'get', _invitation_url(MemberRoleChoices.OWNER)
+        ),
+        'retrieve_admin_invite': Action(
+            'get', _invitation_url(MemberRoleChoices.ADMIN)
+        ),
+        'retrieve_manager_invite': Action(
+            'get', _invitation_url(MemberRoleChoices.MANAGER)
+        ),
+        'form_options_create': Action('get', lambda case: FORM_CREATE),
+        'form_options_update': Action('get', lambda case: FORM_UPDATE),
+    }
+    matrix = {
+        ANONYMOUS: {
+            'list': 401,
+            'retrieve': 401,
+            'create': 401,
+            'update': 401,
+            'delete': 401,
+            'send_email': 401,
+            'form_options_create': 401,
+            'form_options_update': 401,
+        },
+        NO_SESSION: {'form_options_create': 403, 'form_options_update': 403},
+        INACTIVE: {
+            'list': 403,
+            'retrieve': 403,
+            'create': 403,
+            'update': 403,
+            'delete': 403,
+            'send_email': 403,
+            'form_options_create': 403,
+            'form_options_update': 403,
+        },
+        MEMBER: {
+            'create': 403,
+            'update': 403,
+            'delete': 403,
+            'send_email': 403,
+            'form_options_create': 403,
+            'form_options_update': 403,
+        },
+        MANAGER: {'form_options_create': 403, 'form_options_update': 403},
+        ADMIN: {
+            'retrieve_admin_invite': 404,
+            'retrieve_manager_invite': 200,
+            'retrieve': 200,
+            'form_options_create': 200,
+            'form_options_update': 200,
+        },
+        OWNER: {
+            'retrieve_owner_invite': 200,
+            'retrieve_admin_invite': 200,
+            'form_options_create': 200,
+            'form_options_update': 200,
+        },
+        OTHER_ORGANIZATION: {
+            'retrieve': 404,
+            'update': 404,
+            'delete': 404,
+            'send_email': 404,
+        },
+    }
+
+    def setUp(self):
+        self.organization = OrganizationFactory()
 
 
 class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
@@ -41,126 +151,6 @@ class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
         }
         payload.update(overrides)
         return payload
-
-    # --- Unauthenticated ---
-
-    def test_not_authenticated_list(self):
-        self.client.force_authenticate(user=None)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_create(self):
-        self.client.force_authenticate(user=None)
-        payload = self._invitation_payload()
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_retrieve(self):
-        invitation = self._create_invitation()
-        self.client.force_authenticate(user=None)
-        url = self._detail_url(invitation)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_update(self):
-        invitation = self._create_invitation()
-        self.client.force_authenticate(user=None)
-        url = self._detail_url(invitation)
-        payload = self._invitation_payload(role=MemberRoleChoices.ADMIN)
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_delete(self):
-        invitation = self._create_invitation()
-        self.client.force_authenticate(user=None)
-        url = self._detail_url(invitation)
-        response = self.client.delete(url, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_send_email(self):
-        invitation = self._create_invitation()
-        self.client.force_authenticate(user=None)
-        url = self._send_email_url(invitation)
-        response = self.client.post(url, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    # --- Inactive member ---
-
-    def _assert_inactive_forbidden(self, method, url, data=None):
-        member = MemberFactory(
-            organization=self.organization,
-            role=MemberRoleChoices.ADMIN,
-            is_active=False,
-        )
-        self.client.force_authenticate(member=member)
-        kwargs = {'format': 'json'} if method in ('post', 'put', 'patch') else {}
-        if data:
-            kwargs['data'] = data
-        response = getattr(self.client, method)(url, **kwargs)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_list(self):
-        self._assert_inactive_forbidden('get', self.list_url)
-
-    def test_not_active_member_create(self):
-        self._assert_inactive_forbidden(
-            'post', self.list_url, data=self._invitation_payload()
-        )
-
-    def test_not_active_member_retrieve(self):
-        invitation = self._create_invitation()
-        self._assert_inactive_forbidden('get', self._detail_url(invitation))
-
-    def test_not_active_member_update(self):
-        invitation = self._create_invitation()
-        self._assert_inactive_forbidden(
-            'put',
-            self._detail_url(invitation),
-            data=self._invitation_payload(role=MemberRoleChoices.ADMIN),
-        )
-
-    def test_not_active_member_delete(self):
-        invitation = self._create_invitation()
-        self._assert_inactive_forbidden('delete', self._detail_url(invitation))
-
-    def test_not_active_member_send_email(self):
-        invitation = self._create_invitation()
-        self._assert_inactive_forbidden('post', self._send_email_url(invitation))
-
-    # --- Member role (lowest) ---
-
-    def _assert_member_forbidden(self, method, url, data=None):
-        member = MemberFactory(
-            organization=self.organization,
-            role=MemberRoleChoices.MEMBER,
-        )
-        self.client.force_authenticate(member=member)
-        kwargs = {'format': 'json'} if method in ('post', 'put', 'patch') else {}
-        if data:
-            kwargs['data'] = data
-        response = getattr(self.client, method)(url, **kwargs)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_member_cannot_create(self):
-        self._assert_member_forbidden(
-            'post', self.list_url, data=self._invitation_payload()
-        )
-
-    def test_member_cannot_update(self):
-        invitation = self._create_invitation()
-        self._assert_member_forbidden(
-            'put',
-            self._detail_url(invitation),
-            data=self._invitation_payload(role=MemberRoleChoices.ADMIN),
-        )
-
-    def test_member_cannot_delete(self):
-        invitation = self._create_invitation()
-        self._assert_member_forbidden('delete', self._detail_url(invitation))
-
-    def test_member_cannot_send_email(self):
-        invitation = self._create_invitation()
-        self._assert_member_forbidden('post', self._send_email_url(invitation))
 
     # --- Admin role ---
 
@@ -204,93 +194,6 @@ class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.post(self.list_url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
 
-    def test_not_permission_admin_retrieve_admin_invite(self):
-        invite = self._create_invitation(role=MemberRoleChoices.ADMIN)
-        admin = MemberFactory(
-            organization=self.organization,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=admin)
-        url = self._detail_url(invite)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_admin_can_retrieve_manager_invite(self):
-        invite = self._create_invitation(role=MemberRoleChoices.MANAGER)
-        admin = MemberFactory(
-            organization=self.organization,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=admin)
-        url = self._detail_url(invite)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_can_retrieve_member_invite(self):
-        invite = self._create_invitation(role=MemberRoleChoices.MEMBER)
-        admin = MemberFactory(
-            organization=self.organization,
-            role=MemberRoleChoices.ADMIN,
-        )
-        self.client.force_authenticate(member=admin)
-        url = self._detail_url(invite)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    # --- Owner role ---
-
-    def test_owner_cannot_invite_an_owner(self):
-        payload = self._invitation_payload(role=MemberRoleChoices.OWNER)
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
-    def test_owner_can_retrieve_owner_invite(self):
-        invite = self._create_invitation(role=MemberRoleChoices.OWNER)
-        url = self._detail_url(invite)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_owner_can_retrieve_admin_invite(self):
-        invite = self._create_invitation(role=MemberRoleChoices.ADMIN)
-        url = self._detail_url(invite)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    # --- Cross-org ---
-
-    def test_cross_org_retrieve_returns_404(self):
-        invitation = self._create_invitation()
-        other_org = OrganizationFactory.create()
-        self.client.force_authenticate(member=other_org.owner)
-        url = self._detail_url(invitation)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_update_returns_404(self):
-        invitation = self._create_invitation()
-        other_org = OrganizationFactory.create()
-        self.client.force_authenticate(member=other_org.owner)
-        url = self._detail_url(invitation)
-        payload = self._invitation_payload()
-        response = self.client.put(url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_delete_returns_404(self):
-        invitation = self._create_invitation()
-        other_org = OrganizationFactory.create()
-        self.client.force_authenticate(member=other_org.owner)
-        url = self._detail_url(invitation)
-        response = self.client.delete(url, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_send_email_returns_404(self):
-        invitation = self._create_invitation()
-        other_org = OrganizationFactory.create()
-        self.client.force_authenticate(member=other_org.owner)
-        url = self._send_email_url(invitation)
-        response = self.client.post(url, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
     # --- Send email edge cases ---
 
     @override_settings(FRONTEND_URL='http://example.com')
@@ -327,47 +230,3 @@ class InvitationPermissionTestCase(APITestCaseMixin, APITestCase):
         url = self._send_email_url(invitation)
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
-    # --- Form options ---
-
-    def _form_options_urls(self):
-        return (
-            reverse('accounts:invitations-form-options-create'),
-            reverse('accounts:invitations-form-options-update'),
-        )
-
-    def _assert_form_options_status(self, expected_status):
-        for url in self._form_options_urls():
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, expected_status)
-
-    def test_not_authenticated_form_options(self):
-        self.client.logout()
-        self._assert_form_options_status(http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_without_organization_session_form_options(self):
-        self.client.logout()
-        self.client.force_authenticate(user=self.organization.owner.user)
-        self._assert_form_options_status(http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_form_options(self):
-        for url in self._form_options_urls():
-            with self.subTest(url=url):
-                self._assert_inactive_forbidden('get', url)
-
-    def test_member_and_manager_cannot_read_form_options(self):
-        for role in (MemberRoleChoices.MEMBER, MemberRoleChoices.MANAGER):
-            with self.subTest(role=role):
-                member = MemberFactory(organization=self.organization, role=role)
-                self.client.force_authenticate(member=member)
-                self._assert_form_options_status(http_status.HTTP_403_FORBIDDEN)
-
-    def test_admin_and_owner_can_read_form_options(self):
-        admin = MemberFactory(
-            organization=self.organization, role=MemberRoleChoices.ADMIN
-        )
-        for member in (admin, self.organization.owner):
-            with self.subTest(role=member.role):
-                self.client.force_authenticate(member=member)
-                self._assert_form_options_status(http_status.HTTP_200_OK)
