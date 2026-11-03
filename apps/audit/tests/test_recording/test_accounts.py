@@ -70,7 +70,11 @@ class OrganizationRecordingTestCase(AuditRecordingTestMixin, APITestCase):
         self.assertFalse(self.events(AuditActionChoices.ORGANIZATION_UPDATED).exists())
 
     def test_organization_login(self):
-        self.client.force_authenticate(member=self.owner)
+        self.client.force_authenticate(member=self.owner, organization_auth=False)
+        response = self.client.post(
+            reverse('accounts:organizations-login', args=[self.organization.pk])
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assert_single(
             AuditActionChoices.ORGANIZATION_LOGIN,
             organization_id=self.organization.pk,

@@ -1,4 +1,3 @@
-from django.urls import reverse
 from rest_framework.test import APIClient
 
 from apps.accounts.factories.members import MemberFactory
@@ -20,10 +19,6 @@ class CustomAPIClient(APIClient):
 
         super(CustomAPIClient, self).force_authenticate(user=member.user, token=token)
         if organization_auth:
-            self.post(
-                path=reverse(
-                    viewname='accounts:organizations-login',
-                    args=[member.organization_id],
-                ),
-                format='json',
-            )
+            session = self.session
+            session['organization_id'] = member.organization_id
+            session.save()

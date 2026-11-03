@@ -71,7 +71,11 @@ class SessionCRUDTestCase(APITestCaseMixin, APITestCase):
         self.assertTrue(permissions['has_owner_permission'])
 
     def test_session_includes_last_login_at(self):
-        self.new_account(organization_login=True)
+        organization = self.new_account(organization_login=False)
+        login = self.client.post(
+            reverse('accounts:organizations-login', args=[organization.pk])
+        )
+        self.assertEqual(login.status_code, http_status.HTTP_200_OK)
         response = self.client.get(self.session_url)
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
