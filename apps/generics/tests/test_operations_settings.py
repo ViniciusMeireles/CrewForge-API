@@ -1,7 +1,7 @@
 import os
-import tomllib
 import runpy
 import sys
+import tomllib
 from contextlib import contextmanager
 from pathlib import Path
 from unittest import mock

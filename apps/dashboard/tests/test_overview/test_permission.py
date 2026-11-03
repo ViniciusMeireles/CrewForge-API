@@ -4,7 +4,39 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.members import MemberFactory
+from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.permission_matrix import (
+    ADMIN,
+    ANONYMOUS,
+    INACTIVE,
+    MANAGER,
+    MEMBER,
+    NO_SESSION,
+    OWNER,
+    Action,
+    PermissionMatrixMixin,
+)
+
+OVERVIEW = reverse('dashboard:overview')
+
+
+class OverviewPermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    actions = {'overview': Action('get', lambda case: OVERVIEW)}
+    matrix = {
+        ANONYMOUS: {'overview': 401},
+        NO_SESSION: {'overview': 403},
+        INACTIVE: {'overview': 403},
+        OWNER: {'overview': 200},
+        ADMIN: {'overview': 200},
+        MANAGER: {'overview': 200},
+        MEMBER: {'overview': 200},
+    }
+
+    def setUp(self):
+        self.organization = OrganizationFactory()
 
 
 class OverviewPermissionTestCase(APITestCaseMixin, APITestCase):
@@ -22,21 +54,6 @@ class OverviewPermissionTestCase(APITestCaseMixin, APITestCase):
         self.client.force_authenticate(member=member)
         return member
 
-    def test_not_authenticated_returns_401(self):
-        self.client.force_authenticate(user=None)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_jwt_without_organization_context_returns_403(self):
-        self.client.force_authenticate(user=self.organization.owner.user)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_inactive_member_returns_403(self):
-        self._login_as(MemberRoleChoices.ADMIN, is_active=False)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
     def test_write_methods_not_allowed(self):
         self._login_as(MemberRoleChoices.OWNER)
         for method in ('post', 'put', 'patch', 'delete', 'head'):
@@ -46,13 +63,6 @@ class OverviewPermissionTestCase(APITestCaseMixin, APITestCase):
                     response.status_code,
                     http_status.HTTP_405_METHOD_NOT_ALLOWED,
                 )
-
-    def test_every_role_returns_200(self):
-        for role in MemberRoleChoices.values:
-            with self.subTest(role=role):
-                self._login_as(role)
-                response = self.client.get(self.url)
-                self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     def test_section_gates_by_role(self):
         for role in MemberRoleChoices.values:
