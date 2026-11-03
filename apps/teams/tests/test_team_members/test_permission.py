@@ -92,9 +92,6 @@ class TeamMemberPermissionMatrixTestCase(
         },
     }
 
-    def setUp(self):
-        self.organization = OrganizationFactory()
-
 
 class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):

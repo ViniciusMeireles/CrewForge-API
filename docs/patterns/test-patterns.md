@@ -148,6 +148,8 @@ create objects and destructive requests never leak into the next cell.
   `OWNER`, `ADMIN`, `MANAGER`, `MEMBER`, `INACTIVE` (`inactive_role`, a session
   opened before the deactivation) and `OTHER_ORGANIZATION` (owner of another
   Organization).
+- **Setup:** the mixin creates `self.organization`; the table fails when a declared action
+  appears in no row or a row names an undeclared action.
 - **Actions:** `Action(method, url, data=None, format='json')`. `url` and `data`
   receive the test case: `case.organization`, and `case.actor_member` for
   self-targeted actions such as editing or leaving.
@@ -179,9 +181,6 @@ class {Resource}PermissionMatrixTestCase(
         MEMBER: {'retrieve': 200, 'create': 403, 'update': 403, 'delete': 403},
         OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
     }
-
-    def setUp(self):
-        self.organization = OrganizationFactory()
 ```
 
 A wrong cell fails with the actor, the action and the response body.

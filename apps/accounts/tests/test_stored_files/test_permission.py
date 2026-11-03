@@ -4,7 +4,6 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.factories.files import StoredFileFactory
 from apps.accounts.factories.members import MemberFactory
-from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.accounts.tests.permission_matrix import (
@@ -70,9 +69,6 @@ class StoredFilePermissionMatrixTestCase(
         INACTIVE: {'view_admins_file': 404},
         OTHER_ORGANIZATION: {'view_members_file': 404},
     }
-
-    def setUp(self):
-        self.organization = OrganizationFactory()
 
 
 class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):

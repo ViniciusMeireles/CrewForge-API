@@ -216,9 +216,6 @@ class {Resource}PermissionMatrixTestCase(
         OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
     }
 
-    def setUp(self):
-        self.organization = OrganizationFactory()
-
 
 # ============================================================
 # test_filter.py — Filter field tests

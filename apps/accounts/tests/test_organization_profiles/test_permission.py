@@ -1,7 +1,6 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.accounts.tests.permission_matrix import (
     ADMIN,
@@ -45,6 +44,3 @@ class OrganizationProfilePermissionMatrixTestCase(
         MEMBER: {'retrieve': 200, 'update': 403, 'delete': 403},
         OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
     }
-
-    def setUp(self):
-        self.organization = OrganizationFactory()

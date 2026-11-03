@@ -57,9 +57,6 @@ class OrganizationPermissionMatrixTestCase(
         OTHER_ORGANIZATION: {'retrieve': 404, 'update': 404, 'delete': 404},
     }
 
-    def setUp(self):
-        self.organization = OrganizationFactory()
-
 
 class OrganizationPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):

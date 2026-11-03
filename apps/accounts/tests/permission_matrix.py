@@ -48,6 +48,10 @@ class PermissionMatrixMixin:
     matrix: dict[str, dict[str, int]] = {}
     inactive_role = MemberRoleChoices.ADMIN
 
+    def setUp(self):
+        super().setUp()
+        self.organization = OrganizationFactory()
+
     def authenticate_as(self, actor: str) -> None:
         self.client.logout()
         self.client.force_authenticate(user=None)
@@ -84,6 +88,13 @@ class PermissionMatrixMixin:
 
     def test_permission_matrix(self):
         self.assertTrue(self.matrix, 'Declare the permission matrix')
+        exercised = {name for row in self.matrix.values() for name in row}
+        self.assertEqual(
+            set(self.actions) - exercised, set(), 'Actions no actor row exercises'
+        )
+        self.assertEqual(
+            exercised - set(self.actions), set(), 'Matrix cells without an action'
+        )
         for actor, row in self.matrix.items():
             for name, expected in row.items():
                 with self.subTest(actor=actor, action=name), transaction.atomic():

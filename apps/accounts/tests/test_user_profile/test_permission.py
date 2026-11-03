@@ -1,7 +1,6 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.accounts.tests.permission_matrix import (
     ANONYMOUS,
@@ -46,6 +45,3 @@ class UserProfilePermissionMatrixTestCase(
         },
         NO_SESSION: {'retrieve': 200, 'activity': 200},
     }
-
-    def setUp(self):
-        self.organization = OrganizationFactory()

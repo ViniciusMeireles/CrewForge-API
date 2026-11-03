@@ -4,7 +4,6 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.members import MemberFactory
-from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.accounts.tests.permission_matrix import (
     ADMIN,
@@ -46,9 +45,6 @@ class AuditEventPermissionMatrixTestCase(
         MEMBER: {'list': 403},
         OTHER_ORGANIZATION: {'retrieve': 404},
     }
-
-    def setUp(self):
-        self.organization = OrganizationFactory()
 
 
 class AuditEventPermissionTestCase(AuditAPITestCaseMixin, APITestCase):
