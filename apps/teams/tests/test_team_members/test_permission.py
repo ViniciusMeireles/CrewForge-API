@@ -6,9 +6,94 @@ from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.permission_matrix import (
+    ADMIN,
+    ANONYMOUS,
+    INACTIVE,
+    MANAGER,
+    MEMBER,
+    NO_SESSION,
+    OTHER_ORGANIZATION,
+    OWNER,
+    Action,
+    PermissionMatrixMixin,
+)
 from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.factories.team_members import TeamMemberFactory
 from apps.teams.factories.teams import TeamFactory
+
+LIST = reverse('teams:team_members-list')
+FORM_OPTIONS = reverse('teams:team_members-form-options-create')
+
+
+def _detail(case):
+    team_member = TeamMemberFactory(organization=case.organization)
+    return reverse('teams:team_members-detail', args=[team_member.pk])
+
+
+def _new_team_member(case):
+    team = TeamFactory(organization=case.organization)
+    member = MemberFactory(organization=case.organization)
+    return {'team': team.pk, 'member': member.pk}
+
+
+def _promote(case):
+    return {'role': TeamMemberRoleChoices.ADMIN}
+
+
+MANAGES = {'retrieve': 200, 'create': 201, 'update': 200, 'delete': 204}
+
+
+class TeamMemberPermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    inactive_role = MemberRoleChoices.MEMBER
+    actions = {
+        'list': Action('get', lambda case: LIST),
+        'retrieve': Action('get', _detail),
+        'create': Action('post', lambda case: LIST, _new_team_member),
+        'update': Action('put', _detail, _promote),
+        'delete': Action('delete', _detail),
+        'form_options': Action('get', lambda case: FORM_OPTIONS),
+    }
+    matrix = {
+        ANONYMOUS: {
+            'list': 401,
+            'retrieve': 401,
+            'create': 401,
+            'update': 401,
+            'delete': 401,
+            'form_options': 401,
+        },
+        NO_SESSION: {'form_options': 403},
+        INACTIVE: {
+            'list': 403,
+            'retrieve': 403,
+            'create': 403,
+            'update': 403,
+            'delete': 403,
+            'form_options': 403,
+        },
+        OWNER: MANAGES,
+        ADMIN: MANAGES,
+        MANAGER: MANAGES,
+        MEMBER: {
+            'retrieve': 200,
+            'create': 400,
+            'update': 403,
+            'delete': 403,
+            'form_options': 200,
+        },
+        OTHER_ORGANIZATION: {
+            'retrieve': 404,
+            'create': 400,
+            'update': 404,
+            'delete': 404,
+        },
+    }
+
+    def setUp(self):
+        self.organization = OrganizationFactory()
 
 
 class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
@@ -25,269 +110,6 @@ class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
     def _create_role_member(self, role=MemberRoleChoices.MEMBER):
         return MemberFactory(organization=self.organization, role=role)
 
-    # --- Unauthenticated ---
-
-    def test_not_authenticated_list(self):
-        self.client.logout()
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_retrieve(self):
-        tm = self._create_tm()
-        self.client.logout()
-        response = self.client.get(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_create(self):
-        self.client.logout()
-        response = self.client.post(self.list_url, data={}, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_update(self):
-        tm = self._create_tm()
-        self.client.logout()
-        response = self.client.put(
-            self._detail_url(tm), data={'role': 'admin'}, format='json'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_delete(self):
-        tm = self._create_tm()
-        self.client.logout()
-        response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    # --- Inactive member ---
-
-    def test_not_active_member_list(self):
-        inactive = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=inactive)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_retrieve(self):
-        tm = self._create_tm()
-        inactive = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=inactive)
-        response = self.client.get(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_create(self):
-        team = TeamFactory(organization=self.organization)
-        member = MemberFactory(organization=self.organization)
-        payload = {'team': team.id, 'member': member.id}
-        inactive = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=inactive)
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_update(self):
-        tm = self._create_tm()
-        inactive = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=inactive)
-        response = self.client.put(
-            self._detail_url(tm), data={'role': 'admin'}, format='json'
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_not_active_member_delete(self):
-        tm = self._create_tm()
-        inactive = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=inactive)
-        response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    # --- Owner ---
-
-    def test_owner_can_create(self):
-        team = TeamFactory(organization=self.organization)
-        member = MemberFactory(organization=self.organization)
-        payload = {'team': team.id, 'member': member.id}
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
-    def test_owner_can_update(self):
-        tm = self._create_tm()
-        response = self.client.put(
-            self._detail_url(tm),
-            data={'role': TeamMemberRoleChoices.ADMIN},
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_owner_can_delete(self):
-        tm = self._create_tm()
-        response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
-
-    # --- Admin ---
-
-    def test_admin_can_create(self):
-        admin = self._create_role_member(role=MemberRoleChoices.ADMIN)
-        self.client.force_authenticate(member=admin)
-        team = TeamFactory(organization=self.organization)
-        member = MemberFactory(organization=self.organization)
-        payload = {'team': team.id, 'member': member.id}
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
-    def test_admin_can_update(self):
-        admin = self._create_role_member(role=MemberRoleChoices.ADMIN)
-        self.client.force_authenticate(member=admin)
-        tm = self._create_tm()
-        response = self.client.put(
-            self._detail_url(tm),
-            data={'role': TeamMemberRoleChoices.ADMIN},
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_can_delete(self):
-        admin = self._create_role_member(role=MemberRoleChoices.ADMIN)
-        self.client.force_authenticate(member=admin)
-        tm = self._create_tm()
-        response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
-
-    # --- Manager ---
-
-    def test_manager_can_create(self):
-        manager = self._create_role_member(role=MemberRoleChoices.MANAGER)
-        self.client.force_authenticate(member=manager)
-        team = TeamFactory(organization=self.organization)
-        member = MemberFactory(organization=self.organization)
-        payload = {'team': team.id, 'member': member.id}
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
-    def test_manager_can_update(self):
-        manager = self._create_role_member(role=MemberRoleChoices.MANAGER)
-        self.client.force_authenticate(member=manager)
-        tm = self._create_tm()
-        response = self.client.put(
-            self._detail_url(tm),
-            data={'role': TeamMemberRoleChoices.ADMIN},
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_manager_can_delete(self):
-        manager = self._create_role_member(role=MemberRoleChoices.MANAGER)
-        self.client.force_authenticate(member=manager)
-        tm = self._create_tm()
-        response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_204_NO_CONTENT)
-
-    def test_manager_cannot_create_team_member(self):
-        manager = self._create_role_member(role=MemberRoleChoices.MANAGER)
-        self.client.force_authenticate(member=manager)
-        team = TeamFactory(organization=self.organization)
-        member = MemberFactory(organization=self.organization)
-        payload = {'team': team.id, 'member': member.id}
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
-    # --- Member ---
-
-    def test_member_cannot_create(self):
-        member_role = self._create_role_member(role=MemberRoleChoices.MEMBER)
-        self.client.force_authenticate(member=member_role)
-        team = TeamFactory(organization=self.organization)
-        member = MemberFactory(organization=self.organization)
-        payload = {'team': team.id, 'member': member.id}
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
-    def test_member_cannot_update(self):
-        member_role = self._create_role_member(role=MemberRoleChoices.MEMBER)
-        self.client.force_authenticate(member=member_role)
-        tm = self._create_tm()
-        response = self.client.put(
-            self._detail_url(tm),
-            data={'role': TeamMemberRoleChoices.ADMIN},
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_member_cannot_delete(self):
-        member_role = self._create_role_member(role=MemberRoleChoices.MEMBER)
-        self.client.force_authenticate(member=member_role)
-        tm = self._create_tm()
-        response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    # --- All roles can read ---
-
-    def test_owner_can_retrieve(self):
-        tm = self._create_tm()
-        response = self.client.get(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_can_retrieve(self):
-        admin = self._create_role_member(role=MemberRoleChoices.ADMIN)
-        self.client.force_authenticate(member=admin)
-        tm = self._create_tm()
-        response = self.client.get(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_manager_can_retrieve(self):
-        manager = self._create_role_member(role=MemberRoleChoices.MANAGER)
-        self.client.force_authenticate(member=manager)
-        tm = self._create_tm()
-        response = self.client.get(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_member_can_retrieve(self):
-        member_role = self._create_role_member(role=MemberRoleChoices.MEMBER)
-        self.client.force_authenticate(member=member_role)
-        tm = self._create_tm()
-        response = self.client.get(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    # --- Cross-org ---
-
-    def test_cross_org_member_retrieve_returns_404(self):
-        other_org = OrganizationFactory()
-        other_member = other_org.owner
-        tm = self._create_tm()
-        self.client.force_authenticate(member=other_member)
-        response = self.client.get(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_member_create_returns_400(self):
-        other_org = OrganizationFactory()
-        other_owner = other_org.owner
-        self.client.force_authenticate(member=other_owner)
-        team = TeamFactory(organization=self.organization)
-        member = MemberFactory(organization=self.organization)
-        payload = {'team': team.id, 'member': member.id}
-        response = self.client.post(self.list_url, data=payload, format='json')
-        self.assertEqual(response.status_code, http_status.HTTP_400_BAD_REQUEST)
-
-    def test_cross_org_member_update_returns_404(self):
-        other_org = OrganizationFactory()
-        other_admin = MemberFactory(
-            organization=other_org, role=MemberRoleChoices.ADMIN
-        )
-        tm = self._create_tm()
-        self.client.force_authenticate(member=other_admin)
-        response = self.client.put(
-            self._detail_url(tm),
-            data={'role': TeamMemberRoleChoices.ADMIN},
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_member_delete_returns_404(self):
-        other_org = OrganizationFactory()
-        other_admin = MemberFactory(
-            organization=other_org, role=MemberRoleChoices.ADMIN
-        )
-        tm = self._create_tm()
-        self.client.force_authenticate(member=other_admin)
-        response = self.client.delete(self._detail_url(tm))
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
     def test_cross_org_member_list_returns_empty(self):
         other_org = OrganizationFactory()
         other_member = other_org.owner
@@ -297,46 +119,11 @@ class TeamMemberPermissionTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
 
-    # --- Form options ---
-
     def _form_options_urls(self):
         return (
             reverse('teams:team_members-form-options-create'),
             reverse('teams:team_members-form-options-update'),
         )
-
-    def test_not_authenticated_form_options(self):
-        self.client.logout()
-        for url in self._form_options_urls():
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                self.assertEqual(
-                    response.status_code, http_status.HTTP_401_UNAUTHORIZED
-                )
-
-    def test_without_organization_session_form_options(self):
-        self.client.logout()
-        self.client.force_authenticate(user=self.organization.owner.user)
-        for url in self._form_options_urls():
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_inactive_member_form_options(self):
-        member = MemberFactory(organization=self.organization, is_active=False)
-        self.client.force_authenticate(member=member)
-        for url in self._form_options_urls():
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
-
-    def test_member_role_can_read_form_options(self):
-        member = self._create_role_member()
-        self.client.force_authenticate(member=member)
-        for url in self._form_options_urls():
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     def test_cross_org_form_options_only_session_organization(self):
         own_team = TeamFactory(organization=self.organization)
