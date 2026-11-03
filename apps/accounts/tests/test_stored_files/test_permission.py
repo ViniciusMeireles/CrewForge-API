@@ -7,6 +7,72 @@ from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.permission_matrix import (
+    ADMIN,
+    ANONYMOUS,
+    INACTIVE,
+    MANAGER,
+    MEMBER,
+    OTHER_ORGANIZATION,
+    OWNER,
+    Action,
+    PermissionMatrixMixin,
+)
+
+LIST = reverse('accounts:stored_files-list')
+
+
+def _file(**access):
+    def url(case):
+        stored_file = StoredFileFactory.create(
+            organization=case.organization,
+            owner=case.organization.owner.user,
+            **access,
+        )
+        return reverse(
+            'accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
+        )
+
+    return url
+
+
+def _rename(case):
+    return {'name': 'Updated'}
+
+
+class StoredFilePermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    actions = {
+        'list': Action('get', lambda case: LIST),
+        'view_public_file': Action('get', _file(public=True)),
+        'view_owner_only_file': Action('get', _file()),
+        'update_owner_only_file': Action('patch', _file(), _rename, 'multipart'),
+        'view_members_file': Action('get', _file(org_members=True)),
+        'view_managers_file': Action('get', _file(org_managers=True)),
+        'view_admins_file': Action('get', _file(org_admins=True)),
+        'view_owners_file': Action('get', _file(org_owners=True)),
+    }
+    matrix = {
+        ANONYMOUS: {
+            'list': 200,
+            'view_public_file': 200,
+            'view_owner_only_file': 404,
+        },
+        OWNER: {
+            'view_owner_only_file': 200,
+            'update_owner_only_file': 200,
+            'view_owners_file': 200,
+        },
+        ADMIN: {'view_admins_file': 200, 'view_owners_file': 404},
+        MANAGER: {'view_managers_file': 200, 'view_admins_file': 404},
+        MEMBER: {'view_members_file': 200, 'view_managers_file': 404},
+        INACTIVE: {'view_admins_file': 404},
+        OTHER_ORGANIZATION: {'view_members_file': 404},
+    }
+
+    def setUp(self):
+        self.organization = OrganizationFactory()
 
 
 class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
@@ -16,29 +82,6 @@ class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
         self.owner_member = self.organization.owner
         self.list_url = reverse(viewname='accounts:stored_files-list')
 
-    def test_public_file_anonymous_can_view(self):
-        stored_file = StoredFileFactory.create(
-            public=True,
-            organization=self.organization,
-        )
-        self.client.force_authenticate(user=None)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_owner_file_owner_can_view(self):
-        stored_file = StoredFileFactory.create(
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
     def test_owner_file_other_user_cannot_view(self):
         other_user = UserFactory()
         stored_file = StoredFileFactory.create(
@@ -46,18 +89,6 @@ class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
             owner=self.owner_user,
         )
         self.client.force_authenticate(user=other_user)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_owner_file_anonymous_cannot_view(self):
-        stored_file = StoredFileFactory.create(
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(user=None)
         url = reverse(
             viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
         )
@@ -103,135 +134,6 @@ class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
-    def test_member_can_view_members_file(self):
-        member = MemberFactory(organization=self.organization, role='member')
-        stored_file = StoredFileFactory.create(
-            org_members=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=member)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_member_cannot_view_managers_file(self):
-        member = MemberFactory(organization=self.organization, role='member')
-        stored_file = StoredFileFactory.create(
-            org_managers=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=member)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_manager_can_view_managers_file(self):
-        manager = MemberFactory(organization=self.organization, role='manager')
-        stored_file = StoredFileFactory.create(
-            org_managers=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=manager)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_manager_cannot_view_admins_file(self):
-        manager = MemberFactory(organization=self.organization, role='manager')
-        stored_file = StoredFileFactory.create(
-            org_admins=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=manager)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_admin_can_view_admins_file(self):
-        admin = MemberFactory(organization=self.organization, role='admin')
-        stored_file = StoredFileFactory.create(
-            org_admins=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=admin)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_admin_cannot_view_owners_file(self):
-        admin = MemberFactory(organization=self.organization, role='admin')
-        stored_file = StoredFileFactory.create(
-            org_owners=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=admin)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_owner_can_view_owners_file(self):
-        stored_file = StoredFileFactory.create(
-            org_owners=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
-
-    def test_inactive_member_cannot_access(self):
-        member = MemberFactory(
-            organization=self.organization,
-            role='admin',
-            is_active=False,
-        )
-        stored_file = StoredFileFactory.create(
-            org_admins=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=member)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_cross_org_member_cannot_access(self):
-        other_org = OrganizationFactory()
-        other_member = other_org.owner
-        stored_file = StoredFileFactory.create(
-            org_members=True,
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        self.client.force_authenticate(member=other_member)
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
     def test_owner_file_no_owner_404(self):
         stored_file = StoredFileFactory.create(
             organization=self.organization,
@@ -242,18 +144,6 @@ class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_owner_file_owner_can_update(self):
-        stored_file = StoredFileFactory.create(
-            organization=self.organization,
-            owner=self.owner_user,
-        )
-        url = reverse(
-            viewname='accounts:stored_files-detail', kwargs={'uuid': stored_file.uuid}
-        )
-        payload = {'name': 'Updated'}
-        response = self.client.patch(url, payload, format='multipart')
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
 
     def test_owner_file_other_user_cannot_update(self):
         other_user = UserFactory()
@@ -268,8 +158,3 @@ class StoredFilePermissionTestCase(APITestCaseMixin, APITestCase):
         payload = {'name': 'Hacked'}
         response = self.client.patch(url, payload, format='multipart')
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
-
-    def test_not_authenticated_list(self):
-        self.client.force_authenticate(user=None)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
