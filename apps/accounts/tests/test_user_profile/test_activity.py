@@ -52,10 +52,6 @@ class UserActivityTestCase(APITestCaseMixin, APITestCase):
     def test_works_without_organization_context(self):
         self.assertEqual(self.activity().status_code, http_status.HTTP_200_OK)
 
-    def test_not_authenticated(self):
-        self.client.logout()
-        self.assertEqual(self.activity().status_code, http_status.HTTP_401_UNAUTHORIZED)
-
     def test_write_methods_are_not_allowed(self):
         response = self.client.post(reverse(URL), {}, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_405_METHOD_NOT_ALLOWED)

@@ -1,49 +1,51 @@
 from django.urls import reverse
-from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
-from apps.accounts.factories.users import UserFactory
+from apps.accounts.factories.organizations import OrganizationFactory
+from apps.accounts.tests.mixins import APITestCaseMixin
+from apps.accounts.tests.permission_matrix import (
+    ANONYMOUS,
+    NO_SESSION,
+    Action,
+    PermissionMatrixMixin,
+)
+
+PROFILE = reverse('accounts:users-me')
+CHANGE_PASSWORD = reverse('accounts:users-me-change-password')
+ACTIVITY = reverse('accounts:users-me-activity')
 
 
-class UserProfilePermissionTestCase(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.profile_url = reverse('accounts:users-me')
-        cls.change_password_url = reverse('accounts:users-me-change-password')
-
-    def test_not_authenticated_retrieve(self):
-        response = self.client.get(self.profile_url)
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_update(self):
-        response = self.client.patch(
-            self.profile_url,
-            data={'first_name': 'Hacker'},
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_update_preferred_language(self):
-        response = self.client.patch(
-            self.profile_url,
-            data={'preferred_language': 'pt-br'},
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
-
-    def test_not_authenticated_change_password(self):
-        response = self.client.post(
-            self.change_password_url,
-            data={
+class UserProfilePermissionMatrixTestCase(
+    PermissionMatrixMixin, APITestCaseMixin, APITestCase
+):
+    actions = {
+        'retrieve': Action('get', lambda case: PROFILE),
+        'update': Action(
+            'patch', lambda case: PROFILE, lambda case: {'first_name': 'X'}
+        ),
+        'update_language': Action(
+            'patch', lambda case: PROFILE, lambda case: {'preferred_language': 'pt-br'}
+        ),
+        'change_password': Action(
+            'post',
+            lambda case: CHANGE_PASSWORD,
+            lambda case: {
                 'current_password': 'passWord*123',
                 'new_password': 'newPass*456',
             },
-            format='json',
-        )
-        self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
+        ),
+        'activity': Action('get', lambda case: ACTIVITY),
+    }
+    matrix = {
+        ANONYMOUS: {
+            'retrieve': 401,
+            'update': 401,
+            'update_language': 401,
+            'change_password': 401,
+            'activity': 401,
+        },
+        NO_SESSION: {'retrieve': 200, 'activity': 200},
+    }
 
-    def test_authenticated_user_can_access(self):
-        user = UserFactory.create()
-        self.client.force_authenticate(user=user)
-        response = self.client.get(self.profile_url)
-        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+    def setUp(self):
+        self.organization = OrganizationFactory()

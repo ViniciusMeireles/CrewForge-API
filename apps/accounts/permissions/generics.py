@@ -32,10 +32,6 @@ class OrganizationScopedPermission(IsActiveMember):
     organization_lookup = 'organization_id'
 
     @classmethod
-    def get_request_member(cls, request):
-        return get_member(request)
-
-    @classmethod
     def get_scope_organization_id(cls, request):
         return get_organization_id(request)
 

@@ -99,7 +99,7 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         )
         return image
 
-    def test_not_authenticated_list(self):
+    def test_anonymous_list_is_empty(self):
         self._create_image()
         self.client.logout()
         response = self.client.get(self.list_url)
@@ -113,7 +113,7 @@ class OrganizationImagePermissionTestCase(APITestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.assertEqual([item['id'] for item in response.data['results']], [own.id])
 
-    def test_not_authenticated_form_options_ignores_search(self):
+    def test_anonymous_form_options_ignore_search(self):
         self.client.logout()
         url = reverse(viewname='accounts:organization_images-form-options-create')
         response = self.client.get(url, {'image_type': r'(\w|\w)*\d'})

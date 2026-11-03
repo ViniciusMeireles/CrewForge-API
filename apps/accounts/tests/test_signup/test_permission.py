@@ -31,14 +31,10 @@ class SignupPermissionTestCase(APITestCase):
             'nickname': member_data.nickname,
         }
 
-    def test_not_authenticated_can_signup(self):
+    def test_anonymous_can_sign_up(self):
         payload = self._valid_payload()
         response = self.client.post(self.url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
-
-    def test_not_authenticated_can_create_new_account(self):
-        response = self.client.post(self.url, data=self._valid_payload(), format='json')
-        self.assertNotEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
     def test_no_list(self):
         response = self.client.get(self.url)

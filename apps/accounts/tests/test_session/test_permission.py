@@ -9,7 +9,7 @@ class SessionPermissionTestCase(APITestCaseMixin, APITestCase):
     def setUp(self):
         self.session_url = reverse('accounts:session')
 
-    def test_not_authenticated_returns_401(self):
+    def test_anonymous_is_refused(self):
         response = self.client.get(self.session_url)
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
