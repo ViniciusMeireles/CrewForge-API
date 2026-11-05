@@ -18,19 +18,23 @@ def _lower(value) -> str:
     return lazy(lambda: str(value).lower(), str)()
 
 
-def _model_schema(
+def _model_schema_kwargs(
     model: type[BaseModel],
     default_summary: str,
     default_description: str,
     plural: bool,
     **kwargs,
-):
+) -> dict:
     get_name = get_verbose_name_plural if plural else get_verbose_name
     name = _lower(get_name(model))
     kwargs.setdefault('tags', model.schema_tags())
     kwargs.setdefault('summary', format_lazy(default_summary, name=name))
     kwargs.setdefault('description', format_lazy(default_description, name=name))
-    return extend_schema(**kwargs)
+    return kwargs
+
+
+def _model_schema(*args, **kwargs):
+    return extend_schema(**_model_schema_kwargs(*args, **kwargs))
 
 
 def extend_schema_retrieve(model: type[BaseModel], **kwargs):
@@ -102,8 +106,8 @@ def extend_schema_partial_update(model: type[BaseModel], **kwargs):
     )
 
 
-def extend_schema_options_create(model: type[BaseModel], **kwargs):
-    return _model_schema(
+def options_schema_create(model: type[BaseModel]) -> dict:
+    return _model_schema_kwargs(
         model,
         _('Creation form options'),
         _(
@@ -111,12 +115,11 @@ def extend_schema_options_create(model: type[BaseModel], **kwargs):
             'field name as query parameter to get only that field.'
         ),
         plural=False,
-        **kwargs,
     )
 
 
-def extend_schema_options_update(model: type[BaseModel], **kwargs):
-    return _model_schema(
+def options_schema_update(model: type[BaseModel]) -> dict:
+    return _model_schema_kwargs(
         model,
         _('Edit form options'),
         _(
@@ -124,12 +127,11 @@ def extend_schema_options_update(model: type[BaseModel], **kwargs):
             'name as query parameter to get only that field.'
         ),
         plural=False,
-        **kwargs,
     )
 
 
-def extend_schema_options_list(model: type[BaseModel], **kwargs):
-    return _model_schema(
+def options_schema_list(model: type[BaseModel]) -> dict:
+    return _model_schema_kwargs(
         model,
         _('Filter options'),
         _(
@@ -137,7 +139,6 @@ def extend_schema_options_list(model: type[BaseModel], **kwargs):
             'name as query parameter to get only that field.'
         ),
         plural=True,
-        **kwargs,
     )
 
 

@@ -72,18 +72,12 @@ class OrganizationScopedRequestMixin(RequestUserMixin):
 
 Location: `apps/accounts/mixins/views.py`
 
-Adds soft-delete support and auto-generated form-options and filter-options
-endpoints to DRF ModelViewSets.
+Adds soft-delete support and the options behavior to DRF ModelViewSets. A ViewSet
+declares the options routes it exposes with `FormOptionsMixin` and
+`FilterOptionsMixin`.
 
 ```python
-class ModelViewSetMetaclass(
-    OptionsModelViewSetMetaclass,  # runs after Orderable (inside super().__new__)
-    OrderableModelViewSetMetaclass,
-):
-    pass
-
-
-class OptionsOrganizationModelMixin(OptionsModelMixin):
+class OptionsOrganizationModelMixin(OptionsBaseModelMixin):
     options_serializer_class = OptionsOrganizationModelSerializer
     options_filterset_serializer_class = OptionsOrganizationFilterSetSerializer
 
@@ -91,7 +85,6 @@ class OptionsOrganizationModelMixin(OptionsModelMixin):
 class ModelViewSetMixin(
     OptionsOrganizationModelMixin,
     OrganizationScopedRequestMixin,
-    metaclass=ModelViewSetMetaclass,
 ):
     def perform_destroy(self, instance):
         if hasattr(instance, 'is_active'):
@@ -102,11 +95,11 @@ class ModelViewSetMixin(
 
 **Features:**
 - Soft-delete via `inactivate()` when model has `is_active` field
-- `OptionsModelViewSetMetaclass` (`apps/generics/mixins/views.py`) registers
-  `GET form-options-create/` and `GET form-options-update/` for each action in
-  `options_actions` whose source serializer (the one `get_serializer_class()` returns
-  for `create`/`update`) has selectable fields
-- `GET filter-options/` (action `filter_options`, `'list'` in `options_actions`) is
+- `FormOptionsMixin` (`apps/generics/mixins/views.py`) declares
+  `GET form-options-create/` and `GET form-options-update/` with `@action`. Add it
+  only when the source serializer (the one `get_serializer_class()` returns for
+  `create`/`update`) has selectable fields
+- `FilterOptionsMixin` declares `GET filter-options/` (action `filter_options`),
   built from `filterset_class` by `OptionsFilterSetSerializer`
   (`apps/generics/serializers/options.py`): one key per filter name; filters with
   `choices` (`ChoiceFilter`, `OrderingFilter` → `order_by`) and `exact`/`in` filters on
@@ -120,9 +113,16 @@ class ModelViewSetMixin(
   `Meta.options_extra_kwargs`.
 - `Meta.options_extra_kwargs` (serializer or filterset) is validated when the
   options fields are built: an unknown field/filter name or a kwarg outside
-  `options_field_kwargs` | `options_meta_kwargs` raises `ImproperlyConfigured` at
-  startup. A misspelled `organization_filters` must never silently widen the scope The metaclass order guarantees `order_by` already
-  exists when the options are built. `MemberViewSet` uses `options_actions = ('list',)`
+  `options_field_kwargs` | `options_meta_kwargs` raises `ImproperlyConfigured`. A
+  misspelled `organization_filters` must never silently widen the scope.
+  `OptionsRoutesBuildTestCase` builds every options route, so these errors fail the
+  tests and the schema generation
+- A custom action gets its options route by hand: declare the `@action`
+  (`form_options_update_role`, `filter_options_received`) and map it in
+  `options_custom_actions`. `AutoSchema` documents every options route from
+  `get_options_schema()`; `@extend_schema` on the action overrides the generic texts
+- `order_by` is declared with the filterset:
+  `filterset_class = orderable_filter_factory(ListSerializer, ResourceFilter)`
 - Selectable fields: model fields with `choices` (plain `[{value, label}]` array) and
   writable relations (paginated envelope). Read-only fields and fields the source
   serializer declares as nested serializers are excluded
@@ -146,16 +146,16 @@ class ModelViewSetMixin(
   `accounts/0002_unaccent_extension`) is bilateral: both the column and the searched
   value go through PostgreSQL `unaccent()`. Never strip accents in Python for a
   database search, as `unaccent` maps more characters (`ø`, `ł`, `ß`, `æ`) than NFKD
-- Build errors fail at startup (`ImproperlyConfigured`): the routes are built when
-  the ViewSet class is created, so `get_serializer_class()` runs without a request
-  (guard with `getattr(self, 'request', None)`), and an organization-scoped options
-  serializer refuses relations to models without `organization_id` unless the field
-  declares `organization_lookup` (path to the organization, validated at startup) or
-  `organization_scoped: False` in `Meta.options_extra_kwargs`
+- Build errors raise `ImproperlyConfigured` when the options are built: an
+  organization-scoped options serializer refuses relations to models without
+  `organization_id` unless the field declares `organization_lookup` (path to the
+  organization, validated on build) or `organization_scoped: False` in
+  `Meta.options_extra_kwargs`. Schema generation builds options without a user, so
+  `get_serializer_class()` cannot depend on one
 - `PrimaryKeyOrganizationRelatedFieldMixin` accepts `organization_lookup` as a kwarg,
   so write fields (`extra_kwargs`) and options fields share the same scoping; lookups
   through a relation apply `distinct()`
-- `organization_filters` (kwarg, validated at startup with the lookup) adds
+- `organization_filters` (kwarg, validated on build with the lookup) adds
   conditions to the **same** `filter()` call as `organization_lookup`. On a to-many
   path, a separate `filter()` would join another row: a user active in another
   organization would pass. Used by members `user`:

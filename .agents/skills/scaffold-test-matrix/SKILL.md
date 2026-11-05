@@ -157,7 +157,7 @@ Present the CRUD tests. These test:
 - Update (200)
 - Delete (204, soft-delete)
 - List excludes soft-deleted
-- Form options (200 with expected field keys and shapes, or `NoReverseMatch` when the ViewSet sets `options_actions = ()`)
+- Form options (200 with expected field keys and shapes, or `NoReverseMatch` when the ViewSet declares no options mixin)
   - `{create_option_fields}` / `{update_option_fields}`: set literals with the choice and writable relation fields of the create/update serializer (e.g. `{'role', 'team'}`)
   - Drop `test_form_options_choice_shape` / `test_form_options_relation_shape` when the resource has no field of that kind
 

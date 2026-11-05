@@ -54,6 +54,8 @@ from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
 from apps.audit.choices import AuditActionChoices
 from apps.generics.decorators import action_custom
+from apps.generics.mixins.views import FilterOptionsMixin, FormOptionsMixin
+from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import extend_schema_model_view_set
 
 
@@ -369,7 +371,11 @@ from apps.generics.utils.schema import extend_schema_model_view_set
     ),
 )
 class InvitationViewSet(
-    OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
+    OrganizationScopedViewSetMixin,
+    FormOptionsMixin,
+    FilterOptionsMixin,
+    ModelViewSetMixin,
+    viewsets.ModelViewSet,
 ):
     serializer_class = InvitationSerializer
     queryset = Invitation.objects.filter(is_active=True)
@@ -388,19 +394,9 @@ class InvitationViewSet(
         'accept',
         'decline',
     )
-    filterset_class = InvitationFilter
+    filterset_class = orderable_filter_factory(InvitationSerializer, InvitationFilter)
     filter_backends = [backends.DjangoFilterBackend]
-    auto_orderable_filter = True
-    options_actions = ('create', 'update', 'list', 'received')
-    options_schema = {
-        'received': {
-            'summary': _('Received invitations filter options'),
-            'description': _(
-                'Return the choices of each filter of the received invitations list. '
-                'Send a field name as query parameter to get only that field.'
-            ),
-        },
-    }
+    options_custom_actions = {'received': 'filter_options_received'}
 
     def get_queryset(self):
         return (
@@ -452,6 +448,22 @@ class InvitationViewSet(
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(data=serializer.data)
+
+    @extend_schema(
+        summary=_('Received invitations filter options'),
+        description=_(
+            'Return the choices of each filter of the received invitations list. '
+            'Send a field name as query parameter to get only that field.'
+        ),
+    )
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='received/filter-options',
+        permission_classes=[IsAuthenticated],
+    )
+    def filter_options_received(self, request, *args, **kwargs):
+        return self.form_options(request, *args, **kwargs)
 
     @action(
         detail=False,

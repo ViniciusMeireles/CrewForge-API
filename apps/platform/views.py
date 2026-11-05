@@ -17,7 +17,7 @@ from apps.accounts.models.organization import Organization
 from apps.accounts.serializers.session import SessionSerializer
 from apps.audit.models.audit_event import AuditEvent
 from apps.generics.errors import InvalidState
-from apps.generics.mixins.views import OptionsModelMixin
+from apps.generics.mixins.views import FilterOptionsMixin
 from apps.platform.choices import ImpersonationEndReasonChoices
 from apps.platform.filters import (
     PlatformAuditEventFilter,
@@ -416,10 +416,9 @@ class PlatformUserViewSet(PlatformActionsViewSet):
         tags=PLATFORM_TAGS, summary=_('Audit events filter options')
     ),
 )
-class PlatformAuditEventViewSet(OptionsModelMixin, PlatformReadOnlyViewSet):
+class PlatformAuditEventViewSet(FilterOptionsMixin, PlatformReadOnlyViewSet):
     """Audit Events of every Organization and account, for platform staff."""
 
-    options_actions = ('list',)
     options_component_prefix = 'Platform'
     queryset = AuditEvent.objects.select_related('organization', 'impersonator')
     serializer_class = PlatformAuditEventSerializer

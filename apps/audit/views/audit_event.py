@@ -7,6 +7,7 @@ from apps.audit.filters.audit_event import AuditEventFilter
 from apps.audit.models.audit_event import AuditEvent
 from apps.audit.permissions.audit_event import AuditEventPermission
 from apps.audit.serializers.audit_event import AuditEventSerializer
+from apps.generics.mixins.views import FilterOptionsMixin
 from apps.generics.utils.schema import extend_schema_list, extend_schema_retrieve
 
 
@@ -15,7 +16,10 @@ from apps.generics.utils.schema import extend_schema_list, extend_schema_retriev
     retrieve=extend_schema_retrieve(model=AuditEvent),
 )
 class AuditEventViewSet(
-    OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
+    OrganizationScopedViewSetMixin,
+    FilterOptionsMixin,
+    ModelViewSetMixin,
+    viewsets.ModelViewSet,
 ):
     queryset = AuditEvent.objects.all()
     serializer_class = AuditEventSerializer
@@ -23,4 +27,3 @@ class AuditEventViewSet(
     filterset_class = AuditEventFilter
     filter_backends = [backends.DjangoFilterBackend]
     http_method_names = ['get', 'options']
-    options_actions = ('list',)

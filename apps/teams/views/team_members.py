@@ -7,6 +7,7 @@ from rest_framework import status as http_status
 
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.audit.choices import AuditActionChoices
+from apps.generics.mixins.views import FilterOptionsMixin, FormOptionsMixin
 from apps.generics.utils.schema import (
     extend_schema_model_view_set,
     extend_schema_update,
@@ -34,7 +35,11 @@ from apps.teams.services import LastTeamOwnerError, ensure_team_keeps_owner
     ),
 )
 class TeamMemberViewSet(
-    OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
+    OrganizationScopedViewSetMixin,
+    FormOptionsMixin,
+    FilterOptionsMixin,
+    ModelViewSetMixin,
+    viewsets.ModelViewSet,
 ):
     serializer_class = TeamMemberSerializer
     queryset = TeamMember.objects.all()
@@ -47,7 +52,6 @@ class TeamMemberViewSet(
     permission_classes = [TeamMemberPermission]
     filterset_class = TeamMemberFilter
     filter_backends = [backends.DjangoFilterBackend]
-    auto_orderable_filter = True
     options_form_parameters = (
         OpenApiParameter(
             name=TEAM_ID_PARAM,

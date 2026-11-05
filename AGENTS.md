@@ -56,7 +56,7 @@ Agents must NOT assume JWT alone is sufficient.
 - Do NOT switch to SQLite; tests and config are built around PostgreSQL.
 - Do NOT bypass existing permission classes when adding new actions.
 - Do NOT add comments to code unless explicitly asked.
-- Follow MRO: `OrganizationScopedViewSetMixin` → `ModelViewSetMixin` → `viewsets.ModelViewSet`.
+- Follow MRO: `OrganizationScopedViewSetMixin` → options mixins → `ModelViewSetMixin` → `viewsets.ModelViewSet`.
 - New write actions declare `audit_actions` (or call `record_audit_event`) so they land in the audit trail.
 - Import generics from `apps/generics/`, not from `apps/accounts/`.
 - Permission changes are high-impact: always add tests.

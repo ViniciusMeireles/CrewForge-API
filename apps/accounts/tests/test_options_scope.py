@@ -30,13 +30,20 @@ class _GlobalOwnerSerializer(StoredFileCreateUpdateModelSerializer):
         }
 
 
-class OrganizationScopedOptionsTestCase(SimpleTestCase):
-    def test_unscoped_relation_fails_at_class_creation(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, 'organization_scoped'):
+def _build_form_options(source_serializer):
+    class ScopedViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
+        queryset = StoredFile.objects.all()
+        serializer_class = source_serializer
 
-            class UnscopedViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
-                queryset = StoredFile.objects.all()
-                serializer_class = StoredFileCreateUpdateModelSerializer
+    view = ScopedViewSet()
+    view.action = 'form_options_create'
+    return view.get_options_serializer_class()({}).get_fields()
+
+
+class OrganizationScopedOptionsTestCase(SimpleTestCase):
+    def test_unscoped_relation_fails(self):
+        with self.assertRaisesMessage(ImproperlyConfigured, 'organization_scoped'):
+            _build_form_options(StoredFileCreateUpdateModelSerializer)
 
     def test_explicit_global_relation_is_allowed(self):
         class GlobalViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
@@ -74,18 +81,11 @@ class _InvalidLookupSerializer(StoredFileCreateUpdateModelSerializer):
 
 class OrganizationLookupBuildTestCase(SimpleTestCase):
     def test_declared_lookup_is_allowed(self):
-        class LookupViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
-            queryset = StoredFile.objects.all()
-            serializer_class = _LookupScopedSerializer
+        self.assertIn('owner', _build_form_options(_LookupScopedSerializer))
 
-        self.assertTrue(hasattr(LookupViewSet, 'form_options_create'))
-
-    def test_invalid_lookup_fails_at_class_creation(self):
+    def test_invalid_lookup_fails(self):
         with self.assertRaisesMessage(ImproperlyConfigured, 'nope__organization_id'):
-
-            class InvalidViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
-                queryset = StoredFile.objects.all()
-                serializer_class = _InvalidLookupSerializer
+            _build_form_options(_InvalidLookupSerializer)
 
 
 def _session_request(organization):
@@ -224,9 +224,6 @@ class _InvalidOrganizationFiltersSerializer(StoredFileCreateUpdateModelSerialize
 
 
 class OrganizationFiltersBuildTestCase(SimpleTestCase):
-    def test_invalid_organization_filters_fail_at_class_creation(self):
+    def test_invalid_organization_filters_fail(self):
         with self.assertRaisesMessage(ImproperlyConfigured, 'members__nope'):
-
-            class InvalidViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
-                queryset = StoredFile.objects.all()
-                serializer_class = _InvalidOrganizationFiltersSerializer
+            _build_form_options(_InvalidOrganizationFiltersSerializer)

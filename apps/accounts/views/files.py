@@ -25,6 +25,7 @@ from apps.accounts.serializers.files import (
 )
 from apps.accounts.utils.files import is_inline_content_type
 from apps.audit.choices import AuditActionChoices
+from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import (
     extend_schema_create,
     extend_schema_model_view_set,
@@ -78,7 +79,9 @@ logger = logging.getLogger(__name__)
 class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelViewSet):
     serializer_class = StoredFileListModelSerializer
     permission_classes = [StoredFilePermission]
-    filterset_class = StoredFileFilter
+    filterset_class = orderable_filter_factory(
+        StoredFileListModelSerializer, StoredFileFilter
+    )
     filter_backends = [backends.DjangoFilterBackend]
     parser_classes = [MultiPartParser, FormParser]
     lookup_field = 'uuid'
@@ -89,10 +92,6 @@ class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelV
         'destroy': AuditActionChoices.STORED_FILE_DELETED,
     }
     queryset = StoredFile.objects.all()
-    auto_orderable_filter = True
-    # No form options: ``owner``/``organization`` are not tenant-scoped and would
-    # fail the organization scope check of the options serializer.
-    options_actions = ()
 
     def get_queryset(self):
         queryset = super().get_queryset()

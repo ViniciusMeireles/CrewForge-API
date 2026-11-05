@@ -965,17 +965,18 @@ Search on organization-scoped paginated fields ignores case and accents
 Relations to models without `organization_id` (e.g. `User`, `Organization`) must
 declare how they are scoped: `options_extra_kwargs = {'<field>':
 {'organization_lookup': 'members__organization_id'}}` (a path to the organization).
-Otherwise the API refuses to start, unless the field is explicitly marked global with
-`{'organization_scoped': False}`. Extra conditions on the same related row go in
+Otherwise building the options raises an error, unless the field is explicitly marked
+global with `{'organization_scoped': False}`. Extra conditions on the same related row go in
 `organization_filters` (e.g. `{'members__is_active': True}`). Without a session
 organization, relation options are always empty. A key of `options_extra_kwargs`
-that is not a field/filter, or an unknown kwarg, also makes the API refuse to start.
+that is not a field/filter, or an unknown kwarg, also raises an error when the options
+are built, which fails the tests and the schema generation.
 
 Choice fields accept `choices_filter`, a callable `(choices, context) -> choices`
 that narrows the options per request before the `?<field>=` search (e.g.
-`assignable_role_choices` for roles). Custom `@action`s named in the ViewSet
-`options_actions` get their own route: `form-options-<url_path>/` for write actions,
-`<url_path>/filter-options/` for `GET` actions (with the action permissions).
+`assignable_role_choices` for roles). Custom `@action`s can declare their own route,
+mapped in the ViewSet `options_custom_actions`: `form-options-<url_path>/` for write
+actions, `<url_path>/filter-options/` for `GET` actions (with the action permissions).
 
 ### 15.4. Migration from `/choices/`
 

@@ -12,6 +12,8 @@ from apps.accounts.models.organization import OrganizationImage
 from apps.accounts.permissions.organization_image import OrganizationImagePermission
 from apps.accounts.serializers.organization_image import OrganizationImageSerializer
 from apps.audit.choices import AuditActionChoices
+from apps.generics.mixins.views import FilterOptionsMixin, FormOptionsMixin
+from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import extend_schema_model_view_set
 
 
@@ -19,6 +21,8 @@ from apps.generics.utils.schema import extend_schema_model_view_set
 class OrganizationImageViewSet(
     OrganizationScopedViewSetMixin,
     UploadSizeLimitMixin,
+    FormOptionsMixin,
+    FilterOptionsMixin,
     ModelViewSetMixin,
     viewsets.ModelViewSet,
 ):
@@ -36,9 +40,10 @@ class OrganizationImageViewSet(
         'destroy': AuditActionChoices.ORGANIZATION_IMAGE_DELETED,
     }
     permission_classes = [OrganizationImagePermission]
-    filterset_class = OrganizationImageFilter
+    filterset_class = orderable_filter_factory(
+        OrganizationImageSerializer, OrganizationImageFilter
+    )
     filter_backends = [backends.DjangoFilterBackend]
     parser_classes = [MultiPartParser, FormParser]
-    auto_orderable_filter = True
     # Form options are reachable without authentication: no search on them.
     options_search = False

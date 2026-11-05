@@ -39,6 +39,8 @@ from apps.accounts.utils.auth_cookies import (
     wants_cookie_transport,
 )
 from apps.audit.choices import AuditActionChoices
+from apps.generics.mixins.views import FilterOptionsMixin
+from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import (
     extend_schema_model_view_set,
     extend_schema_update,
@@ -137,7 +139,10 @@ from apps.generics.utils.schema import (
     ),
 )
 class MemberViewSet(
-    OrganizationScopedViewSetMixin, ModelViewSetMixin, viewsets.ModelViewSet
+    OrganizationScopedViewSetMixin,
+    FilterOptionsMixin,
+    ModelViewSetMixin,
+    viewsets.ModelViewSet,
 ):
     queryset = Member.objects.select_related('user')
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
@@ -150,21 +155,9 @@ class MemberViewSet(
     }
     permission_classes = [MemberPermission]
     organization_context_exempt_actions = ('create_with_invite',)
-    filterset_class = MemberFilter
+    filterset_class = orderable_filter_factory(MemberModelSerializer, MemberFilter)
     filter_backends = [backends.DjangoFilterBackend]
-    auto_orderable_filter = True
-    # No create/update form options: ``create`` is deprecated and ``user`` is a
-    # nested serializer. ``update_role`` gets ``form-options-update-role/``.
-    options_actions = ('list', 'update_role')
-    options_schema = {
-        'update_role': {
-            'summary': _('Role form options'),
-            'description': _(
-                'Return the choices of the member role form. Send a field name as '
-                'query parameter to get only that field.'
-            ),
-        },
-    }
+    options_custom_actions = {'update_role': 'form_options_update_role'}
 
     base_filters = {'is_active': True}
 
@@ -249,3 +242,14 @@ class MemberViewSet(
         """Update the role of a member."""
         kwargs.update({'partial': True})
         return self.update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary=_('Role form options'),
+        description=_(
+            'Return the choices of the member role form. Send a field name as '
+            'query parameter to get only that field.'
+        ),
+    )
+    @action(detail=False, methods=['get'], url_path='form-options-update-role')
+    def form_options_update_role(self, request, *args, **kwargs):
+        return self.form_options(request, *args, **kwargs)

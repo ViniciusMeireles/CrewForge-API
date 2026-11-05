@@ -11,12 +11,15 @@ from apps.accounts.permissions.generics import IsActiveMember
 from apps.accounts.permissions.organization_profile import OrganizationProfilePermission
 from apps.accounts.serializers.organization_profile import OrganizationProfileSerializer
 from apps.audit.choices import AuditActionChoices
+from apps.generics.mixins.views import FilterOptionsMixin
+from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import extend_schema_model_view_set
 
 
 @extend_schema_model_view_set(model=OrganizationProfile)
 class OrganizationProfileViewSet(
     OrganizationScopedViewSetMixin,
+    FilterOptionsMixin,
     ModelViewSetMixin,
     viewsets.ModelViewSet,
 ):
@@ -28,6 +31,7 @@ class OrganizationProfileViewSet(
         'partial_update': AuditActionChoices.ORGANIZATION_PROFILE_UPDATED,
     }
     permission_classes = [IsActiveMember, OrganizationProfilePermission]
-    filterset_class = OrganizationProfileFilter
+    filterset_class = orderable_filter_factory(
+        OrganizationProfileSerializer, OrganizationProfileFilter
+    )
     filter_backends = [backends.DjangoFilterBackend]
-    auto_orderable_filter = True
