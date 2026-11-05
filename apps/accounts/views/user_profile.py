@@ -1,7 +1,6 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
@@ -14,30 +13,19 @@ from apps.accounts.serializers.user_profile import (
     ChangePasswordSerializer,
     UserProfileSerializer,
 )
+from apps.accounts.services.auth import change_password
+from apps.accounts.services.profiles import update_profile
 from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.auth_cookies import set_auth_cookies, wants_cookie_transport
 from apps.accounts.utils.security_log import log_security_event
-from apps.accounts.utils.sessions import revoke_sessions
-from apps.audit.choices import AuditActionChoices
 from apps.audit.models.audit_event import AuditEvent
 from apps.audit.serializers.audit_event import AuditEventSerializer
-from apps.audit.services import diff_instance, record_audit_event, snapshot_instance
 from apps.generics.utils.schema import (
     extend_schema_partial_update,
     extend_schema_retrieve,
 )
 
 User = get_user_model()
-
-PROFILE_AUDIT_EXCLUDE = (
-    'password',
-    'email',
-    'email_verified_at',
-    'email_verification_sent_at',
-    'is_staff',
-    'is_superuser',
-    'date_joined',
-)
 
 
 @extend_schema_view(
@@ -77,27 +65,8 @@ class UserProfileViewSet(viewsets.GenericViewSet):
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
-        with transaction.atomic():
-            before = snapshot_instance(instance, PROFILE_AUDIT_EXCLUDE)
-            email = instance.email
-            serializer.save()
-            self.record_profile_update(instance, before, email)
+        update_profile(user=instance, save=serializer.save, request=request)
         return Response(serializer.data)
-
-    def record_profile_update(self, instance, before: dict, email: str) -> None:
-        changes = diff_instance(before, instance, PROFILE_AUDIT_EXCLUDE)
-        email_changed = instance.email != email
-        if email_changed:
-            changes.append({'field': 'email', 'before': None, 'after': None})
-        if not changes:
-            return
-        record_audit_event(
-            AuditActionChoices.USER_PROFILE_UPDATED,
-            request=self.request,
-            target=instance,
-            changes=changes,
-            metadata={'email_changed': True} if email_changed else {},
-        )
 
     @extend_schema(
         summary=_('List my account activity'),
@@ -154,9 +123,11 @@ class UserProfileViewSet(viewsets.GenericViewSet):
                 'auth.password_change.failed', request, level=logging.WARNING
             )
             raise
-        serializer.save()
-        revoke_sessions(request.user)
-        log_security_event('auth.password.changed', request)
+        change_password(
+            user=request.user,
+            new_password=serializer.validated_data['new_password'],
+            request=request,
+        )
         response = Response(
             data={'detail': _('Password changed successfully.')},
             status=status.HTTP_200_OK,

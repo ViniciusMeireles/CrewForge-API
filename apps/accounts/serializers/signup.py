@@ -1,16 +1,14 @@
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from rest_framework import serializers
 
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.member import Member
-from apps.accounts.models.organization import Organization, OrganizationProfile
 from apps.accounts.serializers.auth import UserTokenSerializer
 from apps.accounts.serializers.mixins import UserTokenSerializerMixin
 from apps.accounts.serializers.organization import OrganizationSerializer
 from apps.accounts.serializers.user import UserSerializer
-from apps.accounts.utils.email_verification import send_verification_email
+from apps.accounts.services.auth import register_owner
 from apps.accounts.utils.language import current_language
 
 User = get_user_model()
@@ -56,45 +54,13 @@ class SignupSerializer(
         data.setdefault('role', MemberRoleChoices.OWNER)
         return data
 
-    @classmethod
-    def _create_user(cls, user_data):
-        """Create a user instance."""
-        user_data.setdefault('preferred_language', current_language())
-        user = User(**user_data)
-        user.set_password(user_data.get('password'))
-        user.save()
-        user.created_by = user
-        user.updated_by = user
-        user.save(update_fields=['created_by', 'updated_by'])
-        return user
-
-    @transaction.atomic
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        organization_data = validated_data.pop('organization')
-
-        user = self._create_user(user_data)
-        self.set_tokens_for_user(user)
-        send_verification_email(user)
-
-        profile_data = organization_data.pop('profile', None) or {}
-        organization = Organization.objects.create(
-            created_by=user,
-            updated_by=user,
-            **organization_data,
+        user_data.setdefault('preferred_language', current_language())
+        member = register_owner(
+            user_data=user_data,
+            organization_data=validated_data.pop('organization'),
+            member_data=validated_data,
         )
-        OrganizationProfile.objects.create(
-            organization=organization,
-            created_by=user,
-            updated_by=user,
-            **profile_data,
-        )
-        validated_data.update(
-            {
-                'user': user,
-                'organization': organization,
-                'created_by': user,
-                'updated_by': user,
-            }
-        )
-        return super().create(validated_data)
+        self.set_tokens_for_user(member.user)
+        return member

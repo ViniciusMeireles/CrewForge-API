@@ -1,4 +1,3 @@
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.types import OpenApiTypes
@@ -25,8 +24,11 @@ from apps.accounts.serializers.organization import (
     OrganizationSerializer,
 )
 from apps.accounts.serializers.session import SessionSerializer
+from apps.accounts.services.organizations import (
+    record_organization_login,
+    touch_last_login,
+)
 from apps.accounts.utils.requests import get_member
-from apps.accounts.utils.security_log import log_security_event
 from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.schema import (
     extend_schema_list,
@@ -169,14 +171,11 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
 
         request.session.cycle_key()
         request.session['organization_id'] = organization.id
-        log_security_event(
-            'organization.login', request, organization_id=organization.id
-        )
+        record_organization_login(organization=organization, request=request)
 
         member = get_member(request)
         if member and not getattr(request, 'impersonator', None):
-            member.last_login_at = timezone.now()
-            member.save(update_fields=['last_login_at'])
+            touch_last_login(member=member)
 
         data = {
             'user': user,

@@ -1,6 +1,5 @@
 from functools import cached_property
 
-from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.utils import (
@@ -29,12 +28,16 @@ from apps.accounts.serializers.member import (
     MemberUpdateSerializer,
     MemberWithInviteCreateSerializer,
 )
+from apps.accounts.services.auth import record_signup
+from apps.accounts.services.invitations import (
+    InvitationRefusedError,
+    lock_acceptable_invitation,
+)
 from apps.accounts.utils.auth_cookies import (
     enforce_csrf,
     move_auth_token_to_cookies,
     wants_cookie_transport,
 )
-from apps.accounts.utils.security_log import log_security_event
 from apps.audit.choices import AuditActionChoices
 from apps.generics.utils.schema import (
     extend_schema_model_view_set,
@@ -217,27 +220,25 @@ class MemberViewSet(
         """Create a new member."""
         if wants_cookie_transport(request):
             enforce_csrf(request)
-        with transaction.atomic():
-            invitation = self.__dict__['invitation'] = (
-                Invitation.objects.select_for_update(of=('self',))
-                .filter(pk__in=self._pending_invitations().values('pk'))
-                .get_or_none()
+        try:
+            with lock_acceptable_invitation(
+                pending=self._pending_invitations()
+            ) as invitation:
+                self.__dict__['invitation'] = invitation
+                if invitation is None:
+                    return Response(
+                        data={
+                            'detail': InvitationErrorMessages.INVITATION_NOT_FOUND.label
+                        },
+                        status=http_status.HTTP_404_NOT_FOUND,
+                    )
+                response = super().create(request, *args, **kwargs)
+        except InvitationRefusedError as exc:
+            return Response(
+                data={'detail': str(exc)}, status=http_status.HTTP_400_BAD_REQUEST
             )
-            if invitation is None:
-                return Response(
-                    data={'detail': InvitationErrorMessages.INVITATION_NOT_FOUND.label},
-                    status=http_status.HTTP_404_NOT_FOUND,
-                )
-            invitation.ensure_organization_not_suspended()
-            is_acceptable, message = invitation.is_acceptable()
-            if not is_acceptable:
-                return Response(
-                    data={'detail': message}, status=http_status.HTTP_400_BAD_REQUEST
-                )
-            response = super().create(request, *args, **kwargs)
-        log_security_event(
-            'auth.signup',
-            request,
+        record_signup(
+            request=request,
             user_id=(response.data.get('user') or {}).get('id'),
             invitation_id=invitation.pk,
         )
