@@ -1,3 +1,4 @@
+import secrets
 from unittest import mock
 
 from django.test import TestCase
@@ -30,6 +31,10 @@ from apps.audit.choices import AuditActionChoices
 from apps.audit.models.audit_event import AuditEvent
 
 
+FIRST_SECRET = secrets.token_urlsafe(16)
+NEXT_SECRET = secrets.token_urlsafe(16)
+
+
 def audited(action) -> bool:
     return AuditEvent.objects.filter(action=action).exists()
 
@@ -41,7 +46,7 @@ class RegisterOwnerTestCase(TestCase):
             user_data={
                 'username': 'ana',
                 'email': 'ana@example.com',
-                'password': 'S3cret-pass!',
+                'password': FIRST_SECRET,
             },
             organization_data={
                 'name': 'Acme',
@@ -56,7 +61,7 @@ class RegisterOwnerTestCase(TestCase):
         self.assertEqual(member.role, MemberRoleChoices.OWNER)
         self.assertEqual(member.nickname, 'Ana')
         self.assertEqual(member.created_by, member.user)
-        self.assertTrue(member.user.check_password('S3cret-pass!'))
+        self.assertTrue(member.user.check_password(FIRST_SECRET))
         self.assertEqual(member.user.created_by, member.user)
         profile = OrganizationProfile.objects.get(organization=member.organization)
         self.assertEqual(profile.website, 'https://acme.test')
@@ -80,10 +85,10 @@ class PasswordServiceTestCase(TestCase):
 
     def test_change_password_revokes_sessions_and_audits(self):
         with mock.patch('apps.accounts.services.auth.revoke_sessions') as revoke:
-            change_password(user=self.user, new_password='N3w-pass-word!')
+            change_password(user=self.user, new_password=NEXT_SECRET)
         revoke.assert_called_once_with(self.user)
         self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('N3w-pass-word!'))
+        self.assertTrue(self.user.check_password(NEXT_SECRET))
         self.assertTrue(audited('auth.password.changed'))
 
     def test_change_password_rolls_back_when_the_audit_fails(self):
@@ -94,15 +99,15 @@ class PasswordServiceTestCase(TestCase):
             ),
             self.assertRaises(RuntimeError),
         ):
-            change_password(user=self.user, new_password='N3w-pass-word!')
+            change_password(user=self.user, new_password=NEXT_SECRET)
         self.user.refresh_from_db()
-        self.assertFalse(self.user.check_password('N3w-pass-word!'))
+        self.assertFalse(self.user.check_password(NEXT_SECRET))
 
     def test_confirm_reset_revokes_sessions_and_audits(self):
         with mock.patch('apps.accounts.services.auth.revoke_sessions') as revoke:
-            confirm_password_reset(user=self.user, new_password='N3w-pass-word!')
+            confirm_password_reset(user=self.user, new_password=NEXT_SECRET)
         revoke.assert_called_once_with(self.user)
-        self.assertTrue(self.user.check_password('N3w-pass-word!'))
+        self.assertTrue(self.user.check_password(NEXT_SECRET))
         self.assertTrue(audited('auth.password_reset.completed'))
 
     def test_request_reset_emails_only_a_known_user(self):
