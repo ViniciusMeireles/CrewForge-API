@@ -10,8 +10,7 @@ from apps.teams.serializers.options import (
     assignable_team_role_choices,
     exclude_team_members,
 )
-
-LAST_OWNER_MESSAGE = _('The team must keep at least one owner.')
+from apps.teams.services import LAST_OWNER_MESSAGE
 
 
 class TeamMemberDetailSerializer(serializers.ModelSerializer):

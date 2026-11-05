@@ -12,6 +12,8 @@ SERVICE_BACKED_VIEWS = (
     'accounts/views/organizations.py',
     'accounts/views/signup.py',
     'accounts/views/user_profile.py',
+    'teams/views/team_members.py',
+    'teams/views/teams.py',
 )
 SERVICE_BACKED_SERIALIZERS = (
     'accounts/serializers/invitation.py',
@@ -20,6 +22,8 @@ SERVICE_BACKED_SERIALIZERS = (
     'accounts/serializers/organization_image.py',
     'accounts/serializers/signup.py',
     'accounts/serializers/user_profile.py',
+    'teams/serializers/team.py',
+    'teams/serializers/team_member.py',
 )
 VIEW_FORBIDDEN = ('transaction', 'record_audit_event')
 SERIALIZER_FORBIDDEN = (*VIEW_FORBIDDEN, 'log_security_event', 'send_verification')

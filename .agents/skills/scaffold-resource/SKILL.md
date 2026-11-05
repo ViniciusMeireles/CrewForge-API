@@ -159,6 +159,11 @@ Generate and present:
 
 Show the code. Wait for confirmation.
 
+**Services and selectors.** Plain CRUD stays in the ViewSet through `audit_actions`. An operation with side effects
+(several writes, locks, emails, custom audit events) goes in `apps/<app>/services`, and a read with business meaning in
+`selectors`, typed and keyword-only. Views and serializers never import `transaction` or `record_audit_event`
+(`docs/architecture.md` › Services and Selectors). Add the new modules to `apps/generics/tests/test_architecture.py`.
+
 ### Phase 6 — Factory
 
 Generate and present:

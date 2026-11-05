@@ -16,10 +16,10 @@ from apps.teams.models.team_member import TeamMember
 from apps.teams.permissions.team_member import TeamMemberPermission
 from apps.teams.serializers.options import TEAM_ID_PARAM
 from apps.teams.serializers.team_member import (
-    LAST_OWNER_MESSAGE,
     TeamMemberSerializer,
     TeamMemberUpdateSerializer,
 )
+from apps.teams.services import LastTeamOwnerError, ensure_team_keeps_owner
 
 
 @extend_schema_model_view_set(
@@ -73,8 +73,10 @@ class TeamMemberViewSet(
         return super().get_queryset().select_related('team', 'member__user')
 
     def perform_destroy(self, instance):
-        if instance.is_last_owner:
-            raise serializers.ValidationError({'role': [LAST_OWNER_MESSAGE]})
+        try:
+            ensure_team_keeps_owner(team_member=instance)
+        except LastTeamOwnerError as exc:
+            raise serializers.ValidationError({'role': [exc.args[0]]}) from exc
         super().perform_destroy(instance)
 
     def get_serializer_class(self):

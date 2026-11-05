@@ -1,12 +1,10 @@
-from django.db import transaction
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
-from apps.teams.choices import TeamMemberRoleChoices
 from apps.teams.models.team import Team
-from apps.teams.models.team_member import TeamMember
+from apps.teams.services import add_team_owner
 
 
 class TeamSerializer(ModelSerializerMixin, serializers.ModelSerializer):
@@ -43,15 +41,8 @@ class TeamSerializer(ModelSerializerMixin, serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create a new team."""
-        with transaction.atomic():
-            instance = super().create(validated_data)
-            TeamMember.objects.create(
-                member=self.auth_member,
-                team=instance,
-                role=TeamMemberRoleChoices.OWNER,
-                created_by=self.auth_user,
-                updated_by=self.auth_user,
-            )
+        instance = super().create(validated_data)
+        add_team_owner(team=instance, member=self.auth_member, user=self.auth_user)
         return instance
 
 

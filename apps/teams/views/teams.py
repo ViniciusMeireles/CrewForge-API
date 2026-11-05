@@ -7,6 +7,7 @@ from apps.generics.utils.schema import extend_schema_model_view_set
 from apps.teams.filters.team import TeamFilter
 from apps.teams.models.team import Team
 from apps.teams.permissions.team import TeamPermission
+from apps.teams.selectors import teams_with_member_count
 from apps.teams.serializers.team import TeamListSerializer, TeamSerializer
 
 
@@ -31,9 +32,7 @@ class TeamViewSet(
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action == 'list':
-            qs = qs.annotate(member_count=Team.member_count_expression()).order_by(
-                '-id'
-            )
+            qs = teams_with_member_count(qs)
         return qs
 
     def get_serializer_class(self):
