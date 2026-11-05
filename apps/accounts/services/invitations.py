@@ -1,8 +1,10 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any
 
 from django.db import transaction
+from django.db.models import QuerySet
 from django.utils import timezone
 from rest_framework.request import Request
 
@@ -119,6 +121,24 @@ def _record_acceptance(
         metadata={'invitation_id': invitation.pk, 'member_id': member.pk},
         **targets[audited],
     )
+
+
+@contextmanager
+def lock_acceptable_invitation(
+    *, pending: QuerySet[Invitation]
+) -> Iterator[Invitation | None]:
+    with transaction.atomic():
+        invitation: Invitation | None = (
+            Invitation.objects.select_for_update(of=('self',))
+            .filter(pk__in=pending.values('pk'))
+            .get_or_none()
+        )
+        if invitation is not None:
+            invitation.ensure_organization_not_suspended()
+            is_acceptable, message = invitation.is_acceptable()
+            if not is_acceptable:
+                raise InvitationRefusedError(message)
+        yield invitation
 
 
 def accept_invitation(

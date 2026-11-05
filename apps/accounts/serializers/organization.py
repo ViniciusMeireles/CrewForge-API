@@ -1,12 +1,11 @@
-from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from apps.accounts.choices import MemberRoleChoices, OrganizationErrorMessages
+from apps.accounts.choices import OrganizationErrorMessages
 from apps.accounts.mixins.serializers import ModelSerializerMixin
-from apps.accounts.models.member import Member
 from apps.accounts.models.organization import Organization, OrganizationProfile
+from apps.accounts.services.organizations import create_owner_membership
 from apps.generics.utils.shortcuts import get_object_or_none
 from apps.generics.utils.strings import str_to_bool
 
@@ -137,19 +136,12 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
             instance=profile_instance,
         )
 
-    @transaction.atomic
     def save(self, **kwargs):
         profile_data = self._validated_data.pop('profile', {}) or {}
         creating = not bool(self.instance)
         instance: Organization = super().save(**kwargs)
         if creating:
-            Member.objects.create(
-                user=self.auth_user,
-                organization=instance,
-                role=MemberRoleChoices.OWNER,
-                created_by=self.auth_user,
-                updated_by=self.auth_user,
-            )
+            create_owner_membership(organization=instance, user=self.auth_user)
         OrganizationProfile.objects.get_or_create(organization=instance)
         if profile_data:
             profile_serializer = self._get_profile_serializer(profile_data)

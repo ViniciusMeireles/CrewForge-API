@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.serializers import SerializerMetaclass
@@ -99,7 +98,6 @@ class OrganizationImageSerializer(
             attrs.update({'profile': org_profile})
         return attrs
 
-    @transaction.atomic
     def save(self, **kwargs):
         if image_data := self.validated_data.pop('image', None):
             image_serializer = StoredFileOrgImageSerializer(

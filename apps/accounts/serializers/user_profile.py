@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.serializers.user import run_password_validators
-from apps.accounts.utils.email_verification import send_verification_email
 
 User = get_user_model()
 
@@ -29,10 +28,7 @@ class UserProfileSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         email_changed = validated_data.get('email', instance.email) != instance.email
         if email_changed:
             validated_data['email_verified_at'] = None
-        instance = super().update(instance, validated_data)
-        if email_changed:
-            send_verification_email(instance)
-        return instance
+        return super().update(instance, validated_data)
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -74,9 +70,3 @@ class ChangePasswordSerializer(serializers.Serializer):
                 code='same_password',
             )
         return attrs
-
-    def save(self, **kwargs):
-        user = self.context['request'].user
-        user.set_password(self.validated_data['new_password'])
-        user.save(update_fields=['password'])
-        return user

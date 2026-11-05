@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
@@ -6,6 +8,7 @@ from apps.accounts.choices import OrganizationErrorMessages
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.factories.users import UserFactory
+from apps.accounts.models.organization import Organization
 from apps.accounts.tests.mixins import APITestCaseMixin
 
 
@@ -240,3 +243,18 @@ class OrganizationCRUDTestCase(APITestCaseMixin, APITestCase):
         payload = self._org_payload(name='Updated Name')
         response = self.client.put(url, data=payload, format='json')
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
+
+    def test_create_rolls_back_when_the_owner_membership_fails(self):
+        self.client.force_authenticate(user=UserFactory())
+        self.client.raise_request_exception = False
+        with mock.patch(
+            'apps.accounts.serializers.organization.create_owner_membership',
+            side_effect=RuntimeError,
+        ):
+            response = self.client.post(
+                reverse('accounts:organizations-list'),
+                {'name': 'Rollback', 'slug': 'rollback'},
+                format='json',
+            )
+        self.assertEqual(response.status_code, 500)
+        self.assertFalse(Organization.objects.filter(slug='rollback').exists())

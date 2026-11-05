@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import serializers
@@ -111,7 +110,6 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
     class Meta(MemberModelSerializer.Meta):
         read_only_fields = [*MemberModelSerializer.Meta.read_only_fields, 'role']
 
-    @transaction.atomic
     def save(self, **kwargs):
         invitation = get_context_invitation(self)
         user = self.fields['user'].create(

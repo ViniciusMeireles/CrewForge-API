@@ -33,6 +33,11 @@ from apps.accounts.serializers.auth import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
 )
+from apps.accounts.services.auth import (
+    confirm_password_reset,
+    request_password_reset,
+    verify_email,
+)
 from apps.accounts.settings import jwt_settings
 from apps.accounts.throttles import AuthRefreshThrottleMixin, AuthThrottleMixin
 from apps.accounts.utils.auth_cookies import (
@@ -44,14 +49,10 @@ from apps.accounts.utils.auth_cookies import (
     wants_cookie_transport,
 )
 from apps.accounts.utils.email_verification import (
-    mark_email_verified,
     send_verification_email,
     verification_cooldown_remaining,
 )
-from apps.accounts.utils.language import resolve_recipient_language
-from apps.accounts.utils.password_reset import password_reset_link
 from apps.accounts.utils.security_log import log_security_event
-from apps.accounts.utils.sessions import revoke_sessions
 
 AUTH_SCHEMA_TAGS = [_('Authentication')]
 
@@ -182,20 +183,7 @@ class PasswordResetRequestView(AuthThrottleMixin, APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if serializer.user:
-            from apps.accounts.tasks import send_password_reset_email
-
-            send_password_reset_email(
-                password_reset_link(serializer.user),
-                [serializer.user.email],
-                language=resolve_recipient_language(serializer.user),
-            )
-
-        log_security_event(
-            'auth.password_reset.requested',
-            request,
-            user_id=serializer.user.pk if serializer.user else None,
-        )
+        request_password_reset(user=serializer.user, request=request)
         return Response(
             data={
                 'detail': _(
@@ -237,13 +225,11 @@ class PasswordResetConfirmView(AuthThrottleMixin, APIView):
                 'auth.password_reset.failed', request, level=logging.WARNING
             )
             raise
-        user = serializer.user
-        new_password = serializer.validated_data.get('new_password')
-
-        user.set_password(new_password)
-        user.save()
-        revoke_sessions(user)
-        log_security_event('auth.password_reset.completed', request, user_id=user.pk)
+        confirm_password_reset(
+            user=serializer.user,
+            new_password=serializer.validated_data.get('new_password'),
+            request=request,
+        )
 
         return Response(
             data={
@@ -354,8 +340,7 @@ class EmailVerificationConfirmView(AuthThrottleMixin, APIView):
                 'auth.email_verification.failed', request, level=logging.WARNING
             )
             raise
-        mark_email_verified(serializer.user)
-        log_security_event('auth.email.verified', request, user_id=serializer.user.pk)
+        verify_email(user=serializer.user, request=request)
         return Response(
             data={'detail': _('Your email has been verified.')},
             status=http_status.HTTP_200_OK,
