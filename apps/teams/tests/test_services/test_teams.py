@@ -3,8 +3,8 @@ from django.test import TestCase
 from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.users import UserFactory
 from apps.teams.choices import TeamMemberRoleChoices
-from apps.teams.factories.teams import TeamFactory
 from apps.teams.factories.team_members import TeamMemberFactory
+from apps.teams.factories.teams import TeamFactory
 from apps.teams.models.team import Team
 from apps.teams.selectors import teams_with_member_count
 from apps.teams.services import (
