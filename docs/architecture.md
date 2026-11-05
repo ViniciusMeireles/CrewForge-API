@@ -49,6 +49,8 @@ CrewForge follows a strict layered architecture with clear separation of concern
 | Layer | Location Pattern | Responsibility |
 |-------|-----------------|----------------|
 | Views | `apps/*/views/` | HTTP handling, routing, response formatting |
+| Services | `apps/*/services` | Operations with side effects: transactions, locks, emails, audit events |
+| Selectors | `apps/*/selectors` | Read-only querysets with business meaning |
 | Permissions | `apps/*/permissions/` | Access control, role-based authorization |
 | Serializers | `apps/*/serializers/` | Input validation, output serialization |
 | Filters | `apps/*/filters/` | Query parameter filtering via django-filter |

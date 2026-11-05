@@ -25,6 +25,10 @@ from apps.audit.choices import AuditActionChoices
 from apps.audit.models.audit_event import AuditEvent
 
 
+def allow(invitation):
+    return None
+
+
 class InvitationServiceTestCase(TestCase):
     def setUp(self):
         self.organization = OrganizationFactory()
@@ -40,7 +44,10 @@ class InvitationServiceTestCase(TestCase):
 
     def test_accept_creates_the_member_and_audits_without_a_request(self):
         accepted = accept_invitation(
-            invitation_pk=self.invitation.pk, user=self.user, nickname='Ana'
+            invitation_pk=self.invitation.pk,
+            user=self.user,
+            nickname='Ana',
+            check=allow,
         )
         self.invitation.refresh_from_db()
         self.assertEqual(self.invitation.status, InvitationStatusChoices.ACCEPTED)
@@ -54,7 +61,9 @@ class InvitationServiceTestCase(TestCase):
         former = Member.objects.create(
             user=self.user, organization=self.organization, is_active=False
         )
-        accepted = accept_invitation(invitation_pk=self.invitation.pk, user=self.user)
+        accepted = accept_invitation(
+            invitation_pk=self.invitation.pk, user=self.user, check=allow
+        )
         self.assertEqual(accepted.member.pk, former.pk)
         self.assertTrue(accepted.readmitted)
         self.assertTrue(self.audited(AuditActionChoices.MEMBER_READMITTED))
@@ -70,24 +79,32 @@ class InvitationServiceTestCase(TestCase):
         self.assertFalse(Member.objects.filter(user=self.user).exists())
 
     def test_accept_refuses_an_answered_invitation(self):
-        accept_invitation(invitation_pk=self.invitation.pk, user=self.user)
+        accept_invitation(invitation_pk=self.invitation.pk, user=self.user, check=allow)
         with self.assertRaises(InvitationRefusedError):
-            accept_invitation(invitation_pk=self.invitation.pk, user=self.user)
+            accept_invitation(
+                invitation_pk=self.invitation.pk, user=self.user, check=allow
+            )
 
     def test_unknown_invitation_is_not_found(self):
         with self.assertRaises(Http404):
-            accept_invitation(invitation_pk='0', user=self.user)
+            accept_invitation(invitation_pk='0', user=self.user, check=allow)
 
     def test_decline_updates_and_audits(self):
-        decline_invitation(invitation_pk=self.invitation.pk, user=self.user)
+        decline_invitation(
+            invitation_pk=self.invitation.pk, user=self.user, check=allow
+        )
         self.invitation.refresh_from_db()
         self.assertEqual(self.invitation.status, InvitationStatusChoices.DECLINED)
         self.assertTrue(self.audited(AuditActionChoices.INVITATION_DECLINED))
 
     def test_decline_refuses_an_answered_invitation(self):
-        decline_invitation(invitation_pk=self.invitation.pk, user=self.user)
+        decline_invitation(
+            invitation_pk=self.invitation.pk, user=self.user, check=allow
+        )
         with self.assertRaises(InvitationRefusedError):
-            decline_invitation(invitation_pk=self.invitation.pk, user=self.user)
+            decline_invitation(
+                invitation_pk=self.invitation.pk, user=self.user, check=allow
+            )
 
     def test_resend_stamps_audits_and_sends_after_commit(self):
         with (
@@ -106,7 +123,9 @@ class InvitationServiceTestCase(TestCase):
         self.assertLess(raised.exception.retry_after, INVITATION_EMAIL_COOLDOWN_SECONDS)
 
     def test_resend_refuses_an_answered_invitation(self):
-        decline_invitation(invitation_pk=self.invitation.pk, user=self.user)
+        decline_invitation(
+            invitation_pk=self.invitation.pk, user=self.user, check=allow
+        )
         self.invitation.refresh_from_db()
         with self.assertRaises(InvitationRefusedError):
             resend_invitation_email(invitation=self.invitation)
@@ -123,7 +142,9 @@ class InvitationServiceTestCase(TestCase):
         self.assertEqual(self.invitation.status, InvitationStatusChoices.PENDING)
 
     def test_send_on_commit_skips_an_answered_invitation(self):
-        decline_invitation(invitation_pk=self.invitation.pk, user=self.user)
+        decline_invitation(
+            invitation_pk=self.invitation.pk, user=self.user, check=allow
+        )
         self.invitation.refresh_from_db()
         with (
             mock.patch.object(type(self.invitation), 'send_email') as send,

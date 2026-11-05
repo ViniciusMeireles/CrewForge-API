@@ -37,10 +37,6 @@ class AcceptedInvitation:
     readmitted: bool
 
 
-def _allow(invitation: Invitation) -> None:
-    return None
-
-
 def expire_stale_invitations(*, organization: Organization | None, email: str) -> None:
     Invitation.objects.filter(
         organization=organization,
@@ -129,9 +125,9 @@ def accept_invitation(
     *,
     invitation_pk: str,
     user: User,
+    check: InvitationCheck,
     nickname: str = '',
     request: Request | None = None,
-    check: InvitationCheck = _allow,
 ) -> AcceptedInvitation:
     with transaction.atomic():
         invitation = lock_invitation(invitation_pk=invitation_pk)
@@ -155,8 +151,8 @@ def decline_invitation(
     *,
     invitation_pk: str,
     user: User,
+    check: InvitationCheck,
     request: Request | None = None,
-    check: InvitationCheck = _allow,
 ) -> Invitation:
     with transaction.atomic():
         invitation = lock_invitation(invitation_pk=invitation_pk)
