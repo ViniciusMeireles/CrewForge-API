@@ -57,10 +57,9 @@ class SignupSerializer(
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user_data.setdefault('preferred_language', current_language())
-        member = register_owner(
+        return register_owner(
             user_data=user_data,
             organization_data=validated_data.pop('organization'),
             member_data=validated_data,
+            on_user_created=self.set_tokens_for_user,
         )
-        self.set_tokens_for_user(member.user)
-        return member

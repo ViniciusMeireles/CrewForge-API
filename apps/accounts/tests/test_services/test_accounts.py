@@ -9,6 +9,7 @@ from apps.accounts.factories.members import MemberFactory
 from apps.accounts.factories.users import UserFactory
 from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.organization import Organization, OrganizationProfile
+from apps.accounts.models.user import User
 from apps.accounts.services.auth import (
     change_password,
     confirm_password_reset,
@@ -34,8 +35,9 @@ def audited(action) -> bool:
 
 
 class RegisterOwnerTestCase(TestCase):
-    def register(self):
+    def register(self, on_user_created=lambda user: None):
         return register_owner(
+            on_user_created=on_user_created,
             user_data={
                 'username': 'ana',
                 'email': 'ana@example.com',
@@ -59,6 +61,14 @@ class RegisterOwnerTestCase(TestCase):
         profile = OrganizationProfile.objects.get(organization=member.organization)
         self.assertEqual(profile.website, 'https://acme.test')
 
+    def test_rolls_back_when_the_user_callback_fails(self):
+        def fail(user):
+            raise RuntimeError
+
+        with self.assertRaises(RuntimeError):
+            self.register(on_user_created=fail)
+        self.assertFalse(User.objects.filter(username='ana').exists())
+
     def test_queues_the_verification_email(self):
         member = self.register()
         self.assertIsNotNone(member.user.email_verification_sent_at)
@@ -75,6 +85,18 @@ class PasswordServiceTestCase(TestCase):
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('N3w-pass-word!'))
         self.assertTrue(audited('auth.password.changed'))
+
+    def test_change_password_rolls_back_when_the_audit_fails(self):
+        with (
+            mock.patch(
+                'apps.accounts.services.auth.log_security_event',
+                side_effect=RuntimeError,
+            ),
+            self.assertRaises(RuntimeError),
+        ):
+            change_password(user=self.user, new_password='N3w-pass-word!')
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.check_password('N3w-pass-word!'))
 
     def test_confirm_reset_revokes_sessions_and_audits(self):
         with mock.patch('apps.accounts.services.auth.revoke_sessions') as revoke:

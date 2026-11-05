@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any
 
 from django.db import transaction
@@ -32,9 +33,11 @@ def register_owner(
     user_data: dict[str, Any],
     organization_data: dict[str, Any],
     member_data: dict[str, Any],
+    on_user_created: Callable[[User], Any],
 ) -> Member:
     with transaction.atomic():
         user = _create_user(user_data)
+        on_user_created(user)
         send_verification_email(user)
         profile_data = organization_data.pop('profile', None) or {}
         organization = Organization.objects.create(
@@ -85,21 +88,24 @@ def request_password_reset(
 def confirm_password_reset(
     *, user: User, new_password: str, request: Request | None = None
 ) -> None:
-    user.set_password(new_password)
-    user.save()
-    revoke_sessions(user)
-    log_security_event('auth.password_reset.completed', request, user_id=user.pk)
+    with transaction.atomic():
+        user.set_password(new_password)
+        user.save()
+        revoke_sessions(user)
+        log_security_event('auth.password_reset.completed', request, user_id=user.pk)
 
 
 def change_password(
     *, user: User, new_password: str, request: Request | None = None
 ) -> None:
-    user.set_password(new_password)
-    user.save(update_fields=['password'])
-    revoke_sessions(user)
-    log_security_event('auth.password.changed', request, user_id=user.pk)
+    with transaction.atomic():
+        user.set_password(new_password)
+        user.save(update_fields=['password'])
+        revoke_sessions(user)
+        log_security_event('auth.password.changed', request, user_id=user.pk)
 
 
 def verify_email(*, user: User, request: Request | None = None) -> None:
-    mark_email_verified(user)
-    log_security_event('auth.email.verified', request, user_id=user.pk)
+    with transaction.atomic():
+        mark_email_verified(user)
+        log_security_event('auth.email.verified', request, user_id=user.pk)
