@@ -1,6 +1,7 @@
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
+from apps.accounts.access import Action, authorize
 from apps.accounts.utils.requests import (
     get_member,
     get_organization_id,
@@ -58,5 +59,4 @@ class OrganizationAdminObjPermission(BasePermission):
             return False
         if request.method in permissions.SAFE_METHODS:
             return True
-        auth_member = get_member(request)
-        return bool(auth_member and auth_member.has_admin_permission)
+        return authorize(get_member(request), Action.ORGANIZATION_RESOURCE_WRITE)

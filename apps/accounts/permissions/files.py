@@ -1,6 +1,7 @@
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
+from apps.accounts.access import Action, authorize
 from apps.accounts.choices import StoredFileAccess
 from apps.accounts.models.files import StoredFile
 from apps.accounts.utils.requests import get_member
@@ -42,21 +43,4 @@ class StoredFilePermission(BasePermission):
         if obj.organization_id != member.organization_id:
             return False
 
-        return (
-            (
-                obj_permission == StoredFileAccess.MEMBERS_ORGANIZATION
-                and member.has_member_permission
-            )
-            or (
-                obj_permission == StoredFileAccess.MANAGERS_ORGANIZATION
-                and member.has_manager_permission
-            )
-            or (
-                obj_permission == StoredFileAccess.ADMINS_ORGANIZATION
-                and member.has_admin_permission
-            )
-            or (
-                obj_permission == StoredFileAccess.OWNERS_ORGANIZATION
-                and member.has_owner_permission
-            )
-        )
+        return authorize(member, Action.FILE_ACCESS, obj_permission)

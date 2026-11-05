@@ -5,6 +5,7 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from apps.accounts.access import Action, authorize, has_role
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.managers.member import MemberManager
 from apps.generics.models.abstracts import BaseModel
@@ -102,41 +103,39 @@ class Member(BaseModel):
 
     @property
     def has_owner_permission(self) -> bool:
-        if not self.is_active:
-            return False
-        return self.is_owner
+        return has_role(self, MemberRoleChoices.OWNER)
 
     @property
     def has_admin_permission(self) -> bool:
-        return self.is_admin or self.has_owner_permission
+        return has_role(self, MemberRoleChoices.ADMIN)
 
     @property
     def has_manager_permission(self) -> bool:
-        return self.is_manager or self.has_admin_permission
+        return has_role(self, MemberRoleChoices.MANAGER)
 
     @property
     def has_member_permission(self) -> bool:
-        return self.is_member or self.has_manager_permission
+        return has_role(self, MemberRoleChoices.MEMBER)
 
     @property
     def has_members_access(self) -> bool:
-        return self.is_active
+        return authorize(self, Action.MEMBER_READ)
 
     @property
     def has_invitations_access(self) -> bool:
-        return self.has_admin_permission
+        return authorize(self, Action.INVITATION_MANAGE)
 
     @property
     def has_teams_access(self) -> bool:
-        return self.is_active
+        return authorize(self, Action.TEAM_READ)
 
     @property
     def has_organization_settings_access(self) -> bool:
-        return self.has_owner_permission
+        return authorize(self, Action.ORGANIZATION_SETTINGS)
 
     @property
     def has_audit_access(self) -> bool:
-        return self.has_admin_permission
+        return authorize(self, Action.AUDIT_READ)
 
     @classmethod
     def label_expression(

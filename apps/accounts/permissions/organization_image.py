@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+from apps.accounts.access import Action, authorize
 from apps.accounts.models.organization import OrganizationImage
 from apps.accounts.permissions.files import StoredFilePermission
 from apps.accounts.permissions.generics import OrganizationAdminObjPermission
@@ -21,7 +22,7 @@ class OrganizationImagePermission(permissions.BasePermission):
         if not StoredFilePermission().has_permission(request=request, view=view):
             return False
         if request.method.upper() == 'POST':
-            return get_member(request).has_admin_permission
+            return authorize(get_member(request), Action.ORGANIZATION_RESOURCE_WRITE)
         return True
 
     def has_object_permission(self, request, view, obj: OrganizationImage) -> bool:

@@ -87,6 +87,15 @@ class ArchitectureTestCase(SimpleTestCase):
                     with self.subTest(module=relative, name=name):
                         self.assertNotIn(name, source)
 
+    def test_permission_classes_decide_through_the_access_policy(self):
+        for path in APPS_DIR.glob('*/permissions/*.py'):
+            if path.parts[-3] == 'platform':
+                continue
+            with self.subTest(path=path):
+                self.assertNotRegex(
+                    path.read_text(), r'\.has_\w+_(permission|access)\b(?!\()'
+                )
+
     def test_no_module_level_import_cycles(self):
         files = {module_name(path): path for path in source_files()}
         modules = set(files)

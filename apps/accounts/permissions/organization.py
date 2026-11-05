@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+from apps.accounts.access import Action, authorize
 from apps.accounts.models.organization import Organization
 from apps.accounts.utils.requests import get_member
 
@@ -22,9 +23,4 @@ class OrganizationPermission(permissions.BasePermission):
                     is_active=True,
                 ).exists()
             )
-        auth_member = get_member(request)
-        return bool(
-            auth_member
-            and auth_member.has_owner_permission
-            and auth_member.organization == obj
-        )
+        return authorize(get_member(request), Action.ORGANIZATION_UPDATE, obj)

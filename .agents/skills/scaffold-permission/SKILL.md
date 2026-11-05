@@ -84,10 +84,10 @@ Based on answers, generate the permission class. Use the reference template from
 
 | Pattern | has_permission | has_object_permission |
 |---------|---------------|----------------------|
-| Owner-only | `auth_member.has_owner_permission` | Same |
-| Admin+ | `auth_member.has_admin_permission` | Same |
-| Manager+ | `auth_member.has_manager_permission` | Same |
-| Member (self) | `auth_member.has_member_permission` | `obj.user_id == auth_user.id` |
+| Owner-only | `authorize(member, Action.X)` with `MINIMUM_ROLE` owner | Same |
+| Admin+ | `authorize(member, Action.X)` with `MINIMUM_ROLE` admin | Same |
+| Manager+ | `authorize(member, Action.X)` with `MINIMUM_ROLE` manager | Same |
+| Member (self) | `authorize(member, Action.X)` with `MINIMUM_ROLE` member | `authorize(member, Action.Y, obj)` with a `TARGET_RULES` entry |
 | Admin-delete | Safe methods: all; Write: admin+ | Same |
 
 **Generate and present:**
@@ -112,10 +112,9 @@ class {Resource}Permission(OrganizationScopedPermission):
     organization_lookup = '{lookup}'
 
     def has_permission(self, request, view):
-        auth_member = get_member(request)
         return super().has_permission(request, view) and (
             request.method in permissions.SAFE_METHODS
-            or (auth_member and auth_member.has_{role}_permission)
+            or authorize(get_member(request), Action.{RESOURCE}_WRITE)
         )
 
     def has_object_permission(self, request, view, obj):
@@ -123,11 +122,11 @@ class {Resource}Permission(OrganizationScopedPermission):
             return False
         if request.method in permissions.SAFE_METHODS:
             return True
-        auth_member = get_member(request)
-        if not auth_member:
-            return False
-        return auth_member.has_{role}_permission
+        return authorize(get_member(request), Action.{RESOURCE}_WRITE)
 ```
+
+Add `{RESOURCE}_WRITE` to `Action`, its row to `MINIMUM_ROLE` in `apps/accounts/access.py`, and its row to the table in
+`apps/accounts/tests/test_access.py`. Permission classes never read `has_*_permission` or `has_*_access` directly.
 
 Wait for user confirmation before proceeding.
 
