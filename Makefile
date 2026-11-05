@@ -128,6 +128,9 @@ l_format_code:  ## Format code with ruff
 	uv run ruff check . --fix
 	uv run ruff format .
 
+l_typecheck:  ## Check types with mypy
+	uv run mypy apps config
+
 l_test: l_compilemessages  ## Run tests with coverage (sequential, for CI)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db
 

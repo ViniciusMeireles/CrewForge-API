@@ -70,6 +70,7 @@ Agents must NOT assume JWT alone is sufficient.
 - Permissions and organization scoping preserved.
 - Tests cover happy path, auth, permissions, inactive, cross-org.
 - `make l_format_code` passes.
+- `make l_typecheck` passes.
 - `make l_test` passes.
 - `make l_spectacular` passes (if API changed).
 - Migrations created and reviewed (if models changed).
@@ -81,6 +82,7 @@ Agents must NOT assume JWT alone is sufficient.
 
 ```bash
 make l_format_code   # ruff check + format
+make l_typecheck     # mypy
 make l_test          # pytest
 make l_spectacular   # schema (if API changed)
 ```

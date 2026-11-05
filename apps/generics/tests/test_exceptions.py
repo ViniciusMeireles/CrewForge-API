@@ -249,11 +249,8 @@ class ExceptionHandlerIntegrationTestCase(APITestCaseMixin, APITestCase):
 class ConstraintViolationHandlerTestCase(TestCase):
     def test_known_constraint_becomes_validation_error(self):
         team = TeamFactory()
-        with self.assertRaises(IntegrityError) as context:
-            with transaction.atomic():
-                TeamFactory(
-                    organization=team.organization, name=team.name, slug=team.slug
-                )
+        with self.assertRaises(IntegrityError) as context, transaction.atomic():
+            TeamFactory(organization=team.organization, name=team.name, slug=team.slug)
         response = custom_exception_handler(context.exception, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         error = response.data['error']

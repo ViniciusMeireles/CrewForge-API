@@ -15,7 +15,7 @@ class MemberRoleChoices(models.TextChoices):
     MEMBER = 'member', _('Member')
 
     @classmethod
-    def assignable_by(cls, member: 'Member | None') -> list[str]:
+    def assignable_by(cls, member: Member | None) -> list[str]:
         """Roles the given member may assign (invite with or set on a member)."""
         if member is None:
             return []
@@ -78,29 +78,32 @@ class StoredFileAccess(models.TextChoices):
 
     @classproperty
     def permissions_for_owner(cls) -> list[StoredFileAccess]:
-        return [StoredFileAccess.OWNER] + cls.permissions_for_public
+        return [StoredFileAccess.OWNER, *cls.permissions_for_public]
 
     @classproperty
     def permissions_for_owner_organization_updating(cls) -> list[StoredFileAccess]:
-        return [StoredFileAccess.OWNERS_ORGANIZATION] + cls.permissions_for_owner
+        return [StoredFileAccess.OWNERS_ORGANIZATION, *cls.permissions_for_owner]
 
     @classproperty
     def permissions_for_admin_organization_updating(cls) -> list[StoredFileAccess]:
         return [
-            StoredFileAccess.ADMINS_ORGANIZATION
-        ] + cls.permissions_for_owner_organization_updating
+            StoredFileAccess.ADMINS_ORGANIZATION,
+            *cls.permissions_for_owner_organization_updating,
+        ]
 
     @classproperty
     def permissions_for_manager_organization_updating(cls) -> list[StoredFileAccess]:
         return [
-            StoredFileAccess.MANAGERS_ORGANIZATION
-        ] + cls.permissions_for_admin_organization_updating
+            StoredFileAccess.MANAGERS_ORGANIZATION,
+            *cls.permissions_for_admin_organization_updating,
+        ]
 
     @classproperty
     def permissions_for_member_organization_updating(cls) -> list[StoredFileAccess]:
         return [
-            StoredFileAccess.MEMBERS_ORGANIZATION
-        ] + cls.permissions_for_manager_organization_updating
+            StoredFileAccess.MEMBERS_ORGANIZATION,
+            *cls.permissions_for_manager_organization_updating,
+        ]
 
     @classproperty
     def permissions_levels_updating(
@@ -123,27 +126,28 @@ class StoredFileAccess(models.TextChoices):
 
     @classproperty
     def permissions_for_member_organization_viewing(cls) -> list[StoredFileAccess]:
-        return [
-            StoredFileAccess.MEMBERS_ORGANIZATION,
-        ] + cls.permissions_for_owner
+        return [StoredFileAccess.MEMBERS_ORGANIZATION, *cls.permissions_for_owner]
 
     @classproperty
     def permissions_for_manager_organization_viewing(cls) -> list[StoredFileAccess]:
         return [
             StoredFileAccess.MANAGERS_ORGANIZATION,
-        ] + cls.permissions_for_member_organization_viewing
+            *cls.permissions_for_member_organization_viewing,
+        ]
 
     @classproperty
     def permissions_for_admin_organization_viewing(cls) -> list[StoredFileAccess]:
         return [
             StoredFileAccess.ADMINS_ORGANIZATION,
-        ] + cls.permissions_for_manager_organization_viewing
+            *cls.permissions_for_manager_organization_viewing,
+        ]
 
     @classproperty
     def permissions_for_owner_organization_viewing(cls) -> list[StoredFileAccess]:
         return [
             StoredFileAccess.OWNERS_ORGANIZATION,
-        ] + cls.permissions_for_admin_organization_viewing
+            *cls.permissions_for_admin_organization_viewing,
+        ]
 
     @classproperty
     def permissions_levels_viewing(
@@ -165,7 +169,7 @@ class StoredFileAccess(models.TextChoices):
         }
 
     @classmethod
-    def max_org_level(cls, member: 'Member | None') -> StoredFileAccess | None:
+    def max_org_level(cls, member: Member | None) -> StoredFileAccess | None:
         if not member:
             return None
         if member.has_owner_permission:

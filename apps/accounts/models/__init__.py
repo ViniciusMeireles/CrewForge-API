@@ -1,8 +1,19 @@
-import os
-from importlib import import_module
+from apps.accounts.models.files import StoredFile
+from apps.accounts.models.invitation import Invitation
+from apps.accounts.models.member import Member
+from apps.accounts.models.organization import (
+    Organization,
+    OrganizationImage,
+    OrganizationProfile,
+)
+from apps.accounts.models.user import User
 
-model_files = [f for f in os.listdir(os.path.dirname(__file__)) if f.endswith('.py') and f != '__init__.py']
-
-for file in model_files:
-    module_name = file[:-3]
-    import_module(f'.{module_name}', package=__name__)
+__all__ = [
+    'Invitation',
+    'Member',
+    'Organization',
+    'OrganizationImage',
+    'OrganizationProfile',
+    'StoredFile',
+    'User',
+]

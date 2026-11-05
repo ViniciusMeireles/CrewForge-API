@@ -13,10 +13,10 @@ class AuditEventQuerySet(models.QuerySet):
     def delete(self):
         raise RuntimeError('Audit events are immutable.')
 
-    def for_organization(self, organization_id: int | None) -> 'AuditEventQuerySet':
+    def for_organization(self, organization_id: int | None) -> AuditEventQuerySet:
         return self.filter(organization_id=organization_id)
 
-    def account_activity(self, user) -> 'AuditEventQuerySet':
+    def account_activity(self, user) -> AuditEventQuerySet:
         """Account events (no organization) that belong to ``user``."""
         actions = reduce(
             or_,

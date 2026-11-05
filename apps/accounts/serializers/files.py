@@ -77,7 +77,8 @@ class StoredFileDetailModelSerializer(
 
     class Meta:
         model = StoredFile
-        fields = StoredFileListModelSerializer.Meta.fields + [
+        fields = [
+            *StoredFileListModelSerializer.Meta.fields,
             'viewing_permission',
             'updating_permission',
             'owner',
@@ -138,13 +139,13 @@ class StoredFileCreateUpdateModelSerializer(
 
         if (
             viewing_permission is None
-            and 'viewing_permission' not in attrs.keys()
+            and 'viewing_permission' not in attrs
             and self.instance
         ):
             viewing_permission = self.instance.viewing_permission
         if (
             updating_permission is None
-            and 'updating_permission' not in attrs.keys()
+            and 'updating_permission' not in attrs
             and self.instance
         ):
             updating_permission = self.instance.updating_permission

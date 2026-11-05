@@ -1,7 +1,7 @@
 import os
 import secrets
 
-from .base import *  # noqa
+from .base import *
 from .base import BASE_DIR
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or secrets.token_urlsafe(64)
@@ -23,22 +23,22 @@ CELERY_TASK_IGNORE_RESULT = True
 
 # Uploaded files live in memory during tests: nothing is written to MEDIA_ROOT.
 STORAGES = {
-    **STORAGES,  # noqa: F405
+    **STORAGES,
     'default': {'BACKEND': 'django.core.files.storage.InMemoryStorage'},
     'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
 }
 
 REST_FRAMEWORK = {
-    **REST_FRAMEWORK,  # noqa: F405
+    **REST_FRAMEWORK,
     'DEFAULT_THROTTLE_RATES': {
-        **REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'],  # noqa: F405
+        **REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'],
         'auth': '10000/min',
         'auth_refresh': '10000/min',
     },
 }
 
 LOGGING = {
-    **LOGGING,  # noqa: F405
+    **LOGGING,
     'handlers': {'console': {'class': 'logging.NullHandler'}},
 }
 

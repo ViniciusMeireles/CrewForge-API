@@ -34,11 +34,11 @@ class MemberQuerySet(BaseQuerySet):
     def admit(
         self,
         *,
-        user: 'User',
-        organization: 'Organization',
+        user: User,
+        organization: Organization,
         role: str,
         nickname: str | None = None,
-    ) -> tuple['Member', bool]:
+    ) -> tuple[Member, bool]:
         """
         Create the membership of ``user`` in ``organization``, or reactivate
         the removed one (readmission) with the given role and nickname.

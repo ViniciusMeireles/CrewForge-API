@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from http import HTTPMethod
-from typing import Any, Literal, Sequence
+from typing import Any, Literal
 
 from rest_framework.decorators import action
 

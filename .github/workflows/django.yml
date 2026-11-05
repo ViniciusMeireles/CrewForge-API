@@ -59,6 +59,9 @@ jobs:
     - name: Run ruff check
       run: uv run ruff check .
 
+    - name: Run mypy
+      run: uv run mypy apps config
+
     - name: Install gettext
       run: sudo apt-get update && sudo apt-get install -y gettext
 

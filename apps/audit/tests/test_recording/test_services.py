@@ -100,11 +100,11 @@ class AuditServicesTestCase(TestCase):
         self.assertIsNone(event.actor_member)
 
     def test_errors_propagate(self):
-        with patch(
-            'apps.audit.models.audit_event.AuditEvent.objects.create',
-            side_effect=RuntimeError('boom'),
+        with (
+            patch(
+                'apps.audit.models.audit_event.AuditEvent.objects.create',
+                side_effect=RuntimeError('boom'),
+            ),
+            self.assertRaises(RuntimeError),
         ):
-            with self.assertRaises(RuntimeError):
-                record_audit_event(
-                    AuditActionChoices.TEAM_UPDATED, target=TeamFactory()
-                )
+            record_audit_event(AuditActionChoices.TEAM_UPDATED, target=TeamFactory())

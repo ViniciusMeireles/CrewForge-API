@@ -81,12 +81,12 @@ def invitations_section(
     return {'pending': pending.count(), 'expiring_soon': expiring_soon}
 
 
-def received_invitations_section(*, user: 'User') -> dict:
+def received_invitations_section(*, user: User) -> dict:
     pending = Invitation.objects.filter_received_by_user(user).filter_acceptable()
     return {'pending': pending.count()}
 
 
-def build_overview(*, member: Member, user: 'User', now: datetime) -> dict:
+def build_overview(*, member: Member, user: User, now: datetime) -> dict:
     organization_id = member.organization_id
     return {
         'generated_at': now,

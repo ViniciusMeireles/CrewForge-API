@@ -116,7 +116,8 @@ class TeamMemberUpdateSerializer(TeamMemberSerializer):
     """Serializer for updating a TeamMember."""
 
     class Meta(TeamMemberSerializer.Meta):
-        read_only_fields = TeamMemberSerializer.Meta.read_only_fields + [
+        read_only_fields = [
+            *TeamMemberSerializer.Meta.read_only_fields,
             'team',
             'member',
         ]

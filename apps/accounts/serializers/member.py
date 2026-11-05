@@ -79,7 +79,8 @@ class MemberModelSerializer(
     class Meta:
         model = Member
         fields = '__all__'
-        read_only_fields = ModelSerializerMixin._default_read_only_fields + [
+        read_only_fields = [
+            *ModelSerializerMixin._default_read_only_fields,
             'organization',
             'last_login_at',
             'joined_at',
@@ -108,7 +109,7 @@ class MemberWithInviteCreateSerializer(MemberModelSerializer):
     user = UserCreateWithInviteSerializer()
 
     class Meta(MemberModelSerializer.Meta):
-        read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
+        read_only_fields = [*MemberModelSerializer.Meta.read_only_fields, 'role']
 
     @transaction.atomic
     def save(self, **kwargs):
@@ -146,7 +147,7 @@ class MemberUpdateSerializer(MemberModelSerializer):
     user = UserUpdateSerializer(read_only=True)
 
     class Meta(MemberModelSerializer.Meta):
-        read_only_fields = MemberModelSerializer.Meta.read_only_fields + ['role']
+        read_only_fields = [*MemberModelSerializer.Meta.read_only_fields, 'role']
 
 
 class MemberRoleUpdateSerializer(

@@ -67,6 +67,18 @@ and would only inflate the total).
 
 ## Quality Gates
 
+**Lint.** Ruff selects `E, F, I, B, W, S, DJ, UP, SIM, RUF, PL`. `pyproject.toml` ignores `RUF012` (declarative Django
+and DRF attributes), `DJ001` (changing a nullable text field needs a migration), `PLC0415`, `PLR0911` and `PLR0913`.
+Tests also ignore `S`, `PLR0402`, `PLR2004` and `SIM117`.
+
+**Types.** `make l_typecheck` runs mypy with `django-stubs` and `djangorestframework-stubs` in CI. New modules are
+checked by default, and `apps.accounts` and `apps.teams` services, selectors and `access` need complete annotations.
+Modules that predate the gate are listed under `ignore_errors` in `pyproject.toml`. Remove a module from that list when
+you refactor it, and never add one.
+
+**Architecture.** `apps/generics/tests/test_architecture.py` fails on a module-level import cycle or a `models/__init__.py`
+that discovers files.
+
 ### Pre-Merge Requirements
 
 Every change must pass these checks before merge:

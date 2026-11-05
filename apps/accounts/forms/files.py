@@ -22,7 +22,7 @@ class StoredFileModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
-        super(StoredFileModelForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         readonly_fields = [
             'original_name',
             'content_type',
@@ -33,7 +33,7 @@ class StoredFileModelForm(forms.ModelForm):
             self.fields[field_name].required = False
 
     def clean(self):
-        super(StoredFileModelForm, self).clean()
+        super().clean()
 
         data = self.data.copy()
         if not data.get('file') and self.files:
@@ -56,7 +56,7 @@ class StoredFileModelForm(forms.ModelForm):
             for field, errors in serializer.errors.items():
                 if not_validate_file and field == 'file':
                     continue
-                for error in errors:
-                    error = error.replace("{'", '').replace("'}", '')
+                for raw_error in errors:
+                    error = raw_error.replace("{'", '').replace("'}", '')
                     self.add_error(field=field, error=error)
         return self.cleaned_data
