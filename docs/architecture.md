@@ -86,7 +86,8 @@ Operations with side effects live in `services`, and reads with business meaning
 `MINIMUM_ROLE` maps an `Action` to the lowest Role allowed, and `TARGET_RULES` holds actions that depend on the target
 (the Owner, the same Organization, one's own record). Permission classes keep the DRF entry points and the 401/403 split
 and delegate to it, and `Member` access properties do the same. Identity checks that need no Member (accepting an
-invitation by email) and platform access (ADR-009) stay outside. A new rule is one `Action` plus its table row in
+invitation by email) and platform access (ADR-009) stay outside. Queryset visibility (`filter_visible_to`) and role choices
+(`assignable_by`) are filters, not decisions, so they also stay outside: change them together with the matching rule. A new rule is one `Action` plus its table row in
 `apps/accounts/tests/test_access.py`.
 
 ## Data Flow
