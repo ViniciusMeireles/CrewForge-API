@@ -1,0 +1,1785 @@
+[
+  {
+    "actions": null,
+    "name": "accounts:api-root",
+    "path": "api/accounts/",
+    "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:api-root",
+    "path": "api/accounts/<drf_format_suffix:format>",
+    "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:email_verification_email_preview",
+    "path": "email-preview/auth/email/verify/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "accounts:email_verify",
+    "path": "api/auth/email/verify/",
+    "view": "EmailVerificationConfirmView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:email_verify_resend",
+    "path": "api/auth/email/verify/resend/",
+    "view": "EmailVerificationResendView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:invitation_email_preview",
+    "path": "email-preview/accounts/invitation/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "accounts:logout",
+    "path": "api/auth/logout/",
+    "view": "LogoutView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:organization_reactivated_email_preview",
+    "path": "email-preview/accounts/organization/reactivated/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "accounts:organization_suspended_email_preview",
+    "path": "email-preview/accounts/organization/suspended/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "accounts:ownership_new_owner_email_preview",
+    "path": "email-preview/accounts/organization/ownership/new-owner/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "accounts:ownership_previous_owner_email_preview",
+    "path": "email-preview/accounts/organization/ownership/previous-owner/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "accounts:password_reset",
+    "path": "api/auth/password/reset/",
+    "view": "PasswordResetRequestView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:password_reset_confirm",
+    "path": "api/auth/password/reset/confirm/",
+    "view": "PasswordResetConfirmView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:password_reset_email_preview",
+    "path": "email-preview/auth/password/reset/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "accounts:session",
+    "path": "api/accounts/session/",
+    "view": "SessionView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:session-config",
+    "path": "api/accounts/session/config/",
+    "view": "session_config"
+  },
+  {
+    "actions": null,
+    "name": "accounts:token_obtain_pair",
+    "path": "api/auth/token/",
+    "view": "TokenObtainPairView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:token_refresh",
+    "path": "api/auth/token/refresh/",
+    "view": "TokenRefreshView"
+  },
+  {
+    "actions": null,
+    "name": "accounts:token_verify",
+    "path": "api/auth/token/verify/",
+    "view": "TokenVerifyView"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/(?P<url>.*)$",
+    "view": "catch_all_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/accounts/invitation/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/accounts/member/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/accounts/organization/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/accounts/storedfile/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/accounts/user/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/audit/auditevent/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/auth/group/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/teams/team/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/teams/teammember/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/token_blacklist/blacklistedtoken/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/token_blacklist/outstandingtoken/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_invitation_add",
+    "path": "admin/accounts/invitation/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_invitation_change",
+    "path": "admin/accounts/invitation/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_invitation_changelist",
+    "path": "admin/accounts/invitation/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_invitation_delete",
+    "path": "admin/accounts/invitation/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_invitation_history",
+    "path": "admin/accounts/invitation/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_member_add",
+    "path": "admin/accounts/member/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_member_change",
+    "path": "admin/accounts/member/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_member_changelist",
+    "path": "admin/accounts/member/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_member_delete",
+    "path": "admin/accounts/member/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_member_history",
+    "path": "admin/accounts/member/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_organization_add",
+    "path": "admin/accounts/organization/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_organization_change",
+    "path": "admin/accounts/organization/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_organization_changelist",
+    "path": "admin/accounts/organization/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_organization_delete",
+    "path": "admin/accounts/organization/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_organization_history",
+    "path": "admin/accounts/organization/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_storedfile_add",
+    "path": "admin/accounts/storedfile/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_storedfile_change",
+    "path": "admin/accounts/storedfile/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_storedfile_changelist",
+    "path": "admin/accounts/storedfile/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_storedfile_delete",
+    "path": "admin/accounts/storedfile/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_storedfile_history",
+    "path": "admin/accounts/storedfile/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_user_add",
+    "path": "admin/accounts/user/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_user_change",
+    "path": "admin/accounts/user/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_user_changelist",
+    "path": "admin/accounts/user/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_user_delete",
+    "path": "admin/accounts/user/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:accounts_user_history",
+    "path": "admin/accounts/user/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:app_list",
+    "path": "admin/^(?P<app_label>auth|token_blacklist|accounts|teams|audit)/$",
+    "view": "app_index"
+  },
+  {
+    "actions": null,
+    "name": "admin:audit_auditevent_add",
+    "path": "admin/audit/auditevent/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:audit_auditevent_change",
+    "path": "admin/audit/auditevent/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:audit_auditevent_changelist",
+    "path": "admin/audit/auditevent/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:audit_auditevent_delete",
+    "path": "admin/audit/auditevent/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:audit_auditevent_history",
+    "path": "admin/audit/auditevent/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:auth_group_add",
+    "path": "admin/auth/group/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:auth_group_change",
+    "path": "admin/auth/group/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:auth_group_changelist",
+    "path": "admin/auth/group/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:auth_group_delete",
+    "path": "admin/auth/group/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:auth_group_history",
+    "path": "admin/auth/group/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:autocomplete",
+    "path": "admin/autocomplete/",
+    "view": "autocomplete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:index",
+    "path": "admin/",
+    "view": "index"
+  },
+  {
+    "actions": null,
+    "name": "admin:jsi18n",
+    "path": "admin/jsi18n/",
+    "view": "i18n_javascript"
+  },
+  {
+    "actions": null,
+    "name": "admin:login",
+    "path": "admin/login/",
+    "view": "login"
+  },
+  {
+    "actions": null,
+    "name": "admin:logout",
+    "path": "admin/logout/",
+    "view": "logout"
+  },
+  {
+    "actions": null,
+    "name": "admin:password_change",
+    "path": "admin/password_change/",
+    "view": "password_change"
+  },
+  {
+    "actions": null,
+    "name": "admin:password_change_done",
+    "path": "admin/password_change/done/",
+    "view": "password_change_done"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_team_add",
+    "path": "admin/teams/team/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_team_change",
+    "path": "admin/teams/team/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_team_changelist",
+    "path": "admin/teams/team/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_team_delete",
+    "path": "admin/teams/team/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_team_history",
+    "path": "admin/teams/team/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_teammember_add",
+    "path": "admin/teams/teammember/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_teammember_change",
+    "path": "admin/teams/teammember/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_teammember_changelist",
+    "path": "admin/teams/teammember/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_teammember_delete",
+    "path": "admin/teams/teammember/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:teams_teammember_history",
+    "path": "admin/teams/teammember/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_blacklistedtoken_add",
+    "path": "admin/token_blacklist/blacklistedtoken/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_blacklistedtoken_change",
+    "path": "admin/token_blacklist/blacklistedtoken/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_blacklistedtoken_changelist",
+    "path": "admin/token_blacklist/blacklistedtoken/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_blacklistedtoken_delete",
+    "path": "admin/token_blacklist/blacklistedtoken/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_blacklistedtoken_history",
+    "path": "admin/token_blacklist/blacklistedtoken/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_outstandingtoken_add",
+    "path": "admin/token_blacklist/outstandingtoken/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_outstandingtoken_change",
+    "path": "admin/token_blacklist/outstandingtoken/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_outstandingtoken_changelist",
+    "path": "admin/token_blacklist/outstandingtoken/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_outstandingtoken_delete",
+    "path": "admin/token_blacklist/outstandingtoken/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:token_blacklist_outstandingtoken_history",
+    "path": "admin/token_blacklist/outstandingtoken/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:view_on_site",
+    "path": "admin/r/<path:content_type_id>/<path:object_id>/",
+    "view": "shortcut"
+  },
+  {
+    "actions": null,
+    "name": "audit:api-root",
+    "path": "api/audit/",
+    "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "audit:api-root",
+    "path": "api/audit/<drf_format_suffix:format>",
+    "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "dashboard:overview",
+    "path": "api/dashboard/overview/",
+    "view": "OverviewView"
+  },
+  {
+    "actions": null,
+    "name": "home",
+    "path": "",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "nesting_server_data",
+    "path": "_nested_admin/^server-data\\.js$",
+    "view": "server_data_js"
+  },
+  {
+    "actions": null,
+    "name": "platform:api-root",
+    "path": "api/platform/",
+    "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "platform:api-root",
+    "path": "api/platform/<drf_format_suffix:format>",
+    "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "platform:impersonation-exit",
+    "path": "api/platform/impersonation/exit/",
+    "view": "ImpersonationExitView"
+  },
+  {
+    "actions": null,
+    "name": "platform:overview",
+    "path": "api/platform/overview/",
+    "view": "PlatformOverviewView"
+  },
+  {
+    "actions": null,
+    "name": "redoc",
+    "path": "api/schema/redoc/",
+    "view": "SpectacularRedocView"
+  },
+  {
+    "actions": null,
+    "name": "schema",
+    "path": "api/schema/",
+    "view": "SpectacularAPIView"
+  },
+  {
+    "actions": null,
+    "name": "swagger-ui",
+    "path": "api/schema/swagger-ui/",
+    "view": "ApiDocsView"
+  },
+  {
+    "actions": null,
+    "name": "teams:api-root",
+    "path": "api/teams/",
+    "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "teams:api-root",
+    "path": "api/teams/<drf_format_suffix:format>",
+    "view": "APIRootView"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:invitations-detail",
+    "path": "api/accounts/^invitations/(?P<pk>[^/.]+)/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:invitations-detail",
+    "path": "api/accounts/^invitations/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:members-detail",
+    "path": "api/accounts/^members/(?P<pk>[^/.]+)/$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:members-detail",
+    "path": "api/accounts/^members/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:organization_images-detail",
+    "path": "api/accounts/^organization-images/(?P<pk>[^/.]+)/$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:organization_images-detail",
+    "path": "api/accounts/^organization-images/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:organization_profiles-detail",
+    "path": "api/accounts/^organization-profiles/(?P<pk>[^/.]+)/$",
+    "view": "OrganizationProfileViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:organization_profiles-detail",
+    "path": "api/accounts/^organization-profiles/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationProfileViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:organizations-detail",
+    "path": "api/accounts/^organizations/(?P<pk>[^/.]+)/$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:organizations-detail",
+    "path": "api/accounts/^organizations/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:stored_files-detail",
+    "path": "api/accounts/^stored-files/(?P<uuid>[^/.]+)/$",
+    "view": "StoredFileViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "accounts:stored_files-detail",
+    "path": "api/accounts/^stored-files/(?P<uuid>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "StoredFileViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "audit:audit_events-detail",
+    "path": "api/audit/^events/(?P<pk>[^/.]+)/$",
+    "view": "AuditEventViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "audit:audit_events-detail",
+    "path": "api/audit/^events/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "AuditEventViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "platform:audit_events-detail",
+    "path": "api/platform/^audit-events/(?P<pk>[^/.]+)/$",
+    "view": "PlatformAuditEventViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "platform:audit_events-detail",
+    "path": "api/platform/^audit-events/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformAuditEventViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "teams:team_members-detail",
+    "path": "api/teams/^team-members/(?P<pk>[^/.]+)/$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "teams:team_members-detail",
+    "path": "api/teams/^team-members/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "teams:teams-detail",
+    "path": "api/teams/^teams/(?P<pk>[^/.]+)/$",
+    "view": "TeamViewSet"
+  },
+  {
+    "actions": {
+      "delete": "destroy",
+      "get": "retrieve",
+      "patch": "partial_update",
+      "put": "update"
+    },
+    "name": "teams:teams-detail",
+    "path": "api/teams/^teams/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamViewSet"
+  },
+  {
+    "actions": {
+      "get": "activity"
+    },
+    "name": "accounts:users-me-activity",
+    "path": "api/accounts/users/me/activity/",
+    "view": "UserProfileViewSet"
+  },
+  {
+    "actions": {
+      "get": "by_key"
+    },
+    "name": "accounts:invitations-by-key",
+    "path": "api/accounts/^invitations/by-key/(?P<invitation_key>[^/.]+)/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "by_key"
+    },
+    "name": "accounts:invitations-by-key",
+    "path": "api/accounts/^invitations/by-key/(?P<invitation_key>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "file"
+    },
+    "name": "accounts:stored_files-file",
+    "path": "api/accounts/^stored-files/(?P<uuid>[^/.]+)/file/$",
+    "view": "StoredFileViewSet"
+  },
+  {
+    "actions": {
+      "get": "file"
+    },
+    "name": "accounts:stored_files-file",
+    "path": "api/accounts/^stored-files/(?P<uuid>[^/.]+)/file\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "StoredFileViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:invitations-filter-options",
+    "path": "api/accounts/^invitations/filter-options/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:invitations-filter-options",
+    "path": "api/accounts/^invitations/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:members-filter-options",
+    "path": "api/accounts/^members/filter-options/$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:members-filter-options",
+    "path": "api/accounts/^members/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:organization_images-filter-options",
+    "path": "api/accounts/^organization-images/filter-options/$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:organization_images-filter-options",
+    "path": "api/accounts/^organization-images/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:organization_profiles-filter-options",
+    "path": "api/accounts/^organization-profiles/filter-options/$",
+    "view": "OrganizationProfileViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:organization_profiles-filter-options",
+    "path": "api/accounts/^organization-profiles/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationProfileViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:organizations-filter-options",
+    "path": "api/accounts/^organizations/filter-options/$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "accounts:organizations-filter-options",
+    "path": "api/accounts/^organizations/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "audit:audit_events-filter-options",
+    "path": "api/audit/^events/filter-options/$",
+    "view": "AuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "audit:audit_events-filter-options",
+    "path": "api/audit/^events/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "AuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "platform:audit_events-filter-options",
+    "path": "api/platform/^audit-events/filter-options/$",
+    "view": "PlatformAuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "platform:audit_events-filter-options",
+    "path": "api/platform/^audit-events/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformAuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "teams:team_members-filter-options",
+    "path": "api/teams/^team-members/filter-options/$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "teams:team_members-filter-options",
+    "path": "api/teams/^team-members/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "teams:teams-filter-options",
+    "path": "api/teams/^teams/filter-options/$",
+    "view": "TeamViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options"
+    },
+    "name": "teams:teams-filter-options",
+    "path": "api/teams/^teams/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options_received"
+    },
+    "name": "accounts:invitations-filter-options-received",
+    "path": "api/accounts/^invitations/received/filter-options/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "filter_options_received"
+    },
+    "name": "accounts:invitations-filter-options-received",
+    "path": "api/accounts/^invitations/received/filter-options\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_create"
+    },
+    "name": "accounts:invitations-form-options-create",
+    "path": "api/accounts/^invitations/form-options-create/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_create"
+    },
+    "name": "accounts:invitations-form-options-create",
+    "path": "api/accounts/^invitations/form-options-create\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_create"
+    },
+    "name": "accounts:organization_images-form-options-create",
+    "path": "api/accounts/^organization-images/form-options-create/$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_create"
+    },
+    "name": "accounts:organization_images-form-options-create",
+    "path": "api/accounts/^organization-images/form-options-create\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_create"
+    },
+    "name": "teams:team_members-form-options-create",
+    "path": "api/teams/^team-members/form-options-create/$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_create"
+    },
+    "name": "teams:team_members-form-options-create",
+    "path": "api/teams/^team-members/form-options-create\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update"
+    },
+    "name": "accounts:invitations-form-options-update",
+    "path": "api/accounts/^invitations/form-options-update/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update"
+    },
+    "name": "accounts:invitations-form-options-update",
+    "path": "api/accounts/^invitations/form-options-update\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update"
+    },
+    "name": "accounts:organization_images-form-options-update",
+    "path": "api/accounts/^organization-images/form-options-update/$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update"
+    },
+    "name": "accounts:organization_images-form-options-update",
+    "path": "api/accounts/^organization-images/form-options-update\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update"
+    },
+    "name": "teams:team_members-form-options-update",
+    "path": "api/teams/^team-members/form-options-update/$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update"
+    },
+    "name": "teams:team_members-form-options-update",
+    "path": "api/teams/^team-members/form-options-update\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update_role"
+    },
+    "name": "accounts:members-form-options-update-role",
+    "path": "api/accounts/^members/form-options-update-role/$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "form_options_update_role"
+    },
+    "name": "accounts:members-form-options-update-role",
+    "path": "api/accounts/^members/form-options-update-role\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "invitations"
+    },
+    "name": "platform:organizations-invitations",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/invitations/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "invitations"
+    },
+    "name": "platform:organizations-invitations",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/invitations\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:invitations-list",
+    "path": "api/accounts/^invitations/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:invitations-list",
+    "path": "api/accounts/^invitations\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:members-list",
+    "path": "api/accounts/^members/$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:members-list",
+    "path": "api/accounts/^members\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:organization_images-list",
+    "path": "api/accounts/^organization-images/$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:organization_images-list",
+    "path": "api/accounts/^organization-images\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationImageViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:organization_profiles-list",
+    "path": "api/accounts/^organization-profiles/$",
+    "view": "OrganizationProfileViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:organization_profiles-list",
+    "path": "api/accounts/^organization-profiles\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationProfileViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:organizations-list",
+    "path": "api/accounts/^organizations/$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:organizations-list",
+    "path": "api/accounts/^organizations\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:stored_files-list",
+    "path": "api/accounts/^stored-files/$",
+    "view": "StoredFileViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "accounts:stored_files-list",
+    "path": "api/accounts/^stored-files\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "StoredFileViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "audit:audit_events-list",
+    "path": "api/audit/^events/$",
+    "view": "AuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "audit:audit_events-list",
+    "path": "api/audit/^events\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "AuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "platform:audit_events-list",
+    "path": "api/platform/^audit-events/$",
+    "view": "PlatformAuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "platform:audit_events-list",
+    "path": "api/platform/^audit-events\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformAuditEventViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "teams:team_members-list",
+    "path": "api/teams/^team-members/$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "teams:team_members-list",
+    "path": "api/teams/^team-members\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamMemberViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "teams:teams-list",
+    "path": "api/teams/^teams/$",
+    "view": "TeamViewSet"
+  },
+  {
+    "actions": {
+      "get": "list",
+      "post": "create"
+    },
+    "name": "teams:teams-list",
+    "path": "api/teams/^teams\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "TeamViewSet"
+  },
+  {
+    "actions": {
+      "get": "list"
+    },
+    "name": "platform:organizations-list",
+    "path": "api/platform/^organizations/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "list"
+    },
+    "name": "platform:organizations-list",
+    "path": "api/platform/^organizations\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "list"
+    },
+    "name": "platform:users-list",
+    "path": "api/platform/^users/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "get": "list"
+    },
+    "name": "platform:users-list",
+    "path": "api/platform/^users\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "get": "members"
+    },
+    "name": "platform:organizations-members",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/members/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "members"
+    },
+    "name": "platform:organizations-members",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/members\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "received"
+    },
+    "name": "accounts:invitations-received",
+    "path": "api/accounts/^invitations/received/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "received"
+    },
+    "name": "accounts:invitations-received",
+    "path": "api/accounts/^invitations/received\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "received_detail"
+    },
+    "name": "accounts:invitations-received-detail",
+    "path": "api/accounts/^invitations/received/(?P<invitation_pk>\\d+)/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "received_detail"
+    },
+    "name": "accounts:invitations-received-detail",
+    "path": "api/accounts/^invitations/received/(?P<invitation_pk>\\d+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "get": "retrieve",
+      "patch": "partial_update"
+    },
+    "name": "accounts:users-me",
+    "path": "api/accounts/users/me/",
+    "view": "UserProfileViewSet"
+  },
+  {
+    "actions": {
+      "get": "retrieve"
+    },
+    "name": "platform:organizations-detail",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "retrieve"
+    },
+    "name": "platform:organizations-detail",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "retrieve"
+    },
+    "name": "platform:users-detail",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "get": "retrieve"
+    },
+    "name": "platform:users-detail",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "get": "teams"
+    },
+    "name": "platform:organizations-teams",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/teams/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "get": "teams"
+    },
+    "name": "platform:organizations-teams",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/teams\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "patch": "update_role"
+    },
+    "name": "accounts:members-update-role",
+    "path": "api/accounts/^members/(?P<pk>[^/.]+)/update-role/$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "patch": "update_role"
+    },
+    "name": "accounts:members-update-role",
+    "path": "api/accounts/^members/(?P<pk>[^/.]+)/update-role\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "post": "accept"
+    },
+    "name": "accounts:invitations-accept",
+    "path": "api/accounts/^invitations/(?P<invitation_pk>\\d+)/accept/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "post": "accept"
+    },
+    "name": "accounts:invitations-accept",
+    "path": "api/accounts/^invitations/(?P<invitation_pk>\\d+)/accept\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "post": "block"
+    },
+    "name": "platform:users-block",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/block/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "block"
+    },
+    "name": "platform:users-block",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/block\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "change_password"
+    },
+    "name": "accounts:users-me-change-password",
+    "path": "api/accounts/users/me/change-password/",
+    "view": "UserProfileViewSet"
+  },
+  {
+    "actions": {
+      "post": "create"
+    },
+    "name": "accounts:signup-list",
+    "path": "api/accounts/^signup/$",
+    "view": "SignupViewSet"
+  },
+  {
+    "actions": {
+      "post": "create"
+    },
+    "name": "accounts:signup-list",
+    "path": "api/accounts/^signup\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "SignupViewSet"
+  },
+  {
+    "actions": {
+      "post": "create_with_invite"
+    },
+    "name": "accounts:members-create-with-invite",
+    "path": "api/accounts/^members/create-with-invite/(?P<invitation_key>[^/.]+)/$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "post": "create_with_invite"
+    },
+    "name": "accounts:members-create-with-invite",
+    "path": "api/accounts/^members/create-with-invite/(?P<invitation_key>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "MemberViewSet"
+  },
+  {
+    "actions": {
+      "post": "decline"
+    },
+    "name": "accounts:invitations-decline",
+    "path": "api/accounts/^invitations/(?P<invitation_pk>\\d+)/decline/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "post": "decline"
+    },
+    "name": "accounts:invitations-decline",
+    "path": "api/accounts/^invitations/(?P<invitation_pk>\\d+)/decline\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "post": "end_sessions"
+    },
+    "name": "platform:users-end-sessions",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/end-sessions/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "end_sessions"
+    },
+    "name": "platform:users-end-sessions",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/end-sessions\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "force_password_reset"
+    },
+    "name": "platform:users-force-password-reset",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/force-password-reset/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "force_password_reset"
+    },
+    "name": "platform:users-force-password-reset",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/force-password-reset\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "impersonate"
+    },
+    "name": "platform:users-impersonate",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/impersonate/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "impersonate"
+    },
+    "name": "platform:users-impersonate",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/impersonate\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "login"
+    },
+    "name": "accounts:organizations-login",
+    "path": "api/accounts/^organizations/(?P<pk>[^/.]+)/login/$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "login"
+    },
+    "name": "accounts:organizations-login",
+    "path": "api/accounts/^organizations/(?P<pk>[^/.]+)/login\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "OrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "reactivate"
+    },
+    "name": "platform:organizations-reactivate",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/reactivate/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "reactivate"
+    },
+    "name": "platform:organizations-reactivate",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/reactivate\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "resend_verification"
+    },
+    "name": "platform:users-resend-verification",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/resend-verification/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "resend_verification"
+    },
+    "name": "platform:users-resend-verification",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/resend-verification\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "send_email"
+    },
+    "name": "accounts:invitations-send-email",
+    "path": "api/accounts/^invitations/(?P<pk>[^/.]+)/send-email/$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "post": "send_email"
+    },
+    "name": "accounts:invitations-send-email",
+    "path": "api/accounts/^invitations/(?P<pk>[^/.]+)/send-email\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "InvitationViewSet"
+  },
+  {
+    "actions": {
+      "post": "suspend"
+    },
+    "name": "platform:organizations-suspend",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/suspend/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "suspend"
+    },
+    "name": "platform:organizations-suspend",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/suspend\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "transfer_ownership"
+    },
+    "name": "platform:organizations-transfer-ownership",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/transfer-ownership/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "transfer_ownership"
+    },
+    "name": "platform:organizations-transfer-ownership",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/transfer-ownership\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "unblock"
+    },
+    "name": "platform:users-unblock",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/unblock/$",
+    "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": {
+      "post": "unblock"
+    },
+    "name": "platform:users-unblock",
+    "path": "api/platform/^users/(?P<pk>[^/.]+)/unblock\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformUserViewSet"
+  }
+]

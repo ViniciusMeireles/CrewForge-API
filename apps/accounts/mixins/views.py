@@ -14,27 +14,10 @@ from apps.audit.services import (
     record_audit_event,
     snapshot_instance,
 )
-from apps.generics.mixins.views import (
-    OptionsModelMixin,
-    OptionsModelViewSetMetaclass,
-    OrderableModelViewSetMetaclass,
-)
+from apps.generics.mixins.views import OptionsBaseModelMixin
 
 
-class ModelViewSetMetaclass(
-    OptionsModelViewSetMetaclass,
-    OrderableModelViewSetMetaclass,
-):
-    """
-    Combine the orderable filter and options metaclasses.
-
-    ``OptionsModelViewSetMetaclass`` comes first so ``OrderableModelViewSetMetaclass``
-    runs inside its ``super().__new__``: the ``order_by`` filter already exists when
-    the filter options are built.
-    """
-
-
-class OptionsOrganizationModelMixin(OptionsModelMixin):
+class OptionsOrganizationModelMixin(OptionsBaseModelMixin):
     """Options mixin with organization and active scoping on relations."""
 
     options_serializer_class = OptionsOrganizationModelSerializer
@@ -44,7 +27,6 @@ class OptionsOrganizationModelMixin(OptionsModelMixin):
 class ModelViewSetMixin(
     OptionsOrganizationModelMixin,
     OrganizationScopedRequestMixin,
-    metaclass=ModelViewSetMetaclass,
 ):
     """Mixin for views to add user, member, and organization properties."""
 

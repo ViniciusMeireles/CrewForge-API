@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase
 from django.urls import NoReverseMatch, URLResolver, get_resolver, reverse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
@@ -10,10 +10,12 @@ from apps.accounts.views.members import MemberViewSet
 from apps.accounts.views.organization_images import OrganizationImageViewSet
 from apps.accounts.views.signup import SignupViewSet
 from apps.generics.fields.options import PaginatedOptionsBaseSerializer
-from apps.generics.mixins.views import OptionsModelMixin, OptionsModelViewSetMetaclass
+from apps.generics.mixins.views import (
+    FormOptionsMixin,
+    OptionsBaseModelMixin,
+)
 from apps.generics.serializers.options import OptionsModelSerializer
 from apps.teams.filters.team_member import TeamMemberFilter
-from apps.teams.models.team import Team
 from apps.teams.models.team_member import TeamMember
 from apps.teams.serializers.team_member import (
     TeamMemberSerializer,
@@ -22,21 +24,15 @@ from apps.teams.serializers.team_member import (
 from apps.teams.views.team_members import TeamMemberViewSet
 
 
-class _TeamNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Team
-        fields = ['name']
-
-
 def _options_fields(viewset_class, options_action):
     view = viewset_class()
     view.action = options_action
     return set(view.get_options_serializer_class()({}).get_fields())
 
 
-class OptionsViewSetMetaclassTestCase(SimpleTestCase):
-    def test_registers_actions_when_serializer_has_options(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
+class OptionsViewSetMixinsTestCase(SimpleTestCase):
+    def test_form_options_mixin_declares_the_actions(self):
+        class TV(FormOptionsMixin, viewsets.ModelViewSet):
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
 
@@ -49,82 +45,27 @@ class OptionsViewSetMetaclassTestCase(SimpleTestCase):
                 self.assertFalse(view_func.detail)
                 self.assertEqual(view_func.url_path, url_path)
                 self.assertEqual(dict(view_func.mapping), {'get': action_name})
+        self.assertFalse(hasattr(TV, 'filter_options'))
 
-    def test_skipped_when_serializer_has_no_options(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = Team.objects.all()
-            serializer_class = _TeamNameSerializer
-
-        self.assertFalse(hasattr(TV, 'form_options_create'))
-        self.assertFalse(hasattr(TV, 'form_options_update'))
-
-    def test_skipped_when_no_get_method(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
+    def test_base_mixin_declares_no_route(self):
+        class TV(OptionsBaseModelMixin, viewsets.ModelViewSet):
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
-            http_method_names = ['post']
 
-        self.assertFalse(hasattr(TV, 'form_options_create'))
+        self.assertEqual(TV.get_extra_actions(), [])
 
-    def test_raises_without_options_mixin(self):
-        with self.assertRaises(TypeError):
-
-            class TV(viewsets.ModelViewSet, metaclass=OptionsModelViewSetMetaclass):
-                queryset = TeamMember.objects.all()
-                serializer_class = TeamMemberSerializer
-
-    def test_request_dependent_serializer_class_fails_with_diagnostic(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, 'RequestViewSet'):
-
-            class RequestViewSet(OptionsModelMixin, viewsets.ModelViewSet):
-                queryset = TeamMember.objects.all()
-
-                def get_serializer_class(self):
-                    if self.request.user.is_staff:
-                        return TeamMemberSerializer
-                    return TeamMemberSerializer
-
-    def test_custom_url_path(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            url_path_options_create = 'custom-create'
-
-        self.assertEqual(TV.form_options_create.url_path, 'custom-create')
-
-    def test_options_actions_opt_out(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            options_actions = ()
-
-        self.assertFalse(hasattr(TV, 'form_options_create'))
-        self.assertFalse(hasattr(TV, 'form_options_update'))
-
-    def test_options_actions_only_update(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            options_actions = ('update',)
-
-        self.assertFalse(hasattr(TV, 'form_options_create'))
-        self.assertTrue(hasattr(TV, 'form_options_update'))
-
-    def test_subclass_opt_out_hides_inherited_routes(self):
-        class Parent(OptionsModelMixin, viewsets.ModelViewSet):
+    def test_subclass_inherits_the_declared_routes(self):
+        class Parent(FormOptionsMixin, viewsets.ModelViewSet):
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
 
         class Child(Parent):
-            options_actions = ('update',)
-
-        def _action_names(viewset_class):
-            return {a.__name__ for a in viewset_class.get_extra_actions()}
+            pass
 
         self.assertEqual(
-            _action_names(Parent), {'form_options_create', 'form_options_update'}
+            {a.__name__ for a in Child.get_extra_actions()},
+            {'form_options_create', 'form_options_update'},
         )
-        self.assertEqual(_action_names(Child), {'form_options_update'})
 
     def test_options_serializer_class_is_reusable(self):
         view = TeamMemberViewSet()
@@ -197,11 +138,11 @@ class OptionsRoutesTestCase(SimpleTestCase):
 
 
 class OptionsCustomActionTestCase(SimpleTestCase):
-    def test_write_action_gets_form_options_route(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
+    def test_write_action_uses_its_serializer(self):
+        class TV(OptionsBaseModelMixin, viewsets.ModelViewSet):
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
-            options_actions = ('change_role',)
+            options_custom_actions = {'change_role': 'form_options_change_role'}
 
             def get_serializer_class(self):
                 if self.action == 'change_role':
@@ -212,22 +153,18 @@ class OptionsCustomActionTestCase(SimpleTestCase):
             def change_role(self, request, *args, **kwargs):
                 pass
 
-        view_func = TV.form_options_change_role
-        self.assertFalse(view_func.detail)
-        self.assertEqual(view_func.url_path, 'form-options-change-role')
-        self.assertEqual(dict(view_func.mapping), {'get': 'form_options_change_role'})
-        self.assertEqual(_options_fields(TV, 'form_options_change_role'), {'role'})
-        self.assertEqual(
-            {a.__name__ for a in TV.get_extra_actions()},
-            {'change_role', 'form_options_change_role'},
-        )
+            @action(detail=False, methods=['get'], url_path='form-options-change-role')
+            def form_options_change_role(self, request, *args, **kwargs):
+                return self.form_options(request, *args, **kwargs)
 
-    def test_get_action_gets_filter_options_route(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
+        self.assertEqual(_options_fields(TV, 'form_options_change_role'), {'role'})
+
+    def test_get_action_uses_its_filterset(self):
+        class TV(OptionsBaseModelMixin, viewsets.ModelViewSet):
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
             filter_backends = [DjangoFilterBackend]
-            options_actions = ('mine',)
+            options_custom_actions = {'mine': 'filter_options_mine'}
 
             @action(
                 detail=False,
@@ -239,51 +176,22 @@ class OptionsCustomActionTestCase(SimpleTestCase):
             def mine(self, request, *args, **kwargs):
                 pass
 
-        view_func = TV.filter_options_mine
-        self.assertEqual(view_func.url_path, 'mine/filter-options')
-        self.assertEqual(view_func.kwargs['permission_classes'], [IsAuthenticated])
+            @action(detail=False, methods=['get'], url_path='mine/filter-options')
+            def filter_options_mine(self, request, *args, **kwargs):
+                return self.form_options(request, *args, **kwargs)
+
         self.assertIn('role__in', _options_fields(TV, 'filter_options_mine'))
 
-    def test_url_path_with_parameters_raises(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, 'URL parameters'):
-
-            class TV(OptionsModelMixin, viewsets.ModelViewSet):
-                queryset = TeamMember.objects.all()
-                serializer_class = TeamMemberSerializer
-                options_actions = ('by_key',)
-
-                @action(
-                    detail=False, methods=['post'], url_path='by-key/(?P<key>[^/.]+)'
-                )
-                def by_key(self, request, *args, **kwargs):
-                    pass
-
-    def test_subclass_opt_out_hides_inherited_custom_route(self):
-        class Parent(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberUpdateSerializer
-            options_actions = ('change_role',)
-
-            @action(detail=True, methods=['patch'], url_path='change-role')
-            def change_role(self, request, *args, **kwargs):
-                pass
-
-        class Child(Parent):
-            options_actions = ()
-
-        def names(viewset_class):
-            return {a.__name__ for a in viewset_class.get_extra_actions()}
-
-        self.assertIn('form_options_change_role', names(Parent))
-        self.assertEqual(names(Child), {'change_role'})
-
     def test_unknown_custom_action_raises(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, 'missing'):
+        class TV(OptionsBaseModelMixin, viewsets.ModelViewSet):
+            queryset = TeamMember.objects.all()
+            serializer_class = TeamMemberSerializer
+            options_custom_actions = {'missing': 'form_options_missing'}
 
-            class TV(OptionsModelMixin, viewsets.ModelViewSet):
-                queryset = TeamMember.objects.all()
-                serializer_class = TeamMemberSerializer
-                options_actions = ('missing',)
+        view = TV()
+        view.action = 'form_options_missing'
+        with self.assertRaisesMessage(ImproperlyConfigured, 'missing'):
+            view.get_options_serializer_class()
 
     def test_member_update_role_options(self):
         self.assertEqual(
@@ -299,6 +207,24 @@ def _iter_url_patterns(patterns):
             yield from _iter_url_patterns(pattern.url_patterns)
         else:
             yield pattern
+
+
+class OptionsRoutesBuildTestCase(SimpleTestCase):
+    def test_every_options_route_builds_a_serializer_with_fields(self):
+        checked = set()
+        for pattern in _iter_url_patterns(get_resolver().url_patterns):
+            viewset_class = getattr(pattern.callback, 'cls', None)
+            action_name = (getattr(pattern.callback, 'actions', None) or {}).get('get')
+            if not viewset_class or not issubclass(
+                viewset_class, OptionsBaseModelMixin
+            ):
+                continue
+            if action_name not in viewset_class.get_options_actions_inverse_map():
+                continue
+            checked.add((viewset_class.__name__, action_name))
+            with self.subTest(viewset=viewset_class.__name__, action=action_name):
+                self.assertTrue(_options_fields(viewset_class, action_name))
+        self.assertEqual(len(checked), 17)
 
 
 class PaginatedOptionsSearchConfiguredTestCase(SimpleTestCase):

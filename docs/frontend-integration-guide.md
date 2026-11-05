@@ -974,7 +974,7 @@ that is not a field/filter, or an unknown kwarg, also makes the API refuse to st
 Choice fields accept `choices_filter`, a callable `(choices, context) -> choices`
 that narrows the options per request before the `?<field>=` search (e.g.
 `assignable_role_choices` for roles). Custom `@action`s named in the ViewSet
-`options_actions` get their own route: `form-options-<url_path>/` for write actions,
+`options_custom_actions` get their own route: `form-options-<url_path>/` for write actions,
 `<url_path>/filter-options/` for `GET` actions (with the action permissions).
 
 ### 15.4. Migration from `/choices/`

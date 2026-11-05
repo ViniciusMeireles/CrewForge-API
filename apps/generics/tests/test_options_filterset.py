@@ -12,7 +12,7 @@ from apps.accounts.mixins.views import ModelViewSetMixin
 from apps.accounts.models.files import StoredFile
 from apps.accounts.serializers.files import StoredFileCreateUpdateModelSerializer
 from apps.generics.fields.options import PaginatedOptionsBaseSerializer
-from apps.generics.mixins.views import OptionsBaseModelMixin, OptionsModelMixin
+from apps.generics.mixins.views import FilterOptionsMixin, OptionsBaseModelMixin
 from apps.generics.serializers.options import OptionsFilterSetSerializer
 from apps.generics.utils.schema import get_form_options_parameters
 from apps.teams.models.team import Team
@@ -160,8 +160,8 @@ class OptionsFilterSetSerializerTestCase(SimpleTestCase):
 
 
 class FilterOptionsRouteTestCase(SimpleTestCase):
-    def test_route_registered_with_filterset(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
+    def test_mixin_declares_the_action(self):
+        class TV(FilterOptionsMixin, viewsets.ModelViewSet):
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
             filterset_class = _TeamMemberFilter
@@ -169,98 +169,31 @@ class FilterOptionsRouteTestCase(SimpleTestCase):
         self.assertFalse(TV.filter_options.detail)
         self.assertEqual(TV.filter_options.url_path, 'filter-options')
         self.assertEqual(dict(TV.filter_options.mapping), {'get': 'filter_options'})
-
-    def test_skipped_without_filterset(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-
-        self.assertFalse(hasattr(TV, 'filter_options'))
-
-    def test_skipped_without_choice_or_relation_filters(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = Team.objects.all()
-            serializer_class = TeamMemberSerializer
-            filterset_class = _TextOnlyFilter
-
-        self.assertFalse(hasattr(TV, 'filter_options'))
-
-    def test_options_actions_without_list(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            filterset_class = _TeamMemberFilter
-            options_actions = ('create', 'update')
-
-        self.assertFalse(hasattr(TV, 'filter_options'))
-        self.assertTrue(hasattr(TV, 'form_options_create'))
-
-    def test_options_actions_only_list(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            filterset_class = _TeamMemberFilter
-            options_actions = ('list',)
-
         self.assertEqual(
             {a.__name__ for a in TV.get_extra_actions()}, {'filter_options'}
         )
 
-    def test_subclass_opt_out_hides_inherited_route(self):
-        class Parent(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            filterset_class = _TeamMemberFilter
-
-        class Child(Parent):
-            options_actions = ('create',)
-
-        self.assertNotIn(
-            'filter_options', {a.__name__ for a in Child.get_extra_actions()}
-        )
-
-    def test_skipped_without_django_filter_backend(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
+    def test_without_django_filter_backend_is_not_found(self):
+        class TV(FilterOptionsMixin, viewsets.ModelViewSet):
+            permission_classes = [AllowAny]
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
             filterset_class = _TeamMemberFilter
             filter_backends = []
 
-        self.assertFalse(hasattr(TV, 'filter_options'))
+        response = TV.as_view({'get': 'filter_options'})(APIRequestFactory().get('/'))
+        self.assertEqual(response.status_code, 404)
 
-    def test_default_filter_backends_enable_the_route(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            filterset_class = _TeamMemberFilter
-
-        self.assertTrue(hasattr(TV, 'filter_options'))
-
-    def test_runtime_without_options_serializer_is_not_found(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
+    def test_without_filterset_is_not_found(self):
+        class TV(FilterOptionsMixin, viewsets.ModelViewSet):
             permission_classes = [AllowAny]
             queryset = TeamMember.objects.all()
             serializer_class = TeamMemberSerializer
-            filterset_class = _TeamMemberFilter
-
-            def get_options_filterset_class(self, filterset_class=None):
-                if getattr(self, 'request', None) is None:
-                    return super().get_options_filterset_class(filterset_class)
-                return None
 
         response = TV.as_view({'get': 'filter_options'})(APIRequestFactory().get('/'))
         self.assertEqual(response.status_code, 404)
 
-    def test_custom_url_path(self):
-        class TV(OptionsModelMixin, viewsets.ModelViewSet):
-            queryset = TeamMember.objects.all()
-            serializer_class = TeamMemberSerializer
-            filterset_class = _TeamMemberFilter
-            url_path_options_list = 'custom-filters'
-
-        self.assertEqual(TV.filter_options.url_path, 'custom-filters')
-
-    def test_orderable_filter_is_built_before_options(self):
+    def test_filter_options_include_the_order_by_of_the_filterset(self):
         view = TeamViewSet()
         view.action = 'filter_options'
         fields = view.get_options_serializer_class()({}).get_fields()
@@ -290,35 +223,28 @@ class _StoredFileTypoFilter(_StoredFileFilter):
         }
 
 
+def _filter_option_fields(filterset):
+    class ScopedViewSet(FilterOptionsMixin, ModelViewSetMixin, viewsets.ModelViewSet):
+        queryset = StoredFile.objects.all()
+        serializer_class = StoredFileCreateUpdateModelSerializer
+        filterset_class = filterset
+
+    view = ScopedViewSet()
+    view.action = 'filter_options'
+    return view.get_options_serializer_class()({}).get_fields()
+
+
 class FilterOptionsOrganizationScopeTestCase(SimpleTestCase):
-    def test_misspelled_organization_kwarg_fails_at_class_creation(self):
+    def test_misspelled_organization_kwarg_fails(self):
         with self.assertRaisesMessage(ImproperlyConfigured, 'organization_filter'):
+            _filter_option_fields(_StoredFileTypoFilter)
 
-            class TypoViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
-                queryset = StoredFile.objects.all()
-                serializer_class = StoredFileCreateUpdateModelSerializer
-                filterset_class = _StoredFileTypoFilter
-                options_actions = ('list',)
-
-    def test_unscoped_relation_fails_at_class_creation(self):
+    def test_unscoped_relation_fails(self):
         with self.assertRaisesMessage(ImproperlyConfigured, 'OptionsListStoredFile'):
-
-            class UnscopedViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
-                queryset = StoredFile.objects.all()
-                serializer_class = StoredFileCreateUpdateModelSerializer
-                filterset_class = _StoredFileFilter
-                options_actions = ('list',)
+            _filter_option_fields(_StoredFileFilter)
 
     def test_declared_lookup_is_allowed(self):
-        class LookupViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
-            queryset = StoredFile.objects.all()
-            serializer_class = StoredFileCreateUpdateModelSerializer
-            filterset_class = _StoredFileLookupFilter
-            options_actions = ('list',)
-
-        view = LookupViewSet()
-        view.action = 'filter_options'
-        field = view.get_options_serializer_class()({}).get_fields()['owner']
+        field = _filter_option_fields(_StoredFileLookupFilter)['owner']
         self.assertEqual(field.organization_lookup, 'members__organization_id')
 
 

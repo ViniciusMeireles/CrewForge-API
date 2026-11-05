@@ -30,6 +30,8 @@ from apps.accounts.services.organizations import (
 )
 from apps.accounts.utils.requests import get_member
 from apps.audit.choices import AuditActionChoices
+from apps.generics.mixins.views import FilterOptionsMixin
+from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import (
     extend_schema_list,
     extend_schema_model_view_set,
@@ -100,7 +102,7 @@ _dark_logo_parameter = OpenApiParameter(
         parameters=[_dark_logo_parameter],
     ),
 )
-class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
+class OrganizationViewSet(FilterOptionsMixin, ModelViewSetMixin, viewsets.ModelViewSet):
     """View for handling organization CRUD operations."""
 
     serializer_class = OrganizationSerializer
@@ -114,9 +116,10 @@ class OrganizationViewSet(ModelViewSetMixin, viewsets.ModelViewSet):
     }
     permission_classes = [OrganizationPermission]
     organization_context_exempt_actions = ('list', 'create', 'login')
-    filterset_class = OrganizationFilter
+    filterset_class = orderable_filter_factory(
+        OrganizationListSerializer, OrganizationFilter
+    )
     filter_backends = [backends.DjangoFilterBackend]
-    auto_orderable_filter = True
 
     def get_queryset(self):
         """

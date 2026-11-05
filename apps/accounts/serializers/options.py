@@ -34,8 +34,7 @@ class OrganizationScopedOptionsSerializerMixin:
     ``Meta.options_extra_kwargs`` of the source serializer or filterset (e.g.
     ``{'owner': {'organization_lookup': 'members__organization_id'}}``). Otherwise
     it would list records from every tenant, so building the field raises
-    ``ImproperlyConfigured`` (at class creation, through the ViewSet metaclass)
-    unless it is explicitly declared global with
+    ``ImproperlyConfigured`` unless it is explicitly declared global with
     ``{'<field>': {'organization_scoped': False}}``.
     """
 

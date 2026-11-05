@@ -145,7 +145,7 @@ class MyViewSet(
 | `organization_filter` | FK traversal override | `'team__organization_id'` |
 | `lookup_field` | Non-default PK field | `'uuid'` for StoredFile |
 | `parser_classes` | Request parsing | `[MultiPartParser, FormParser]` |
-| `options_actions` | Form-options routes to generate (`()` disables them) | `('create', 'update')` |
+| `options_custom_actions` | Custom actions with a declared options route | `{'update_role': 'form_options_update_role'}` |
 | `audit_actions` | DRF action → audit action recorded by `ModelViewSetMixin` (same transaction); omitted actions are not audited | `{'create': AuditActionChoices.TEAM_CREATED}` |
 | `audit_exclude_fields` | Fields left out of audit snapshots and diffs | `('key',)` |
 

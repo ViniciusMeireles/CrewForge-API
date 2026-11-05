@@ -96,6 +96,18 @@ class ArchitectureTestCase(SimpleTestCase):
                     path.read_text(), r'\.has_\w+_(permission|access)\b(?!\()'
                 )
 
+    def test_no_metaclass_builds_view_routes(self):
+        for path in source_files():
+            if not {'views', 'views.py'} & set(path.parts):
+                continue
+            for node in ast.walk(ast.parse(path.read_text())):
+                if isinstance(node, ast.ClassDef):
+                    with self.subTest(path=path, name=node.name):
+                        self.assertFalse(
+                            [k for k in node.keywords if k.arg == 'metaclass']
+                        )
+                        self.assertNotIn('type', [ast.unparse(b) for b in node.bases])
+
     def test_no_module_level_import_cycles(self):
         files = {module_name(path): path for path in source_files()}
         modules = set(files)

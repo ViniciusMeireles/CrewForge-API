@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 18:31+0000\n"
+"POT-Creation-Date: 2026-11-05 21:12+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -1016,23 +1016,23 @@ msgstr ""
 "Verifica se um token é válido: `200` quando é, `401` caso contrário. Não "
 "informa o que o token permite."
 
-#: apps/accounts/views/files.py:43
+#: apps/accounts/views/files.py:44
 msgid "Download file"
 msgstr "Baixar arquivo"
 
-#: apps/accounts/views/files.py:44
+#: apps/accounts/views/files.py:45
 msgid "Return the content of the stored file."
 msgstr "Retorna o conteúdo do arquivo armazenado."
 
-#: apps/accounts/views/files.py:48
+#: apps/accounts/views/files.py:49
 msgid "The file content."
 msgstr "O conteúdo do arquivo."
 
-#: apps/accounts/views/files.py:51
+#: apps/accounts/views/files.py:52
 msgid "File not found."
 msgstr "Arquivo não encontrado."
 
-#: apps/accounts/views/files.py:59
+#: apps/accounts/views/files.py:60
 msgid ""
 "Download as an attachment. Only raster images are ever served inline; every "
 "other type is always an attachment."
@@ -1040,19 +1040,19 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:158
+#: apps/accounts/views/files.py:157
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:162
+#: apps/accounts/views/files.py:161
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
-#: apps/accounts/views/invitations.py:65
+#: apps/accounts/views/invitations.py:67
 msgid "Send invitation email"
 msgstr "Enviar e-mail do convite"
 
-#: apps/accounts/views/invitations.py:67
+#: apps/accounts/views/invitations.py:69
 msgid ""
 "Email the invitation to its recipient again. A cooldown applies between "
 "sends."
@@ -1060,23 +1060,23 @@ msgstr ""
 "Envia o convite por e-mail ao destinatário novamente. Há um intervalo mínimo "
 "entre envios."
 
-#: apps/accounts/views/invitations.py:87
+#: apps/accounts/views/invitations.py:89
 msgid "The invitation email has been sent successfully."
 msgstr "O e-mail de convite foi enviado com sucesso."
 
-#: apps/accounts/views/invitations.py:115 apps/accounts/views/members.py:95
+#: apps/accounts/views/invitations.py:117 apps/accounts/views/members.py:97
 msgid "The invitation is expired or the user is already a member."
 msgstr "O convite expirou ou o usuário já é membro."
 
-#: apps/accounts/views/invitations.py:142
+#: apps/accounts/views/invitations.py:144
 msgid "The invitation email cooldown is active."
 msgstr "O intervalo de reenvio do e-mail de convite está ativo."
 
-#: apps/accounts/views/invitations.py:148
+#: apps/accounts/views/invitations.py:150
 msgid "List received invitations"
 msgstr "Listar convites recebidos"
 
-#: apps/accounts/views/invitations.py:150
+#: apps/accounts/views/invitations.py:152
 msgid ""
 "Paginated list of the invitations addressed to the authenticated user, from "
 "any organization."
@@ -1084,39 +1084,39 @@ msgstr ""
 "Lista paginada dos convites destinados ao usuário autenticado, de qualquer "
 "organização."
 
-#: apps/accounts/views/invitations.py:159
+#: apps/accounts/views/invitations.py:161
 msgid "Get received invitation"
 msgstr "Obter convite recebido"
 
-#: apps/accounts/views/invitations.py:160
+#: apps/accounts/views/invitations.py:162
 msgid "Return an invitation addressed to the authenticated user."
 msgstr "Retorna um convite destinado ao usuário autenticado."
 
-#: apps/accounts/views/invitations.py:168
-#: apps/accounts/views/invitations.py:205
-#: apps/accounts/views/invitations.py:288
-#: apps/accounts/views/invitations.py:366
+#: apps/accounts/views/invitations.py:170
+#: apps/accounts/views/invitations.py:207
+#: apps/accounts/views/invitations.py:290
+#: apps/accounts/views/invitations.py:368
 msgid "Invitation not found."
 msgstr "Convite não encontrado."
 
-#: apps/accounts/views/invitations.py:178 apps/accounts/views/members.py:57
+#: apps/accounts/views/invitations.py:180 apps/accounts/views/members.py:59
 msgid "The secret key of the invitation."
 msgstr "A chave secreta do convite."
 
-#: apps/accounts/views/invitations.py:183
+#: apps/accounts/views/invitations.py:185
 msgid "Get invitation by key"
 msgstr "Obter convite pela chave"
 
-#: apps/accounts/views/invitations.py:185
+#: apps/accounts/views/invitations.py:187
 msgid ""
 "Return the invitation identified by the secret key of its invitation link."
 msgstr "Retorna o convite identificado pela chave secreta do link de convite."
 
-#: apps/accounts/views/invitations.py:212
+#: apps/accounts/views/invitations.py:214
 msgid "Accept invitation"
 msgstr "Aceitar convite"
 
-#: apps/accounts/views/invitations.py:214
+#: apps/accounts/views/invitations.py:216
 msgid ""
 "Accept an invitation and create a member record, or reactivate the removed "
 "member of the user (readmission)."
@@ -1124,31 +1124,31 @@ msgstr ""
 "Aceita um convite e cria um registro de membro, ou reativa o membro removido "
 "do usuário (readmissão)."
 
-#: apps/accounts/views/invitations.py:270
+#: apps/accounts/views/invitations.py:272
 msgid "The invitation is no longer acceptable."
 msgstr "O convite não pode mais ser aceito."
 
-#: apps/accounts/views/invitations.py:295
+#: apps/accounts/views/invitations.py:297
 msgid "Decline invitation"
 msgstr "Recusar convite"
 
-#: apps/accounts/views/invitations.py:297
+#: apps/accounts/views/invitations.py:299
 msgid "Decline a pending invitation addressed to the authenticated user."
 msgstr "Recusa um convite pendente destinado ao usuário autenticado."
 
-#: apps/accounts/views/invitations.py:312
+#: apps/accounts/views/invitations.py:314
 msgid "The invitation has been declined successfully."
 msgstr "O convite foi recusado com sucesso."
 
-#: apps/accounts/views/invitations.py:348
+#: apps/accounts/views/invitations.py:350
 msgid "The invitation is not in a pending state."
 msgstr "O convite não está pendente."
 
-#: apps/accounts/views/invitations.py:397
+#: apps/accounts/views/invitations.py:453
 msgid "Received invitations filter options"
 msgstr "Opções de filtro dos convites recebidos"
 
-#: apps/accounts/views/invitations.py:399
+#: apps/accounts/views/invitations.py:455
 msgid ""
 "Return the choices of each filter of the received invitations list. Send a "
 "field name as query parameter to get only that field."
@@ -1156,15 +1156,15 @@ msgstr ""
 "Retorna as opções de cada filtro da lista de convites recebidos. Envie o "
 "nome de um campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/accounts/views/invitations.py:542
+#: apps/accounts/views/invitations.py:554
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
-#: apps/accounts/views/members.py:62
+#: apps/accounts/views/members.py:64
 msgid "Join with invitation"
 msgstr "Entrar com convite"
 
-#: apps/accounts/views/members.py:64
+#: apps/accounts/views/members.py:66
 msgid ""
 "Create the member of the authenticated user from the invitation identified "
 "by its secret key."
@@ -1172,23 +1172,29 @@ msgstr ""
 "Cria o membro do usuário autenticado a partir do convite identificado pela "
 "chave secreta."
 
-#: apps/accounts/views/members.py:114
+#: apps/accounts/views/members.py:116
 msgid "Invitation not found or already accepted/expired."
 msgstr "Convite não encontrado, já aceito ou expirado."
 
-#: apps/accounts/views/members.py:127
+#: apps/accounts/views/members.py:129
 msgid "Update member role"
 msgstr "Atualizar função do membro"
 
-#: apps/accounts/views/members.py:128
+#: apps/accounts/views/members.py:130
 msgid "Change the role of the member."
 msgstr "Altera a função do membro."
 
-#: apps/accounts/views/members.py:161
+#: apps/accounts/views/members.py:200
+msgid ""
+"This route is not available anymore. Use the `create_with_invite` route "
+"instead."
+msgstr "Esta rota não está mais disponível. Use a rota `create_with_invite`."
+
+#: apps/accounts/views/members.py:247
 msgid "Role form options"
 msgstr "Opções do formulário de função"
 
-#: apps/accounts/views/members.py:163
+#: apps/accounts/views/members.py:249
 msgid ""
 "Return the choices of the member role form. Send a field name as query "
 "parameter to get only that field."
@@ -1196,21 +1202,15 @@ msgstr ""
 "Retorna as opções do formulário de função do membro. Envie o nome de um "
 "campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/accounts/views/members.py:207
-msgid ""
-"This route is not available anymore. Use the `create_with_invite` route "
-"instead."
-msgstr "Esta rota não está mais disponível. Use a rota `create_with_invite`."
-
-#: apps/accounts/views/organizations.py:42
+#: apps/accounts/views/organizations.py:44
 msgid "Whether to show the dark logo or not."
 msgstr "Se deve exibir o logo escuro ou não."
 
-#: apps/accounts/views/organizations.py:50
+#: apps/accounts/views/organizations.py:52
 msgid "Enter organization"
 msgstr "Entrar na organização"
 
-#: apps/accounts/views/organizations.py:52
+#: apps/accounts/views/organizations.py:54
 msgid ""
 "Set the organization of the current session: organization-scoped routes act "
 "on it. Suspended organizations are refused."
@@ -1218,23 +1218,23 @@ msgstr ""
 "Define a organização da sessão atual: as rotas da organização passam a atuar "
 "nela. Organizações suspensas são recusadas."
 
-#: apps/accounts/views/organizations.py:67
+#: apps/accounts/views/organizations.py:69
 msgid "Organization not found"
 msgstr "Organização não encontrada"
 
-#: apps/accounts/views/organizations.py:68
-#: apps/accounts/views/organizations.py:72
-#: apps/accounts/views/organizations.py:166
+#: apps/accounts/views/organizations.py:70
+#: apps/accounts/views/organizations.py:74
+#: apps/accounts/views/organizations.py:169
 msgid "Organization not found."
 msgstr "Organização não encontrada."
 
-#: apps/accounts/views/organizations.py:83
+#: apps/accounts/views/organizations.py:85
 msgid "User not authenticated"
 msgstr "Usuário não autenticado"
 
-#: apps/accounts/views/organizations.py:84
-#: apps/accounts/views/organizations.py:88
-#: apps/accounts/views/organizations.py:161
+#: apps/accounts/views/organizations.py:86
+#: apps/accounts/views/organizations.py:90
+#: apps/accounts/views/organizations.py:164
 msgid "User not authenticated."
 msgstr "Usuário não autenticado."
 
@@ -1800,17 +1800,17 @@ msgstr "Clique aqui"
 msgid "Descending %(label)s"
 msgstr "%(label)s (decrescente)"
 
-#: apps/generics/mixins/views.py:76
+#: apps/generics/mixins/views.py:36
 #, python-brace-format
 msgid "Form options to create a {name}."
 msgstr "Opções de formulário para criar {name}."
 
-#: apps/generics/mixins/views.py:77
+#: apps/generics/mixins/views.py:37
 #, python-brace-format
 msgid "Form options to update a {name}."
 msgstr "Opções de formulário para atualizar {name}."
 
-#: apps/generics/mixins/views.py:78
+#: apps/generics/mixins/views.py:38
 #, python-brace-format
 msgid "Filter options for listing {name}."
 msgstr "Opções de filtro para listar {name}."
@@ -1855,22 +1855,22 @@ msgstr "Usuário que atualizou o registro pela última vez"
 msgid "The start date must be before the end date."
 msgstr "A data inicial deve ser anterior à data final."
 
-#: apps/generics/utils/schema.py:39
+#: apps/generics/utils/schema.py:43
 #, python-brace-format
 msgid "Get {name}"
 msgstr "Obter {name}"
 
-#: apps/generics/utils/schema.py:40
+#: apps/generics/utils/schema.py:44
 #, python-brace-format
 msgid "Return the {name} with the given identifier."
 msgstr "Retorna o registro de {name} com o identificador informado."
 
-#: apps/generics/utils/schema.py:49
+#: apps/generics/utils/schema.py:53
 #, python-brace-format
 msgid "List {name}"
 msgstr "Listar {name}"
 
-#: apps/generics/utils/schema.py:51
+#: apps/generics/utils/schema.py:55
 #, python-brace-format
 msgid ""
 "Paginated list of the {name} the authenticated user can access. The query "
@@ -1879,22 +1879,22 @@ msgstr ""
 "Lista paginada de {name} que o usuário autenticado pode acessar. Os "
 "parâmetros de consulta filtram e ordenam os resultados."
 
-#: apps/generics/utils/schema.py:62
+#: apps/generics/utils/schema.py:66
 #, python-brace-format
 msgid "Create {name}"
 msgstr "Criar {name}"
 
-#: apps/generics/utils/schema.py:63
+#: apps/generics/utils/schema.py:67
 #, python-brace-format
 msgid "Create the {name} sent in the request body and return it."
 msgstr "Cria o registro de {name} enviado no corpo da requisição e o retorna."
 
-#: apps/generics/utils/schema.py:72
+#: apps/generics/utils/schema.py:76
 #, python-brace-format
 msgid "Delete {name}"
 msgstr "Excluir {name}"
 
-#: apps/generics/utils/schema.py:74
+#: apps/generics/utils/schema.py:78
 #, python-brace-format
 msgid ""
 "Delete the {name}. Records that can be deactivated are deactivated instead "
@@ -1903,12 +1903,12 @@ msgstr ""
 "Exclui o registro de {name}. Registros que podem ser desativados são "
 "desativados em vez de apagados."
 
-#: apps/generics/utils/schema.py:85
+#: apps/generics/utils/schema.py:89
 #, python-brace-format
 msgid "Update {name}"
 msgstr "Atualizar {name}"
 
-#: apps/generics/utils/schema.py:87
+#: apps/generics/utils/schema.py:91
 #, python-brace-format
 msgid ""
 "Replace the editable fields of the {name} with the request body and return "
@@ -1917,23 +1917,23 @@ msgstr ""
 "Substitui os campos editáveis do registro de {name} pelo corpo da requisição "
 "e o retorna."
 
-#: apps/generics/utils/schema.py:98
+#: apps/generics/utils/schema.py:102
 #, python-brace-format
 msgid "Partially update {name}"
 msgstr "Atualizar parcialmente {name}"
 
-#: apps/generics/utils/schema.py:99
+#: apps/generics/utils/schema.py:103
 #, python-brace-format
 msgid "Update only the fields sent in the request body and return the {name}."
 msgstr ""
 "Atualiza apenas os campos enviados no corpo da requisição e retorna o "
 "registro de {name}."
 
-#: apps/generics/utils/schema.py:108
+#: apps/generics/utils/schema.py:112
 msgid "Creation form options"
 msgstr "Opções do formulário de criação"
 
-#: apps/generics/utils/schema.py:110
+#: apps/generics/utils/schema.py:114
 #, python-brace-format
 msgid ""
 "Return the choices of each field of the {name} creation form. Send a field "
@@ -1942,11 +1942,11 @@ msgstr ""
 "Retorna as opções de cada campo do formulário de criação de {name}. Envie o "
 "nome de um campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/generics/utils/schema.py:121
+#: apps/generics/utils/schema.py:124
 msgid "Edit form options"
 msgstr "Opções do formulário de edição"
 
-#: apps/generics/utils/schema.py:123
+#: apps/generics/utils/schema.py:126
 #, python-brace-format
 msgid ""
 "Return the choices of each field of the {name} edit form. Send a field name "
@@ -1955,11 +1955,11 @@ msgstr ""
 "Retorna as opções de cada campo do formulário de edição de {name}. Envie o "
 "nome de um campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/generics/utils/schema.py:134
+#: apps/generics/utils/schema.py:136
 msgid "Filter options"
 msgstr "Opções de filtro"
 
-#: apps/generics/utils/schema.py:136
+#: apps/generics/utils/schema.py:138
 #, python-brace-format
 msgid ""
 "Return the choices of each filter of the {name} list. Send a field name as "
@@ -1968,7 +1968,7 @@ msgstr ""
 "Retorna as opções de cada filtro da lista de {name}. Envie o nome de um "
 "campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/generics/utils/schema.py:150
+#: apps/generics/utils/schema.py:151
 #, python-brace-format
 msgid ""
 "Return only `{field}`. Search is disabled on this route: the value is "
@@ -1977,7 +1977,7 @@ msgstr ""
 "Retorna apenas `{field}`. A busca está desativada nesta rota: o valor é "
 "ignorado."
 
-#: apps/generics/utils/schema.py:158
+#: apps/generics/utils/schema.py:159
 #, python-brace-format
 msgid ""
 "Return only `{field}`. A non-empty value is a regular expression matched "
@@ -1987,7 +1987,7 @@ msgstr ""
 "comparada com o rótulo ou o valor de cada opção, sem diferenciar maiúsculas "
 "e acentos."
 
-#: apps/generics/utils/schema.py:167
+#: apps/generics/utils/schema.py:168
 #, python-brace-format
 msgid ""
 "Return only `{field}` (paginated). A non-empty value filters its options by "
@@ -1996,7 +1996,7 @@ msgstr ""
 "Retorna apenas `{field}` (paginado). Um valor não vazio filtra as opções "
 "pelo rótulo (`{lookup}`)."
 
-#: apps/generics/utils/schema.py:175
+#: apps/generics/utils/schema.py:176
 #, python-brace-format
 msgid ""
 "Return only `{field}` (paginated). Search is not enabled for this field: the "
@@ -2005,7 +2005,7 @@ msgstr ""
 "Retorna apenas `{field}` (paginado). A busca não está habilitada para este "
 "campo: o valor é ignorado."
 
-#: apps/generics/utils/schema.py:187
+#: apps/generics/utils/schema.py:188
 msgid ""
 "Applies to every paginated field in the response; combine with `?<field>` to "
 "paginate a single one."
@@ -2013,7 +2013,7 @@ msgstr ""
 "Aplica-se a todos os campos paginados da resposta; combine com `?<field>` "
 "para paginar apenas um."
 
-#: apps/generics/utils/schema.py:195
+#: apps/generics/utils/schema.py:196
 #, python-brace-format
 msgid "Maximum: {max}."
 msgstr "Máximo: {max}."
@@ -2384,15 +2384,15 @@ msgstr "Retorna qualquer evento de auditoria, para a equipe da plataforma."
 msgid "Audit events filter options"
 msgstr "Opções de filtro dos eventos de auditoria"
 
-#: apps/platform/views.py:431
+#: apps/platform/views.py:430
 msgid "Exit viewing session"
 msgstr "Sair da sessão de visualização"
 
-#: apps/platform/views.py:434
+#: apps/platform/views.py:433
 msgid "End the current viewing session and return to the staff account."
 msgstr "Encerra a sessão de visualização atual e volta para a conta da equipe."
 
-#: apps/platform/views.py:442
+#: apps/platform/views.py:441
 msgid "There is no active viewing session."
 msgstr "Não há sessão de visualização ativa."
 
@@ -2478,7 +2478,7 @@ msgstr "Não é permitido alterar o membro."
 msgid "The team must keep at least one owner."
 msgstr "A equipe deve manter pelo menos um proprietário."
 
-#: apps/teams/views/team_members.py:58
+#: apps/teams/views/team_members.py:63
 msgid ""
 "Team the form is for: `role` lists only the roles the caller may assign in "
 "it and `member` hides members already in it. Without a valid team only "
