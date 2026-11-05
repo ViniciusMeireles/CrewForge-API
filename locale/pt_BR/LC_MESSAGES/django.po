@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 02:52+0000\n"
+"POT-Creation-Date: 2026-11-05 18:31+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -45,7 +45,7 @@ msgid "Manager"
 msgstr "Gerente"
 
 #: apps/accounts/choices.py:15 apps/accounts/models/invitation.py:81
-#: apps/accounts/models/member.py:59 apps/teams/choices.py:9
+#: apps/accounts/models/member.py:60 apps/teams/choices.py:9
 #: apps/teams/models/team_member.py:21
 msgid "Member"
 msgstr "Membro"
@@ -154,7 +154,7 @@ msgstr "Convite já aceito"
 msgid "The invitation has already been declined."
 msgstr "O convite já foi recusado."
 
-#: apps/accounts/choices.py:207 apps/accounts/models/member.py:66
+#: apps/accounts/choices.py:207 apps/accounts/models/member.py:67
 msgid "User is already a member"
 msgstr "O usuário já é membro"
 
@@ -329,7 +329,7 @@ msgstr "Esta organização está suspensa. Fale com o suporte."
 
 #: apps/accounts/filters/organization_image.py:12
 #: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:66
-#: apps/accounts/models/member.py:32 apps/accounts/models/organization.py:67
+#: apps/accounts/models/member.py:33 apps/accounts/models/organization.py:67
 #: apps/accounts/models/organization.py:104 apps/audit/models/audit_event.py:23
 #: apps/platform/filters.py:137 apps/platform/filters.py:145
 #: apps/teams/models/team.py:25
@@ -462,12 +462,12 @@ msgstr "Aceito em"
 msgid "When the invitation was accepted"
 msgstr "Quando o convite foi aceito"
 
-#: apps/accounts/models/invitation.py:59 apps/accounts/models/member.py:39
+#: apps/accounts/models/invitation.py:59 apps/accounts/models/member.py:40
 #: apps/teams/filters/team_member.py:68 apps/teams/models/team_member.py:26
 msgid "Role"
 msgstr "Função"
 
-#: apps/accounts/models/invitation.py:60 apps/accounts/models/member.py:40
+#: apps/accounts/models/invitation.py:60 apps/accounts/models/member.py:41
 msgid "User role in the organization"
 msgstr "Função do usuário na organização"
 
@@ -487,7 +487,7 @@ msgstr "Chave do convite"
 msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
-#: apps/accounts/models/invitation.py:89 apps/accounts/models/member.py:25
+#: apps/accounts/models/invitation.py:89 apps/accounts/models/member.py:26
 #: apps/audit/choices.py:118 apps/platform/filters.py:139
 msgid "User"
 msgstr "Usuário"
@@ -521,43 +521,43 @@ msgstr "Já existe um convite com este e-mail."
 msgid "Expired date must be greater than now"
 msgstr "A data de expiração deve ser posterior ao momento atual"
 
-#: apps/accounts/models/member.py:16
+#: apps/accounts/models/member.py:17
 msgid "Nickname"
 msgstr "Apelido"
 
-#: apps/accounts/models/member.py:17
+#: apps/accounts/models/member.py:18
 msgid "Nickname of the user in the organization"
 msgstr "Apelido do usuário na organização"
 
-#: apps/accounts/models/member.py:26
+#: apps/accounts/models/member.py:27
 msgid "User that is a member of the team"
 msgstr "Usuário que é membro da equipe"
 
-#: apps/accounts/models/member.py:33
+#: apps/accounts/models/member.py:34
 msgid "Organization to which the user belongs"
 msgstr "Organização à qual o usuário pertence"
 
-#: apps/accounts/models/member.py:46
+#: apps/accounts/models/member.py:47
 msgid "Last login at"
 msgstr "Último acesso em"
 
-#: apps/accounts/models/member.py:47
+#: apps/accounts/models/member.py:48
 msgid "Last time the member logged into the organization"
 msgstr "Última vez em que o membro acessou a organização"
 
-#: apps/accounts/models/member.py:51 apps/teams/filters/team_member.py:69
+#: apps/accounts/models/member.py:52 apps/teams/filters/team_member.py:69
 msgid "Joined at"
 msgstr "Entrou em"
 
-#: apps/accounts/models/member.py:52
+#: apps/accounts/models/member.py:53
 msgid "When the current membership started"
 msgstr "Quando a participação atual começou"
 
-#: apps/accounts/models/member.py:60
+#: apps/accounts/models/member.py:61
 msgid "Members"
 msgstr "Membros"
 
-#: apps/accounts/models/member.py:72
+#: apps/accounts/models/member.py:73
 msgid "The organization already has an owner."
 msgstr "A organização já tem um proprietário."
 
@@ -754,7 +754,7 @@ msgstr "Sessões revogadas em"
 msgid "Access tokens issued before this moment are refused"
 msgstr "Tokens de acesso emitidos antes deste momento são recusados"
 
-#: apps/accounts/permissions/member.py:41
+#: apps/accounts/permissions/member.py:42
 msgid "The Owner cannot be removed or demoted; transfer ownership first."
 msgstr ""
 "O proprietário não pode ser removido nem rebaixado; transfira a propriedade "

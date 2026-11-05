@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions
 from rest_framework.exceptions import PermissionDenied
 
+from apps.accounts.access import Action, authorize
 from apps.accounts.choices import MemberRoleChoices
 from apps.accounts.permissions.generics import OrganizationScopedPermission
 from apps.accounts.utils.requests import get_member
@@ -21,7 +22,7 @@ class MemberPermission(OrganizationScopedPermission):
         if not super().has_permission(request, view):
             return False
         if request.method in permissions.SAFE_METHODS:
-            return get_member(request).has_members_access
+            return authorize(get_member(request), Action.MEMBER_READ)
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -41,21 +42,9 @@ class MemberPermission(OrganizationScopedPermission):
                 _('The Owner cannot be removed or demoted; transfer ownership first.')
             )
 
-        auth_member = get_member(request)
-        if (
-            request.method in permissions.SAFE_METHODS
-            or (request.user.id == obj.user_id and obj.is_active)
-            or (auth_member.has_admin_permission and request.method == 'DELETE')
-        ):
+        if request.method in permissions.SAFE_METHODS:
             return True
-
-        if (
-            auth_member != obj
-            and not auth_member.has_admin_permission
-            and request.method in ['PUT', 'PATCH']
-        ):
-            return False
-
-        return (
-            obj.role == MemberRoleChoices.OWNER and auth_member.has_owner_permission
-        ) or (obj.role != MemberRoleChoices.OWNER and auth_member.has_admin_permission)
+        action = (
+            Action.MEMBER_REMOVE if request.method == 'DELETE' else Action.MEMBER_UPDATE
+        )
+        return authorize(get_member(request), action, obj)

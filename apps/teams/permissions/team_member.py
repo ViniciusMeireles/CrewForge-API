@@ -1,8 +1,8 @@
 from rest_framework import permissions
 
+from apps.accounts.access import Action, authorize
 from apps.accounts.permissions.generics import OrganizationScopedPermission
 from apps.accounts.utils.requests import get_member
-from apps.teams.choices import TeamMemberRoleChoices
 
 
 class TeamMemberPermission(OrganizationScopedPermission):
@@ -21,8 +21,9 @@ class TeamMemberPermission(OrganizationScopedPermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        if not (auth_member := get_member(request)):
-            return False
-        if obj.member_id == auth_member.id:
-            return request.method == 'DELETE'
-        return obj.role in TeamMemberRoleChoices.assignable_by(auth_member, obj.team)
+        action = (
+            Action.TEAM_MEMBER_REMOVE
+            if request.method == 'DELETE'
+            else Action.TEAM_MEMBER_CHANGE
+        )
+        return authorize(get_member(request), action, obj)

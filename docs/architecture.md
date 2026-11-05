@@ -80,6 +80,15 @@ Operations with side effects live in `services`, and reads with business meaning
 - Modules migrated to this split are listed in `apps/generics/tests/test_architecture.py`, which rejects `transaction`
   and audit calls in them.
 
+### Access Policy
+
+`apps/accounts/access.py` is the single decision for Organization access: `authorize(actor, action, target=None)`.
+`MINIMUM_ROLE` maps an `Action` to the lowest Role allowed, and `TARGET_RULES` holds actions that depend on the target
+(the Owner, the same Organization, one's own record). Permission classes keep the DRF entry points and the 401/403 split
+and delegate to it, and `Member` access properties do the same. Identity checks that need no Member (accepting an
+invitation by email) and platform access (ADR-009) stay outside. A new rule is one `Action` plus its table row in
+`apps/accounts/tests/test_access.py`.
+
 ## Data Flow
 
 A typical request flows through:
