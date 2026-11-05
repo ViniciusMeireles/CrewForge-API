@@ -60,11 +60,11 @@ extend-exclude = [
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "W", "S", "DJ", "UP", "SIM", "RUF", "PL"]
 ignore = [
-  "RUF012",  # declarative Django and DRF class attributes
-  "DJ001",  # nullable text fields are part of the schema; changing them needs a migration
-  "PLC0415",  # deferred imports between models, managers and services
+  "RUF012",
+  "DJ001",
+  "PLC0415",
   "PLR0911",
-  "PLR0913",  # services take keyword-only arguments
+  "PLR0913",
 ]
 
 [tool.ruff.lint.per-file-ignores]
