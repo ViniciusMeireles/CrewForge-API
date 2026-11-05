@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.types import OpenApiTypes
@@ -12,6 +11,10 @@ from apps.accounts.models.invitation import Invitation
 from apps.accounts.models.organization import Organization
 from apps.accounts.serializers.mixins import ValidateRoleSerializerMixin
 from apps.accounts.serializers.options import assignable_role_choices
+from apps.accounts.services.invitations import (
+    expire_stale_invitations,
+    send_invitation_on_commit,
+)
 
 User = get_user_model()
 
@@ -143,15 +146,13 @@ class InvitationSerializer(
 
     def create(self, validated_data):
         send_email = validated_data.pop('send_email', False)
-        Invitation.objects.filter(
+        expire_stale_invitations(
             organization=validated_data.get('organization'),
-            email__iexact=validated_data.get('email'),
-            status=InvitationStatusChoices.PENDING,
-            expired_at__lte=timezone.now(),
-        ).update(status=InvitationStatusChoices.EXPIRED)
+            email=validated_data.get('email'),
+        )
         instance: Invitation = super().create(validated_data)
-        if send_email and instance.is_acceptable()[0]:
-            transaction.on_commit(instance.send_email)
+        if send_email:
+            send_invitation_on_commit(instance)
         return instance
 
 

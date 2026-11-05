@@ -5,6 +5,11 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 APPS_DIR = Path(settings.BASE_DIR) / 'apps'
+SERVICE_BACKED_MODULES = (
+    'accounts/serializers/invitation.py',
+    'accounts/views/invitations.py',
+)
+WRITE_LAYER_IMPORTS = ('transaction', 'record_audit_event', 'log_security_event')
 
 
 def module_name(path: Path) -> str:
@@ -53,6 +58,13 @@ def find_cycle(graph: dict[str, set[str]]) -> list[str]:
 
 
 class ArchitectureTestCase(SimpleTestCase):
+    def test_service_backed_modules_leave_writes_to_services(self):
+        for relative in SERVICE_BACKED_MODULES:
+            source = (APPS_DIR / relative).read_text()
+            for name in WRITE_LAYER_IMPORTS:
+                with self.subTest(module=relative, name=name):
+                    self.assertNotIn(name, source)
+
     def test_no_module_level_import_cycles(self):
         files = {module_name(path): path for path in source_files()}
         modules = set(files)
