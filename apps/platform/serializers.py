@@ -100,7 +100,8 @@ class PlatformOrganizationDetailSerializer(PlatformOrganizationListSerializer):
     suspension = serializers.SerializerMethodField()
 
     class Meta(PlatformOrganizationListSerializer.Meta):
-        fields = PlatformOrganizationListSerializer.Meta.fields + [
+        fields = [
+            *PlatformOrganizationListSerializer.Meta.fields,
             'profile',
             'counts',
             'storage_bytes',
@@ -212,7 +213,8 @@ class PlatformUserDetailSerializer(PlatformUserListSerializer):
     can_block = serializers.SerializerMethodField()
 
     class Meta(PlatformUserListSerializer.Meta):
-        fields = PlatformUserListSerializer.Meta.fields + [
+        fields = [
+            *PlatformUserListSerializer.Meta.fields,
             'blocking',
             'memberships',
             'can_impersonate',
@@ -265,7 +267,7 @@ class PlatformAuditEventSerializer(AuditEventSerializer):
     organization = PlatformAuditOrganizationSerializer(read_only=True, allow_null=True)
 
     class Meta(AuditEventSerializer.Meta):
-        fields = AuditEventSerializer.Meta.fields + ['organization', 'subject_user']
+        fields = [*AuditEventSerializer.Meta.fields, 'organization', 'subject_user']
         read_only_fields = fields
 
 

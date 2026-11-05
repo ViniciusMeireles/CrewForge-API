@@ -8,6 +8,7 @@ from rest_framework import serializers
 TEXT = 'text'
 SNIFF_SIZE = 2048
 UPLOAD_REQUEST_OVERHEAD = 1024 * 1024
+FIRST_PRINTABLE_BYTE = 0x20
 ALLOWED_CONTROL_BYTES = frozenset(b'\t\n\r\x0c')
 
 BINARY_SIGNATURES = (
@@ -49,7 +50,10 @@ def sniff_content_type(file) -> str | None:
             return content_type
     if head[:4] == b'RIFF' and head[8:12] == b'WEBP':
         return 'image/webp'
-    if any(byte < 0x20 and byte not in ALLOWED_CONTROL_BYTES for byte in head):
+    if any(
+        byte < FIRST_PRINTABLE_BYTE and byte not in ALLOWED_CONTROL_BYTES
+        for byte in head
+    ):
         return None
     for trim in range(4):
         try:

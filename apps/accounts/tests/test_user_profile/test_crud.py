@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -178,9 +178,7 @@ class UserProfileCRUDTestCase(APITestCase):
 
     def test_change_password_revokes_other_access_tokens(self):
         other_access = AccessToken.for_user(self.user)
-        other_access.set_iat(
-            at_time=datetime.now(tz=timezone.utc) - timedelta(seconds=5)
-        )
+        other_access.set_iat(at_time=datetime.now(tz=UTC) - timedelta(seconds=5))
         response = self.client.post(
             self.change_password_url,
             data={'current_password': 'passWord*123', 'new_password': 'newPass*456'},

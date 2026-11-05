@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import UTC
 
 import factory
 from django.utils import timezone as django_timezone
@@ -29,7 +29,7 @@ class InvitationFactory(ModelFactoryMixin):
     status = factory.LazyAttribute(_status)
     accepted_at = factory.LazyAttribute(_date_for(InvitationStatusChoices.ACCEPTED))
     declined_at = factory.LazyAttribute(_date_for(InvitationStatusChoices.DECLINED))
-    expired_at = factory.Faker('future_datetime', tzinfo=timezone.utc)
+    expired_at = factory.Faker('future_datetime', tzinfo=UTC)
     role = MemberRoleChoices.MEMBER
     organization = factory.SubFactory(
         factory='apps.accounts.factories.organizations.OrganizationFactory',

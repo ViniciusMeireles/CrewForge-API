@@ -73,7 +73,8 @@ class InvitationSerializer(
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ModelSerializerMixin._default_read_only_fields + [
+        read_only_fields = [
+            *ModelSerializerMixin._default_read_only_fields,
             'id',
             'organization',
             'declined_at',
@@ -111,17 +112,20 @@ class InvitationSerializer(
                 InvitationErrorMessages.INVITATION_EXPIRED.label,
             )
             errors['expired_at'] = expired_at_errors
-        if (email := attrs.get('email')) and (organization := self.auth_organization):
-            if organization.members.filter(
+        if (
+            (email := attrs.get('email'))
+            and (organization := self.auth_organization)
+            and organization.members.filter(
                 user__email=email,
                 user__is_active=True,
                 is_active=True,
-            ).exists():
-                email_errors = errors.get('email', [])
-                email_errors.append(
-                    InvitationErrorMessages.USER_ALREADY_MEMBER.label,
-                )
-                errors['email'] = email_errors
+            ).exists()
+        ):
+            email_errors = errors.get('email', [])
+            email_errors.append(
+                InvitationErrorMessages.USER_ALREADY_MEMBER.label,
+            )
+            errors['email'] = email_errors
         if errors:
             raise serializers.ValidationError(errors)
         return attrs
@@ -173,7 +177,7 @@ class InvitationReceivedSerializer(InvitationSerializer):
     is_former_member = None
 
     class Meta(InvitationSerializer.Meta):
-        fields = RECEIVED_INVITATION_FIELDS + ['key', 'organization_name']
+        fields = [*RECEIVED_INVITATION_FIELDS, 'key', 'organization_name']
         read_only_fields = fields
 
 

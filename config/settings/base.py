@@ -82,15 +82,13 @@ MIDDLEWARE_THIRD_PARTY = [
 
 MIDDLEWARE_LOCAL = []
 
-MIDDLEWARE = (
-    [
-        'apps.generics.middleware.RequestIdMiddleware',
-        'apps.generics.middleware.HealthCheckMiddleware',
-    ]
-    + MIDDLEWARE_THIRD_PARTY
-    + MIDDLEWARE_DJANGO
-    + MIDDLEWARE_LOCAL
-)
+MIDDLEWARE = [
+    'apps.generics.middleware.RequestIdMiddleware',
+    'apps.generics.middleware.HealthCheckMiddleware',
+    *MIDDLEWARE_THIRD_PARTY,
+    *MIDDLEWARE_DJANGO,
+    *MIDDLEWARE_LOCAL,
+]
 
 ROOT_URLCONF = 'config.urls'
 
@@ -123,7 +121,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', 31536000))
+SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = (
     os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True').lower() == 'true'
 )
@@ -205,7 +203,9 @@ STATICFILES_DIRS = [
 MEDIA_URL = os.environ.get('MEDIA_URL', '/media/')
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
 
-STORED_FILE_MAX_SIZE = int(os.environ.get('STORED_FILE_MAX_SIZE', 10 * 1024 * 1024))
+STORED_FILE_MAX_SIZE = int(
+    os.environ.get('STORED_FILE_MAX_SIZE', str(10 * 1024 * 1024))
+)
 STORED_FILE_IMAGE_CONTENT_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
 STORED_FILE_ALLOWED_CONTENT_TYPES = [
     *STORED_FILE_IMAGE_CONTENT_TYPES,
@@ -296,10 +296,10 @@ REST_FRAMEWORK = {
 # JWT Authentication settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(
-        minutes=int(os.environ.get('ACCESS_TOKEN_LIFETIME', 15)),
+        minutes=int(os.environ.get('ACCESS_TOKEN_LIFETIME', '15')),
     ),
     'REFRESH_TOKEN_LIFETIME': timedelta(
-        minutes=int(os.environ.get('REFRESH_TOKEN_LIFETIME', 10080)),
+        minutes=int(os.environ.get('REFRESH_TOKEN_LIFETIME', '10080')),
     ),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,

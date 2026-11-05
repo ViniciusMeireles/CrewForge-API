@@ -112,9 +112,7 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Organization
         exclude = SUSPENSION_INTERNAL_FIELDS
-        read_only_fields = ModelSerializerMixin._default_read_only_fields + [
-            'status',
-        ]
+        read_only_fields = [*ModelSerializerMixin._default_read_only_fields, 'status']
         extra_kwargs = {
             'slug': {
                 'validators': [

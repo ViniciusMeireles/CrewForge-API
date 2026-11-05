@@ -13,7 +13,8 @@ class TeamSerializer(ModelSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = '__all__'
-        read_only_fields = ModelSerializerMixin._default_read_only_fields + [
+        read_only_fields = [
+            *ModelSerializerMixin._default_read_only_fields,
             'organization',
             'slug',
         ]

@@ -1,6 +1,6 @@
 import copy
 import unicodedata
-from functools import lru_cache
+from functools import cache
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import ForeignObjectRel
@@ -77,7 +77,7 @@ def _categorize_declared_fields(
     return excluded, nested
 
 
-@lru_cache(maxsize=None)
+@cache
 def _ensure_orderable_serializer_class(
     serializer_class: type[serializers.Serializer],
 ) -> type[serializers.Serializer]:
@@ -163,12 +163,12 @@ class ModelSerializerFieldsMixin(serializers.ModelSerializer):
         declared_fields = copy.deepcopy(getattr(cls, '_declared_fields', {}))
 
         model_info = model_meta.get_field_info(model)
-        fields = (
-            [model_info.pk.name]
-            + list(declared_fields)
-            + list(model_info.fields)
-            + list(model_info.forward_relations)
-        )
+        fields = [
+            model_info.pk.name,
+            *list(declared_fields),
+            *list(model_info.fields),
+            *list(model_info.forward_relations),
+        ]
         if meta and (exclude := getattr(meta, 'exclude', None)):
             fields = [f for f in fields if f not in exclude]
         return fields

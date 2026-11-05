@@ -3,8 +3,10 @@ import decimal
 import uuid
 
 from django.apps import apps
+from django.contrib.auth import get_user_model
 from django.db import models
 
+from apps.accounts.models.organization import Organization
 from apps.accounts.utils.requests import get_member, get_organization_id
 from apps.audit.choices import ACCOUNT_ACTION_PREFIXES, AuditActorTypeChoices
 from apps.audit.models.audit_event import AuditEvent
@@ -143,8 +145,6 @@ def _organization_name(request, organization_id: int | None) -> str:
     member = get_member(request) if request is not None else None
     if member is not None and member.organization_id == organization_id:
         return member.organization.name
-    from apps.accounts.models.organization import Organization
-
     return (
         Organization.objects.filter(pk=organization_id)
         .values_list('name', flat=True)
@@ -158,8 +158,6 @@ def _subject_label(subject_user_id: int | None, actor_user) -> str:
         return ''
     user = actor_user if actor_user and actor_user.pk == subject_user_id else None
     if user is None:
-        from django.contrib.auth import get_user_model
-
         user = get_user_model().objects.filter(pk=subject_user_id).first()
     if user is None:
         return ''

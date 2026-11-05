@@ -92,9 +92,8 @@ class OptionBaseSerializer[T](serializers.Serializer):
             value = obj.get(self._option_value_field)
         else:
             value = getattr(obj, self._option_value_field, None)
-            if value is None:
-                if isinstance(obj, models.Model):
-                    value = obj.pk
+            if value is None and isinstance(obj, models.Model):
+                value = obj.pk
         if value is None:
             return None
 
@@ -109,9 +108,8 @@ class OptionBaseSerializer[T](serializers.Serializer):
             label = obj.get(self._option_label_field)
         else:
             label = getattr(obj, self._option_label_field, None)
-            if label is None:
-                if isinstance(obj, models.Model):
-                    label = str(obj)
+            if label is None and isinstance(obj, models.Model):
+                label = str(obj)
         return str(label) if label is not None else ''
 
 
@@ -291,7 +289,7 @@ class PaginatedOptionsBaseSerializer[T](serializers.Serializer):
         field_name = (
             self.filter_field_name or option_serializer_class.DEFAULT_OPTION_LABEL_FIELD
         )
-        field_expr = '%s__%s' % (field_name, self.filter_lookup_expr)
+        field_expr = f'{field_name}__{self.filter_lookup_expr}'
         return queryset.filter(**{field_expr: filter_value})
 
     def get_object_list(

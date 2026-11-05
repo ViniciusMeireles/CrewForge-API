@@ -43,7 +43,7 @@ class CustomPageNumberPaginationTestCase(SimpleTestCase):
         self.assertEqual(len(page), 10)
 
     def test_next_url_preserves_page_size(self):
-        _, request = self._paginate('page_size=50')
+        _, _request = self._paginate('page_size=50')
         next_url = self.paginator.get_next_link()
         self.assertIn('page_size=50', next_url)
 

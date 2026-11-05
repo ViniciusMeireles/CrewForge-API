@@ -30,8 +30,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "django-extensions>=4.1",
+    "django-stubs>=6.1.2",
     "djangorestframework-stubs>=3.18.1",
     "factory-boy>=3.3.3",
+    "mypy>=2.4.1",
     "pytest-cov>=7.1.0",
     "pytest-django>=4.14.0",
     "pytest-xdist>=3.8.0",
@@ -56,7 +58,18 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "W"]
+select = ["E", "F", "I", "B", "W", "S", "DJ", "UP", "SIM", "RUF", "PL"]
+ignore = [
+  "RUF012",
+  "DJ001",
+  "PLC0415",
+  "PLR0911",
+  "PLR0913",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S", "PLR0402", "PLR2004", "SIM117"]
+"**/factories/**" = ["S"]
 
 [tool.ruff.lint.isort]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
@@ -67,6 +80,105 @@ split-on-trailing-comma = true
 [tool.ruff.format]
 quote-style = "single"
 skip-magic-trailing-comma = false
+
+[tool.mypy]
+python_version = "3.14"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+ignore_missing_imports = true
+check_untyped_defs = false
+exclude = ["/migrations/", "/tests/", "/factories/", "^\\.venv/", "\\.agents/"]
+
+[[tool.mypy.overrides]]
+module = [
+  "apps.accounts.access",
+  "apps.accounts.selectors.*",
+  "apps.accounts.services.*",
+  "apps.teams.selectors",
+  "apps.teams.services",
+]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_any_generics = true
+warn_return_any = true
+
+[[tool.mypy.overrides]]
+module = [
+  "apps.accounts.authentication",
+  "apps.accounts.choices",
+  "apps.accounts.emails",
+  "apps.accounts.managers.invitation",
+  "apps.accounts.managers.member",
+  "apps.accounts.managers.user",
+  "apps.accounts.mixins.fields",
+  "apps.accounts.mixins.requests",
+  "apps.accounts.mixins.views",
+  "apps.accounts.models.files",
+  "apps.accounts.models.invitation",
+  "apps.accounts.models.member",
+  "apps.accounts.models.organization",
+  "apps.accounts.models.user",
+  "apps.accounts.permissions.organization_image",
+  "apps.accounts.serializers.files",
+  "apps.accounts.serializers.invitation",
+  "apps.accounts.serializers.member",
+  "apps.accounts.serializers.mixins",
+  "apps.accounts.serializers.options",
+  "apps.accounts.serializers.organization",
+  "apps.accounts.serializers.organization_image",
+  "apps.accounts.serializers.organization_profile",
+  "apps.accounts.serializers.signup",
+  "apps.accounts.serializers.user",
+  "apps.accounts.serializers.user_profile",
+  "apps.accounts.settings",
+  "apps.accounts.utils.auth_cookies",
+  "apps.accounts.utils.files",
+  "apps.accounts.views.auth",
+  "apps.accounts.views.files",
+  "apps.accounts.views.invitations",
+  "apps.accounts.views.members",
+  "apps.accounts.views.organization_images",
+  "apps.accounts.views.organizations",
+  "apps.accounts.views.session",
+  "apps.accounts.views.session_config",
+  "apps.accounts.views.signup",
+  "apps.audit.serializers.audit_event",
+  "apps.audit.views.audit_event",
+  "apps.dashboard.selectors",
+  "apps.dashboard.views.overview",
+  "apps.generics.errors",
+  "apps.generics.exceptions",
+  "apps.generics.fields.fields",
+  "apps.generics.fields.options",
+  "apps.generics.mails.bases",
+  "apps.generics.managers.querysets",
+  "apps.generics.mixins.mixins",
+  "apps.generics.mixins.serializers",
+  "apps.generics.mixins.views",
+  "apps.generics.serializers.options",
+  "apps.generics.utils.db",
+  "apps.generics.utils.filters",
+  "apps.generics.utils.models",
+  "apps.generics.utils.schema",
+  "apps.generics.utils.serializers",
+  "apps.generics.utils.shortcuts",
+  "apps.platform.impersonation",
+  "apps.platform.serializers",
+  "apps.platform.views",
+  "apps.teams.models.team",
+  "apps.teams.models.team_member",
+  "apps.teams.serializers.options",
+  "apps.teams.serializers.team",
+  "apps.teams.serializers.team_member",
+  "apps.teams.views.team_members",
+  "config.settings.base",
+  "config.settings.checks",
+  "config.settings.local",
+  "config.settings.testing",
+]
+ignore_errors = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.testing"
 
 [tool.pytest.ini_options]
 addopts = "--cov=. --cov-report=term-missing --reuse-db"

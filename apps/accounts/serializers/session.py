@@ -47,7 +47,7 @@ class MemberSessionSerializer(serializers.ModelSerializer):
 
 class SessionUserSerializer(UserReadySerializer):
     class Meta(UserReadySerializer.Meta):
-        fields = UserReadySerializer.Meta.fields + ['platform_role']
+        fields = [*UserReadySerializer.Meta.fields, 'platform_role']
         read_only_fields = fields
 
 

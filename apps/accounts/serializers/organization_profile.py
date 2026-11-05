@@ -8,6 +8,7 @@ class OrganizationProfileSerializer(ModelSerializerMixin, serializers.ModelSeria
     class Meta:
         model = OrganizationProfile
         fields = ['id', 'website', 'description', 'organization']
-        read_only_fields = ModelSerializerMixin._default_read_only_fields + [
+        read_only_fields = [
+            *ModelSerializerMixin._default_read_only_fields,
             'organization',
         ]

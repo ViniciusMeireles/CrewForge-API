@@ -128,6 +128,9 @@ l_format_code:  ## Format code with ruff
 	uv run ruff check . --fix
 	uv run ruff format .
 
+l_typecheck:  ## Check types with mypy
+	uv run mypy apps config
+
 l_test: l_compilemessages  ## Run tests with coverage (sequential, for CI)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db
 
@@ -140,5 +143,5 @@ l_test_parallel: l_compilemessages  ## Run tests in parallel (fastest)
 l_test_parallel_nocov: l_compilemessages  ## Run tests in parallel without coverage (fastest)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto --no-cov -x
 
-l_precommit: l_format_code l_spectacular l_test  ## Run code formatting and tests (sequential with coverage)
+l_precommit: l_format_code l_typecheck l_spectacular l_test  ## Run code formatting and tests (sequential with coverage)
 	@echo "Pre-commit checks passed."

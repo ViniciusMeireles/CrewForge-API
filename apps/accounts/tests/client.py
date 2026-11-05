@@ -14,10 +14,10 @@ class CustomAPIClient(APIClient):
     ):
         """Force authentication of the user, token, or member."""
         if not member:
-            super(CustomAPIClient, self).force_authenticate(user=user, token=token)
+            super().force_authenticate(user=user, token=token)
             return
 
-        super(CustomAPIClient, self).force_authenticate(user=member.user, token=token)
+        super().force_authenticate(user=member.user, token=token)
         if organization_auth:
             session = self.session
             session['organization_id'] = member.organization_id

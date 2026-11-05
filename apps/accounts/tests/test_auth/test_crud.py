@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -292,7 +292,7 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
     def test_token_refresh_expired_token(self):
         member = self.organization.owner
         user = member.user
-        past_time = datetime.now(tz=timezone.utc) - timedelta(days=365)
+        past_time = datetime.now(tz=UTC) - timedelta(days=365)
         with patch(
             'rest_framework_simplejwt.tokens.aware_utcnow',
             return_value=past_time,
@@ -340,7 +340,7 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
     def test_password_reset_confirm_revokes_access_tokens(self):
         user = self.organization.owner.user
         access = AccessToken.for_user(user)
-        access.set_iat(at_time=datetime.now(tz=timezone.utc) - timedelta(seconds=5))
+        access.set_iat(at_time=datetime.now(tz=UTC) - timedelta(seconds=5))
         response = self._reset_confirm(user, 'Newpass*123')
         self.assertEqual(response.status_code, http_status.HTTP_200_OK)
         self.client.logout()
@@ -351,7 +351,7 @@ class AuthCRUDTestCase(APITestCaseMixin, APITestCase):
     def test_logout_with_expired_refresh_token(self):
         member = self.organization.owner
         user = member.user
-        past_time = datetime.now(tz=timezone.utc) - timedelta(days=365)
+        past_time = datetime.now(tz=UTC) - timedelta(days=365)
         with patch(
             'rest_framework_simplejwt.tokens.aware_utcnow',
             return_value=past_time,
