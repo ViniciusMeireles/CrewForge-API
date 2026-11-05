@@ -30,7 +30,6 @@ from apps.accounts.services.profiles import update_profile
 from apps.audit.choices import AuditActionChoices
 from apps.audit.models.audit_event import AuditEvent
 
-
 FIRST_SECRET = secrets.token_urlsafe(16)
 NEXT_SECRET = secrets.token_urlsafe(16)
 
