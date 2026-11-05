@@ -81,6 +81,7 @@ Agents must NOT assume JWT alone is sufficient.
 ## Required Checks
 
 ```bash
+make check           # every quality check of CI
 make l_format_code   # ruff check + format
 make l_typecheck     # mypy
 make l_test          # pytest
