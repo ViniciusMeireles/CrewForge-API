@@ -1,7 +1,7 @@
 import os
 
 from . import dotenv  # noqa: F401
-from .base import *
+from .base import *  # noqa
 from .base import (
     BASE_DIR,
     ENVIRONMENT,

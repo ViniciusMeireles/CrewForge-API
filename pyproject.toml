@@ -70,7 +70,6 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S", "PLR0402", "PLR2004", "SIM117"]
 "**/factories/**" = ["S"]
-"config/settings/*.py" = ["F403", "F405"]
 
 [tool.ruff.lint.isort]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
