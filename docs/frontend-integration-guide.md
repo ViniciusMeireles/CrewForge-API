@@ -965,8 +965,8 @@ Search on organization-scoped paginated fields ignores case and accents
 Relations to models without `organization_id` (e.g. `User`, `Organization`) must
 declare how they are scoped: `options_extra_kwargs = {'<field>':
 {'organization_lookup': 'members__organization_id'}}` (a path to the organization).
-Otherwise building the options raises an error, unless the field is explicitly marked global with
-`{'organization_scoped': False}`. Extra conditions on the same related row go in
+Otherwise building the options raises an error, unless the field is explicitly marked
+global with `{'organization_scoped': False}`. Extra conditions on the same related row go in
 `organization_filters` (e.g. `{'members__is_active': True}`). Without a session
 organization, relation options are always empty. A key of `options_extra_kwargs`
 that is not a field/filter, or an unknown kwarg, also raises an error when the options

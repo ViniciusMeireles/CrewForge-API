@@ -146,16 +146,16 @@ class ModelViewSetMixin(
   `accounts/0002_unaccent_extension`) is bilateral: both the column and the searched
   value go through PostgreSQL `unaccent()`. Never strip accents in Python for a
   database search, as `unaccent` maps more characters (`ø`, `ł`, `ß`, `æ`) than NFKD
-- Build errors fail at startup (`ImproperlyConfigured`): the routes are built when
-  the ViewSet class is created, so `get_serializer_class()` runs without a request
-  (guard with `getattr(self, 'request', None)`), and an organization-scoped options
-  serializer refuses relations to models without `organization_id` unless the field
-  declares `organization_lookup` (path to the organization, validated at startup) or
-  `organization_scoped: False` in `Meta.options_extra_kwargs`
+- Build errors raise `ImproperlyConfigured` when the options are built: an
+  organization-scoped options serializer refuses relations to models without
+  `organization_id` unless the field declares `organization_lookup` (path to the
+  organization, validated on build) or `organization_scoped: False` in
+  `Meta.options_extra_kwargs`. Schema generation builds options without a user, so
+  `get_serializer_class()` cannot depend on one
 - `PrimaryKeyOrganizationRelatedFieldMixin` accepts `organization_lookup` as a kwarg,
   so write fields (`extra_kwargs`) and options fields share the same scoping; lookups
   through a relation apply `distinct()`
-- `organization_filters` (kwarg, validated at startup with the lookup) adds
+- `organization_filters` (kwarg, validated on build with the lookup) adds
   conditions to the **same** `filter()` call as `organization_lookup`. On a to-many
   path, a separate `filter()` would join another row: a user active in another
   organization would pass. Used by members `user`:
