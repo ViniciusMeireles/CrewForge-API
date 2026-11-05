@@ -262,7 +262,8 @@ class OptionsBaseModelMixin:
         kind = source_action
         if source_action not in OPTIONS_CRUD_ACTIONS:
             kind = self.get_custom_options_kind(source_action)
-        serializer_class = self.get_options_serializer_class()
+        if (serializer_class := self.get_options_serializer_class()) is None:
+            return {}
         parameters = get_form_options_parameters(
             serializer_class, search=self.options_search
         )

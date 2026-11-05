@@ -72,10 +72,10 @@ class OptionsSerializer(serializers.Serializer):
     (``?team&member``); unknown params are ignored.
 
     ``Meta.options_extra_kwargs`` of the source is validated when the fields are
-    built (at class creation, through the ViewSet metaclass): a key that is not a
-    field of the source, or a kwarg that is neither in ``options_field_kwargs`` nor
-    in ``options_meta_kwargs`` (read by the serializer, not passed to the field),
-    raises ``ImproperlyConfigured`` instead of being ignored.
+    built: a key that is not a field of the source, or a kwarg that is neither in
+    ``options_field_kwargs`` nor in ``options_meta_kwargs`` (read by the serializer,
+    not passed to the field), raises ``ImproperlyConfigured`` instead of being
+    ignored.
     """
 
     options_field_kwargs = OPTIONS_FIELD_KWARGS

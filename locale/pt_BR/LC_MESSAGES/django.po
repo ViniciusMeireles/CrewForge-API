@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 21:12+0000\n"
+"POT-Creation-Date: 2026-11-05 21:14+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -2478,7 +2478,7 @@ msgstr "Não é permitido alterar o membro."
 msgid "The team must keep at least one owner."
 msgstr "A equipe deve manter pelo menos um proprietário."
 
-#: apps/teams/views/team_members.py:63
+#: apps/teams/views/team_members.py:62
 msgid ""
 "Team the form is for: `role` lists only the roles the caller may assign in "
 "it and `member` hides members already in it. Without a valid team only "
