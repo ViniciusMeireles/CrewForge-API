@@ -1,6 +1,6 @@
 # Makefile for Django/Docker operations
 
-.PHONY: help build up down logs uv_add uv_upgrade makemigrations migrate createsuperuser shell_plus spectacular format_code test precommit makemessages compilemessages l_makemessages l_compilemessages
+.PHONY: help check build up down logs uv_add uv_upgrade makemigrations migrate createsuperuser shell_plus spectacular format_code test precommit makemessages compilemessages l_makemessages l_compilemessages
 
 DEFAULT_GOAL := help
 
@@ -142,6 +142,27 @@ l_test_parallel: l_compilemessages  ## Run tests in parallel (fastest)
 
 l_test_parallel_nocov: l_compilemessages  ## Run tests in parallel without coverage (fastest)
 	POSTGRES_HOST=localhost uv run --env-file test.env pytest --reuse-db -n auto --no-cov -x
+
+check: l_compilemessages  ## Run every quality check of CI
+	uv export --frozen --no-emit-project --format requirements-txt -o /tmp/crewforge-requirements.txt
+	uvx pip-audit@2.10.1 --disable-pip -r /tmp/crewforge-requirements.txt
+	uv run ruff format --check .
+	uv run ruff check .
+	uv run mypy apps config
+	$(MAKE) l_makemessages
+	git diff --exit-code -I 'POT-Creation-Date' -I '^#: ' -- locale
+	DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres \
+		DJANGO_SETTINGS_MODULE=config.settings.production ENVIRONMENT=production \
+		MEDIA_ROOT=/tmp/media NUM_PROXIES=1 \
+		DJANGO_SECRET_KEY=$$(python3 -c "import secrets; print(secrets.token_urlsafe(64))") \
+		uv run python manage.py check --deploy --fail-level WARNING
+	POSTGRES_HOST=localhost uv run --env-file test.env python manage.py makemigrations --check --dry-run
+	$(I18N_SETTINGS) uv run python manage.py spectacular --file /tmp/crewforge-schema.yml
+	diff schema.yml /tmp/crewforge-schema.yml
+	$(I18N_SETTINGS) uv run python manage.py collectstatic --noinput
+	POSTGRES_HOST=localhost uv run --env-file test.env pytest --cov-report=xml --cov-report=json \
+		--junitxml=pytest.xml --reuse-db -n auto
+	python3 -c "import json,sys; sys.exit(0 if json.load(open('coverage.json'))['totals']['percent_covered'] >= 88 else 1)"
 
 l_precommit: l_format_code l_typecheck l_spectacular l_test  ## Run code formatting and tests (sequential with coverage)
 	@echo "Pre-commit checks passed."
