@@ -65,6 +65,19 @@ CrewForge follows a strict layered architecture with clear separation of concern
 
 ---
 
+### Services and Selectors
+
+Operations with side effects live in `services`, and reads with business meaning live in `selectors` (`apps/accounts/services/`,
+`apps/accounts/selectors/`, following `apps/platform`).
+
+- A service owns the transaction, row locks, emails (`on_commit`) and audit events of an operation. A view parses input,
+  calls one service and serializes output. A serializer validates and represents.
+- Signatures are keyword-only and fully typed (mypy checks them). `request` is optional, so a test can call the service
+  without HTTP. An object permission check that must run under a row lock arrives as a `check` callback.
+- Services raise domain exceptions, such as `InvitationRefusedError`, and the view maps them to the response.
+- Modules migrated to this split are listed in `apps/generics/tests/test_architecture.py`, which rejects `transaction`
+  and audit calls in them.
+
 ## Data Flow
 
 A typical request flows through:

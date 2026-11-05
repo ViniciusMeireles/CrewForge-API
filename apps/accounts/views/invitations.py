@@ -1,6 +1,6 @@
+from functools import partial
+
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import backends
 from drf_spectacular.types import OpenApiTypes
@@ -32,6 +32,10 @@ from apps.accounts.permissions.invitation import (
     InvitationAcceptDeclinePermission,
     InvitationPermission,
 )
+from apps.accounts.selectors.invitations import (
+    invitations_by_key,
+    received_invitations,
+)
 from apps.accounts.serializers.invitation import (
     InvitationAcceptSerializer,
     InvitationByKeySerializer,
@@ -39,11 +43,16 @@ from apps.accounts.serializers.invitation import (
     InvitationReceivedSerializer,
     InvitationSerializer,
 )
+from apps.accounts.services.invitations import (
+    InvitationEmailCooldownError,
+    InvitationRefusedError,
+    accept_invitation,
+    decline_invitation,
+    resend_invitation_email,
+)
 from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
-from apps.accounts.utils.security_log import log_security_event
 from apps.audit.choices import AuditActionChoices
-from apps.audit.services import record_audit_event
 from apps.generics.decorators import action_custom
 from apps.generics.utils.schema import extend_schema_model_view_set
 
@@ -401,83 +410,24 @@ class InvitationViewSet(
             .annotate_former_member()
         )
 
-    def record_acceptance(self, invitation, member, readmitted: bool) -> None:
-        """
-        Log the acceptance as before (``member.readmitted`` or
-        ``invitation.accepted``) and audit both the Invitation and the Member.
-        """
-        logged, audited = (
-            (
-                AuditActionChoices.MEMBER_READMITTED,
-                AuditActionChoices.INVITATION_ACCEPTED,
-            )
-            if readmitted
-            else (
-                AuditActionChoices.INVITATION_ACCEPTED,
-                AuditActionChoices.MEMBER_JOINED,
-            )
-        )
-        targets = {
-            AuditActionChoices.INVITATION_ACCEPTED: {'target': invitation},
-            AuditActionChoices.MEMBER_READMITTED: self.member_audit(member),
-            AuditActionChoices.MEMBER_JOINED: self.member_audit(member),
-        }
-        log_security_event(
-            logged,
-            self.request,
-            invitation_id=invitation.pk,
-            organization_id=invitation.organization_id,
-            member_id=member.pk,
-            audit={'actor_member': member, **targets[logged]},
-        )
-        record_audit_event(
-            audited,
-            request=self.request,
-            organization_id=invitation.organization_id,
-            actor_member=member,
-            metadata={'invitation_id': invitation.pk, 'member_id': member.pk},
-            **targets[audited],
-        )
-
-    @staticmethod
-    def member_audit(member) -> dict:
-        return {
-            'target': member,
-            'changes': [{'field': 'role', 'before': None, 'after': member.role}],
-        }
-
     @action(detail=True, methods=['post'], url_path='send-email')
     def send_email(self, request, *args, **kwargs):
         invitation = self.get_object()
-
-        is_acceptable, message = invitation.is_acceptable()
-        if not is_acceptable:
+        try:
+            resend_invitation_email(invitation=invitation, request=request)
+        except InvitationEmailCooldownError as exc:
             return Response(
-                data={'detail': message},
-                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'detail': InvitationEmailErrorMessages.COOLDOWN_ACTIVE.label,
+                    'code': InvitationEmailErrorMessages.COOLDOWN_ACTIVE.value,
+                    'retry_after_seconds': exc.retry_after,
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
-
-        if invitation.last_email_sent_at:
-            elapsed = (timezone.now() - invitation.last_email_sent_at).total_seconds()
-            if elapsed < INVITATION_EMAIL_COOLDOWN_SECONDS:
-                retry_after = int(INVITATION_EMAIL_COOLDOWN_SECONDS - elapsed)
-                return Response(
-                    data={
-                        'detail': InvitationEmailErrorMessages.COOLDOWN_ACTIVE.label,
-                        'code': InvitationEmailErrorMessages.COOLDOWN_ACTIVE.value,
-                        'retry_after_seconds': retry_after,
-                    },
-                    status=status.HTTP_429_TOO_MANY_REQUESTS,
-                )
-
-        with transaction.atomic():
-            transaction.on_commit(invitation.send_email)
-            invitation.last_email_sent_at = timezone.now()
-            invitation.save(update_fields=['last_email_sent_at', 'updated_at'])
-            record_audit_event(
-                AuditActionChoices.INVITATION_EMAIL_SENT,
-                request=request,
-                target=invitation,
+        except InvitationRefusedError as exc:
+            return Response(
+                data={'detail': str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(
@@ -495,10 +445,7 @@ class InvitationViewSet(
         auto_orderable_filter=True,
     )
     def received(self, request, *args, **kwargs):
-        queryset = Invitation.objects.filter_actives().filter_received_by_user(
-            user=self.auth_user,
-        )
-        queryset = self.filter_queryset(queryset)
+        queryset = self.filter_queryset(received_invitations(user=self.auth_user))
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -515,9 +462,7 @@ class InvitationViewSet(
     )
     def received_detail(self, request, *args, **kwargs):
         invitation = get_object_or_404(
-            Invitation.objects.filter_actives().filter_received_by_user(
-                user=self.auth_user,
-            ),
+            received_invitations(user=self.auth_user),
             pk=kwargs.get('invitation_pk'),
         )
         serializer = self.get_serializer(invitation)
@@ -531,26 +476,12 @@ class InvitationViewSet(
         serializer_class=InvitationByKeySerializer,
     )
     def by_key(self, request, *args, **kwargs):
-        if self.auth_user and self.auth_user.email_verified:
-            queryset = Invitation.objects.filter_actives().filter_received_by_user(
-                user=self.auth_user,
-            )
-        else:
-            queryset = Invitation.objects.filter_pending()
         invitation = get_object_or_404(
-            queryset,
+            invitations_by_key(user=self.auth_user),
             key=kwargs.get('invitation_key'),
         )
         serializer = self.get_serializer(invitation)
         return Response(data=serializer.data)
-
-    def _locked_invitation(self, request, kwargs) -> Invitation:
-        invitation = get_object_or_404(
-            Invitation.objects.select_for_update(of=('self',)).filter_actives(),
-            pk=kwargs.get('invitation_pk'),
-        )
-        self.check_object_permissions(request, invitation)
-        return invitation
 
     @action(
         detail=False,
@@ -560,25 +491,16 @@ class InvitationViewSet(
         serializer_class=InvitationAcceptSerializer,
     )
     def accept(self, request, *args, **kwargs):
-        from apps.accounts.models.member import Member
-
         accept_serializer = InvitationAcceptSerializer(data=request.data)
         accept_serializer.is_valid(raise_exception=True)
         try:
-            with transaction.atomic():
-                invitation = self._locked_invitation(request, kwargs)
-                invitation.ensure_organization_not_suspended()
-                is_acceptable, message = invitation.is_acceptable()
-                if not is_acceptable:
-                    raise ValueError(message)
-                member, readmitted = Member.objects.admit(
-                    user=request.user,
-                    organization=invitation.organization,
-                    role=invitation.role,
-                    nickname=accept_serializer.validated_data.get('nickname', ''),
-                )
-                invitation.accept(member=member, check=False)
-                self.record_acceptance(invitation, member, readmitted)
+            accepted = accept_invitation(
+                invitation_pk=kwargs['invitation_pk'],
+                user=request.user,
+                nickname=accept_serializer.validated_data.get('nickname', ''),
+                request=request,
+                check=partial(self.check_object_permissions, request),
+            )
         except DjangoValidationError as exc:
             raise serializers.ValidationError(exc.message_dict) from exc
         except ValueError as exc:
@@ -592,8 +514,8 @@ class InvitationViewSet(
             data={
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
-                'member_id': member.id,
-                'readmitted': readmitted,
+                'member_id': accepted.member.id,
+                'readmitted': accepted.readmitted,
             }
         )
         return move_tokens_to_cookies(request, response, response.data)
@@ -605,19 +527,16 @@ class InvitationViewSet(
         permission_classes=[InvitationAcceptDeclinePermission],
     )
     def decline(self, request, *args, **kwargs):
-        with transaction.atomic():
-            invitation = self._locked_invitation(request, kwargs)
-            is_declinable, message = invitation.is_declinable()
-            if not is_declinable:
-                return Response(
-                    data={'detail': message},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            invitation.decline(user=self.auth_user, check=False)
-            record_audit_event(
-                AuditActionChoices.INVITATION_DECLINED,
+        try:
+            decline_invitation(
+                invitation_pk=kwargs['invitation_pk'],
+                user=self.auth_user,
                 request=request,
-                organization_id=invitation.organization_id,
-                target=invitation,
+                check=partial(self.check_object_permissions, request),
+            )
+        except InvitationRefusedError as exc:
+            return Response(
+                data={'detail': str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
             )
         return Response(data={'detail': _('Invitation declined successfully.')})
