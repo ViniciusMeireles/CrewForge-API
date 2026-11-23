@@ -196,7 +196,7 @@ the `django.request` lines written after the middleware chain returns.
 Optional. `config/settings/observability.py` `init_sentry()` runs from the
 production settings and initializes Sentry only when `SENTRY_DSN` is set:
 
-- `send_default_pii=False`: no user data, cookies or headers;
+- `data_collection` turns off every category that can carry personal data: user identity, cookies, request headers, HTTP bodies, URL query parameters and SQL query data (sentry-sdk 3 replaced `send_default_pii`);
 - `SENTRY_ENVIRONMENT` and `SENTRY_RELEASE` (for example the image tag) tag events;
 - unhandled exceptions and `ERROR` log records are reported; empty DSN = disabled.
 

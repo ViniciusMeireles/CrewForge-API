@@ -3,6 +3,7 @@ import logging
 import uuid
 from unittest import mock
 
+import sentry_sdk
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
@@ -132,9 +133,20 @@ class SentryTestCase(SimpleTestCase):
             )
         kwargs = init.call_args.kwargs
         self.assertEqual(kwargs['dsn'], 'https://k@sentry.example.com/1')
-        self.assertFalse(kwargs['send_default_pii'])
         self.assertEqual(kwargs['environment'], 'production')
         self.assertEqual(kwargs['release'], 'abc')
+
+    def test_collects_no_personal_data(self):
+        init_sentry({'SENTRY_DSN': 'https://k@sentry.example.com/1'})
+        client = sentry_sdk.get_client()
+        self.addCleanup(client.close)
+        collected = client.options['data_collection']
+        self.assertFalse(collected['user_info'])
+        self.assertEqual(collected['cookies']['mode'], 'off')
+        self.assertEqual(collected['http_headers']['request']['mode'], 'off')
+        self.assertEqual(collected['http_bodies'], [])
+        self.assertEqual(collected['url_query_params']['mode'], 'off')
+        self.assertFalse(collected['database_query_data'])
 
 
 class ClientErrorCodesTestCase(APITestCaseMixin, APITestCase):
