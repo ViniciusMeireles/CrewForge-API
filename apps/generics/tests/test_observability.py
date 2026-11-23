@@ -3,11 +3,11 @@ import logging
 import uuid
 from unittest import mock
 
-import sentry_sdk
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
+from sentry_sdk.data_collection import _resolve_data_collection
 
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.generics.logging import JsonFormatter, RequestIdFilter, request_id_var
@@ -137,10 +137,9 @@ class SentryTestCase(SimpleTestCase):
         self.assertEqual(kwargs['release'], 'abc')
 
     def test_collects_no_personal_data(self):
-        init_sentry({'SENTRY_DSN': 'https://k@sentry.example.com/1'})
-        client = sentry_sdk.get_client()
-        self.addCleanup(client.close)
-        collected = client.options['data_collection']
+        with mock.patch('sentry_sdk.init') as init:
+            init_sentry({'SENTRY_DSN': 'https://k@sentry.example.com/1'})
+        collected = _resolve_data_collection(init.call_args.kwargs)
         self.assertFalse(collected['user_info'])
         self.assertEqual(collected['cookies']['mode'], 'off')
         self.assertEqual(collected['http_headers']['request']['mode'], 'off')
