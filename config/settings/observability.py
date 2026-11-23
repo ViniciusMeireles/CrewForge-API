@@ -8,6 +8,13 @@ def init_sentry(environ) -> bool:
         dsn=dsn,
         environment=environ.get('SENTRY_ENVIRONMENT') or None,
         release=environ.get('SENTRY_RELEASE') or None,
-        send_default_pii=False,
+        data_collection={
+            'user_info': False,
+            'cookies': {'mode': 'off'},
+            'http_headers': {'request': {'mode': 'off'}},
+            'http_bodies': [],
+            'url_query_params': {'mode': 'off'},
+            'database_query_data': False,
+        },
     )
     return True
