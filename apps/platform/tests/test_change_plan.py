@@ -132,6 +132,20 @@ class PlatformChangePlanTestCase(PlatformTestMixin, APITestCaseMixin, APITestCas
         )
         self.assertEqual(response.status_code, http_status.HTTP_404_NOT_FOUND)
 
+    def test_missing_subscription_is_created(self):
+        self.authenticate_staff('admin')
+        Subscription.objects.filter(organization=self.organization).delete()
+        response = self.post({'plan': self.pro.id, 'reason': 'Repair'})
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+        subscription = Subscription.objects.get(organization=self.organization)
+        self.assertEqual(subscription.plan, self.pro)
+        event = AuditEvent.objects.get(
+            action=AuditActionChoices.PLATFORM_SUBSCRIPTION_PLAN_CHANGED
+        )
+        self.assertEqual(
+            event.changes[0], {'field': 'plan', 'before': None, 'after': 'pro'}
+        )
+
     def test_detail_includes_subscription(self):
         self.authenticate_staff('support')
         response = self.client.get(

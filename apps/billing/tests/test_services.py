@@ -50,6 +50,14 @@ class EnsureWithinLimitTestCase(TestCase):
         with self.assertLogs('apps.billing.entitlements', level='ERROR'):
             self.assertFalse(has_feature(organization.owner, 'audit'))
 
+    def test_missing_subscription_logs_once_per_organization(self):
+        organization = OrganizationFactory(subscription=False)
+        member = organization.owner
+        with self.assertLogs('apps.billing.entitlements', level='ERROR') as logs:
+            has_feature(member, 'audit')
+            has_feature(member, 'audit')
+        self.assertEqual(len(logs.records), 1)
+
     def test_format_storage(self):
         self.assertEqual(format_storage(5120 * BYTES_PER_MB), '5 GB')
         self.assertEqual(format_storage(100 * BYTES_PER_MB), '100 MB')

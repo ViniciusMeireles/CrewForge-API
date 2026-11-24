@@ -22,7 +22,9 @@ User = get_user_model()
 
 
 @transaction.atomic
-def start_subscription(*, organization: Organization, owner, request=None):
+def start_subscription(
+    *, organization: Organization, owner, request=None, actor_member=None
+):
     User.objects.select_for_update().filter(pk=owner.pk).first()
     already_trialing = (
         Subscription.objects.filter(
@@ -53,6 +55,7 @@ def start_subscription(*, organization: Organization, owner, request=None):
         request=request,
         organization_id=organization.pk,
         target=organization,
+        actor_member=actor_member,
         metadata={
             'plan': plan.code,
             'trial_ends_at': trial_ends_at.isoformat(),

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 BYTES_PER_MB = 1024 * 1024
+FALLBACK_PLAN_ATTRIBUTE = '_billing_fallback_plan'
 
 
 class Kind(StrEnum):
@@ -95,11 +96,16 @@ def plan_for(organization: Organization) -> Plan:
     try:
         return organization.subscription.plan
     except Subscription.DoesNotExist:
+        pass
+    fallback = getattr(organization, FALLBACK_PLAN_ATTRIBUTE, None)
+    if fallback is None:
         logger.error(
             'billing.subscription_missing',
             extra={'organization_id': organization.pk},
         )
-        return Plan.objects.free()
+        fallback = Plan.objects.free()
+        setattr(organization, FALLBACK_PLAN_ATTRIBUTE, fallback)
+    return fallback
 
 
 def has_feature(member: Member, key: str) -> bool:

@@ -301,9 +301,8 @@ def force_password_reset(request, user, reason: str = ''):
 def _subscription_changes(subscription, plan, courtesy) -> list[dict]:
     changes = []
     if subscription.plan_id != plan.pk:
-        changes.append(
-            {'field': 'plan', 'before': subscription.plan.code, 'after': plan.code}
-        )
+        before = subscription.plan.code if subscription.plan_id else None
+        changes.append({'field': 'plan', 'before': before, 'after': plan.code})
     if subscription.status != SubscriptionStatusChoices.ACTIVE:
         changes.append(
             {
@@ -327,24 +326,25 @@ def change_plan(request, organization: Organization, plan: Plan, reason: str):
     subscription = (
         Subscription.objects.select_for_update(of=('self',))
         .select_related('plan')
-        .get(organization=organization)
+        .filter(organization=organization)
+        .first()
     )
+    if subscription is None:
+        subscription = Subscription(
+            organization=organization, status=SubscriptionStatusChoices.ACTIVE
+        )
     courtesy = '' if plan.is_free else SubscriptionCourtesyChoices.PLATFORM
     changes = _subscription_changes(subscription, plan, courtesy)
+    created = subscription.pk is None
     subscription.plan = plan
     subscription.status = SubscriptionStatusChoices.ACTIVE
     subscription.cycle = None
     subscription.trial_ends_at = None
     subscription.courtesy = courtesy
     subscription.save(
-        update_fields=[
-            'plan',
-            'status',
-            'cycle',
-            'trial_ends_at',
-            'courtesy',
-            'updated_at',
-        ]
+        update_fields=None
+        if created
+        else ['plan', 'status', 'cycle', 'trial_ends_at', 'courtesy', 'updated_at']
     )
     _record_organization_event(
         request,

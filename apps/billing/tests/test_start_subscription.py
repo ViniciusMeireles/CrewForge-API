@@ -87,3 +87,32 @@ class StartSubscriptionTestCase(APITestCaseMixin, APITestCase):
         organization.refresh_from_db()
         subscription = Subscription.objects.get(organization=organization)
         self.assertEqual(subscription.status, SubscriptionStatusChoices.TRIALING)
+
+
+class SignupStartsTrialTestCase(APITestCaseMixin, APITestCase):
+    def test_signup_starts_a_trial(self):
+        data = UserFactory.build()
+        response = self.client.post(
+            reverse('accounts:signup-list'),
+            data={
+                'user': {
+                    'username': data.username,
+                    'email': data.email,
+                    'first_name': data.first_name,
+                    'last_name': data.last_name,
+                    'password': 'A-strong-pass-123',
+                },
+                'organization': {'name': 'Acme', 'slug': 'acme-signup'},
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_201_CREATED)
+        organization = Organization.objects.get(slug='acme-signup')
+        subscription = Subscription.objects.get(organization=organization)
+        self.assertEqual(subscription.status, SubscriptionStatusChoices.TRIALING)
+        self.assertEqual(subscription.plan.code, 'pro')
+        event = AuditEvent.objects.get(
+            action=AuditActionChoices.BILLING_SUBSCRIPTION_TRIAL_STARTED
+        )
+        self.assertEqual(event.organization_id, organization.pk)
+        self.assertEqual(event.actor_user.email, data.email)

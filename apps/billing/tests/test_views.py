@@ -61,6 +61,13 @@ class SubscriptionViewTestCase(APITestCaseMixin, APITestCase):
                 self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
                 self.assertEqual(response.data['error']['code'], 'PERMISSION_DENIED')
 
+    def test_unlimited_usage(self):
+        set_plan(self.organization, max_teams=None, storage_mb=None)
+        self.as_role(MemberRoleChoices.OWNER)
+        usage = self.client.get(self.url).data['usage']
+        self.assertEqual(usage['teams'], {'current': 0, 'max': None})
+        self.assertIsNone(usage['storage']['max'])
+
     def test_needs_organization_context(self):
         self.client.force_authenticate(user=self.organization.owner.user)
         self.assertEqual(
@@ -78,13 +85,9 @@ class SubscriptionViewTestCase(APITestCaseMixin, APITestCase):
         self.as_role(MemberRoleChoices.OWNER)
         self.assertEqual(self.client.get(self.url).data['usage']['teams']['current'], 0)
 
-    def test_complimentary_and_unlimited(self):
+    def test_complimentary(self):
         Subscription.objects.filter(organization=self.organization).update(
             plan=Plan.objects.get(code='pro'), courtesy='legacy'
-        )
-        set_plan(self.organization, max_teams=None)
-        Subscription.objects.filter(organization=self.organization).update(
-            plan=Plan.objects.get(code='pro')
         )
         self.as_role(MemberRoleChoices.OWNER)
         data = self.client.get(self.url).data

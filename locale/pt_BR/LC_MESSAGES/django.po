@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 20:43+0000\n"
+"POT-Creation-Date: 2026-11-24 20:47+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -1758,19 +1758,19 @@ msgstr "Definida pela plataforma"
 msgid "Brazilian real"
 msgstr "Real brasileiro"
 
-#: apps/billing/entitlements.py:59
+#: apps/billing/entitlements.py:60
 msgid "Entitlements must be an object."
 msgstr "Os benefícios devem ser um objeto."
 
-#: apps/billing/entitlements.py:64
+#: apps/billing/entitlements.py:65
 msgid "Unknown entitlement."
 msgstr "Benefício desconhecido."
 
-#: apps/billing/entitlements.py:67
+#: apps/billing/entitlements.py:68
 msgid "Enter true or false."
 msgstr "Informe verdadeiro ou falso."
 
-#: apps/billing/entitlements.py:69
+#: apps/billing/entitlements.py:70
 msgid "Enter a non-negative integer or null."
 msgstr "Informe um número inteiro não negativo ou nulo."
 
@@ -2392,7 +2392,7 @@ msgstr "O e-mail deste usuário já está verificado."
 msgid "Wait {seconds} seconds before sending again."
 msgstr "Aguarde {seconds} segundos para enviar novamente."
 
-#: apps/platform/services.py:326
+#: apps/platform/services.py:325
 msgid "This organization is deleted."
 msgstr "Esta organização foi excluída."
 
