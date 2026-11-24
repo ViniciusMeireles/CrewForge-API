@@ -100,7 +100,7 @@ class SignupStartsTrialTestCase(APITestCaseMixin, APITestCase):
                     'email': data.email,
                     'first_name': data.first_name,
                     'last_name': data.last_name,
-                    'password': 'A-strong-pass-123',
+                    'password': data.password,
                 },
                 'organization': {'name': 'Acme', 'slug': 'acme-signup'},
             },

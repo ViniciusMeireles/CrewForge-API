@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db import connection
+from django.db.models import QuerySet
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -24,11 +24,9 @@ def event(organization=None, days_ago=0, user=None):
         target_label='Team',
         subject_user_id=user.pk if user else None,
     )
-    with connection.cursor() as cursor:
-        cursor.execute(
-            f'UPDATE {AuditEvent._meta.db_table} SET created_at = %s WHERE id = %s',
-            [timezone.now() - timedelta(days=days_ago), created.pk],
-        )
+    QuerySet(AuditEvent).filter(pk=created.pk).update(
+        created_at=timezone.now() - timedelta(days=days_ago)
+    )
     return created
 
 
