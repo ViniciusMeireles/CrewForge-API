@@ -24,6 +24,9 @@ class BeatScheduleTestCase(TestCase):
         self.assertEqual(
             by_task['apps.accounts.tasks.expire_invitations'], timedelta(hours=1)
         )
+        self.assertEqual(
+            by_task['apps.billing.tasks.purge_audit_events'], crontab(minute=0, hour=4)
+        )
 
     def test_tasks_run_their_commands(self):
         cases = {

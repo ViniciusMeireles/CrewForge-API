@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 class Action(StrEnum):
     AUDIT_READ = 'audit.read'
+    BILLING_READ = 'billing.read'
     FILE_ACCESS = 'file.access'
     INVITATION_CHANGE = 'invitation.change'
     INVITATION_MANAGE = 'invitation.manage'
@@ -34,12 +35,17 @@ ROLE_RANK: dict[str, int] = {
 
 MINIMUM_ROLE: dict[Action, str] = {
     Action.AUDIT_READ: MemberRoleChoices.ADMIN,
+    Action.BILLING_READ: MemberRoleChoices.ADMIN,
     Action.INVITATION_MANAGE: MemberRoleChoices.ADMIN,
     Action.MEMBER_READ: MemberRoleChoices.MEMBER,
     Action.ORGANIZATION_RESOURCE_WRITE: MemberRoleChoices.ADMIN,
     Action.ORGANIZATION_SETTINGS: MemberRoleChoices.OWNER,
     Action.TEAM_READ: MemberRoleChoices.MEMBER,
     Action.TEAM_WRITE: MemberRoleChoices.MANAGER,
+}
+
+FEATURE_REQUIRED: dict[Action, str] = {
+    Action.AUDIT_READ: 'audit',
 }
 
 FILE_ACCESS_ROLE: dict[str, str] = {
@@ -114,11 +120,29 @@ TARGET_RULES: dict[Action, Callable[[Member, Any], bool]] = {
 }
 
 
-def authorize(actor: Member | None, action: Action, target: Any = None) -> bool:
-    if actor is None or not actor.is_active:
-        return False
+def _role_allows(actor: Member, action: Action, target: Any) -> bool:
     if target is not None and action in TARGET_RULES:
         return TARGET_RULES[action](actor, target)
     if action in MINIMUM_ROLE:
         return has_role(actor, MINIMUM_ROLE[action])
     return False
+
+
+def plan_allows(actor: Member, action: Action) -> bool:
+    if (feature := FEATURE_REQUIRED.get(action)) is None:
+        return True
+    from apps.billing.entitlements import has_feature
+
+    return has_feature(actor, feature)
+
+
+def authorize(actor: Member | None, action: Action, target: Any = None) -> bool:
+    if actor is None or not actor.is_active:
+        return False
+    return _role_allows(actor, action, target) and plan_allows(actor, action)
+
+
+def role_allows(actor: Member | None, action: Action, target: Any = None) -> bool:
+    if actor is None or not actor.is_active:
+        return False
+    return _role_allows(actor, action, target)

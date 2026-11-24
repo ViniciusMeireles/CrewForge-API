@@ -16,6 +16,9 @@ from apps.accounts.utils.password_reset import password_reset_link
 from apps.accounts.utils.sessions import revoke_sessions
 from apps.audit.choices import AuditActionChoices, AuditActorTypeChoices
 from apps.audit.services import label_for, record_audit_event
+from apps.billing.choices import SubscriptionCourtesyChoices, SubscriptionStatusChoices
+from apps.billing.models.plan import Plan
+from apps.billing.models.subscription import Subscription
 from apps.generics.errors import CooldownThrottled, InvalidState
 from apps.generics.utils.db import queue_on_commit
 from apps.platform.choices import ImpersonationEndReasonChoices
@@ -293,3 +296,61 @@ def force_password_reset(request, user, reason: str = ''):
         request, AuditActionChoices.USER_PASSWORD_RESET_FORCED, user, reason
     )
     return user
+
+
+def _subscription_changes(subscription, plan, courtesy) -> list[dict]:
+    changes = []
+    if subscription.plan_id != plan.pk:
+        before = subscription.plan.code if subscription.plan_id else None
+        changes.append({'field': 'plan', 'before': before, 'after': plan.code})
+    if subscription.status != SubscriptionStatusChoices.ACTIVE:
+        changes.append(
+            {
+                'field': 'subscription_status',
+                'before': subscription.status,
+                'after': SubscriptionStatusChoices.ACTIVE,
+            }
+        )
+    if subscription.courtesy != courtesy:
+        changes.append(
+            {'field': 'courtesy', 'before': subscription.courtesy, 'after': courtesy}
+        )
+    return changes
+
+
+@transaction.atomic
+def change_plan(request, organization: Organization, plan: Plan, reason: str):
+    organization = _locked_organization(organization.pk)
+    if not organization.is_active:
+        raise InvalidState(_('This organization is deleted.'))
+    subscription = (
+        Subscription.objects.select_for_update(of=('self',))
+        .select_related('plan')
+        .filter(organization=organization)
+        .first()
+    )
+    if subscription is None:
+        subscription = Subscription(
+            organization=organization, status=SubscriptionStatusChoices.ACTIVE
+        )
+    courtesy = '' if plan.is_free else SubscriptionCourtesyChoices.PLATFORM
+    changes = _subscription_changes(subscription, plan, courtesy)
+    created = subscription.pk is None
+    subscription.plan = plan
+    subscription.status = SubscriptionStatusChoices.ACTIVE
+    subscription.cycle = None
+    subscription.trial_ends_at = None
+    subscription.courtesy = courtesy
+    subscription.save(
+        update_fields=None
+        if created
+        else ['plan', 'status', 'cycle', 'trial_ends_at', 'courtesy', 'updated_at']
+    )
+    _record_organization_event(
+        request,
+        AuditActionChoices.PLATFORM_SUBSCRIPTION_PLAN_CHANGED,
+        organization,
+        reason,
+        changes=changes,
+    )
+    return organization

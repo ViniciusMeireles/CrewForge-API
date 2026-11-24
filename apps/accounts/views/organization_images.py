@@ -11,7 +11,9 @@ from apps.accounts.mixins.views import (
 from apps.accounts.models.organization import OrganizationImage
 from apps.accounts.permissions.organization_image import OrganizationImagePermission
 from apps.accounts.serializers.organization_image import OrganizationImageSerializer
+from apps.accounts.utils.files import uploaded_size_delta
 from apps.audit.choices import AuditActionChoices
+from apps.billing.exceptions import STORAGE_BYTES
 from apps.generics.mixins.views import FilterOptionsMixin, FormOptionsMixin
 from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import extend_schema_model_view_set
@@ -39,6 +41,11 @@ class OrganizationImageViewSet(
         'partial_update': AuditActionChoices.ORGANIZATION_IMAGE_UPDATED,
         'destroy': AuditActionChoices.ORGANIZATION_IMAGE_DELETED,
     }
+    plan_limits = {
+        'create': STORAGE_BYTES,
+        'update': STORAGE_BYTES,
+        'partial_update': STORAGE_BYTES,
+    }
     permission_classes = [OrganizationImagePermission]
     filterset_class = orderable_filter_factory(
         OrganizationImageSerializer, OrganizationImageFilter
@@ -47,3 +54,8 @@ class OrganizationImageViewSet(
     parser_classes = [MultiPartParser, FormParser]
     # Form options are reachable without authentication: no search on them.
     options_search = False
+
+    def get_plan_limit_adding(self, serializer) -> int:
+        image = serializer.validated_data.get('image') or {}
+        current = serializer.instance.image if serializer.instance else None
+        return uploaded_size_delta(image.get('file'), current)

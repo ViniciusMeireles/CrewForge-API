@@ -3,6 +3,7 @@ from rest_framework import viewsets
 
 from apps.accounts.mixins.views import ModelViewSetMixin, OrganizationScopedViewSetMixin
 from apps.audit.choices import AuditActionChoices
+from apps.billing.entitlements import MAX_TEAMS
 from apps.generics.mixins.views import FilterOptionsMixin
 from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import extend_schema_model_view_set
@@ -28,6 +29,7 @@ class TeamViewSet(
         'update': AuditActionChoices.TEAM_UPDATED,
         'destroy': AuditActionChoices.TEAM_DELETED,
     }
+    plan_limits = {'create': MAX_TEAMS}
     permission_classes = [TeamPermission]
     filterset_class = orderable_filter_factory(TeamListSerializer, TeamFilter)
     filter_backends = [backends.DjangoFilterBackend]

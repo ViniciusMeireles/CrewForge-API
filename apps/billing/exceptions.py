@@ -1,0 +1,56 @@
+from django.utils.translation import gettext_lazy as _
+from rest_framework.exceptions import PermissionDenied
+
+from apps.billing.entitlements import BYTES_PER_MB, MAX_MEMBERS, MAX_TEAMS
+from apps.generics.choices import ErrorCode
+from apps.generics.errors import CodedErrorMixin
+
+STORAGE_BYTES = 'storage_bytes'
+MB_PER_GB = 1024
+
+
+class PlanLimitReached(Exception):
+    def __init__(self, key: str, current: int, maximum: int) -> None:
+        super().__init__(key)
+        self.key = key
+        self.current = current
+        self.maximum = maximum
+
+
+def _limit_message(key: str, maximum: int) -> str:
+    if key == MAX_MEMBERS:
+        return _('Your plan allows up to %(max)s members.') % {'max': maximum}
+    if key == MAX_TEAMS:
+        return _('Your plan allows up to %(max)s teams.') % {'max': maximum}
+    return _('Your plan allows up to %(max)s of storage.') % {
+        'max': format_storage(maximum)
+    }
+
+
+def format_storage(size: int) -> str:
+    megabytes = size // BYTES_PER_MB
+    if megabytes >= MB_PER_GB and megabytes % MB_PER_GB == 0:
+        return f'{megabytes // MB_PER_GB} GB'
+    return f'{megabytes} MB'
+
+
+class PlanLimitReachedError(CodedErrorMixin, PermissionDenied):
+    default_code = 'plan_limit_reached'
+    error_code = ErrorCode.PLAN_LIMIT_REACHED
+
+    @classmethod
+    def from_limit(cls, limit: PlanLimitReached) -> PlanLimitReachedError:
+        return cls(
+            detail=_limit_message(limit.key, limit.maximum),
+            details={
+                'limit': limit.key,
+                'current': limit.current,
+                'max': limit.maximum,
+            },
+        )
+
+
+class PlanFeatureUnavailableError(CodedErrorMixin, PermissionDenied):
+    default_detail = _('This feature is not included in your plan.')
+    default_code = 'plan_feature_unavailable'
+    error_code = ErrorCode.PLAN_FEATURE_UNAVAILABLE

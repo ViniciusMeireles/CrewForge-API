@@ -19,6 +19,7 @@ EXPECTED_ACCESS = {
         'teams': True,
         'organization_settings': True,
         'audit': True,
+        'billing': True,
     },
     MemberRoleChoices.ADMIN: {
         'members': True,
@@ -26,6 +27,7 @@ EXPECTED_ACCESS = {
         'teams': True,
         'organization_settings': False,
         'audit': True,
+        'billing': True,
     },
     MemberRoleChoices.MANAGER: {
         'members': True,
@@ -33,6 +35,7 @@ EXPECTED_ACCESS = {
         'teams': True,
         'organization_settings': False,
         'audit': False,
+        'billing': False,
     },
     MemberRoleChoices.MEMBER: {
         'members': True,
@@ -40,6 +43,7 @@ EXPECTED_ACCESS = {
         'teams': True,
         'organization_settings': False,
         'audit': False,
+        'billing': False,
     },
 }
 
@@ -48,6 +52,7 @@ AREA_LIST_URLS = {
     'invitations': 'accounts:invitations-list',
     'teams': 'teams:teams-list',
     'audit': 'audit:audit_events-list',
+    'billing': 'billing:subscription',
 }
 
 
@@ -136,9 +141,9 @@ class SessionAccessTestCase(APITestCaseMixin, APITestCase):
                     )
 
     def test_access_serialization_adds_no_queries(self):
-        member = Member.objects.select_related('user').get(
-            id=self.new_member(MemberRoleChoices.ADMIN).id
-        )
+        member = Member.objects.select_related(
+            'user', 'organization__subscription__plan'
+        ).get(id=self.new_member(MemberRoleChoices.ADMIN).id)
         with CaptureQueriesContext(connection) as queries:
             data = MemberAccessSerializer(member).data
         self.assertEqual(len(queries), 0)

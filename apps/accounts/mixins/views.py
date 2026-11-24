@@ -14,6 +14,8 @@ from apps.audit.services import (
     record_audit_event,
     snapshot_instance,
 )
+from apps.billing.exceptions import PlanLimitReached, PlanLimitReachedError
+from apps.billing.services import ensure_within_limit
 from apps.generics.mixins.views import OptionsBaseModelMixin
 
 
@@ -22,6 +24,13 @@ class OptionsOrganizationModelMixin(OptionsBaseModelMixin):
 
     options_serializer_class = OptionsOrganizationModelSerializer
     options_filterset_serializer_class = OptionsOrganizationFilterSetSerializer
+
+
+def ensure_plan_limit(**kwargs) -> None:
+    try:
+        ensure_within_limit(**kwargs)
+    except PlanLimitReached as limit:
+        raise PlanLimitReachedError.from_limit(limit) from limit
 
 
 class ModelViewSetMixin(
@@ -63,8 +72,33 @@ class ModelViewSetMixin(
             **kwargs,
         )
 
+    plan_limits: dict[str, str] = {}
+    plan_limit_counts_pending = False
+
+    def get_plan_limit_organization(self, serializer):
+        return self.auth_organization
+
+    def get_plan_limit_adding(self, serializer) -> int:
+        return 1
+
+    @contextmanager
+    def within_plan_limit(self, serializer):
+        if not (key := self.plan_limits.get(self.action)):
+            yield
+            return
+        organization = self.get_plan_limit_organization(serializer)
+        with transaction.atomic():
+            if organization is not None:
+                ensure_plan_limit(
+                    organization=organization,
+                    key=key,
+                    adding=self.get_plan_limit_adding(serializer),
+                    count_pending=self.plan_limit_counts_pending,
+                )
+            yield
+
     def perform_create(self, serializer):
-        with self.audited() as action:
+        with self.within_plan_limit(serializer), self.audited() as action:
             super().perform_create(serializer)
             if action:
                 instance = serializer.instance
@@ -72,7 +106,7 @@ class ModelViewSetMixin(
                 self.record_audit(action, instance, changes)
 
     def perform_update(self, serializer):
-        with self.audited() as action:
+        with self.within_plan_limit(serializer), self.audited() as action:
             before = snapshot_instance(serializer.instance, self.audit_exclude_fields)
             super().perform_update(serializer)
             if action:

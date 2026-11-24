@@ -39,6 +39,7 @@ from apps.accounts.utils.auth_cookies import (
     wants_cookie_transport,
 )
 from apps.audit.choices import AuditActionChoices
+from apps.billing.entitlements import MAX_MEMBERS
 from apps.generics.mixins.views import FilterOptionsMixin
 from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import (
@@ -155,6 +156,13 @@ class MemberViewSet(
     }
     permission_classes = [MemberPermission]
     organization_context_exempt_actions = ('create_with_invite',)
+    plan_limits = {'create_with_invite': MAX_MEMBERS}
+
+    def get_plan_limit_organization(self, serializer):
+        if self.action == 'create_with_invite':
+            return self.invitation.organization if self.invitation else None
+        return super().get_plan_limit_organization(serializer)
+
     filterset_class = orderable_filter_factory(MemberModelSerializer, MemberFilter)
     filter_backends = [backends.DjangoFilterBackend]
     options_custom_actions = {'update_role': 'form_options_update_role'}

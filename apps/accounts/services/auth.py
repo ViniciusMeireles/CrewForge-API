@@ -16,6 +16,7 @@ from apps.accounts.utils.language import resolve_recipient_language
 from apps.accounts.utils.password_reset import password_reset_link
 from apps.accounts.utils.security_log import log_security_event
 from apps.accounts.utils.sessions import revoke_sessions
+from apps.billing.services import start_subscription
 
 
 def _create_user(user_data: dict[str, Any]) -> User:
@@ -34,6 +35,7 @@ def register_owner(
     organization_data: dict[str, Any],
     member_data: dict[str, Any],
     on_user_created: Callable[[User], Any],
+    request: Request | None = None,
 ) -> Member:
     with transaction.atomic():
         user = _create_user(user_data)
@@ -51,7 +53,7 @@ def register_owner(
             updated_by=user,
             **profile_data,
         )
-        return Member.objects.create(
+        member = Member.objects.create(
             **{
                 'role': MemberRoleChoices.OWNER,
                 **member_data,
@@ -61,6 +63,13 @@ def register_owner(
                 'updated_by': user,
             }
         )
+        start_subscription(
+            organization=organization,
+            owner=user,
+            request=request,
+            actor_member=member,
+        )
+        return member
 
 
 def record_signup(*, request: Request, user_id: int | None, **fields: Any) -> None:

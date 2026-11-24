@@ -53,6 +53,8 @@ from apps.accounts.services.invitations import (
 from apps.accounts.tokens import VersionedRefreshToken
 from apps.accounts.utils.auth_cookies import move_tokens_to_cookies
 from apps.audit.choices import AuditActionChoices
+from apps.billing.entitlements import MAX_MEMBERS
+from apps.billing.exceptions import PlanLimitReached, PlanLimitReachedError
 from apps.generics.decorators import action_custom
 from apps.generics.mixins.views import FilterOptionsMixin, FormOptionsMixin
 from apps.generics.utils.filters import orderable_filter_factory
@@ -386,6 +388,8 @@ class InvitationViewSet(
         'destroy': AuditActionChoices.INVITATION_DELETED,
     }
     audit_exclude_fields = ('key', 'last_email_sent_at')
+    plan_limits = {'create': MAX_MEMBERS}
+    plan_limit_counts_pending = True
     permission_classes = [InvitationPermission]
     organization_context_exempt_actions = (
         'received',
@@ -515,6 +519,8 @@ class InvitationViewSet(
             )
         except DjangoValidationError as exc:
             raise serializers.ValidationError(exc.message_dict) from exc
+        except PlanLimitReached as limit:
+            raise PlanLimitReachedError.from_limit(limit) from limit
         except ValueError as exc:
             return Response(
                 data={'detail': str(exc)},

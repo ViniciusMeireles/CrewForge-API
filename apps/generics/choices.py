@@ -17,4 +17,6 @@ class ErrorCode(models.TextChoices):
     INVALID_STATE = 'INVALID_STATE', _('Invalid state')
     READ_ONLY_IMPERSONATION = 'READ_ONLY_IMPERSONATION', _('Read-only impersonation')
     IMPERSONATION_ENDED = 'IMPERSONATION_ENDED', _('Impersonation ended')
+    PLAN_LIMIT_REACHED = 'PLAN_LIMIT_REACHED', _('Plan limit reached')
+    PLAN_FEATURE_UNAVAILABLE = 'PLAN_FEATURE_UNAVAILABLE', _('Plan feature unavailable')
     INTERNAL_ERROR = 'INTERNAL_ERROR', _('Internal error')

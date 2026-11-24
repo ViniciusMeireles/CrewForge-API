@@ -112,6 +112,14 @@ class AuditActionChoices(models.TextChoices):
         'user.impersonation_expired',
         _('Viewing session expired'),
     )
+    BILLING_SUBSCRIPTION_TRIAL_STARTED = (
+        'billing.subscription.trial_started',
+        _('Trial started'),
+    )
+    PLATFORM_SUBSCRIPTION_PLAN_CHANGED = (
+        'platform.subscription.plan_changed',
+        _('Plan changed by the platform'),
+    )
 
 
 class AuditActorTypeChoices(models.TextChoices):
@@ -126,4 +134,7 @@ CHANGE_FIELD_LABELS = {
     'owner': _('Owner'),
     'previous_owner_role': _('Previous owner role'),
     'new_owner_role': _('New owner role'),
+    'plan': _('Plan'),
+    'subscription_status': _('Subscription status'),
+    'courtesy': _('Courtesy'),
 }

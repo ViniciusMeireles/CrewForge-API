@@ -4,12 +4,15 @@ from unittest import mock
 from django.test import SimpleTestCase
 
 from apps.accounts.access import (
+    FEATURE_REQUIRED,
     MINIMUM_ROLE,
     ROLE_RANK,
     TARGET_RULES,
     Action,
     authorize,
     has_role,
+    plan_allows,
+    role_allows,
 )
 from apps.accounts.choices import MemberRoleChoices, StoredFileAccess
 from apps.accounts.models.member import Member
@@ -22,6 +25,7 @@ ROLES = (OWNER, ADMIN, MANAGER, MEMBER)
 
 ALLOWED_ROLES = {
     Action.AUDIT_READ: {OWNER, ADMIN},
+    Action.BILLING_READ: {OWNER, ADMIN},
     Action.INVITATION_MANAGE: {OWNER, ADMIN},
     Action.MEMBER_READ: set(ROLES),
     Action.ORGANIZATION_RESOURCE_WRITE: {OWNER, ADMIN},
@@ -32,6 +36,7 @@ ALLOWED_ROLES = {
 
 PROPERTIES = {
     'has_audit_access': Action.AUDIT_READ,
+    'has_billing_access': Action.BILLING_READ,
     'has_invitations_access': Action.INVITATION_MANAGE,
     'has_members_access': Action.MEMBER_READ,
     'has_organization_settings_access': Action.ORGANIZATION_SETTINGS,
@@ -44,6 +49,29 @@ def actor(role, **fields) -> Member:
 
 
 class AccessPolicyTestCase(SimpleTestCase):
+    def setUp(self):
+        patcher = mock.patch('apps.billing.entitlements.has_feature', return_value=True)
+        self.has_feature = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_plan_gates_the_listed_actions(self):
+        self.has_feature.return_value = False
+        for action in Action:
+            with self.subTest(action=action):
+                allowed = authorize(actor(OWNER), action)
+                if action in FEATURE_REQUIRED:
+                    self.assertFalse(allowed)
+                    self.assertTrue(role_allows(actor(OWNER), action))
+                    self.assertFalse(plan_allows(actor(OWNER), action))
+                else:
+                    self.assertEqual(allowed, action in MINIMUM_ROLE)
+        self.assertEqual(FEATURE_REQUIRED, {Action.AUDIT_READ: 'audit'})
+
+    def test_plan_is_not_asked_when_the_role_refuses(self):
+        self.has_feature.return_value = True
+        self.assertFalse(authorize(actor(MEMBER), Action.AUDIT_READ))
+        self.has_feature.assert_not_called()
+
     def test_every_action_has_a_rule(self):
         self.assertEqual(set(Action), set(MINIMUM_ROLE) | set(TARGET_RULES))
 

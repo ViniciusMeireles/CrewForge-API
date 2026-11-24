@@ -30,6 +30,7 @@ from apps.accounts.services.organizations import (
 )
 from apps.accounts.utils.requests import get_member
 from apps.audit.choices import AuditActionChoices
+from apps.billing.selectors import session_subscription
 from apps.generics.mixins.views import FilterOptionsMixin
 from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import (
@@ -186,6 +187,7 @@ class OrganizationViewSet(FilterOptionsMixin, ModelViewSetMixin, viewsets.ModelV
             'organization': organization,
             'member': member,
             'impersonation': getattr(request, 'impersonation', None),
+            'subscription': session_subscription(member),
         }
         serializer = SessionSerializer(instance=data, context={'request': request})
         return Response(data=serializer.data, status=http_status.HTTP_200_OK)

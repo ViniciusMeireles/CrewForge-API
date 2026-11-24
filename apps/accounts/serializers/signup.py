@@ -62,4 +62,5 @@ class SignupSerializer(
             organization_data=validated_data.pop('organization'),
             member_data=validated_data,
             on_user_created=self.set_tokens_for_user,
+            request=self.context.get('request'),
         )

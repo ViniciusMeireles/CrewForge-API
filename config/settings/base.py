@@ -60,6 +60,7 @@ LOCAL_APPS = [
     'apps.dashboard',
     'apps.audit',
     'apps.platform',
+    'apps.billing',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -338,11 +339,13 @@ SPECTACULAR_SETTINGS = {
         'apps.dashboard.urls',
         'apps.audit.urls',
         'apps.platform.urls',
+        'apps.billing.urls',
     ],
     'ENUM_NAME_OVERRIDES': {
         'StoredFileAccess': 'apps.accounts.choices.StoredFileAccess',
         'InvitationStatusEnum': 'apps.accounts.choices.InvitationStatusChoices',
         'OrganizationStatusEnum': 'apps.accounts.choices.OrganizationStatusChoices',
+        'SubscriptionStatusEnum': 'apps.billing.choices.SubscriptionStatusChoices',
     },
     'SERVE_PERMISSIONS': ['apps.generics.permissions.ApiDocsPermission'],
     'SERVE_AUTHENTICATION': [
@@ -454,7 +457,14 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'apps.accounts.tasks.expire_invitations',
         'schedule': timedelta(hours=1),
     },
+    'purge-audit-events': {
+        'task': 'apps.billing.tasks.purge_audit_events',
+        'schedule': crontab(minute=0, hour=4),
+    },
 }
+AUDIT_RETENTION_PURGE_ENABLED = (
+    os.environ.get('AUDIT_RETENTION_PURGE_ENABLED', 'True').lower() == 'true'
+)
 CELERY_TASK_IGNORE_RESULT = (
     os.environ.get('CELERY_TASK_IGNORE_RESULT', 'False').lower() == 'true'
 )

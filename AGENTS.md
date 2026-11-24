@@ -4,7 +4,7 @@
 
 CrewForge is a Django REST API for organization-aware access control.
 
-- **Organizations**, **members**, **invitations**, **teams**, **files**, **audit trail**
+- **Organizations**, **members**, **invitations**, **teams**, **files**, **audit trail**, **plans and limits** (`apps/billing/`, [ADR-013](../docs/adr/013-plans-and-entitlements.md))
 - Organization context via session (`organization_id`) — JWT alone is NOT enough
 - Platform panel (`/api/platform/`, `apps/platform/`): staff-only, JWT + `User.platform_role`, the one exception to the Organization context ([ADR-009](../docs/adr/009-platform-access-outside-organization-context.md))
 - Role hierarchy: Owner > Admin > Manager > Member

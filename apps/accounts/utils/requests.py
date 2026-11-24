@@ -44,7 +44,7 @@ def get_member(request: Request) -> Member | None:
         return cached[1]
     member = (
         Member.objects.filter_actives()
-        .select_related('organization')
+        .select_related('organization__subscription__plan')
         .filter(
             user=user,
             organization_id=organization_id,

@@ -137,6 +137,10 @@ class Member(BaseModel):
     def has_audit_access(self) -> bool:
         return authorize(self, Action.AUDIT_READ)
 
+    @property
+    def has_billing_access(self) -> bool:
+        return authorize(self, Action.BILLING_READ)
+
     @classmethod
     def label_expression(
         cls, outer_ref: str | None = None

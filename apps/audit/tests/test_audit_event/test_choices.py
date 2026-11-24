@@ -60,6 +60,8 @@ CATALOG = {
     'user.impersonation_started',
     'user.impersonation_ended',
     'user.impersonation_expired',
+    'billing.subscription.trial_started',
+    'platform.subscription.plan_changed',
 }
 
 

@@ -17,14 +17,16 @@ from apps.accounts.choices import StoredFileAccess
 from apps.accounts.filters.files import StoredFileFilter
 from apps.accounts.mixins.views import ModelViewSetMixin, UploadSizeLimitMixin
 from apps.accounts.models.files import StoredFile
+from apps.accounts.models.organization import Organization
 from apps.accounts.permissions.files import StoredFilePermission
 from apps.accounts.serializers.files import (
     StoredFileCreateUpdateModelSerializer,
     StoredFileDetailModelSerializer,
     StoredFileListModelSerializer,
 )
-from apps.accounts.utils.files import is_inline_content_type
+from apps.accounts.utils.files import is_inline_content_type, uploaded_size_delta
 from apps.audit.choices import AuditActionChoices
+from apps.billing.exceptions import STORAGE_BYTES
 from apps.generics.utils.filters import orderable_filter_factory
 from apps.generics.utils.schema import (
     extend_schema_create,
@@ -91,7 +93,25 @@ class StoredFileViewSet(UploadSizeLimitMixin, ModelViewSetMixin, viewsets.ModelV
         'partial_update': AuditActionChoices.STORED_FILE_UPDATED,
         'destroy': AuditActionChoices.STORED_FILE_DELETED,
     }
+    plan_limits = {
+        'create': STORAGE_BYTES,
+        'update': STORAGE_BYTES,
+        'partial_update': STORAGE_BYTES,
+    }
     queryset = StoredFile.objects.all()
+
+    def get_plan_limit_organization(self, serializer):
+        organization = serializer.validated_data.get('organization')
+        if organization is None and serializer.instance is not None:
+            organization = serializer.instance.organization
+        if isinstance(organization, int):
+            return Organization.objects.get_or_none(pk=organization)
+        return organization
+
+    def get_plan_limit_adding(self, serializer) -> int:
+        return uploaded_size_delta(
+            serializer.validated_data.get('file'), serializer.instance
+        )
 
     def get_queryset(self):
         queryset = super().get_queryset()
