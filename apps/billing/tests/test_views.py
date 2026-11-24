@@ -193,6 +193,23 @@ class SessionSubscriptionTestCase(APITestCaseMixin, APITestCase):
                 self.assertFalse(data['member']['access']['billing'])
                 self.assertIsNone(data['subscription'])
 
+    def test_organization_login_returns_the_summary(self):
+        for member, expected in (
+            (self.organization.owner, True),
+            (
+                MemberFactory(
+                    organization=self.organization, role=MemberRoleChoices.MEMBER
+                ),
+                False,
+            ),
+        ):
+            with self.subTest(role=member.role):
+                self.client.force_authenticate(user=member.user)
+                data = self.client.post(
+                    reverse('accounts:organizations-login', args=[self.organization.id])
+                ).data
+                self.assertEqual(data['subscription'] is not None, expected)
+
     def test_no_organization_context(self):
         self.client.force_authenticate(user=self.organization.owner.user)
         self.assertIsNone(self.client.get(self.url).data['subscription'])
