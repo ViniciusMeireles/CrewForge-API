@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.accounts.models.member import Member
 from apps.accounts.serializers.organization import OrganizationListSerializer
 from apps.accounts.serializers.user import UserReadySerializer
+from apps.billing.choices import SubscriptionStatusChoices
 
 
 class MemberPermissionsSerializer(serializers.ModelSerializer):
@@ -30,10 +31,18 @@ class MemberAccessSerializer(serializers.ModelSerializer):
         source='has_organization_settings_access', read_only=True
     )
     audit = serializers.BooleanField(source='has_audit_access', read_only=True)
+    billing = serializers.BooleanField(source='has_billing_access', read_only=True)
 
     class Meta:
         model = Member
-        fields = ['members', 'invitations', 'teams', 'organization_settings', 'audit']
+        fields = [
+            'members',
+            'invitations',
+            'teams',
+            'organization_settings',
+            'audit',
+            'billing',
+        ]
 
 
 class MemberSessionSerializer(serializers.ModelSerializer):
@@ -63,12 +72,27 @@ class SessionImpersonationSerializer(serializers.Serializer):
     expires_at = serializers.DateTimeField(read_only=True)
 
 
+class SessionPlanSerializer(serializers.Serializer):
+    code = serializers.CharField(read_only=True)
+    name = serializers.CharField(read_only=True)
+
+
+class SessionSubscriptionSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(
+        choices=SubscriptionStatusChoices.choices, read_only=True
+    )
+    plan = SessionPlanSerializer(read_only=True)
+    trial_ends_at = serializers.DateTimeField(read_only=True, allow_null=True)
+    is_complimentary = serializers.BooleanField(read_only=True)
+
+
 class SessionSerializer(serializers.Serializer):
     user = SessionUserSerializer()
     organizations = OrganizationListSerializer(many=True, read_only=True)
     organization = OrganizationListSerializer(allow_null=True, default=None)
     member = MemberSessionSerializer(allow_null=True, default=None)
     impersonation = SessionImpersonationSerializer(allow_null=True, default=None)
+    subscription = SessionSubscriptionSerializer(allow_null=True, default=None)
 
 
 class CookieSettingsSerializer(serializers.Serializer):

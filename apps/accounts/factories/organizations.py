@@ -41,6 +41,16 @@ class OrganizationFactory(ModelFactoryMixin):
             user=UserFactory(), organization=self, role=MemberRoleChoices.OWNER.value
         )
 
+    @factory.post_generation
+    def subscription(self, create, extracted, **kwargs):
+        """Give the organization a Subscription unless ``subscription=False``."""
+        if not create or extracted is False:
+            return
+
+        from apps.billing.factories.plans import SubscriptionFactory
+
+        SubscriptionFactory(organization=self, **kwargs)
+
 
 class OrganizationProfileFactory(ModelFactoryMixin):
     organization = factory.SubFactory(OrganizationFactory, profile=None)

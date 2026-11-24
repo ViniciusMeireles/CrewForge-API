@@ -149,3 +149,10 @@ class MaxSizeUploadHandler(FileUploadHandler):
 
     def file_complete(self, file_size):
         return None
+
+
+def uploaded_size_delta(upload, current) -> int:
+    if upload is None:
+        return 0
+    previous = (current.size or 0) if current is not None else 0
+    return (upload.size or 0) - previous

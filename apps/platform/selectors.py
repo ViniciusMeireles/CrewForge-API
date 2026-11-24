@@ -61,16 +61,20 @@ def organizations_queryset() -> QuerySet[Organization]:
 
 
 def organization_detail_queryset() -> QuerySet[Organization]:
-    return organizations_queryset().annotate(
-        teams_count=_subquery_aggregate(
-            Team.objects.filter(is_active=True), Count('id')
-        ),
-        pending_invitations_count=_subquery_aggregate(
-            Invitation.objects.filter(is_active=True).filter_pending(), Count('id')
-        ),
-        storage_bytes=_subquery_aggregate(
-            StoredFile.objects.filter(is_active=True), Sum('size')
-        ),
+    return (
+        organizations_queryset()
+        .select_related('subscription__plan')
+        .annotate(
+            teams_count=_subquery_aggregate(
+                Team.objects.filter(is_active=True), Count('id')
+            ),
+            pending_invitations_count=_subquery_aggregate(
+                Invitation.objects.filter(is_active=True).filter_pending(), Count('id')
+            ),
+            storage_bytes=_subquery_aggregate(
+                StoredFile.objects.filter(is_active=True), Sum('size')
+            ),
+        )
     )
 
 

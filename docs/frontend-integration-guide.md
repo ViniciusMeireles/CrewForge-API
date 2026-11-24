@@ -20,7 +20,8 @@
 - [Dashboard](#16-dashboard)
 - [Audit Trail](#17-audit-trail)
 - [Platform Panel](#18-platform-panel)
-- [Troubleshooting](#19-troubleshooting)
+- [Billing and Plans](#19-billing-and-plans)
+- [Troubleshooting](#20-troubleshooting)
 
 ---
 
@@ -263,9 +264,10 @@ Returns the same shape as the login response (user, organizations, organization,
 | `invitations` | Invitations screen | Members with OWNER or ADMIN role |
 | `teams` | Teams screen | Any active member |
 | `organization_settings` | Organization settings screen | Members with OWNER role |
-| `audit` | Audit screen | Members with OWNER or ADMIN role |
+| `audit` | Audit screen | Members with OWNER or ADMIN role, when the Plan includes `audit` |
+| `billing` | Plan and billing screen | Members with OWNER or ADMIN role |
 
-Keys follow the Member's Role only: `is_superuser` grants nothing inside an Organization (ADR-009). `access` is computed on every request (never cached server-side), so re-read the session after a `403` or after a role change to get fresh values. Action-level checks inside a screen (e.g., showing an "Invite" button) still use `member.permissions`.
+Keys follow the Member's Role, and the Plan for `audit` ([19.2](#192-session-and-access)): `is_superuser` grants nothing inside an Organization (ADR-009). `access` is computed on every request (never cached server-side), so re-read the session after a `403` or after a role change to get fresh values. Action-level checks inside a screen (e.g., showing an "Invite" button) still use `member.permissions`.
 
 ### 3.7. Token Refresh
 
@@ -770,6 +772,8 @@ request in the API logs.
 | `ORGANIZATION_SUSPENDED` | 403 | `null` — the session's Organization is suspended; the API has already dropped it from the session (go back to the Organization selection) |
 | `INVALID_STATE` | 409 | `null` — the action does not apply to the current state (already suspended, not blocked, own account…); `message` is user-facing |
 | `READ_ONLY_IMPERSONATION` | 403 | `null` — a write while viewing as another user; message "Read-only while viewing as another user" |
+| `PLAN_LIMIT_REACHED` | 403 | `{"limit": "max_members" \| "max_teams" \| "storage_bytes", "current": n, "max": n}` — the creation exceeds the Plan ([19.3](#193-limits)) |
+| `PLAN_FEATURE_UNAVAILABLE` | 403 | `null` — the Role allows the area but the Plan does not include it (Audit) |
 | `IMPERSONATION_ENDED` | 403 | `{"reason": "expired" \| "user_blocked" \| "exit" \| "signed_out", "user": <target id>}` — the viewing session ended (time, blocked user); drop it and go back to `/platform/users/{user}` |
 | `THROTTLED` | 429 | `null`, or `{"retry_after_seconds": n}` for a per-object cooldown (platform resend verification) |
 | `INTERNAL_ERROR` | 500 | `null` |
@@ -798,7 +802,7 @@ For `VALIDATION_ERROR`, `details` contains field-level errors:
 | 204 | No Content | DELETE |
 | 400 | Bad Request | Validation errors |
 | 401 | Unauthorized | Missing/expired JWT |
-| 403 | Forbidden | Insufficient role; suspended Organization (`ORGANIZATION_SUSPENDED`) |
+| 403 | Forbidden | Insufficient role; suspended Organization (`ORGANIZATION_SUSPENDED`); Plan limit or feature (`PLAN_LIMIT_REACHED`, `PLAN_FEATURE_UNAVAILABLE`) |
 | 404 | Not Found | Cross-org access or nonexistent resource |
 | 409 | Conflict | `INVALID_STATE` (platform actions, invitation of a suspended Organization) |
 | 429 | Too Many Requests | Invitation email cooldown |
@@ -1335,30 +1339,74 @@ While viewing:
 - Start, end and expiry are account events of the User (`user.impersonation_started` with the reason,
   `user.impersonation_ended`, `user.impersonation_expired`), visible in their account activity; events recorded while
   viewing carry `impersonator`.
+## 19. Billing and Plans
+
+Increment 1 of billing: Plans and limits, with no payment (`specs/billing-and-plans/` in the root repository,
+[ADR-013](../../docs/adr/013-plans-and-entitlements.md)). Every Organization has one Subscription to a Plan. A Plan
+values a fixed catalog of Entitlements: `max_members`, `max_teams`, storage, the `audit` flag and
+`audit_retention_days` (`null` = unlimited or kept forever).
+
+### 19.1. Endpoints
+
+| Endpoint | Who | Response |
+|---|---|---|
+| `GET /api/billing/plans/` | any authenticated User; no Organization context needed (also the platform modal) | Active, public Plans: `id, code, name, description, monthly_price, annual_price` (strings with 2 decimals or `null`), `currency` (`BRL`), `trial_days, is_free, is_default, entitlements{max_members, max_teams, storage_bytes, audit, audit_retention_days}` |
+| `GET /api/billing/subscription/` | OWNER and ADMIN of the session Organization (`member.access.billing`); others `403 PERMISSION_DENIED` | `plan` (as above), `status` (`trialing` \| `active`), `cycle` (`null` in increment 1), `trial_ends_at`, `is_complimentary`, `usage{members, teams, storage}` with `{current, max}` (`max: null` = unlimited) |
+| `POST /api/platform/organizations/{id}/subscription/plan/` | platform admin | Body `{plan, reason}` (active Plan id, reason 1–500). `200` the Organization detail. `400` on `plan` ("The organization is already on this plan.", inactive Plan) or `reason`; `409` deleted Organization |
+
+Storage values (`storage_bytes`, `usage.storage`, limit details) are always **bytes**.
+
+### 19.2. Session and access
+
+- `GET /api/accounts/session/` gains `subscription {status, plan{code, name}, trial_ends_at, is_complimentary}` for
+  OWNER and ADMIN (`null` for other Roles and without an Organization). Use it for the trial banner: days left =
+  `ceil((trial_ends_at − now) / 24 h)`. In increment 1 the trial never expires, so a past `trial_ends_at` still reads
+  `trialing`.
+- `member.access.billing` gates the Plan and billing page (OWNER and ADMIN).
+- `member.access.audit` also follows the Plan: on a Plan without `audit` it is `false` for every Role, and
+  `/api/audit/events/` answers `403 PLAN_FEATURE_UNAVAILABLE` to OWNER and ADMIN. Events are still recorded.
+- The platform Organization detail gains `subscription {plan{id, code, name}, status, is_complimentary, trial_ends_at}`.
+
+### 19.3. Limits
+
+A creation over a limit answers `403 PLAN_LIMIT_REACHED` with `details {limit, current, max}`, where `current` is the
+usage before the refused creation. The checks run after the Role permission and the payload validation, so a Role that
+may not create gets `PERMISSION_DENIED` and an invalid payload gets `VALIDATION_ERROR` first.
+
+| Creation | `limit` | Counts |
+|---|---|---|
+| `POST /api/accounts/invitations/` | `max_members` | active Members + pending Invitations |
+| `POST /api/accounts/invitations/{invitation_pk}/accept/` (acceptance and Readmission) | `max_members` | active Members |
+| `POST /api/accounts/members/create-with-invite/{invitation_key}/` | `max_members` | active Members (no User is created) |
+| `POST /api/teams/teams/` | `max_teams` | active Teams |
+| StoredFile and organization image create, file replace | `storage_bytes` | bytes of the Organization's active StoredFiles; a replacement counts the size difference |
+
+Limits never remove data: an Organization above a limit keeps everything and only cannot create more of it.
+
 ---
 
-## 19. Troubleshooting
+## 20. Troubleshooting
 
-### 19.1. Cookies Not Being Sent
+### 20.1. Cookies Not Being Sent
 
 - Check that `withCredentials: true` (Angular) or `credentials: 'include'` (Fetch) is set on all requests that need the session.
 - Verify the SameSite + Secure configuration via `GET /api/accounts/session/config/` (public endpoint, no auth required; the diagnostics are only returned with `DEBUG=True`).
 - In development (HTTP), both `SameSite=Lax` and `Secure=False` are required. In production (HTTPS), `SameSite=None` and `Secure=True`.
 
-### 19.2. CORS Errors
+### 20.2. CORS Errors
 
 - Verify `CORS_ALLOWED_ORIGINS` in `.env` includes the frontend origin (e.g., `http://localhost:4200`).
 - Check the browser console for `Access-Control-Allow-Origin` headers.
 - With `DEBUG=True`, the `/api/accounts/session/config/` endpoint returns the current `cors_allowed_origins` setting.
 
-### 19.3. 404 on Org-Scoped Endpoints
+### 20.3. 404 on Org-Scoped Endpoints
 
 This is the most common issue. A 404 (not 403) on org-scoped resources usually means the `organization_id` is not in the session.
 
 - Verify Step 3 (organization login) was completed successfully.
 - Check `GET /api/accounts/session/` — if `organization` and `member` are `null`, the session has no active organization context.
 
-### 19.4. Token Expired
+### 20.4. Token Expired
 
 - A 401 response means the access token has expired.
 - Attempt a token refresh via `POST /api/auth/token/refresh/`.

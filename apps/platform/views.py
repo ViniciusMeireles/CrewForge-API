@@ -34,6 +34,7 @@ from apps.platform.selectors import (
     users_queryset,
 )
 from apps.platform.serializers import (
+    ChangePlanSerializer,
     ImpersonationExitSerializer,
     OwnershipTransferSerializer,
     PlatformAuditEventSerializer,
@@ -50,6 +51,7 @@ from apps.platform.serializers import (
 )
 from apps.platform.services import (
     block_user,
+    change_plan,
     end_sessions,
     force_password_reset,
     reactivate_organization,
@@ -206,6 +208,15 @@ def action_schema(request, response, summary, description):
         _('Reactivate organization'),
         _('Lift the suspension of the organization. The owner is emailed.'),
     ),
+    change_plan=action_schema(
+        ChangePlanSerializer,
+        PlatformOrganizationDetailSerializer,
+        _('Change plan'),
+        _(
+            'Move the organization to another plan now, with no charge. Its limits '
+            'change immediately.'
+        ),
+    ),
     transfer_ownership=action_schema(
         OwnershipTransferSerializer,
         PlatformOrganizationDetailSerializer,
@@ -218,7 +229,7 @@ def action_schema(request, response, summary, description):
 )
 class PlatformOrganizationViewSet(PlatformActionsViewSet):
     filterset_class = PlatformOrganizationFilter
-    account_actions = ('suspend', 'reactivate', 'transfer_ownership')
+    account_actions = ('suspend', 'reactivate', 'transfer_ownership', 'change_plan')
     detail_serializer_class = PlatformOrganizationDetailSerializer
 
     def get_queryset(self):
@@ -240,8 +251,12 @@ class PlatformOrganizationViewSet(PlatformActionsViewSet):
     def transfer_ownership(self, request, *args, **kwargs):
         return self.run_action(transfer_ownership, OwnershipTransferSerializer)
 
+    @action(detail=True, methods=['post'], url_path='subscription/plan')
+    def change_plan(self, request, *args, **kwargs):
+        return self.run_action(change_plan, ChangePlanSerializer)
+
     def get_action_serializer_kwargs(self, instance) -> dict:
-        if self.action == 'transfer_ownership':
+        if self.action in ('transfer_ownership', 'change_plan'):
             return {'organization': instance}
         return {}
 

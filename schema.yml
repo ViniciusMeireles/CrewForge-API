@@ -2735,6 +2735,7 @@ paths:
           - auth.password_reset.failed
           - auth.password_reset.requested
           - auth.signup
+          - billing.subscription.trial_started
           - invitation.accepted
           - invitation.created
           - invitation.declined
@@ -2757,6 +2758,7 @@ paths:
           - organization.reactivated
           - organization.suspended
           - organization.updated
+          - platform.subscription.plan_changed
           - stored_file.deleted
           - stored_file.updated
           - stored_file.uploaded
@@ -2831,6 +2833,8 @@ paths:
           * `user.impersonation_started` - Viewed by platform support
           * `user.impersonation_ended` - Viewing session ended
           * `user.impersonation_expired` - Viewing session expired
+          * `billing.subscription.trial_started` - Trial started
+          * `platform.subscription.plan_changed` - Plan changed by the platform
       - in: query
         name: action__in
         schema:
@@ -3190,6 +3194,43 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/billing/plans/:
+    get:
+      operationId: billing_plans_list
+      description: The active plans offered for self-service, with their limits.
+      summary: List plans
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+          description: ''
+  /api/billing/subscription/:
+    get:
+      operationId: billing_subscription_retrieve
+      description: The current organization's plan, status, trial end and usage against
+        its limits. Owner and Admin only.
+      summary: Get subscription
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDetail'
+          description: ''
   /api/dashboard/overview/:
     get:
       operationId: dashboard_overview_retrieve
@@ -3231,6 +3272,7 @@ paths:
           - auth.password_reset.failed
           - auth.password_reset.requested
           - auth.signup
+          - billing.subscription.trial_started
           - invitation.accepted
           - invitation.created
           - invitation.declined
@@ -3253,6 +3295,7 @@ paths:
           - organization.reactivated
           - organization.suspended
           - organization.updated
+          - platform.subscription.plan_changed
           - stored_file.deleted
           - stored_file.updated
           - stored_file.uploaded
@@ -3327,6 +3370,8 @@ paths:
           * `user.impersonation_started` - Viewed by platform support
           * `user.impersonation_ended` - Viewing session ended
           * `user.impersonation_expired` - Viewing session expired
+          * `billing.subscription.trial_started` - Trial started
+          * `platform.subscription.plan_changed` - Plan changed by the platform
       - in: query
         name: action__in
         schema:
@@ -3848,6 +3893,43 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/ReasonOptionalRequest'
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformOrganizationDetail'
+          description: ''
+  /api/platform/organizations/{id}/subscription/plan/:
+    post:
+      operationId: platform_organizations_subscription_plan_create
+      description: Move the organization to another plan now, with no charge. Its
+        limits change immediately. Platform admins only; a reason is recorded.
+      summary: Change plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Organization.
+        required: true
+      tags:
+      - Platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePlanRequest'
+        required: true
       security:
       - jwtAuth: []
         jwtCookieAuth: []
@@ -5100,6 +5182,8 @@ components:
       - user.impersonation_started
       - user.impersonation_ended
       - user.impersonation_expired
+      - billing.subscription.trial_started
+      - platform.subscription.plan_changed
       type: string
       description: |-
         * `organization.created` - Organization created
@@ -5154,6 +5238,8 @@ components:
         * `user.impersonation_started` - Viewed by platform support
         * `user.impersonation_ended` - Viewing session ended
         * `user.impersonation_expired` - Viewing session expired
+        * `billing.subscription.trial_started` - Trial started
+        * `platform.subscription.plan_changed` - Plan changed by the platform
     ActorTypeEnum:
       enum:
       - user
@@ -5249,6 +5335,8 @@ components:
             * `user.impersonation_started` - Viewed by platform support
             * `user.impersonation_ended` - Viewing session ended
             * `user.impersonation_expired` - Viewing session expired
+            * `billing.subscription.trial_started` - Trial started
+            * `platform.subscription.plan_changed` - Plan changed by the platform
         action_display:
           type: string
         actor_type:
@@ -5375,6 +5463,18 @@ components:
       required:
       - current_password
       - new_password
+    ChangePlanRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        plan:
+          type: integer
+      required:
+      - plan
+      - reason
     ChoiceOptionStr:
       type: object
       description: Value/label option.
@@ -5418,6 +5518,19 @@ components:
           type: string
       required:
       - detail
+    CurrencyEnum:
+      enum:
+      - BRL
+      type: string
+      description: '* `BRL` - Brazilian real'
+    CycleEnum:
+      enum:
+      - monthly
+      - annual
+      type: string
+      description: |-
+        * `monthly` - Monthly
+        * `annual` - Annual
     EmailVerificationConfirmRequest:
       type: object
       properties:
@@ -5432,6 +5545,34 @@ components:
       required:
       - token
       - uid
+    Entitlements:
+      type: object
+      properties:
+        max_members:
+          type: integer
+          readOnly: true
+          nullable: true
+        max_teams:
+          type: integer
+          readOnly: true
+          nullable: true
+        storage_bytes:
+          type: integer
+          readOnly: true
+          nullable: true
+        audit:
+          type: boolean
+          readOnly: true
+        audit_retention_days:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - audit
+      - audit_retention_days
+      - max_members
+      - max_teams
+      - storage_bytes
     ExpiringInvitation:
       type: object
       properties:
@@ -5989,8 +6130,12 @@ components:
         audit:
           type: boolean
           readOnly: true
+        billing:
+          type: boolean
+          readOnly: true
       required:
       - audit
+      - billing
       - invitations
       - members
       - organization_settings
@@ -6408,6 +6553,9 @@ components:
       - role
       - role_label
       - slug
+    NullEnum:
+      enum:
+      - null
     OptionInt:
       type: object
       description: Value/label option.
@@ -7741,6 +7889,66 @@ components:
 
             * `en` - English
             * `pt-br` - Português (Brasil)
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+          description: Unique, stable identifier of the plan
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        monthly_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        annual_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        trial_days:
+          type: integer
+          readOnly: true
+        is_free:
+          type: boolean
+          readOnly: true
+          description: The fallback plan
+        is_default:
+          type: boolean
+          readOnly: true
+          description: The plan new organizations try
+        entitlements:
+          allOf:
+          - $ref: '#/components/schemas/Entitlements'
+          readOnly: true
+      required:
+      - annual_price
+      - code
+      - currency
+      - description
+      - entitlements
+      - id
+      - is_default
+      - is_free
+      - monthly_price
+      - name
+      - trial_days
     PlatformAuditEvent:
       type: object
       properties:
@@ -7811,6 +8019,8 @@ components:
             * `user.impersonation_started` - Viewed by platform support
             * `user.impersonation_ended` - Viewing session ended
             * `user.impersonation_expired` - Viewing session expired
+            * `billing.subscription.trial_started` - Trial started
+            * `platform.subscription.plan_changed` - Plan changed by the platform
         action_display:
           type: string
         actor_type:
@@ -8149,6 +8359,11 @@ components:
           - $ref: '#/components/schemas/PlatformSuspension'
           nullable: true
           readOnly: true
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/PlatformOrganizationSubscription'
+          nullable: true
+          readOnly: true
       required:
       - active_members_count
       - counts
@@ -8162,6 +8377,7 @@ components:
       - slug
       - status
       - storage_bytes
+      - subscription
       - suspension
     PlatformOrganizationList:
       type: object
@@ -8218,6 +8434,30 @@ components:
       - owner
       - slug
       - status
+    PlatformOrganizationSubscription:
+      type: object
+      properties:
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/PlatformSubscriptionPlan'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionStatusEnum'
+          readOnly: true
+        is_complimentary:
+          type: boolean
+          readOnly: true
+        trial_ends_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - is_complimentary
+      - plan
+      - status
+      - trial_ends_at
     PlatformOverview:
       type: object
       properties:
@@ -8280,6 +8520,22 @@ components:
         * `none` - None
         * `support` - Support
         * `admin` - Admin
+    PlatformSubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+      required:
+      - code
+      - id
+      - name
     PlatformSuspension:
       type: object
       properties:
@@ -8644,6 +8900,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/SessionImpersonation'
           nullable: true
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/SessionSubscription'
+          nullable: true
       required:
       - organizations
       - user
@@ -8699,6 +8959,42 @@ components:
       required:
       - full_name
       - id
+    SessionPlan:
+      type: object
+      properties:
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+      required:
+      - code
+      - name
+    SessionSubscription:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionStatusEnum'
+          readOnly: true
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/SessionPlan'
+          readOnly: true
+        trial_ends_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_complimentary:
+          type: boolean
+          readOnly: true
+      required:
+      - is_complimentary
+      - plan
+      - status
+      - trial_ends_at
     SessionUser:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -9138,6 +9434,69 @@ components:
       - id
       - last_name
       - username
+    SubscriptionDetail:
+      type: object
+      properties:
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/Plan'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionStatusEnum'
+          readOnly: true
+        cycle:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/CycleEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        trial_ends_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_complimentary:
+          type: boolean
+          readOnly: true
+        usage:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionUsage'
+          readOnly: true
+      required:
+      - cycle
+      - is_complimentary
+      - plan
+      - status
+      - trial_ends_at
+      - usage
+    SubscriptionStatusEnum:
+      enum:
+      - trialing
+      - active
+      type: string
+      description: |-
+        * `trialing` - Trial
+        * `active` - Active
+    SubscriptionUsage:
+      type: object
+      properties:
+        members:
+          allOf:
+          - $ref: '#/components/schemas/Usage'
+          readOnly: true
+        teams:
+          allOf:
+          - $ref: '#/components/schemas/Usage'
+          readOnly: true
+        storage:
+          allOf:
+          - $ref: '#/components/schemas/Usage'
+          readOnly: true
+      required:
+      - members
+      - storage
+      - teams
     Team:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
@@ -9565,6 +9924,19 @@ components:
           minLength: 1
       required:
       - token
+    Usage:
+      type: object
+      properties:
+        current:
+          type: integer
+          readOnly: true
+        max:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - current
+      - max
     User:
       type: object
       description: Serializer for creating a user.

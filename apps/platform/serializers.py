@@ -11,6 +11,9 @@ from apps.accounts.serializers.organization import (
     OrganizationProfileDetailRelatedSerializer,
 )
 from apps.audit.serializers.audit_event import AuditEventSerializer
+from apps.billing.choices import SubscriptionStatusChoices
+from apps.billing.models.plan import Plan
+from apps.billing.models.subscription import Subscription
 from apps.platform.impersonation import can_be_impersonated
 from apps.teams.models.team import Team
 
@@ -93,11 +96,27 @@ class PlatformOrganizationListSerializer(serializers.ModelSerializer):
         return not obj.is_active
 
 
+class PlatformSubscriptionPlanSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    code = serializers.CharField(read_only=True)
+    name = serializers.CharField(read_only=True)
+
+
+class PlatformOrganizationSubscriptionSerializer(serializers.Serializer):
+    plan = PlatformSubscriptionPlanSerializer(read_only=True)
+    status = serializers.ChoiceField(
+        choices=SubscriptionStatusChoices.choices, read_only=True
+    )
+    is_complimentary = serializers.BooleanField(read_only=True)
+    trial_ends_at = serializers.DateTimeField(allow_null=True, read_only=True)
+
+
 class PlatformOrganizationDetailSerializer(PlatformOrganizationListSerializer):
     profile = OrganizationProfileDetailRelatedSerializer(read_only=True)
     counts = serializers.SerializerMethodField()
     storage_bytes = serializers.IntegerField(read_only=True)
     suspension = serializers.SerializerMethodField()
+    subscription = serializers.SerializerMethodField()
 
     class Meta(PlatformOrganizationListSerializer.Meta):
         fields = [
@@ -106,6 +125,7 @@ class PlatformOrganizationDetailSerializer(PlatformOrganizationListSerializer):
             'counts',
             'storage_bytes',
             'suspension',
+            'subscription',
         ]
         read_only_fields = fields
 
@@ -116,6 +136,14 @@ class PlatformOrganizationDetailSerializer(PlatformOrganizationListSerializer):
             'teams': obj.teams_count,
             'pending_invitations': obj.pending_invitations_count,
         }
+
+    @extend_schema_field(PlatformOrganizationSubscriptionSerializer(allow_null=True))
+    def get_subscription(self, obj: Organization) -> dict | None:
+        try:
+            subscription = obj.subscription
+        except Subscription.DoesNotExist:
+            return None
+        return PlatformOrganizationSubscriptionSerializer(subscription).data
 
     @extend_schema_field(PlatformSuspensionSerializer(allow_null=True))
     def get_suspension(self, obj: Organization) -> dict | None:
@@ -293,6 +321,22 @@ class ReasonOptionalSerializer(serializers.Serializer):
         default='',
         error_messages=REASON_ERROR_MESSAGES,
     )
+
+
+class ChangePlanSerializer(ReasonRequiredSerializer):
+    plan = serializers.PrimaryKeyRelatedField(queryset=Plan.objects.filter_actives())
+
+    def __init__(self, *args, organization: Organization | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.organization = organization
+
+    def validate_plan(self, plan: Plan) -> Plan:
+        subscription = getattr(self.organization, 'subscription', None)
+        if subscription is not None and subscription.plan_id == plan.pk:
+            raise serializers.ValidationError(
+                _('The organization is already on this plan.')
+            )
+        return plan
 
 
 class OwnershipTransferSerializer(ReasonRequiredSerializer):

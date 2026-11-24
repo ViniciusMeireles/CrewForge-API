@@ -260,6 +260,14 @@ read-only for Organization endpoints, and the internal suspension reason is neve
 | Manage teams | ✅ | ✅ | ✅ | ❌ |
 | Modify org settings | ✅ | ❌ | ❌ | ❌ |
 
+### Plan Gates
+
+`authorize()` (`apps/accounts/access.py`) also asks the Plan for the actions in `FEATURE_REQUIRED` (Audit), and
+`billing.services.ensure_within_limit` refuses creations over a limit with `403 PLAN_LIMIT_REACHED`
+([ADR-013](../../docs/adr/013-plans-and-entitlements.md)). Order of checks: authentication → Organization context →
+Role → payload validation → Plan limit, so a Role without the permission never learns the usage. A missing
+Subscription fails closed to the free Plan. Platform endpoints ignore Plans.
+
 ### Cross-Org Isolation
 
 Accessing another organization's resources returns **404** (not 403) because
@@ -355,7 +363,12 @@ write fails the request. Standard ViewSet writes are declared per ViewSet with
   fields (`id`, `is_active`, timestamps, `created_by`/`updated_by`); Invitations also exclude `key` and `last_email_sent_at`; the profile never stores
   email values.
 - Organization events are readable by OWNER and ADMIN (`has_audit_access`) of that
-  Organization only; account events only by their `subject_user`. IPs are personal data.
+  Organization only, when its Plan includes `audit`; account events only by their `subject_user`. IPs are personal
+  data.
+- **Retention purge:** `AuditEventQuerySet.purge_organization_events` is the only deletion path. The daily
+  `apps.billing.tasks.purge_audit_events` deletes Organization events older than the Plan's `audit_retention_days`
+  (never account events, never with a `null` retention). It runs only when `AUDIT_RETENTION_PURGE_ENABLED` is true;
+  production keeps it off until the deploy counts are reviewed and a backup exists.
 
 The level is set by `SECURITY_LOG_LEVEL` (default `INFO`); the handler writes to
 stderr, so the container logs collect it.

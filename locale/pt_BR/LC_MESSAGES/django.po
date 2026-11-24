@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 21:14+0000\n"
+"POT-Creation-Date: 2026-11-24 20:43+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -30,7 +30,7 @@ msgstr "Sua sessão terminou. Entre novamente."
 
 #: apps/accounts/choices.py:12 apps/accounts/choices.py:63
 #: apps/accounts/models/files.py:92 apps/accounts/tests/test_i18n.py:63
-#: apps/accounts/tests/test_i18n.py:71 apps/audit/choices.py:126
+#: apps/accounts/tests/test_i18n.py:71 apps/audit/choices.py:134
 #: apps/teams/choices.py:6
 msgid "Owner"
 msgstr "Proprietário"
@@ -58,7 +58,7 @@ msgstr "Nenhuma"
 msgid "Support"
 msgstr "Suporte"
 
-#: apps/accounts/choices.py:43
+#: apps/accounts/choices.py:43 apps/billing/choices.py:7
 msgid "Active"
 msgstr "Ativa"
 
@@ -331,8 +331,8 @@ msgstr "Esta organização está suspensa. Fale com o suporte."
 #: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:66
 #: apps/accounts/models/member.py:33 apps/accounts/models/organization.py:67
 #: apps/accounts/models/organization.py:104 apps/audit/models/audit_event.py:23
-#: apps/platform/filters.py:137 apps/platform/filters.py:145
-#: apps/teams/models/team.py:25
+#: apps/billing/models/subscription.py:19 apps/platform/filters.py:137
+#: apps/platform/filters.py:145 apps/teams/models/team.py:25
 msgid "Organization"
 msgstr "Organização"
 
@@ -357,7 +357,7 @@ msgid "File to be stored"
 msgstr "Arquivo a ser armazenado"
 
 #: apps/accounts/models/files.py:54 apps/accounts/models/organization.py:28
-#: apps/teams/models/team.py:12
+#: apps/billing/models/plan.py:22 apps/teams/models/team.py:12
 msgid "Name"
 msgstr "Nome"
 
@@ -431,6 +431,7 @@ msgstr "E-mail do usuário a convidar"
 
 #: apps/accounts/models/invitation.py:34
 #: apps/accounts/models/organization.py:38
+#: apps/billing/models/subscription.py:31
 msgid "Status"
 msgstr "Status"
 
@@ -488,7 +489,7 @@ msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
 #: apps/accounts/models/invitation.py:89 apps/accounts/models/member.py:26
-#: apps/audit/choices.py:118 apps/platform/filters.py:139
+#: apps/audit/choices.py:126 apps/platform/filters.py:139
 msgid "User"
 msgstr "Usuário"
 
@@ -617,7 +618,8 @@ msgstr "Site"
 msgid "Organization website"
 msgstr "Site da organização"
 
-#: apps/accounts/models/organization.py:116 apps/teams/models/team.py:18
+#: apps/accounts/models/organization.py:116 apps/billing/models/plan.py:23
+#: apps/teams/models/team.py:18
 msgid "Description"
 msgstr "Descrição"
 
@@ -983,7 +985,7 @@ msgstr ""
 "Um link foi enviado recentemente; tente novamente após o intervalo de "
 "reenvio."
 
-#: apps/accounts/views/auth.py:360 apps/platform/views.py:320
+#: apps/accounts/views/auth.py:360 apps/platform/views.py:335
 msgid "Resend verification email"
 msgstr "Reenviar e-mail de verificação"
 
@@ -1016,23 +1018,23 @@ msgstr ""
 "Verifica se um token é válido: `200` quando é, `401` caso contrário. Não "
 "informa o que o token permite."
 
-#: apps/accounts/views/files.py:44
+#: apps/accounts/views/files.py:46
 msgid "Download file"
 msgstr "Baixar arquivo"
 
-#: apps/accounts/views/files.py:45
+#: apps/accounts/views/files.py:47
 msgid "Return the content of the stored file."
 msgstr "Retorna o conteúdo do arquivo armazenado."
 
-#: apps/accounts/views/files.py:49
+#: apps/accounts/views/files.py:51
 msgid "The file content."
 msgstr "O conteúdo do arquivo."
 
-#: apps/accounts/views/files.py:52
+#: apps/accounts/views/files.py:54
 msgid "File not found."
 msgstr "Arquivo não encontrado."
 
-#: apps/accounts/views/files.py:60
+#: apps/accounts/views/files.py:62
 msgid ""
 "Download as an attachment. Only raster images are ever served inline; every "
 "other type is always an attachment."
@@ -1040,19 +1042,19 @@ msgstr ""
 "Baixa como anexo. Somente imagens raster são servidas inline; qualquer outro "
 "tipo é sempre um anexo."
 
-#: apps/accounts/views/files.py:157
+#: apps/accounts/views/files.py:177
 msgid "Error when trying to open file"
 msgstr "Erro ao tentar abrir o arquivo"
 
-#: apps/accounts/views/files.py:161
+#: apps/accounts/views/files.py:181
 msgid "File object not found."
 msgstr "Objeto de arquivo não encontrado."
 
-#: apps/accounts/views/invitations.py:67
+#: apps/accounts/views/invitations.py:69
 msgid "Send invitation email"
 msgstr "Enviar e-mail do convite"
 
-#: apps/accounts/views/invitations.py:69
+#: apps/accounts/views/invitations.py:71
 msgid ""
 "Email the invitation to its recipient again. A cooldown applies between "
 "sends."
@@ -1060,23 +1062,23 @@ msgstr ""
 "Envia o convite por e-mail ao destinatário novamente. Há um intervalo mínimo "
 "entre envios."
 
-#: apps/accounts/views/invitations.py:89
+#: apps/accounts/views/invitations.py:91
 msgid "The invitation email has been sent successfully."
 msgstr "O e-mail de convite foi enviado com sucesso."
 
-#: apps/accounts/views/invitations.py:117 apps/accounts/views/members.py:97
+#: apps/accounts/views/invitations.py:119 apps/accounts/views/members.py:98
 msgid "The invitation is expired or the user is already a member."
 msgstr "O convite expirou ou o usuário já é membro."
 
-#: apps/accounts/views/invitations.py:144
+#: apps/accounts/views/invitations.py:146
 msgid "The invitation email cooldown is active."
 msgstr "O intervalo de reenvio do e-mail de convite está ativo."
 
-#: apps/accounts/views/invitations.py:150
+#: apps/accounts/views/invitations.py:152
 msgid "List received invitations"
 msgstr "Listar convites recebidos"
 
-#: apps/accounts/views/invitations.py:152
+#: apps/accounts/views/invitations.py:154
 msgid ""
 "Paginated list of the invitations addressed to the authenticated user, from "
 "any organization."
@@ -1084,39 +1086,39 @@ msgstr ""
 "Lista paginada dos convites destinados ao usuário autenticado, de qualquer "
 "organização."
 
-#: apps/accounts/views/invitations.py:161
+#: apps/accounts/views/invitations.py:163
 msgid "Get received invitation"
 msgstr "Obter convite recebido"
 
-#: apps/accounts/views/invitations.py:162
+#: apps/accounts/views/invitations.py:164
 msgid "Return an invitation addressed to the authenticated user."
 msgstr "Retorna um convite destinado ao usuário autenticado."
 
-#: apps/accounts/views/invitations.py:170
-#: apps/accounts/views/invitations.py:207
-#: apps/accounts/views/invitations.py:290
-#: apps/accounts/views/invitations.py:368
+#: apps/accounts/views/invitations.py:172
+#: apps/accounts/views/invitations.py:209
+#: apps/accounts/views/invitations.py:292
+#: apps/accounts/views/invitations.py:370
 msgid "Invitation not found."
 msgstr "Convite não encontrado."
 
-#: apps/accounts/views/invitations.py:180 apps/accounts/views/members.py:59
+#: apps/accounts/views/invitations.py:182 apps/accounts/views/members.py:60
 msgid "The secret key of the invitation."
 msgstr "A chave secreta do convite."
 
-#: apps/accounts/views/invitations.py:185
+#: apps/accounts/views/invitations.py:187
 msgid "Get invitation by key"
 msgstr "Obter convite pela chave"
 
-#: apps/accounts/views/invitations.py:187
+#: apps/accounts/views/invitations.py:189
 msgid ""
 "Return the invitation identified by the secret key of its invitation link."
 msgstr "Retorna o convite identificado pela chave secreta do link de convite."
 
-#: apps/accounts/views/invitations.py:214
+#: apps/accounts/views/invitations.py:216
 msgid "Accept invitation"
 msgstr "Aceitar convite"
 
-#: apps/accounts/views/invitations.py:216
+#: apps/accounts/views/invitations.py:218
 msgid ""
 "Accept an invitation and create a member record, or reactivate the removed "
 "member of the user (readmission)."
@@ -1124,31 +1126,31 @@ msgstr ""
 "Aceita um convite e cria um registro de membro, ou reativa o membro removido "
 "do usuário (readmissão)."
 
-#: apps/accounts/views/invitations.py:272
+#: apps/accounts/views/invitations.py:274
 msgid "The invitation is no longer acceptable."
 msgstr "O convite não pode mais ser aceito."
 
-#: apps/accounts/views/invitations.py:297
+#: apps/accounts/views/invitations.py:299
 msgid "Decline invitation"
 msgstr "Recusar convite"
 
-#: apps/accounts/views/invitations.py:299
+#: apps/accounts/views/invitations.py:301
 msgid "Decline a pending invitation addressed to the authenticated user."
 msgstr "Recusa um convite pendente destinado ao usuário autenticado."
 
-#: apps/accounts/views/invitations.py:314
+#: apps/accounts/views/invitations.py:316
 msgid "The invitation has been declined successfully."
 msgstr "O convite foi recusado com sucesso."
 
-#: apps/accounts/views/invitations.py:350
+#: apps/accounts/views/invitations.py:352
 msgid "The invitation is not in a pending state."
 msgstr "O convite não está pendente."
 
-#: apps/accounts/views/invitations.py:453
+#: apps/accounts/views/invitations.py:457
 msgid "Received invitations filter options"
 msgstr "Opções de filtro dos convites recebidos"
 
-#: apps/accounts/views/invitations.py:455
+#: apps/accounts/views/invitations.py:459
 msgid ""
 "Return the choices of each filter of the received invitations list. Send a "
 "field name as query parameter to get only that field."
@@ -1156,15 +1158,15 @@ msgstr ""
 "Retorna as opções de cada filtro da lista de convites recebidos. Envie o "
 "nome de um campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/accounts/views/invitations.py:554
+#: apps/accounts/views/invitations.py:560
 msgid "Invitation declined successfully."
 msgstr "Convite recusado com sucesso."
 
-#: apps/accounts/views/members.py:64
+#: apps/accounts/views/members.py:65
 msgid "Join with invitation"
 msgstr "Entrar com convite"
 
-#: apps/accounts/views/members.py:66
+#: apps/accounts/views/members.py:67
 msgid ""
 "Create the member of the authenticated user from the invitation identified "
 "by its secret key."
@@ -1172,29 +1174,29 @@ msgstr ""
 "Cria o membro do usuário autenticado a partir do convite identificado pela "
 "chave secreta."
 
-#: apps/accounts/views/members.py:116
+#: apps/accounts/views/members.py:117
 msgid "Invitation not found or already accepted/expired."
 msgstr "Convite não encontrado, já aceito ou expirado."
 
-#: apps/accounts/views/members.py:129
+#: apps/accounts/views/members.py:130
 msgid "Update member role"
 msgstr "Atualizar função do membro"
 
-#: apps/accounts/views/members.py:130
+#: apps/accounts/views/members.py:131
 msgid "Change the role of the member."
 msgstr "Altera a função do membro."
 
-#: apps/accounts/views/members.py:200
+#: apps/accounts/views/members.py:208
 msgid ""
 "This route is not available anymore. Use the `create_with_invite` route "
 "instead."
 msgstr "Esta rota não está mais disponível. Use a rota `create_with_invite`."
 
-#: apps/accounts/views/members.py:247
+#: apps/accounts/views/members.py:255
 msgid "Role form options"
 msgstr "Opções do formulário de função"
 
-#: apps/accounts/views/members.py:249
+#: apps/accounts/views/members.py:257
 msgid ""
 "Return the choices of the member role form. Send a field name as query "
 "parameter to get only that field."
@@ -1238,15 +1240,15 @@ msgstr "Usuário não autenticado"
 msgid "User not authenticated."
 msgstr "Usuário não autenticado."
 
-#: apps/accounts/views/session.py:14
+#: apps/accounts/views/session.py:15
 msgid "Sessions"
 msgstr "Sessões"
 
-#: apps/accounts/views/session.py:15
+#: apps/accounts/views/session.py:16
 msgid "Get session"
 msgstr "Obter sessão"
 
-#: apps/accounts/views/session.py:17
+#: apps/accounts/views/session.py:18
 msgid ""
 "Return the authenticated user, their active organizations and the "
 "organization and member of the current session."
@@ -1543,21 +1545,42 @@ msgstr "Sessão de visualização encerrada"
 msgid "Viewing session expired"
 msgstr "Sessão de visualização expirada"
 
-#: apps/audit/choices.py:119 apps/platform/apps.py:10 apps/platform/views.py:63
+#: apps/audit/choices.py:117
+msgid "Trial started"
+msgstr "Teste iniciado"
+
+#: apps/audit/choices.py:121
+msgid "Plan changed by the platform"
+msgstr "Plano alterado pela plataforma"
+
+#: apps/audit/choices.py:127 apps/platform/apps.py:10 apps/platform/views.py:65
 msgid "Platform"
 msgstr "Plataforma"
 
-#: apps/audit/choices.py:120 templates/drf_spectacular/swagger_ui.html:133
+#: apps/audit/choices.py:128 templates/drf_spectacular/swagger_ui.html:133
 msgid "System"
 msgstr "Sistema"
 
-#: apps/audit/choices.py:127
+#: apps/audit/choices.py:135
 msgid "Previous owner role"
 msgstr "Função anterior do dono"
 
-#: apps/audit/choices.py:128
+#: apps/audit/choices.py:136
 msgid "New owner role"
 msgstr "Função do novo dono"
+
+#: apps/audit/choices.py:137 apps/billing/models/plan.py:83
+#: apps/billing/models/subscription.py:25
+msgid "Plan"
+msgstr "Plano"
+
+#: apps/audit/choices.py:138
+msgid "Subscription status"
+msgstr "Status da assinatura"
+
+#: apps/audit/choices.py:139 apps/billing/models/subscription.py:48
+msgid "Courtesy"
+msgstr "Cortesia"
 
 #: apps/audit/filters/audit_event.py:20
 msgid "Actor"
@@ -1707,6 +1730,177 @@ msgstr "Evento de auditoria"
 msgid "Audit Events"
 msgstr "Eventos de auditoria"
 
+#: apps/billing/apps.py:21 apps/billing/views.py:18
+msgid "Billing"
+msgstr "Cobrança"
+
+#: apps/billing/choices.py:6
+msgid "Trial"
+msgstr "Teste"
+
+#: apps/billing/choices.py:11
+msgid "Monthly"
+msgstr "Mensal"
+
+#: apps/billing/choices.py:12
+msgid "Annual"
+msgstr "Anual"
+
+#: apps/billing/choices.py:16
+msgid "Existing organization"
+msgstr "Organização existente"
+
+#: apps/billing/choices.py:17
+msgid "Set by the platform"
+msgstr "Definida pela plataforma"
+
+#: apps/billing/choices.py:21
+msgid "Brazilian real"
+msgstr "Real brasileiro"
+
+#: apps/billing/entitlements.py:59
+msgid "Entitlements must be an object."
+msgstr "Os benefícios devem ser um objeto."
+
+#: apps/billing/entitlements.py:64
+msgid "Unknown entitlement."
+msgstr "Benefício desconhecido."
+
+#: apps/billing/entitlements.py:67
+msgid "Enter true or false."
+msgstr "Informe verdadeiro ou falso."
+
+#: apps/billing/entitlements.py:69
+msgid "Enter a non-negative integer or null."
+msgstr "Informe um número inteiro não negativo ou nulo."
+
+#: apps/billing/exceptions.py:22
+#, python-format
+msgid "Your plan allows up to %(max)s members."
+msgstr "Seu plano permite até %(max)s membros."
+
+#: apps/billing/exceptions.py:24
+#, python-format
+msgid "Your plan allows up to %(max)s teams."
+msgstr "Seu plano permite até %(max)s equipes."
+
+#: apps/billing/exceptions.py:25
+#, python-format
+msgid "Your plan allows up to %(max)s of storage."
+msgstr "Seu plano permite até %(max)s de armazenamento."
+
+#: apps/billing/exceptions.py:54
+msgid "This feature is not included in your plan."
+msgstr "Este recurso não está incluído no seu plano."
+
+#: apps/billing/models/plan.py:19
+msgid "Code"
+msgstr "Código"
+
+#: apps/billing/models/plan.py:20
+msgid "Unique, stable identifier of the plan"
+msgstr "Identificador único e estável do plano"
+
+#: apps/billing/models/plan.py:29
+msgid "Monthly price"
+msgstr "Preço mensal"
+
+#: apps/billing/models/plan.py:36
+msgid "Annual price"
+msgstr "Preço anual"
+
+#: apps/billing/models/plan.py:42
+msgid "Currency"
+msgstr "Moeda"
+
+#: apps/billing/models/plan.py:45
+msgid "Trial days"
+msgstr "Dias de teste"
+
+#: apps/billing/models/plan.py:49
+msgid "Is public"
+msgstr "É público"
+
+#: apps/billing/models/plan.py:50
+msgid "Offered for self-service"
+msgstr "Oferecido para contratação direta"
+
+#: apps/billing/models/plan.py:54
+msgid "Is default"
+msgstr "É padrão"
+
+#: apps/billing/models/plan.py:55
+msgid "The plan new organizations try"
+msgstr "O plano que as novas organizações testam"
+
+#: apps/billing/models/plan.py:59
+msgid "Is free"
+msgstr "É gratuito"
+
+#: apps/billing/models/plan.py:60
+msgid "The fallback plan"
+msgstr "O plano de retorno"
+
+#: apps/billing/models/plan.py:63
+msgid "Included seats"
+msgstr "Assentos incluídos"
+
+#: apps/billing/models/plan.py:70
+msgid "Extra seat price"
+msgstr "Preço do assento extra"
+
+#: apps/billing/models/plan.py:73
+msgid "Entitlements"
+msgstr "Benefícios"
+
+#: apps/billing/models/plan.py:76
+msgid "Sort order"
+msgstr "Ordem"
+
+#: apps/billing/models/plan.py:84
+msgid "Plans"
+msgstr "Planos"
+
+#: apps/billing/models/subscription.py:38
+msgid "Cycle"
+msgstr "Ciclo"
+
+#: apps/billing/models/subscription.py:41
+msgid "Trial ends at"
+msgstr "Fim do teste"
+
+#: apps/billing/models/subscription.py:54
+msgid "Subscription"
+msgstr "Assinatura"
+
+#: apps/billing/models/subscription.py:55
+msgid "Subscriptions"
+msgstr "Assinaturas"
+
+#: apps/billing/views.py:23
+msgid "List plans"
+msgstr "Listar planos"
+
+#: apps/billing/views.py:24
+msgid "The active plans offered for self-service, with their limits."
+msgstr "Os planos ativos oferecidos para contratação direta, com seus limites."
+
+#: apps/billing/views.py:37
+msgid "Get subscription"
+msgstr "Obter assinatura"
+
+#: apps/billing/views.py:39
+msgid ""
+"The current organization's plan, status, trial end and usage against its "
+"limits. Owner and Admin only."
+msgstr ""
+"O plano, o status, o fim do teste e o uso dos limites da organização atual. "
+"Somente Owner e Admin."
+
+#: apps/billing/views.py:55
+msgid "This organization has no subscription."
+msgstr "Esta organização não tem assinatura."
+
 #: apps/dashboard/apps.py:8 apps/dashboard/views/overview.py:15
 msgid "Dashboard"
 msgstr "Painel"
@@ -1768,6 +1962,14 @@ msgid "Impersonation ended"
 msgstr "Visualização encerrada"
 
 #: apps/generics/choices.py:20
+msgid "Plan limit reached"
+msgstr "Limite do plano atingido"
+
+#: apps/generics/choices.py:21
+msgid "Plan feature unavailable"
+msgstr "Recurso indisponível no plano"
+
+#: apps/generics/choices.py:22
 msgid "Internal error"
 msgstr "Erro interno"
 
@@ -2141,115 +2343,123 @@ msgstr "Visualização como usuário"
 msgid "Impersonations"
 msgstr "Visualizações como usuário"
 
-#: apps/platform/serializers.py:276 apps/platform/serializers.py:277
+#: apps/platform/serializers.py:304 apps/platform/serializers.py:305
 msgid "Enter a reason."
 msgstr "Informe um motivo."
 
-#: apps/platform/serializers.py:278
+#: apps/platform/serializers.py:306
 msgid "Use at most 500 characters."
 msgstr "Use no máximo 500 caracteres."
 
-#: apps/platform/services.py:83
+#: apps/platform/serializers.py:337
+msgid "The organization is already on this plan."
+msgstr "A organização já está neste plano."
+
+#: apps/platform/services.py:86
 msgid "This user account is deleted."
 msgstr "A conta deste usuário foi excluída."
 
-#: apps/platform/services.py:91
+#: apps/platform/services.py:94
 msgid "This organization is already suspended."
 msgstr "Esta organização já está suspensa."
 
-#: apps/platform/services.py:123
+#: apps/platform/services.py:126
 msgid "This organization is already active."
 msgstr "Esta organização já está ativa."
 
-#: apps/platform/services.py:168
+#: apps/platform/services.py:171
 msgid "This member can no longer become the owner."
 msgstr "Este membro não pode mais se tornar o dono."
 
-#: apps/platform/services.py:219
+#: apps/platform/services.py:222
 msgid "You can't block your own account."
 msgstr "Você não pode bloquear a própria conta."
 
-#: apps/platform/services.py:222
+#: apps/platform/services.py:225
 msgid "This user is already blocked."
 msgstr "Este usuário já está bloqueado."
 
-#: apps/platform/services.py:240
+#: apps/platform/services.py:243
 msgid "This user is not blocked."
 msgstr "Este usuário não está bloqueado."
 
-#: apps/platform/services.py:263
+#: apps/platform/services.py:266
 msgid "This user's email is already verified."
 msgstr "O e-mail deste usuário já está verificado."
 
-#: apps/platform/services.py:267
+#: apps/platform/services.py:270
 #, python-brace-format
 msgid "Wait {seconds} seconds before sending again."
 msgstr "Aguarde {seconds} segundos para enviar novamente."
 
-#: apps/platform/views.py:74
+#: apps/platform/services.py:326
+msgid "This organization is deleted."
+msgstr "Esta organização foi excluída."
+
+#: apps/platform/views.py:76
 msgid "Get platform overview"
 msgstr "Obter visão geral da plataforma"
 
-#: apps/platform/views.py:75
+#: apps/platform/views.py:77
 msgid "Platform numbers, computed when requested (platform staff)."
 msgstr ""
 "Números da plataforma, calculados na requisição (equipe da plataforma)."
 
-#: apps/platform/views.py:162
+#: apps/platform/views.py:164
 msgid "Platform admins only; a reason is recorded."
 msgstr "Apenas administradores da plataforma; um motivo é registrado."
 
-#: apps/platform/views.py:171
+#: apps/platform/views.py:173
 msgid "List organizations"
 msgstr "Listar organizações"
 
-#: apps/platform/views.py:172
+#: apps/platform/views.py:174
 msgid "Paginated list of every organization, for platform staff."
 msgstr "Lista paginada de todas as organizações, para a equipe da plataforma."
 
-#: apps/platform/views.py:175
+#: apps/platform/views.py:177
 msgid "Get organization"
 msgstr "Obter organização"
 
-#: apps/platform/views.py:176
+#: apps/platform/views.py:178
 msgid "Return any organization with its owner and status, for platform staff."
 msgstr ""
 "Retorna qualquer organização com seu proprietário e status, para a equipe da "
 "plataforma."
 
-#: apps/platform/views.py:179
+#: apps/platform/views.py:181
 msgid "List organization members"
 msgstr "Listar membros da organização"
 
-#: apps/platform/views.py:180
+#: apps/platform/views.py:182
 msgid "Paginated list of the members of the organization, for platform staff."
 msgstr ""
 "Lista paginada dos membros da organização, para a equipe da plataforma."
 
-#: apps/platform/views.py:185
+#: apps/platform/views.py:187
 msgid "List organization teams"
 msgstr "Listar equipes da organização"
 
-#: apps/platform/views.py:186
+#: apps/platform/views.py:188
 msgid "Paginated list of the teams of the organization, for platform staff."
 msgstr ""
 "Lista paginada das equipes da organização, para a equipe da plataforma."
 
-#: apps/platform/views.py:190
+#: apps/platform/views.py:192
 msgid "List organization invitations"
 msgstr "Listar convites da organização"
 
-#: apps/platform/views.py:191
+#: apps/platform/views.py:193
 msgid ""
 "Paginated list of the invitations of the organization, for platform staff."
 msgstr ""
 "Lista paginada dos convites da organização, para a equipe da plataforma."
 
-#: apps/platform/views.py:197
+#: apps/platform/views.py:199
 msgid "Suspend organization"
 msgstr "Suspender organização"
 
-#: apps/platform/views.py:199
+#: apps/platform/views.py:201
 msgid ""
 "Suspend the organization: its members can no longer use it until it is "
 "reactivated. The owner is emailed. The reason is required."
@@ -2257,20 +2467,32 @@ msgstr ""
 "Suspende a organização: seus membros não podem mais usá-la até que seja "
 "reativada. O proprietário é avisado por e-mail. O motivo é obrigatório."
 
-#: apps/platform/views.py:206
+#: apps/platform/views.py:208
 msgid "Reactivate organization"
 msgstr "Reativar organização"
 
-#: apps/platform/views.py:207
+#: apps/platform/views.py:209
 msgid "Lift the suspension of the organization. The owner is emailed."
 msgstr ""
 "Retira a suspensão da organização. O proprietário é avisado por e-mail."
 
-#: apps/platform/views.py:212
+#: apps/platform/views.py:214
+msgid "Change plan"
+msgstr "Trocar plano"
+
+#: apps/platform/views.py:216
+msgid ""
+"Move the organization to another plan now, with no charge. Its limits change "
+"immediately."
+msgstr ""
+"Passa a organização para outro plano agora, sem cobrança. Os limites mudam "
+"na hora."
+
+#: apps/platform/views.py:223
 msgid "Transfer ownership"
 msgstr "Transferir propriedade"
 
-#: apps/platform/views.py:214
+#: apps/platform/views.py:225
 msgid ""
 "Make another member the owner of the organization; the previous owner "
 "becomes an admin. Both are emailed."
@@ -2278,30 +2500,30 @@ msgstr ""
 "Torna outro membro o proprietário da organização; o proprietário anterior "
 "passa a ser administrador. Ambos são avisados por e-mail."
 
-#: apps/platform/views.py:286
+#: apps/platform/views.py:301
 msgid "List users"
 msgstr "Listar usuários"
 
-#: apps/platform/views.py:287
+#: apps/platform/views.py:302
 msgid "Paginated list of every user account, for platform staff."
 msgstr ""
 "Lista paginada de todas as contas de usuário, para a equipe da plataforma."
 
-#: apps/platform/views.py:290
+#: apps/platform/views.py:305
 msgid "Get user"
 msgstr "Obter usuário"
 
-#: apps/platform/views.py:291
+#: apps/platform/views.py:306
 msgid "Return any user account with its status, for platform staff."
 msgstr ""
 "Retorna qualquer conta de usuário com seu status, para a equipe da "
 "plataforma."
 
-#: apps/platform/views.py:296
+#: apps/platform/views.py:311
 msgid "Block user"
 msgstr "Bloquear usuário"
 
-#: apps/platform/views.py:298
+#: apps/platform/views.py:313
 msgid ""
 "Block the account: its sessions end and sign-in is refused until it is "
 "unblocked. The reason is required."
@@ -2309,11 +2531,11 @@ msgstr ""
 "Bloqueia a conta: suas sessões são encerradas e o acesso é recusado até que "
 "seja desbloqueada. O motivo é obrigatório."
 
-#: apps/platform/views.py:305
+#: apps/platform/views.py:320
 msgid "Unblock user"
 msgstr "Desbloquear usuário"
 
-#: apps/platform/views.py:307
+#: apps/platform/views.py:322
 msgid ""
 "Allow the account to sign in again; the sessions ended by the block stay "
 "ended."
@@ -2321,25 +2543,25 @@ msgstr ""
 "Permite que a conta entre novamente; as sessões encerradas pelo bloqueio "
 "continuam encerradas."
 
-#: apps/platform/views.py:314
+#: apps/platform/views.py:329
 msgid "End user sessions"
 msgstr "Encerrar sessões do usuário"
 
-#: apps/platform/views.py:315
+#: apps/platform/views.py:330
 msgid "End every session of the account; it must sign in again."
 msgstr "Encerra todas as sessões da conta; ela precisa entrar novamente."
 
-#: apps/platform/views.py:321
+#: apps/platform/views.py:336
 msgid "Send a new email verification link to the account. A cooldown applies."
 msgstr ""
 "Envia um novo link de verificação de e-mail para a conta. Há um intervalo "
 "mínimo entre envios."
 
-#: apps/platform/views.py:326
+#: apps/platform/views.py:341
 msgid "Force password reset"
 msgstr "Forçar redefinição de senha"
 
-#: apps/platform/views.py:328
+#: apps/platform/views.py:343
 msgid ""
 "The current password stops working, every session ends and a password reset "
 "link is emailed."
@@ -2347,11 +2569,11 @@ msgstr ""
 "A senha atual deixa de funcionar, todas as sessões são encerradas e um link "
 "de redefinição de senha é enviado por e-mail."
 
-#: apps/platform/views.py:333
+#: apps/platform/views.py:348
 msgid "View as user"
 msgstr "Ver como usuário"
 
-#: apps/platform/views.py:335
+#: apps/platform/views.py:350
 msgid ""
 "Start viewing the app as this user: read-only, at most 30 minutes, recorded "
 "in their account activity. The response is the session as the user. A reason "
@@ -2361,38 +2583,38 @@ msgstr ""
 "registrado na atividade da conta dele. A resposta é a sessão como o usuário. "
 "O motivo é obrigatório."
 
-#: apps/platform/views.py:405
+#: apps/platform/views.py:420
 msgid "List audit events"
 msgstr "Listar eventos de auditoria"
 
-#: apps/platform/views.py:407
+#: apps/platform/views.py:422
 msgid ""
 "Paginated audit events of every organization and account, for platform staff."
 msgstr ""
 "Eventos de auditoria paginados de todas as organizações e contas, para a "
 "equipe da plataforma."
 
-#: apps/platform/views.py:412
+#: apps/platform/views.py:427
 msgid "Get audit event"
 msgstr "Obter evento de auditoria"
 
-#: apps/platform/views.py:413
+#: apps/platform/views.py:428
 msgid "Return any audit event, for platform staff."
 msgstr "Retorna qualquer evento de auditoria, para a equipe da plataforma."
 
-#: apps/platform/views.py:416
+#: apps/platform/views.py:431
 msgid "Audit events filter options"
 msgstr "Opções de filtro dos eventos de auditoria"
 
-#: apps/platform/views.py:430
+#: apps/platform/views.py:445
 msgid "Exit viewing session"
 msgstr "Sair da sessão de visualização"
 
-#: apps/platform/views.py:433
+#: apps/platform/views.py:448
 msgid "End the current viewing session and return to the staff account."
 msgstr "Encerra a sessão de visualização atual e volta para a conta da equipe."
 
-#: apps/platform/views.py:441
+#: apps/platform/views.py:456
 msgid "There is no active viewing session."
 msgstr "Não há sessão de visualização ativa."
 
@@ -2488,11 +2710,11 @@ msgstr ""
 "chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
 "uma equipe válida, apenas gerentes da organização recebem funções."
 
-#: config/settings/base.py:321
+#: config/settings/base.py:322
 msgid "CrewForge API"
 msgstr "CrewForge API"
 
-#: config/settings/base.py:323
+#: config/settings/base.py:324
 msgid ""
 "API service for managing accounts, teams, and permissions with "
 "comprehensive\n"
@@ -2513,7 +2735,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:463
+#: config/settings/base.py:473
 msgid "CrewForge"
 msgstr "CrewForge"
 

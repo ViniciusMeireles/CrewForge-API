@@ -30,8 +30,8 @@ or product decisions.
 3. **Soft-delete over hard-delete.** Most domain models use `is_active` for
    soft-deletion. This preserves referential integrity, enables undo, and
    simplifies audit trails. Only `StoredFile` performs hard deletes (physical
-   file removal), and `AuditEvent` is append-only (never updated or deleted
-   through the application).
+   file removal), and `AuditEvent` is append-only (never updated; deleted only by
+   the Plan's retention purge).
 
 4. **Role hierarchy is sacred.** Owner > Admin > Manager > Member. This
    hierarchy is enforced at the permission layer, serializer layer, and
@@ -98,6 +98,13 @@ An immutable record of a write or security event: actor, Organization (none for
 account events), action (`domain.action`), target snapshot, field changes and IP.
 Recorded in the same transaction as the write. OWNER and ADMIN read their
 Organization's events; each User reads their own account activity.
+
+### Plan / Subscription
+
+A **Plan** values the Entitlement catalog defined in code (`apps/billing/entitlements.py`): member, team and storage
+limits, the Audit flag and its retention. Every Organization has exactly one **Subscription** to a Plan: a new
+Organization starts a 14-day trial of the default Plan (or the free Plan when its Owner already owns a trialing one),
+and existing Organizations got a complimentary one (`courtesy`). Limits refuse new creations and never remove data.
 
 ### OrganizationProfile / OrganizationImage
 

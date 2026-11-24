@@ -164,6 +164,18 @@
   {
     "actions": null,
     "name": "admin:",
+    "path": "admin/billing/plan/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/billing/subscription/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
     "path": "admin/teams/team/<path:object_id>/",
     "view": "view"
   },
@@ -338,7 +350,7 @@
   {
     "actions": null,
     "name": "admin:app_list",
-    "path": "admin/^(?P<app_label>auth|token_blacklist|accounts|teams|audit)/$",
+    "path": "admin/^(?P<app_label>auth|token_blacklist|accounts|teams|audit|billing)/$",
     "view": "app_index"
   },
   {
@@ -406,6 +418,66 @@
     "name": "admin:autocomplete",
     "path": "admin/autocomplete/",
     "view": "autocomplete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_plan_add",
+    "path": "admin/billing/plan/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_plan_change",
+    "path": "admin/billing/plan/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_plan_changelist",
+    "path": "admin/billing/plan/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_plan_delete",
+    "path": "admin/billing/plan/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_plan_history",
+    "path": "admin/billing/plan/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_subscription_add",
+    "path": "admin/billing/subscription/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_subscription_change",
+    "path": "admin/billing/subscription/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_subscription_changelist",
+    "path": "admin/billing/subscription/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_subscription_delete",
+    "path": "admin/billing/subscription/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_subscription_history",
+    "path": "admin/billing/subscription/<path:object_id>/history/",
+    "view": "history_view"
   },
   {
     "actions": null,
@@ -580,6 +652,18 @@
     "name": "audit:api-root",
     "path": "api/audit/<drf_format_suffix:format>",
     "view": "APIRootView"
+  },
+  {
+    "actions": null,
+    "name": "billing:plans",
+    "path": "api/billing/plans/",
+    "view": "PlanListView"
+  },
+  {
+    "actions": null,
+    "name": "billing:subscription",
+    "path": "api/billing/subscription/",
+    "view": "SubscriptionView"
   },
   {
     "actions": null,
@@ -1573,6 +1657,22 @@
     "name": "accounts:users-me-change-password",
     "path": "api/accounts/users/me/change-password/",
     "view": "UserProfileViewSet"
+  },
+  {
+    "actions": {
+      "post": "change_plan"
+    },
+    "name": "platform:organizations-change-plan",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/subscription/plan/$",
+    "view": "PlatformOrganizationViewSet"
+  },
+  {
+    "actions": {
+      "post": "change_plan"
+    },
+    "name": "platform:organizations-change-plan",
+    "path": "api/platform/^organizations/(?P<pk>[^/.]+)/subscription/plan\\.(?P<format>[a-z0-9]+)/?$",
+    "view": "PlatformOrganizationViewSet"
   },
   {
     "actions": {

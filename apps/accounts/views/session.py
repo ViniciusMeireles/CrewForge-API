@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from apps.accounts.mixins.requests import OrganizationScopedRequestMixin
 from apps.accounts.serializers.session import SessionSerializer
 from apps.accounts.utils.requests import clear_suspended_organization_context
+from apps.billing.selectors import session_subscription
 
 
 @extend_schema(
@@ -34,6 +35,7 @@ class SessionView(OrganizationScopedRequestMixin, APIView):
             'organization': organization,
             'member': member,
             'impersonation': getattr(request, 'impersonation', None),
+            'subscription': session_subscription(member),
         }
 
         serializer = SessionSerializer(

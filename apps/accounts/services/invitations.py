@@ -18,6 +18,8 @@ from apps.accounts.selectors.invitations import lock_invitation
 from apps.accounts.utils.security_log import log_security_event
 from apps.audit.choices import AuditActionChoices
 from apps.audit.services import record_audit_event
+from apps.billing.entitlements import MAX_MEMBERS
+from apps.billing.services import ensure_within_limit
 
 type InvitationCheck = Callable[[Invitation], None]
 
@@ -156,6 +158,10 @@ def accept_invitation(
         is_acceptable, message = invitation.is_acceptable()
         if not is_acceptable:
             raise InvitationRefusedError(message)
+        if not Member.objects.filter(
+            user=user, organization=invitation.organization, is_active=True
+        ).exists():
+            ensure_within_limit(organization=invitation.organization, key=MAX_MEMBERS)
         member, readmitted = Member.objects.admit(
             user=user,
             organization=invitation.organization,

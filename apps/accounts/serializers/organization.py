@@ -6,6 +6,7 @@ from apps.accounts.choices import OrganizationErrorMessages
 from apps.accounts.mixins.serializers import ModelSerializerMixin
 from apps.accounts.models.organization import Organization, OrganizationProfile
 from apps.accounts.services.organizations import create_owner_membership
+from apps.billing.services import start_subscription
 from apps.generics.utils.shortcuts import get_object_or_none
 from apps.generics.utils.strings import str_to_bool
 
@@ -142,6 +143,11 @@ class OrganizationSerializer(ModelSerializerMixin, serializers.ModelSerializer):
         instance: Organization = super().save(**kwargs)
         if creating:
             create_owner_membership(organization=instance, user=self.auth_user)
+            start_subscription(
+                organization=instance,
+                owner=self.auth_user,
+                request=self.context.get('request'),
+            )
         OrganizationProfile.objects.get_or_create(organization=instance)
         if profile_data:
             profile_serializer = self._get_profile_serializer(profile_data)
