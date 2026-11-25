@@ -4,13 +4,18 @@ from unittest import mock
 from django.db import transaction
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import translation
 from rest_framework import status as http_status
 from rest_framework.test import APITestCase
 
 from apps.accounts.factories.organizations import OrganizationFactory
 from apps.accounts.tests.mixins import APITestCaseMixin
 from apps.billing.entitlements import BYTES_PER_MB, has_feature
-from apps.billing.exceptions import PlanLimitReached, format_storage
+from apps.billing.exceptions import (
+    PlanLimitReached,
+    PlanLimitReachedError,
+    format_storage,
+)
 from apps.billing.models.subscription import Subscription
 from apps.billing.services import ensure_within_limit
 from apps.teams.factories.teams import TeamFactory
@@ -57,6 +62,25 @@ class EnsureWithinLimitTestCase(TestCase):
             has_feature(member, 'audit')
             has_feature(member, 'audit')
         self.assertEqual(len(logs.records), 1)
+
+    def test_limit_messages_use_the_singular_for_one(self):
+        cases = {
+            ('max_members', 1): 'Your plan allows up to 1 member.',
+            ('max_members', 3): 'Your plan allows up to 3 members.',
+            ('max_teams', 1): 'Your plan allows up to 1 team.',
+            ('max_teams', 5): 'Your plan allows up to 5 teams.',
+        }
+        for (key, maximum), message in cases.items():
+            with self.subTest(key=key, maximum=maximum):
+                error = PlanLimitReachedError.from_limit(
+                    PlanLimitReached(key, maximum, maximum)
+                )
+                self.assertEqual(str(error.detail), message)
+        with translation.override('pt-br'):
+            error = PlanLimitReachedError.from_limit(
+                PlanLimitReached('max_teams', 1, 1)
+            )
+            self.assertEqual(str(error.detail), 'Seu plano permite até 1 equipe.')
 
     def test_format_storage(self):
         self.assertEqual(format_storage(5120 * BYTES_PER_MB), '5 GB')

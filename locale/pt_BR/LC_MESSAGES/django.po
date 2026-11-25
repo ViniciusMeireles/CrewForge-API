@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 20:47+0000\n"
+"POT-Creation-Date: 2026-11-25 00:25+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -1204,15 +1204,15 @@ msgstr ""
 "Retorna as opções do formulário de função do membro. Envie o nome de um "
 "campo como parâmetro de consulta para obter apenas esse campo."
 
-#: apps/accounts/views/organizations.py:44
+#: apps/accounts/views/organizations.py:45
 msgid "Whether to show the dark logo or not."
 msgstr "Se deve exibir o logo escuro ou não."
 
-#: apps/accounts/views/organizations.py:52
+#: apps/accounts/views/organizations.py:53
 msgid "Enter organization"
 msgstr "Entrar na organização"
 
-#: apps/accounts/views/organizations.py:54
+#: apps/accounts/views/organizations.py:55
 msgid ""
 "Set the organization of the current session: organization-scoped routes act "
 "on it. Suspended organizations are refused."
@@ -1220,23 +1220,23 @@ msgstr ""
 "Define a organização da sessão atual: as rotas da organização passam a atuar "
 "nela. Organizações suspensas são recusadas."
 
-#: apps/accounts/views/organizations.py:69
+#: apps/accounts/views/organizations.py:70
 msgid "Organization not found"
 msgstr "Organização não encontrada"
 
-#: apps/accounts/views/organizations.py:70
-#: apps/accounts/views/organizations.py:74
-#: apps/accounts/views/organizations.py:169
+#: apps/accounts/views/organizations.py:71
+#: apps/accounts/views/organizations.py:75
+#: apps/accounts/views/organizations.py:170
 msgid "Organization not found."
 msgstr "Organização não encontrada."
 
-#: apps/accounts/views/organizations.py:85
+#: apps/accounts/views/organizations.py:86
 msgid "User not authenticated"
 msgstr "Usuário não autenticado"
 
-#: apps/accounts/views/organizations.py:86
-#: apps/accounts/views/organizations.py:90
-#: apps/accounts/views/organizations.py:164
+#: apps/accounts/views/organizations.py:87
+#: apps/accounts/views/organizations.py:91
+#: apps/accounts/views/organizations.py:165
 msgid "User not authenticated."
 msgstr "Usuário não autenticado."
 
@@ -1774,22 +1774,26 @@ msgstr "Informe verdadeiro ou falso."
 msgid "Enter a non-negative integer or null."
 msgstr "Informe um número inteiro não negativo ou nulo."
 
-#: apps/billing/exceptions.py:22
-#, python-format
-msgid "Your plan allows up to %(max)s members."
-msgstr "Seu plano permite até %(max)s membros."
-
 #: apps/billing/exceptions.py:24
 #, python-format
-msgid "Your plan allows up to %(max)s teams."
-msgstr "Seu plano permite até %(max)s equipes."
+msgid "Your plan allows up to %(max)s member."
+msgid_plural "Your plan allows up to %(max)s members."
+msgstr[0] "Seu plano permite até %(max)s membro."
+msgstr[1] "Seu plano permite até %(max)s membros."
 
-#: apps/billing/exceptions.py:25
+#: apps/billing/exceptions.py:30
+#, python-format
+msgid "Your plan allows up to %(max)s team."
+msgid_plural "Your plan allows up to %(max)s teams."
+msgstr[0] "Seu plano permite até %(max)s equipe."
+msgstr[1] "Seu plano permite até %(max)s equipes."
+
+#: apps/billing/exceptions.py:34
 #, python-format
 msgid "Your plan allows up to %(max)s of storage."
 msgstr "Seu plano permite até %(max)s de armazenamento."
 
-#: apps/billing/exceptions.py:54
+#: apps/billing/exceptions.py:63
 msgid "This feature is not included in your plan."
 msgstr "Este recurso não está incluído no seu plano."
 
