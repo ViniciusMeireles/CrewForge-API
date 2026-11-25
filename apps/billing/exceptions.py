@@ -1,4 +1,5 @@
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 from rest_framework.exceptions import PermissionDenied
 
 from apps.billing.entitlements import BYTES_PER_MB, MAX_MEMBERS, MAX_TEAMS
@@ -19,9 +20,17 @@ class PlanLimitReached(Exception):
 
 def _limit_message(key: str, maximum: int) -> str:
     if key == MAX_MEMBERS:
-        return _('Your plan allows up to %(max)s members.') % {'max': maximum}
+        return ngettext(
+            'Your plan allows up to %(max)s member.',
+            'Your plan allows up to %(max)s members.',
+            maximum,
+        ) % {'max': maximum}
     if key == MAX_TEAMS:
-        return _('Your plan allows up to %(max)s teams.') % {'max': maximum}
+        return ngettext(
+            'Your plan allows up to %(max)s team.',
+            'Your plan allows up to %(max)s teams.',
+            maximum,
+        ) % {'max': maximum}
     return _('Your plan allows up to %(max)s of storage.') % {
         'max': format_storage(maximum)
     }
