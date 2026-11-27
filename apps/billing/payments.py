@@ -1,5 +1,8 @@
+import functools
 import logging
 import math
+from collections.abc import Callable
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
@@ -49,6 +52,36 @@ PROFILE_FIELDS = (
     'state',
 )
 REFERENCE_PREFIX = 'crewforge-subscription-'
+_undo: ContextVar[list[Callable[[], None]] | None] = ContextVar(
+    'billing_gateway_undo', default=None
+)
+
+
+def _remember_undo(action: Callable[[], None]) -> None:
+    pending = _undo.get()
+    if pending is not None:
+        pending.append(action)
+
+
+def undo_gateway_on_failure(function):
+    """Undo the gateway objects a service created when it fails (ADR-014)."""
+
+    @functools.wraps(function)
+    def wrapper(*args, **kwargs):
+        token = _undo.set([])
+        try:
+            return function(*args, **kwargs)
+        except Exception:
+            for action in reversed(_undo.get() or []):
+                try:
+                    action()
+                except Exception:
+                    logger.exception('billing.gateway_undo_failed')
+            raise
+        finally:
+            _undo.reset(token)
+
+    return wrapper
 
 
 @dataclass(frozen=True)
@@ -298,7 +331,7 @@ def preview_change(
 def _create_gateway_subscription(
     gateway, subscription: Subscription, plan: Plan, cycle: str, next_due: date
 ) -> str:
-    return _gateway_call(
+    gateway_subscription_id = _gateway_call(
         lambda: gateway.create_subscription(
             customer_id=subscription.gateway_customer_id,
             value=pricing.required_price(plan, cycle),
@@ -308,6 +341,8 @@ def _create_gateway_subscription(
             external_reference=reference(subscription),
         )
     )
+    _remember_undo(lambda: gateway.delete_subscription(gateway_subscription_id))
+    return gateway_subscription_id
 
 
 def _start_new(gateway, subscription: Subscription, plan: Plan, cycle: str) -> str:
@@ -355,6 +390,22 @@ def _cancel_stale_charges(gateway, subscription: Subscription, before: date) -> 
             )
 
 
+def _gateway_terms(subscription: Subscription) -> tuple[Decimal, str]:
+    plan = subscription.scheduled_plan or subscription.plan
+    cycle = subscription.scheduled_cycle or subscription.paid_cycle()
+    return pricing.required_price(plan, cycle), cycle
+
+
+def _remember_gateway_value(
+    gateway, gateway_subscription_id: str, value, cycle: str, next_due: date | None
+) -> None:
+    _remember_undo(
+        lambda: gateway.update_subscription(
+            gateway_subscription_id, value=value, cycle=cycle, next_due_date=next_due
+        )
+    )
+
+
 def _upgrade(
     gateway,
     subscription: Subscription,
@@ -366,7 +417,9 @@ def _upgrade(
     actor_member,
 ) -> str | None:
     amount = pricing.proration(subscription, plan, cycle, now)
-    before_plan, before_cycle = subscription.plan, subscription.cycle
+    before_plan, before_cycle = subscription.plan, subscription.paid_cycle()
+    before_end = subscription.paid_period_end().date()
+    before_value, before_gateway_cycle = _gateway_terms(subscription)
     if cycle != subscription.cycle:
         subscription.current_period_start = now
         subscription.current_period_end = pricing.period_end(now, cycle)
@@ -380,8 +433,13 @@ def _upgrade(
             next_due_date=next_due if cycle_switch else None,
         )
     )
-    if cycle_switch:
-        _cancel_stale_charges(gateway, subscription, next_due)
+    _remember_gateway_value(
+        gateway,
+        subscription.gateway_subscription_id,
+        before_value,
+        before_gateway_cycle,
+        before_end if cycle_switch else None,
+    )
     payment_url = None
     if amount >= settings.BILLING_MIN_CHARGE:
         payment = _gateway_call(
@@ -393,6 +451,7 @@ def _upgrade(
                 external_reference=reference(subscription),
             )
         )
+        _remember_undo(lambda: gateway.cancel_payment(payment.id))
         upsert_invoice(
             subscription,
             payment,
@@ -402,6 +461,8 @@ def _upgrade(
             cycle=cycle,
         )
         payment_url = payment.invoice_url
+    if cycle_switch:
+        _cancel_stale_charges(gateway, subscription, next_due)
     subscription.plan = plan
     subscription.cycle = cycle
     subscription.scheduled_plan = None
@@ -428,12 +489,16 @@ def _downgrade(
     request,
     actor_member,
 ) -> None:
+    before_value, before_cycle = _gateway_terms(subscription)
     _gateway_call(
         lambda: gateway.update_subscription(
             subscription.gateway_subscription_id,
             value=pricing.required_price(plan, cycle),
             cycle=cycle,
         )
+    )
+    _remember_gateway_value(
+        gateway, subscription.gateway_subscription_id, before_value, before_cycle, None
     )
     subscription.scheduled_plan = plan
     subscription.scheduled_cycle = cycle
@@ -459,6 +524,7 @@ def _restore_gateway_subscription(gateway, subscription: Subscription) -> None:
     subscription.cancel_at_period_end = False
 
 
+@undo_gateway_on_failure
 @transaction.atomic
 def change_plan(
     organization: Organization,
@@ -537,6 +603,7 @@ def cancel(
     return subscription
 
 
+@undo_gateway_on_failure
 @transaction.atomic
 def resume(
     organization: Organization, *, request=None, actor_member=None
@@ -554,6 +621,7 @@ def resume(
         )
         return subscription
     if subscription.scheduled_plan_id is not None:
+        scheduled_value, scheduled_cycle = _gateway_terms(subscription)
         _gateway_call(
             lambda: gateway.update_subscription(
                 subscription.gateway_subscription_id,
@@ -562,6 +630,13 @@ def resume(
                 ),
                 cycle=subscription.paid_cycle(),
             )
+        )
+        _remember_gateway_value(
+            gateway,
+            subscription.gateway_subscription_id,
+            scheduled_value,
+            scheduled_cycle,
+            None,
         )
         scheduled_plan = subscription.scheduled_plan
         if scheduled_plan is None:

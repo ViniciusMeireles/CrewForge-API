@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-27 18:57+0000\n"
+"POT-Creation-Date: 2026-11-27 19:00+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -2118,7 +2118,7 @@ msgstr "Fatura"
 msgid "Invoices"
 msgstr "Faturas"
 
-#: apps/billing/models/invoice.py:96 apps/billing/payments.py:392
+#: apps/billing/models/invoice.py:96 apps/billing/payments.py:450
 msgid "Plan change adjustment"
 msgstr "Ajuste da troca de plano"
 
@@ -2246,27 +2246,27 @@ msgstr "Lembrete de teste enviado"
 msgid "Subscriptions"
 msgstr "Assinaturas"
 
-#: apps/billing/payments.py:83 apps/billing/views.py:91
+#: apps/billing/payments.py:116 apps/billing/views.py:91
 msgid "This organization has no subscription."
 msgstr "Esta organização não tem assinatura."
 
-#: apps/billing/payments.py:473
+#: apps/billing/payments.py:539
 msgid "A plan change is waiting for payment."
 msgstr "Uma troca de plano está aguardando pagamento."
 
-#: apps/billing/payments.py:510
+#: apps/billing/payments.py:576
 msgid "There is no paid subscription to cancel."
 msgstr "Não há assinatura paga para cancelar."
 
-#: apps/billing/payments.py:512
+#: apps/billing/payments.py:578
 msgid "The cancellation is already scheduled."
 msgstr "O cancelamento já está agendado."
 
-#: apps/billing/payments.py:586
+#: apps/billing/payments.py:661
 msgid "Nothing is scheduled."
 msgstr "Nada está agendado."
 
-#: apps/billing/payments.py:595
+#: apps/billing/payments.py:670
 msgid "No plan change is waiting for payment."
 msgstr "Nenhuma troca de plano está aguardando pagamento."
 

@@ -566,3 +566,53 @@ class SubscriptionDetailTestCase(BillingTestCase):
         data = self.client.get(reverse('billing:subscription')).data
         self.assertIsNone(data['next_charge'])
         self.assertFalse(data['billing_profile_complete'])
+
+
+class GatewayUndoTestCase(BillingTestCase):
+    def test_failure_after_creating_the_gateway_subscription_deletes_it(self):
+        BillingProfileFactory(organization=self.organization)
+        from unittest import mock
+
+        with (
+            mock.patch(
+                'apps.billing.payments.upsert_invoice', side_effect=RuntimeError('db')
+            ),
+            self.assertRaises(RuntimeError),
+            self.assertLogs('apps.billing', 'ERROR') as logs,
+        ):
+            from apps.billing.payments import change_plan
+
+            change_plan(self.organization, pro_plan(), 'monthly')
+        created = self.gateway_calls('create_subscription')
+        self.assertEqual(len(created), 1)
+        self.assertEqual(len(self.gateway_calls('delete_subscription')), 1)
+        self.assertEqual(self.gateway_state.subscriptions, {})
+        self.assertNotIn('gateway_undo_failed', ''.join(logs.output))
+
+    def test_failed_upgrade_restores_the_gateway_value(self):
+        from unittest import mock
+
+        from apps.billing.payments import change_plan
+
+        hundred = PlanFactory(
+            code='team',
+            monthly_price=Decimal('100.00'),
+            annual_price=Decimal('1000.00'),
+        )
+        big = PlanFactory(
+            code='business',
+            monthly_price=Decimal('200.00'),
+            annual_price=Decimal('2000.00'),
+        )
+        subscription = make_paid(self.organization, plan=hundred)
+        with (
+            mock.patch(
+                'apps.billing.payments.upsert_invoice', side_effect=RuntimeError('db')
+            ),
+            self.assertRaises(RuntimeError),
+        ):
+            change_plan(self.organization, big, 'monthly')
+        entry = self.gateway_state.subscriptions[subscription.gateway_subscription_id]
+        self.assertEqual(entry['value'], Decimal('100.00'))
+        self.assertEqual(len(self.gateway_calls('cancel_payment')), 1)
+        self.assertEqual(self.subscription.plan, hundred)
