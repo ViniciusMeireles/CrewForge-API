@@ -1,3 +1,4 @@
+import secrets
 from decimal import Decimal
 from unittest import mock
 
@@ -16,7 +17,7 @@ from apps.billing.models.subscription import Subscription
 from apps.billing.payments import change_plan, sync_invoice
 from apps.billing.tests.helpers import FakeGatewayMixin, make_paid, pro_plan
 
-TOKEN = 'test-webhook-token'
+TOKEN = secrets.token_urlsafe(24)
 
 
 def event(event_id, payment_id, event_type='PAYMENT_RECEIVED'):
@@ -47,13 +48,15 @@ class WebhookTestCase(FakeGatewayMixin, APITestCase):
 
     def test_wrong_token_401(self):
         with self.assertLogs('apps.billing.authentication', level='WARNING'):
-            response = self.send(event('evt_1', self.invoice.gateway_id), token='nope')
+            response = self.send(
+                event('evt_1', self.invoice.gateway_id), token=TOKEN[::-1]
+            )
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
         self.assertFalse(GatewayEvent.objects.exists())
 
-    @override_settings(ASAAS_WEBHOOK_TOKEN='')
+    @override_settings(ASAAS_WEBHOOK_TOKEN=None)
     def test_unset_token_refuses_everything(self):
-        response = self.send(event('evt_1', self.invoice.gateway_id), token='')
+        response = self.send(event('evt_1', self.invoice.gateway_id), token=None)
         self.assertEqual(response.status_code, http_status.HTTP_401_UNAUTHORIZED)
 
     def test_paid_event_activates_the_pending_change(self):

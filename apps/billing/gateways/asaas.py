@@ -1,12 +1,11 @@
+import http.client
 import json
 import logging
 import time
-import urllib.error
-import urllib.request
 from datetime import date, datetime
 from decimal import Decimal
 from http import HTTPStatus
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 from django.conf import settings
 from django.utils import timezone
@@ -105,48 +104,45 @@ class AsaasGateway:
 
     def _request(self, method: str, path: str, body: dict | None = None) -> dict:
         data = json.dumps(body).encode() if body is not None else None
-        request = urllib.request.Request(  # noqa: S310
-            f'{self.base_url}{path}',
-            data=data,
-            method=method,
-            headers={
-                'access_token': self.api_key,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'User-Agent': 'crewforge-billing',
-            },
-        )
+        operation = f'{method} {path.split("?", maxsplit=1)[0]}'
+        target = urlsplit(self.base_url)
+        connection = http.client.HTTPSConnection(target.netloc, timeout=TIMEOUT_SECONDS)
         started = time.monotonic()
         status = 0
         try:
-            with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:  # noqa: S310
-                status = response.status
-                raw = response.read()
-        except urllib.error.HTTPError as error:
-            status = error.code
-            if HTTPStatus.BAD_REQUEST <= error.code < HTTPStatus.INTERNAL_SERVER_ERROR:
-                if error.code == HTTPStatus.NOT_FOUND and method in ('GET', 'DELETE'):
-                    return {}
-                raise GatewayRejected(
-                    f'{method} {path.split("?", maxsplit=1)[0]} {error.code}'
-                ) from None
-            raise GatewayError(
-                f'{method} {path.split("?", maxsplit=1)[0]} {error.code}'
-            ) from None
-        except (urllib.error.URLError, TimeoutError, OSError) as error:
-            raise GatewayError(
-                f'{method} {path.split("?", maxsplit=1)[0]} unreachable'
-            ) from error
+            connection.request(
+                method,
+                f'{target.path}{path}',
+                body=data,
+                headers={
+                    'access_token': self.api_key,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'User-Agent': 'crewforge-billing',
+                },
+            )
+            response = connection.getresponse()
+            status = response.status
+            raw = response.read()
+        except (TimeoutError, OSError, http.client.HTTPException) as error:
+            raise GatewayError(f'{operation} unreachable') from error
         finally:
+            connection.close()
             logger.info(
                 'billing.gateway_call',
                 extra={
                     'gateway': self.name,
-                    'operation': f'{method} {path.split("?", maxsplit=1)[0]}',
+                    'operation': operation,
                     'status': status,
                     'duration_ms': round((time.monotonic() - started) * 1000),
                 },
             )
+        if status == HTTPStatus.NOT_FOUND and method in ('GET', 'DELETE'):
+            return {}
+        if HTTPStatus.BAD_REQUEST <= status < HTTPStatus.INTERNAL_SERVER_ERROR:
+            raise GatewayRejected(f'{operation} {status}')
+        if status >= HTTPStatus.INTERNAL_SERVER_ERROR:
+            raise GatewayError(f'{operation} {status}')
         return json.loads(raw) if raw else {}
 
     def _callback(self) -> dict:

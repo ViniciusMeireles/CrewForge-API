@@ -1,5 +1,6 @@
 import os
 import runpy
+import secrets
 import sys
 import tomllib
 from contextlib import contextmanager
@@ -23,8 +24,8 @@ PRODUCTION_ENV = {
     'ENVIRONMENT': 'production',
     'DATABASE_URL': 'postgres://u:p@localhost:5432/db',
     'BILLING_GATEWAY': 'asaas',
-    'ASAAS_API_KEY': 'test-placeholder',
-    'ASAAS_WEBHOOK_TOKEN': 'test-placeholder',
+    'ASAAS_API_KEY': secrets.token_urlsafe(16),
+    'ASAAS_WEBHOOK_TOKEN': secrets.token_urlsafe(16),
 }
 
 

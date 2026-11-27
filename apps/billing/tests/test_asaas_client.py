@@ -1,6 +1,5 @@
-import io
 import json
-import urllib.error
+import secrets
 from datetime import date
 from decimal import Decimal
 from unittest import mock
@@ -13,18 +12,17 @@ from apps.billing.gateways.base import CustomerData, GatewayError, GatewayReject
 BASE = 'https://api-sandbox.asaas.com'
 
 
-class FakeResponse(io.BytesIO):
-    status = 200
+class FakeResponse:
+    def __init__(self, status=200, payload=None):
+        self.status = status
+        self.payload = payload
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        return False
+    def read(self):
+        return json.dumps(self.payload).encode() if self.payload is not None else b''
 
 
-def respond(payload):
-    return FakeResponse(json.dumps(payload).encode())
+def respond(payload, status=200):
+    return FakeResponse(status, payload)
 
 
 @override_settings(
@@ -32,18 +30,24 @@ def respond(payload):
 )
 class AsaasClientTestCase(SimpleTestCase):
     def setUp(self):
-        self.gateway = AsaasGateway(base_url=BASE, api_key='test-key')
-        patcher = mock.patch('urllib.request.urlopen')
-        self.urlopen = patcher.start()
+        self.api_key = secrets.token_urlsafe(16)
+        self.gateway = AsaasGateway(base_url=BASE, api_key=self.api_key)
+        patcher = mock.patch('http.client.HTTPSConnection')
+        self.connection_class = patcher.start()
         self.addCleanup(patcher.stop)
+        self.connection = self.connection_class.return_value
+
+    def answer(self, payload=None, status=200):
+        self.connection.getresponse.return_value = respond(payload, status)
 
     def sent(self):
-        request = self.urlopen.call_args.args[0]
-        body = json.loads(request.data) if request.data else None
-        return request, body
+        method, path = self.connection.request.call_args.args
+        kwargs = self.connection.request.call_args.kwargs
+        body = json.loads(kwargs['body']) if kwargs.get('body') else None
+        return method, path, kwargs['headers'], body
 
     def test_create_subscription_uses_undefined_billing_and_callback(self):
-        self.urlopen.return_value = respond({'id': 'sub_1'})
+        self.answer({'id': 'sub_1'})
         result = self.gateway.create_subscription(
             customer_id='cus_1',
             value=Decimal('990.00'),
@@ -52,10 +56,13 @@ class AsaasClientTestCase(SimpleTestCase):
             description='Pro',
             external_reference='crewforge-subscription-7',
         )
-        request, body = self.sent()
+        method, path, headers, body = self.sent()
         self.assertEqual(result, 'sub_1')
-        self.assertEqual(request.full_url, f'{BASE}/v3/subscriptions')
-        self.assertEqual(request.get_header('Access_token'), 'test-key')
+        self.assertEqual((method, path), ('POST', '/v3/subscriptions'))
+        self.assertEqual(
+            self.connection_class.call_args.args[0], 'api-sandbox.asaas.com'
+        )
+        self.assertEqual(headers['access_token'], self.api_key)
         self.assertEqual(body['billingType'], 'UNDEFINED')
         self.assertEqual(body['cycle'], 'YEARLY')
         self.assertEqual(body['value'], '990.00')
@@ -75,7 +82,7 @@ class AsaasClientTestCase(SimpleTestCase):
         }
         for asaas_status, expected in cases.items():
             with self.subTest(status=asaas_status):
-                self.urlopen.return_value = respond(
+                self.answer(
                     {
                         'id': 'pay_1',
                         'status': asaas_status,
@@ -93,7 +100,7 @@ class AsaasClientTestCase(SimpleTestCase):
                 self.assertEqual(payment.paid_at is not None, expected == 'paid')
 
     def test_deleted_payment_is_canceled(self):
-        self.urlopen.return_value = respond(
+        self.answer(
             {
                 'id': 'pay_1',
                 'status': 'PENDING',
@@ -104,45 +111,37 @@ class AsaasClientTestCase(SimpleTestCase):
         self.assertEqual(self.gateway.get_payment('pay_1').status, 'canceled')
 
     def test_errors(self):
-        self.urlopen.side_effect = urllib.error.HTTPError(
-            BASE, 400, 'bad', {}, io.BytesIO(b'{}')
-        )
+        self.answer({}, status=400)
         with self.assertRaises(GatewayRejected):
             self.gateway.delete_subscription('sub_1')
-        self.urlopen.side_effect = urllib.error.HTTPError(
-            BASE, 503, 'down', {}, io.BytesIO(b'')
-        )
+        self.answer(None, status=503)
         with self.assertRaises(GatewayError):
             self.gateway.delete_subscription('sub_1')
-        self.urlopen.side_effect = TimeoutError()
+        self.connection.request.side_effect = TimeoutError()
         with self.assertRaises(GatewayError):
             self.gateway.delete_subscription('sub_1')
 
     def test_already_deleted_is_success(self):
-        self.urlopen.side_effect = urllib.error.HTTPError(
-            BASE, 404, 'nf', {}, io.BytesIO(b'')
-        )
+        self.answer(None, status=404)
         self.gateway.delete_subscription('sub_gone')
         self.gateway.cancel_payment('pay_gone')
 
     def test_find_customer_by_reference(self):
-        self.urlopen.return_value = respond({'data': [{'id': 'cus_9'}]})
+        self.answer({'data': [{'id': 'cus_9'}]})
         self.assertEqual(
             self.gateway.find_customer('crewforge-subscription-7'), 'cus_9'
         )
-        request, _ = self.sent()
-        self.assertIn('externalReference=crewforge-subscription-7', request.full_url)
-        self.urlopen.return_value = respond({'data': []})
+        _, path, _, _ = self.sent()
+        self.assertIn('externalReference=crewforge-subscription-7', path)
+        self.answer({'data': []})
         self.assertEqual(self.gateway.find_customer('crewforge-subscription-8'), '')
 
     def test_missing_payment_returns_none(self):
-        self.urlopen.side_effect = urllib.error.HTTPError(
-            BASE, 404, 'nf', {}, io.BytesIO(b'')
-        )
+        self.answer(None, status=404)
         self.assertIsNone(self.gateway.get_payment('pay_x'))
 
     def test_logs_carry_no_body(self):
-        self.urlopen.return_value = respond({'id': 'cus_1'})
+        self.answer({'id': 'cus_1'})
         with self.assertLogs('apps.billing.gateways.asaas', level='INFO') as logs:
             self.gateway.upsert_customer(
                 CustomerData(
@@ -162,7 +161,7 @@ class AsaasClientTestCase(SimpleTestCase):
 
     def test_http_base_url_is_refused(self):
         with self.assertRaises(GatewayError):
-            AsaasGateway(base_url='http://insecure', api_key='k')
+            AsaasGateway(base_url='http://insecure', api_key=self.api_key)
 
     def test_parse_webhook(self):
         webhook = self.gateway.parse_webhook(
