@@ -669,6 +669,15 @@ def discard_change(
     if not subscription.has_pending_change:
         raise ValidationError(_('No plan change is waiting for payment.'))
     gateway = get_gateway()
+    pending_invoices = Invoice.objects.open().filter(
+        subscription=subscription, plan_id=subscription.pending_plan_id
+    )
+    for invoice in pending_invoices:
+        payment = _gateway_call(lambda i=invoice: gateway.get_payment(i.gateway_id))
+        if payment is not None and payment.status == InvoiceStatusChoices.PAID:
+            raise InvalidState(
+                _('This change is already paid. It will be active in a few minutes.')
+            )
     if subscription.gateway_subscription_id:
         _gateway_call(
             lambda: gateway.delete_subscription(subscription.gateway_subscription_id)

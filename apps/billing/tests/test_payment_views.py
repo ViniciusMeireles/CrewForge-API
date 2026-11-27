@@ -616,3 +616,15 @@ class GatewayUndoTestCase(BillingTestCase):
         self.assertEqual(entry['value'], Decimal('100.00'))
         self.assertEqual(len(self.gateway_calls('cancel_payment')), 1)
         self.assertEqual(self.subscription.plan, hundred)
+
+
+class DiscardPaidChangeTestCase(BillingTestCase):
+    def test_discard_after_payment_is_refused(self):
+        BillingProfileFactory(organization=self.organization)
+        self.post('subscription-change', {'plan': 'pro', 'cycle': 'monthly'})
+        invoice = Invoice.objects.get()
+        self.fake_gateway.set_status(invoice.gateway_id, 'paid')
+        response = self.post('subscription-discard-change')
+        self.assertEqual(response.status_code, http_status.HTTP_409_CONFLICT)
+        self.assertEqual(self.gateway_calls('delete_subscription'), [])
+        self.assertIsNotNone(self.subscription.pending_plan)

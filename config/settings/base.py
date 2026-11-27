@@ -272,11 +272,7 @@ BILLING_GATEWAY = os.environ.get('BILLING_GATEWAY', 'fake')
 ASAAS_API_URL = os.environ.get('ASAAS_API_URL', 'https://api-sandbox.asaas.com')
 ASAAS_API_KEY = os.environ.get('ASAAS_API_KEY', '')
 ASAAS_WEBHOOK_TOKEN = os.environ.get('ASAAS_WEBHOOK_TOKEN', '')
-BILLING_PAYMENT_RETURN_URL = os.environ.get('BILLING_PAYMENT_RETURN_URL') or (
-    f'{FRONTEND_URL.rstrip("/")}/management/billing?payment=return'
-    if FRONTEND_URL
-    else ''
-)
+BILLING_PAYMENT_RETURN_URL = os.environ.get('BILLING_PAYMENT_RETURN_URL', '')
 BILLING_TRIAL_REMINDER_DAYS = [3, 1]
 BILLING_MIN_CHARGE = Decimal('5.00')
 BILLING_EVENT_RETENTION_DAYS = 90

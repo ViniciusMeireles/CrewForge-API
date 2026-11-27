@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-27 19:00+0000\n"
+"POT-Creation-Date: 2026-11-27 19:01+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -2270,6 +2270,10 @@ msgstr "Nada está agendado."
 msgid "No plan change is waiting for payment."
 msgstr "Nenhuma troca de plano está aguardando pagamento."
 
+#: apps/billing/payments.py:679
+msgid "This change is already paid. It will be active in a few minutes."
+msgstr "Esta troca já foi paga. Ela ficará ativa em alguns minutos."
+
 #: apps/billing/pricing.py:28 apps/billing/pricing.py:55
 msgid "This plan is not offered in this cycle."
 msgstr "Este plano não é oferecido neste ciclo."
@@ -3201,11 +3205,11 @@ msgstr ""
 "chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
 "uma equipe válida, apenas gerentes da organização recebem funções."
 
-#: config/settings/base.py:337
+#: config/settings/base.py:333
 msgid "CrewForge API"
 msgstr "CrewForge API"
 
-#: config/settings/base.py:339
+#: config/settings/base.py:335
 msgid ""
 "API service for managing accounts, teams, and permissions with "
 "comprehensive\n"
@@ -3226,7 +3230,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:504
+#: config/settings/base.py:500
 msgid "CrewForge"
 msgstr "CrewForge"
 
