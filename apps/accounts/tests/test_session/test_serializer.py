@@ -112,6 +112,7 @@ class SessionSerializerTestCase(APITestCaseMixin, APITestCase):
                 'organization_settings',
                 'audit',
                 'billing',
+                'billing_manage',
             },
         )
         for value in access.values():

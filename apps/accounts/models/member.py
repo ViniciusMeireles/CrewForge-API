@@ -141,6 +141,10 @@ class Member(BaseModel):
     def has_billing_access(self) -> bool:
         return authorize(self, Action.BILLING_READ)
 
+    @property
+    def has_billing_manage_access(self) -> bool:
+        return authorize(self, Action.BILLING_MANAGE)
+
     @classmethod
     def label_expression(
         cls, outer_ref: str | None = None

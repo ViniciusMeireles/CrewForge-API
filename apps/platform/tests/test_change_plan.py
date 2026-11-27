@@ -152,3 +152,29 @@ class PlatformChangePlanTestCase(PlatformTestMixin, APITestCaseMixin, APITestCas
             reverse('platform:organizations-detail', args=[self.organization.id])
         )
         self.assertEqual(response.data['subscription']['plan']['code'], 'free')
+
+
+class PlatformChangePlanPaidTestCase(PlatformTestMixin, APITestCaseMixin, APITestCase):
+    def test_paid_subscription_409(self):
+        from apps.billing.tests.helpers import make_paid
+
+        organization = OrganizationFactory()
+        subscription = make_paid(organization)
+        self.authenticate_staff('admin')
+        response = self.client.post(
+            reverse('platform:organizations-change-plan', args=[organization.id]),
+            data={'plan': Plan.objects.get(code='free').id, 'reason': 'Support'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, http_status.HTTP_409_CONFLICT)
+        self.assertEqual(
+            response.data['error']['message'],
+            'This organization has a paid subscription.',
+        )
+        current = Subscription.objects.get(pk=subscription.pk)
+        self.assertEqual((current.plan, current.cycle), (subscription.plan, 'monthly'))
+        self.assertFalse(
+            AuditEvent.objects.filter(
+                action=AuditActionChoices.PLATFORM_SUBSCRIPTION_PLAN_CHANGED
+            ).exists()
+        )

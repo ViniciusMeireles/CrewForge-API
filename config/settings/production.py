@@ -1,8 +1,21 @@
 import os
 
 from .base import *  # noqa
-from .base import MEDIA_ROOT, REST_FRAMEWORK, SECRET_KEY, SIMPLE_JWT
-from .checks import require_media_root, require_num_proxies, require_production_secrets
+from .base import (
+    ASAAS_API_KEY,
+    ASAAS_WEBHOOK_TOKEN,
+    BILLING_GATEWAY,
+    MEDIA_ROOT,
+    REST_FRAMEWORK,
+    SECRET_KEY,
+    SIMPLE_JWT,
+)
+from .checks import (
+    require_billing_gateway,
+    require_media_root,
+    require_num_proxies,
+    require_production_secrets,
+)
 from .observability import init_sentry
 
 DEBUG = False
@@ -12,4 +25,5 @@ SILENCED_SYSTEM_CHECKS = ['security.W021']
 require_production_secrets(SECRET_KEY, SIMPLE_JWT)
 require_num_proxies(REST_FRAMEWORK)
 require_media_root(MEDIA_ROOT)
+require_billing_gateway(BILLING_GATEWAY, ASAAS_API_KEY, ASAAS_WEBHOOK_TOKEN)
 init_sentry(os.environ)

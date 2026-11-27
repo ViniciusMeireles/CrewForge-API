@@ -1,6 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import status
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 
 from apps.billing.entitlements import BYTES_PER_MB, MAX_MEMBERS, MAX_TEAMS
 from apps.generics.choices import ErrorCode
@@ -63,3 +64,22 @@ class PlanFeatureUnavailableError(CodedErrorMixin, PermissionDenied):
     default_detail = _('This feature is not included in your plan.')
     default_code = 'plan_feature_unavailable'
     error_code = ErrorCode.PLAN_FEATURE_UNAVAILABLE
+
+
+class BillingProfileRequiredError(CodedErrorMixin, ValidationError):
+    default_detail = _('Fill in your billing details before choosing a paid plan.')
+    default_code = 'billing_profile_required'
+    error_code = ErrorCode.BILLING_PROFILE_REQUIRED
+
+
+class GatewayUnavailableError(CodedErrorMixin, APIException):
+    status_code = status.HTTP_502_BAD_GATEWAY
+    default_detail = _(
+        'The payment service is unavailable. Try again in a few minutes.'
+    )
+    default_code = 'gateway_unavailable'
+    error_code = ErrorCode.GATEWAY_UNAVAILABLE
+
+
+class UnknownGatewayPayment(Exception):
+    """A gateway payment that matches no local Subscription."""

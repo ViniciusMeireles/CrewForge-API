@@ -70,3 +70,29 @@ class LimitConcurrencyTestCase(TransactionTestCase):
             [SubscriptionStatusChoices.ACTIVE, SubscriptionStatusChoices.TRIALING],
         )
         self.assertEqual(Subscription.objects.count(), 2)
+
+    def test_parallel_changes_one_gateway_subscription(self):
+        from apps.billing.backfill import seed_plans
+        from apps.billing.factories.payments import BillingProfileFactory
+        from apps.billing.gateways import fake
+        from apps.billing.models.plan import Plan
+        from apps.billing.payments import change_plan
+        from apps.generics.errors import InvalidState
+
+        seed_plans(Plan)
+        state = fake.reset()
+        organization = OrganizationFactory()
+        BillingProfileFactory(organization=organization)
+        pro = Plan.objects.get(code='pro')
+
+        def change(index):
+            try:
+                change_plan(organization, pro, 'monthly')
+                return 'changed'
+            except InvalidState:
+                return 'conflict'
+
+        self.assertEqual(sorted(self.run_parallel(change)), ['changed', 'conflict'])
+        self.assertEqual(
+            len([call for call in state.calls if call[0] == 'create_subscription']), 1
+        )

@@ -1,6 +1,7 @@
 import os
 import warnings
 from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -266,6 +267,16 @@ FRONTEND_VERIFY_EMAIL_URL = os.environ.get('FRONTEND_VERIFY_EMAIL_URL') or (
 # API URLs
 SELF_URL = os.environ.get('SELF_URL')
 
+# Billing gateway (ADR-014): keys only in the environment
+BILLING_GATEWAY = os.environ.get('BILLING_GATEWAY', 'fake')
+ASAAS_API_URL = os.environ.get('ASAAS_API_URL', 'https://api-sandbox.asaas.com')
+ASAAS_API_KEY = os.environ.get('ASAAS_API_KEY', '')
+ASAAS_WEBHOOK_TOKEN = os.environ.get('ASAAS_WEBHOOK_TOKEN', '')
+BILLING_PAYMENT_RETURN_URL = os.environ.get('BILLING_PAYMENT_RETURN_URL', '')
+BILLING_TRIAL_REMINDER_DAYS = [3, 1]
+BILLING_MIN_CHARGE = Decimal('5.00')
+BILLING_EVENT_RETENTION_DAYS = 90
+
 # Rest Framework
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'apps.generics.pagination.CustomPageNumberPagination',
@@ -460,6 +471,22 @@ CELERY_BEAT_SCHEDULE = {
     'purge-audit-events': {
         'task': 'apps.billing.tasks.purge_audit_events',
         'schedule': crontab(minute=0, hour=4),
+    },
+    'billing-reconcile': {
+        'task': 'apps.billing.tasks.reconcile_invoices',
+        'schedule': crontab(minute=10),
+    },
+    'billing-period-end': {
+        'task': 'apps.billing.tasks.apply_period_end',
+        'schedule': crontab(minute=20),
+    },
+    'billing-expire-trials': {
+        'task': 'apps.billing.tasks.expire_trials',
+        'schedule': crontab(minute=30),
+    },
+    'billing-trial-reminders': {
+        'task': 'apps.billing.tasks.send_trial_reminders',
+        'schedule': crontab(minute=0, hour=12),
     },
 }
 AUDIT_RETENTION_PURGE_ENABLED = (

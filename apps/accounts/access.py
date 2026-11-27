@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 class Action(StrEnum):
     AUDIT_READ = 'audit.read'
+    BILLING_MANAGE = 'billing.manage'
     BILLING_READ = 'billing.read'
     FILE_ACCESS = 'file.access'
     INVITATION_CHANGE = 'invitation.change'
@@ -35,6 +36,7 @@ ROLE_RANK: dict[str, int] = {
 
 MINIMUM_ROLE: dict[Action, str] = {
     Action.AUDIT_READ: MemberRoleChoices.ADMIN,
+    Action.BILLING_MANAGE: MemberRoleChoices.OWNER,
     Action.BILLING_READ: MemberRoleChoices.ADMIN,
     Action.INVITATION_MANAGE: MemberRoleChoices.ADMIN,
     Action.MEMBER_READ: MemberRoleChoices.MEMBER,

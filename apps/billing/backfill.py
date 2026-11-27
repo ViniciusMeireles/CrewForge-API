@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 
 PRO_CODE = 'pro'
@@ -82,3 +83,22 @@ def create_courtesy_subscriptions(organization_model, subscription_model, plan_m
         )
         created += len(ids)
     return created
+
+
+def convert_legacy_courtesy_to_trial(subscription_model, plan_model, now) -> int:
+    plan = plan_model.objects.filter(is_default=True).first()
+    if plan is None:
+        return 0
+    return subscription_model.objects.filter(
+        courtesy='legacy', status='active', cycle__isnull=True
+    ).update(
+        plan=plan,
+        status='trialing',
+        trial_ends_at=now + timedelta(days=plan.trial_days),
+    )
+
+
+def restore_legacy_courtesy(subscription_model) -> int:
+    return subscription_model.objects.filter(
+        courtesy='legacy', status='trialing', cycle__isnull=True
+    ).update(status='active', trial_ends_at=None)

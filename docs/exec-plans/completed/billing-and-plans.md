@@ -14,8 +14,8 @@
 
 ## Status
 
-- [x] Active
-- [ ] Completed
+- [ ] Active
+- [x] Completed
 - [ ] Cancelled
 
 ---

@@ -32,6 +32,9 @@ class MemberAccessSerializer(serializers.ModelSerializer):
     )
     audit = serializers.BooleanField(source='has_audit_access', read_only=True)
     billing = serializers.BooleanField(source='has_billing_access', read_only=True)
+    billing_manage = serializers.BooleanField(
+        source='has_billing_manage_access', read_only=True
+    )
 
     class Meta:
         model = Member
@@ -42,6 +45,7 @@ class MemberAccessSerializer(serializers.ModelSerializer):
             'organization_settings',
             'audit',
             'billing',
+            'billing_manage',
         ]
 
 

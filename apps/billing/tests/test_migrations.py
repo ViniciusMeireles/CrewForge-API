@@ -110,3 +110,56 @@ class CourtesyBackfillTestCase(TestCase):
         self.assertFalse(
             Organization.objects.filter(subscription__isnull=True).exists()
         )
+
+
+class CourtesyToTrialTestCase(TestCase):
+    def test_courtesy_to_trial(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.billing.backfill import convert_legacy_courtesy_to_trial
+
+        legacy = Subscription.objects.get(organization=OrganizationFactory())
+        legacy.plan = Plan.objects.get(code='pro')
+        legacy.courtesy = SubscriptionCourtesyChoices.LEGACY
+        legacy.save()
+        now = timezone.now()
+        self.assertEqual(convert_legacy_courtesy_to_trial(Subscription, Plan, now), 1)
+        legacy.refresh_from_db()
+        self.assertEqual(legacy.status, SubscriptionStatusChoices.TRIALING)
+        self.assertEqual(legacy.plan.code, 'pro')
+        self.assertEqual(legacy.trial_ends_at, now + timedelta(days=14))
+
+    def test_platform_courtesy_kept(self):
+        from django.utils import timezone
+
+        from apps.billing.backfill import convert_legacy_courtesy_to_trial
+
+        platform = Subscription.objects.get(organization=OrganizationFactory())
+        platform.courtesy = SubscriptionCourtesyChoices.PLATFORM
+        platform.save()
+        other = Subscription.objects.get(organization=OrganizationFactory())
+        self.assertEqual(
+            convert_legacy_courtesy_to_trial(Subscription, Plan, timezone.now()), 0
+        )
+        for subscription in (platform, other):
+            subscription.refresh_from_db()
+            self.assertEqual(subscription.status, SubscriptionStatusChoices.ACTIVE)
+
+    def test_reverse(self):
+        from django.utils import timezone
+
+        from apps.billing.backfill import (
+            convert_legacy_courtesy_to_trial,
+            restore_legacy_courtesy,
+        )
+
+        legacy = Subscription.objects.get(organization=OrganizationFactory())
+        legacy.courtesy = SubscriptionCourtesyChoices.LEGACY
+        legacy.save()
+        convert_legacy_courtesy_to_trial(Subscription, Plan, timezone.now())
+        self.assertEqual(restore_legacy_courtesy(Subscription), 1)
+        legacy.refresh_from_db()
+        self.assertEqual(legacy.status, SubscriptionStatusChoices.ACTIVE)
+        self.assertIsNone(legacy.trial_ends_at)

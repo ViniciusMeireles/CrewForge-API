@@ -154,6 +154,7 @@ check: l_compilemessages  ## Run every quality check of CI
 	DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres \
 		DJANGO_SETTINGS_MODULE=config.settings.production ENVIRONMENT=production \
 		MEDIA_ROOT=/tmp/media NUM_PROXIES=1 \
+		BILLING_GATEWAY=asaas ASAAS_API_KEY=ci-placeholder ASAAS_WEBHOOK_TOKEN=ci-placeholder \
 		DJANGO_SECRET_KEY=$$(python3 -c "import secrets; print(secrets.token_urlsafe(64))") \
 		uv run python manage.py check --deploy --fail-level WARNING
 	POSTGRES_HOST=localhost uv run --env-file test.env python manage.py makemigrations --check --dry-run

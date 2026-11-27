@@ -16,6 +16,7 @@ PUBLIC_ROUTES = {
     'accounts:signup-list',
     'accounts:invitations-by-key',
     'accounts:session-config',
+    'billing:webhook-asaas',
 }
 
 

@@ -1881,5 +1881,161 @@
     "name": "platform:users-unblock",
     "path": "api/platform/^users/(?P<pk>[^/.]+)/unblock\\.(?P<format>[a-z0-9]+)/?$",
     "view": "PlatformUserViewSet"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_invoice_changelist",
+    "path": "admin/billing/invoice/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_invoice_add",
+    "path": "admin/billing/invoice/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_invoice_history",
+    "path": "admin/billing/invoice/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_invoice_delete",
+    "path": "admin/billing/invoice/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_invoice_change",
+    "path": "admin/billing/invoice/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/billing/invoice/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_billingprofile_changelist",
+    "path": "admin/billing/billingprofile/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_billingprofile_add",
+    "path": "admin/billing/billingprofile/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_billingprofile_history",
+    "path": "admin/billing/billingprofile/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_billingprofile_delete",
+    "path": "admin/billing/billingprofile/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_billingprofile_change",
+    "path": "admin/billing/billingprofile/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/billing/billingprofile/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_gatewayevent_changelist",
+    "path": "admin/billing/gatewayevent/",
+    "view": "changelist_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_gatewayevent_add",
+    "path": "admin/billing/gatewayevent/add/",
+    "view": "add_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_gatewayevent_history",
+    "path": "admin/billing/gatewayevent/<path:object_id>/history/",
+    "view": "history_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_gatewayevent_delete",
+    "path": "admin/billing/gatewayevent/<path:object_id>/delete/",
+    "view": "delete_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:billing_gatewayevent_change",
+    "path": "admin/billing/gatewayevent/<path:object_id>/change/",
+    "view": "change_view"
+  },
+  {
+    "actions": null,
+    "name": "admin:",
+    "path": "admin/billing/gatewayevent/<path:object_id>/",
+    "view": "view"
+  },
+  {
+    "actions": null,
+    "name": "billing:subscription-preview",
+    "path": "api/billing/subscription/preview/",
+    "view": "SubscriptionPreviewView"
+  },
+  {
+    "actions": null,
+    "name": "billing:subscription-change",
+    "path": "api/billing/subscription/change/",
+    "view": "SubscriptionChangeView"
+  },
+  {
+    "actions": null,
+    "name": "billing:subscription-cancel",
+    "path": "api/billing/subscription/cancel/",
+    "view": "SubscriptionCancelView"
+  },
+  {
+    "actions": null,
+    "name": "billing:subscription-resume",
+    "path": "api/billing/subscription/resume/",
+    "view": "SubscriptionResumeView"
+  },
+  {
+    "actions": null,
+    "name": "billing:subscription-discard-change",
+    "path": "api/billing/subscription/discard-change/",
+    "view": "SubscriptionDiscardChangeView"
+  },
+  {
+    "actions": null,
+    "name": "billing:profile",
+    "path": "api/billing/profile/",
+    "view": "BillingProfileView"
+  },
+  {
+    "actions": null,
+    "name": "billing:invoices",
+    "path": "api/billing/invoices/",
+    "view": "InvoiceListView"
+  },
+  {
+    "actions": null,
+    "name": "billing:webhook-asaas",
+    "path": "api/billing/webhooks/asaas/",
+    "view": "AsaasWebhookView"
   }
 ]

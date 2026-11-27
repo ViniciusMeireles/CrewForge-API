@@ -61,6 +61,16 @@ CATALOG = {
     'user.impersonation_ended',
     'user.impersonation_expired',
     'billing.subscription.trial_started',
+    'billing.subscription.activated',
+    'billing.subscription.plan_changed',
+    'billing.subscription.change_scheduled',
+    'billing.subscription.change_canceled',
+    'billing.subscription.cancel_scheduled',
+    'billing.subscription.resumed',
+    'billing.subscription.canceled',
+    'billing.invoice.paid',
+    'billing.invoice.refunded',
+    'billing.profile.updated',
     'platform.subscription.plan_changed',
 }
 
