@@ -125,7 +125,7 @@ class AsaasGateway:
         except urllib.error.HTTPError as error:
             status = error.code
             if HTTPStatus.BAD_REQUEST <= error.code < HTTPStatus.INTERNAL_SERVER_ERROR:
-                if error.code == HTTPStatus.NOT_FOUND and method == 'GET':
+                if error.code == HTTPStatus.NOT_FOUND and method in ('GET', 'DELETE'):
                     return {}
                 raise GatewayRejected(
                     f'{method} {path.split("?", maxsplit=1)[0]} {error.code}'
@@ -152,6 +152,13 @@ class AsaasGateway:
     def _callback(self) -> dict:
         url = settings.BILLING_PAYMENT_RETURN_URL
         return {'callback': {'successUrl': url, 'autoRedirect': True}} if url else {}
+
+    def find_customer(self, external_reference: str) -> str:
+        data = self._request(
+            'GET', f'/v3/customers?externalReference={quote(external_reference)}'
+        )
+        found = data.get('data') or []
+        return str(found[0]['id']) if found else ''
 
     def upsert_customer(self, data: CustomerData, customer_id: str = '') -> str:
         body = {

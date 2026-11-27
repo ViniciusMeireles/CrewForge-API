@@ -100,6 +100,18 @@ class OwnerOnlyTestCase(BillingTestCase):
                 self.assertEqual(response.status_code, http_status.HTTP_403_FORBIDDEN)
         self.assertEqual(self.gateway_state.calls, [])
 
+    def test_inactive_owner_cannot_write(self):
+        owner = self.organization.owner
+        owner.is_active = False
+        owner.save()
+        self.client.force_authenticate(member=owner)
+        response = self.post('subscription-change', {'plan': 'pro', 'cycle': 'monthly'})
+        self.assertIn(
+            response.status_code,
+            {http_status.HTTP_401_UNAUTHORIZED, http_status.HTTP_403_FORBIDDEN},
+        )
+        self.assertEqual(self.gateway_state.calls, [])
+
     def test_manager_and_member_cannot_read(self):
         for role in (MemberRoleChoices.MANAGER, MemberRoleChoices.MEMBER):
             self.as_role(role)
@@ -291,6 +303,35 @@ class ChangeNewTestCase(BillingTestCase):
         self.assertEqual(response.status_code, http_status.HTTP_409_CONFLICT)
         self.assertEqual(len(self.gateway_calls('create_subscription')), 1)
 
+    def test_retry_reuses_the_gateway_customer(self):
+        BillingProfileFactory(organization=self.organization)
+        state = self.gateway_state
+        original = self.fake_gateway.create_subscription
+
+        def fail_once(*args, **kwargs):
+            from apps.billing.gateways.base import GatewayError
+
+            if not getattr(fail_once, 'failed', False):
+                fail_once.failed = True
+                raise GatewayError('down')
+            return original(*args, **kwargs)
+
+        from unittest import mock
+
+        with mock.patch(
+            'apps.billing.gateways.fake.FakeGateway.create_subscription',
+            side_effect=fail_once,
+        ):
+            first = self.post(
+                'subscription-change', {'plan': 'pro', 'cycle': 'monthly'}
+            )
+            second = self.post(
+                'subscription-change', {'plan': 'pro', 'cycle': 'monthly'}
+            )
+        self.assertEqual(first.status_code, http_status.HTTP_502_BAD_GATEWAY)
+        self.assertEqual(second.status_code, http_status.HTTP_200_OK)
+        self.assertEqual(len(state.customers), 1)
+
     def test_gateway_failure_changes_nothing(self):
         BillingProfileFactory(organization=self.organization)
         self.gateway_state.fail_next = True
@@ -326,7 +367,7 @@ class ChangeUpgradeTestCase(BillingTestCase):
         invoice = Invoice.objects.get(subscription=subscription, kind='proration')
         self.assertEqual(invoice.amount, Decimal('50.00'))
         update = self.gateway_calls('update_subscription')[0]
-        self.assertEqual(update[1:3], (Decimal('200.00'), 'monthly'))
+        self.assertEqual(update[1:], (Decimal('200.00'), 'monthly', None))
         event = self.events(AuditActionChoices.BILLING_SUBSCRIPTION_PLAN_CHANGED).get()
         self.assertEqual(
             event.changes[0], {'field': 'plan', 'before': 'team', 'after': 'business'}

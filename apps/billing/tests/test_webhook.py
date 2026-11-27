@@ -67,7 +67,9 @@ class WebhookTestCase(FakeGatewayMixin, APITestCase):
         )
         self.assertEqual(subscription.plan, pro_plan())
         self.assertIsNone(subscription.pending_plan)
-        self.assertIsNotNone(subscription.current_period_end)
+        self.assertEqual(
+            subscription.current_period_start.date(), self.invoice.due_date
+        )
         self.assertIsNone(subscription.trial_ends_at)
         self.assertEqual(Invoice.objects.get().status, 'paid')
         self.assertIsNotNone(GatewayEvent.objects.get().processed_at)
@@ -128,6 +130,35 @@ class WebhookTestCase(FakeGatewayMixin, APITestCase):
             self.send(event('evt_3', payment.id))
         stored = GatewayEvent.objects.get()
         self.assertEqual(stored.error, 'unknown payment')
+
+    def test_concurrent_duplicate_is_accepted(self):
+        from django.db import IntegrityError
+
+        with mock.patch(
+            'apps.billing.models.gateway_event.GatewayEvent.objects.get_or_create',
+            side_effect=IntegrityError,
+        ):
+            response = self.send(event('evt_5', self.invoice.gateway_id))
+        self.assertEqual(response.status_code, http_status.HTTP_200_OK)
+
+    def test_rejected_gateway_read_is_not_retried(self):
+        from apps.billing.gateways.base import GatewayRejected
+        from apps.billing.tasks import process_gateway_event
+
+        with mock.patch('apps.billing.tasks.process_gateway_event.delay'):
+            self.send(event('evt_6', self.invoice.gateway_id))
+        stored = GatewayEvent.objects.get()
+        with (
+            mock.patch(
+                'apps.billing.gateways.fake.FakeGateway.get_payment',
+                side_effect=GatewayRejected('400'),
+            ),
+            self.assertLogs('apps.billing.tasks', level='WARNING'),
+        ):
+            process_gateway_event.apply(args=[stored.pk], throw=True)
+        stored.refresh_from_db()
+        self.assertEqual(stored.error, '400')
+        self.assertEqual(stored.attempts, 1)
 
     def test_unparseable_body_is_accepted(self):
         response = self.send({'something': 'else'})

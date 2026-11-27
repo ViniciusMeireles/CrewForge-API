@@ -14,7 +14,7 @@ from apps.billing.choices import SubscriptionStatusChoices
 from apps.billing.entitlements import AUDIT_RETENTION_DAYS, value
 from apps.billing.exceptions import UnknownGatewayPayment
 from apps.billing.gateways import get_gateway
-from apps.billing.gateways.base import GatewayError
+from apps.billing.gateways.base import GatewayError, GatewayRejected
 from apps.billing.models.gateway_event import GatewayEvent
 from apps.billing.models.invoice import Invoice
 from apps.billing.models.subscription import Subscription
@@ -90,6 +90,10 @@ def process_gateway_event(self, event_pk: int):
             GatewayEvent.objects.filter(pk=event_pk).update(
                 error='unknown payment', processed_at=timezone.now()
             )
+            logger.warning('billing.event_failed', extra={'event_id': event.event_id})
+            return
+        except GatewayRejected as error:
+            GatewayEvent.objects.filter(pk=event_pk).update(error=str(error))
             logger.warning('billing.event_failed', extra={'event_id': event.event_id})
             return
         except GatewayError as error:

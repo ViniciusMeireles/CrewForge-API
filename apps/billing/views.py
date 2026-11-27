@@ -2,7 +2,7 @@ import logging
 from collections.abc import Callable
 from typing import cast
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
@@ -263,11 +263,15 @@ class AsaasWebhookView(APIView):
         if webhook is None:
             logger.warning('billing.webhook_unparsed')
             return Response({})
-        event, created = GatewayEvent.objects.get_or_create(
-            gateway=GatewayChoices.ASAAS,
-            event_id=webhook.event_id,
-            defaults={'event_type': webhook.event_type, 'payload': body},
-        )
+        try:
+            with transaction.atomic():
+                event, created = GatewayEvent.objects.get_or_create(
+                    gateway=GatewayChoices.ASAAS,
+                    event_id=webhook.event_id,
+                    defaults={'event_type': webhook.event_type, 'payload': body},
+                )
+        except IntegrityError:
+            return Response({})
         if created:
             transaction.on_commit(lambda: process_gateway_event.delay(event.pk))
         return Response({})

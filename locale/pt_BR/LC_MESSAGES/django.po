@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-27 18:51+0000\n"
+"POT-Creation-Date: 2026-11-27 18:57+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -1867,7 +1867,10 @@ msgid ""
 "The {plan} trial of {organization} ends on {date}. Choose a paid plan to "
 "keep its limits and features; otherwise it moves to the Free plan. Your data "
 "is kept."
-msgstr "O teste do {plan} de {organization} termina em {date}. Escolha um plano pago para manter os limites e recursos; caso contrário, a organização passa para o plano Free. Seus dados são mantidos."
+msgstr ""
+"O teste do {plan} de {organization} termina em {date}. Escolha um plano pago "
+"para manter os limites e recursos; caso contrário, a organização passa para "
+"o plano Free. Seus dados são mantidos."
 
 #: apps/billing/emails.py:98
 #, python-brace-format
@@ -1879,7 +1882,9 @@ msgstr "Pagamento confirmado para {organization}"
 msgid ""
 "We received the payment of {amount} for {organization}. Its {plan} plan is "
 "active."
-msgstr "Recebemos o pagamento de {amount} para {organization}. O plano {plan} está ativo."
+msgstr ""
+"Recebemos o pagamento de {amount} para {organization}. O plano {plan} está "
+"ativo."
 
 #: apps/billing/emails.py:106
 #, python-brace-format
@@ -1902,7 +1907,10 @@ msgid ""
 "The {plan} subscription of {organization} ends on {date}. Then it moves to "
 "the Free plan and its limits. Your data is kept. You can resume the "
 "subscription until then."
-msgstr "A assinatura {plan} de {organization} termina em {date}. Depois, a organização passa para o plano Free e seus limites. Seus dados são mantidos. Você pode retomar a assinatura até lá."
+msgstr ""
+"A assinatura {plan} de {organization} termina em {date}. Depois, a "
+"organização passa para o plano Free e seus limites. Seus dados são mantidos. "
+"Você pode retomar a assinatura até lá."
 
 #: apps/billing/emails.py:120
 #, python-brace-format
@@ -1914,7 +1922,9 @@ msgstr "A assinatura de {organization} terminou"
 msgid ""
 "{organization} moved to the Free plan. Your data is kept. You can choose a "
 "paid plan again at any time."
-msgstr "{organization} passou para o plano Free. Seus dados são mantidos. Você pode escolher um plano pago novamente a qualquer momento."
+msgstr ""
+"{organization} passou para o plano Free. Seus dados são mantidos. Você pode "
+"escolher um plano pago novamente a qualquer momento."
 
 #: apps/billing/entitlements.py:60
 msgid "Entitlements must be an object."
@@ -1961,7 +1971,8 @@ msgstr "Preencha seus dados de cobrança antes de escolher um plano pago."
 
 #: apps/billing/exceptions.py:78
 msgid "The payment service is unavailable. Try again in a few minutes."
-msgstr "O serviço de pagamento está indisponível. Tente novamente em alguns minutos."
+msgstr ""
+"O serviço de pagamento está indisponível. Tente novamente em alguns minutos."
 
 #: apps/billing/models/billing_profile.py:28
 msgid "Legal name"
@@ -2107,7 +2118,7 @@ msgstr "Fatura"
 msgid "Invoices"
 msgstr "Faturas"
 
-#: apps/billing/models/invoice.py:96 apps/billing/payments.py:390
+#: apps/billing/models/invoice.py:96 apps/billing/payments.py:392
 msgid "Plan change adjustment"
 msgstr "Ajuste da troca de plano"
 
@@ -2239,15 +2250,15 @@ msgstr "Assinaturas"
 msgid "This organization has no subscription."
 msgstr "Esta organização não tem assinatura."
 
-#: apps/billing/payments.py:472
+#: apps/billing/payments.py:473
 msgid "A plan change is waiting for payment."
 msgstr "Uma troca de plano está aguardando pagamento."
 
-#: apps/billing/payments.py:509
+#: apps/billing/payments.py:510
 msgid "There is no paid subscription to cancel."
 msgstr "Não há assinatura paga para cancelar."
 
-#: apps/billing/payments.py:511
+#: apps/billing/payments.py:512
 msgid "The cancellation is already scheduled."
 msgstr "O cancelamento já está agendado."
 
@@ -2307,7 +2318,9 @@ msgstr "Prévia da troca de plano"
 msgid ""
 "What a change to the given plan and cycle charges now and from when. Owner "
 "only."
-msgstr "O que a troca para o plano e ciclo informados cobra agora e a partir de quando. Somente o proprietário."
+msgstr ""
+"O que a troca para o plano e ciclo informados cobra agora e a partir de "
+"quando. Somente o proprietário."
 
 #: apps/billing/views.py:124
 msgid "Change the plan"
@@ -2317,7 +2330,9 @@ msgstr "Trocar o plano"
 msgid ""
 "Changes the plan or cycle. Returns the payment page when something is due "
 "now. Owner only."
-msgstr "Troca o plano ou o ciclo. Retorna a página de pagamento quando há valor a pagar agora. Somente o proprietário."
+msgstr ""
+"Troca o plano ou o ciclo. Retorna a página de pagamento quando há valor a "
+"pagar agora. Somente o proprietário."
 
 #: apps/billing/views.py:166
 msgid "Cancel the subscription"
@@ -2361,7 +2376,9 @@ msgstr "Listar faturas"
 
 #: apps/billing/views.py:238
 msgid "The organization invoices, newest first. Owner and Admin."
-msgstr "As faturas da organização, das mais recentes para as mais antigas. Proprietário e administrador."
+msgstr ""
+"As faturas da organização, das mais recentes para as mais antigas. "
+"Proprietário e administrador."
 
 #: apps/dashboard/apps.py:8 apps/dashboard/views/overview.py:15
 msgid "Dashboard"

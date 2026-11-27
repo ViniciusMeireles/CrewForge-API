@@ -51,6 +51,12 @@ class ClassifyTestCase(TestCase):
             pricing.classify(self.subscription, pro_plan(), 'monthly'), 'downgrade'
         )
 
+    def test_cheaper_plan_on_the_annual_cycle_is_a_downgrade(self):
+        self.paid(pro_plan(), 'monthly')
+        self.assertEqual(
+            pricing.classify(self.subscription, self.cheap, 'annual'), 'downgrade'
+        )
+
     def test_same_plan_free_plan_and_unpriced_cycle_are_refused(self):
         self.paid(pro_plan(), 'monthly')
         unpriced = PlanFactory(annual_price=None)

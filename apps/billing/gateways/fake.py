@@ -74,6 +74,13 @@ class FakeGateway:
         state.payments[payment_id] = payment
         return payment
 
+    def find_customer(self, external_reference: str) -> str:
+        state = self._call('find_customer', external_reference)
+        for customer_id, data in state.customers.items():
+            if data.external_reference == external_reference:
+                return customer_id
+        return ''
+
     def upsert_customer(self, data: CustomerData, customer_id: str = '') -> str:
         state = self._call('upsert_customer', customer_id)
         customer_id = customer_id or state.next_id('cus')

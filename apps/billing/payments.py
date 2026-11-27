@@ -1,7 +1,7 @@
 import logging
 import math
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.conf import settings
@@ -115,8 +115,9 @@ def _ensure_customer(
 ) -> str:
     if subscription.gateway_customer_id:
         return subscription.gateway_customer_id
+    existing = _gateway_call(lambda: gateway.find_customer(reference(subscription)))
     customer_id = _gateway_call(
-        lambda: gateway.upsert_customer(_customer_data(profile, subscription))
+        lambda: gateway.upsert_customer(_customer_data(profile, subscription), existing)
     )
     subscription.gateway_customer_id = customer_id
     return customer_id
@@ -370,15 +371,16 @@ def _upgrade(
         subscription.current_period_start = now
         subscription.current_period_end = pricing.period_end(now, cycle)
     next_due = subscription.paid_period_end().date()
+    cycle_switch = cycle != before_cycle
     _gateway_call(
         lambda: gateway.update_subscription(
             subscription.gateway_subscription_id,
             value=pricing.required_price(plan, cycle),
             cycle=cycle,
-            next_due_date=next_due,
+            next_due_date=next_due if cycle_switch else None,
         )
     )
-    if cycle != before_cycle:
+    if cycle_switch:
         _cancel_stale_charges(gateway, subscription, next_due)
     payment_url = None
     if amount >= settings.BILLING_MIN_CHARGE:
@@ -431,7 +433,6 @@ def _downgrade(
             subscription.gateway_subscription_id,
             value=pricing.required_price(plan, cycle),
             cycle=cycle,
-            next_due_date=subscription.paid_period_end().date(),
         )
     )
     subscription.scheduled_plan = plan
@@ -560,7 +561,6 @@ def resume(
                     subscription.plan, subscription.paid_cycle()
                 ),
                 cycle=subscription.paid_cycle(),
-                next_due_date=subscription.paid_period_end().date(),
             )
         )
         scheduled_plan = subscription.scheduled_plan
@@ -640,7 +640,7 @@ def _find_subscription(payment: GatewayPayment, gateway_name: str) -> Subscripti
 
 def _activate(subscription: Subscription, invoice: Invoice) -> None:
     before_plan, before_cycle = subscription.plan, subscription.cycle
-    start = invoice.paid_at or timezone.now()
+    start = timezone.make_aware(datetime.combine(invoice.due_date, time.min))
     pending_plan, pending_cycle = subscription.pending_plan, subscription.pending_cycle
     if pending_plan is None or pending_cycle is None:
         raise ValueError('The pending change is incomplete.')

@@ -57,18 +57,17 @@ def classify(subscription: Subscription, plan: Plan, cycle: str) -> str:
         return ChangeKindChoices.NEW
     if subscription.plan_id == plan.pk and subscription.cycle == cycle:
         raise ValidationError({'plan': [_('This is already your plan and cycle.')]})
-    current = monthly_equivalent(subscription.plan, subscription.paid_cycle())
-    target = monthly_equivalent(plan, cycle)
-    annual_switch = (
-        subscription.cycle == BillingCycleChoices.MONTHLY
-        and cycle == BillingCycleChoices.ANNUAL
-    )
-    monthly_switch = (
-        subscription.cycle == BillingCycleChoices.ANNUAL
+    current_cycle = subscription.paid_cycle()
+    if (
+        current_cycle == BillingCycleChoices.ANNUAL
         and cycle == BillingCycleChoices.MONTHLY
-    )
-    if monthly_switch or (target < current and not annual_switch):
+    ):
         return ChangeKindChoices.DOWNGRADE
+    if plan.pk != subscription.plan_id:
+        current = monthly_equivalent(subscription.plan, current_cycle)
+        compared_cycle = cycle if price(plan, current_cycle) is None else current_cycle
+        if monthly_equivalent(plan, compared_cycle) < current:
+            return ChangeKindChoices.DOWNGRADE
     return ChangeKindChoices.UPGRADE
 
 

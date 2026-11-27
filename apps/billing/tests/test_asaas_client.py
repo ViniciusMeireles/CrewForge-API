@@ -118,6 +118,23 @@ class AsaasClientTestCase(SimpleTestCase):
         with self.assertRaises(GatewayError):
             self.gateway.delete_subscription('sub_1')
 
+    def test_already_deleted_is_success(self):
+        self.urlopen.side_effect = urllib.error.HTTPError(
+            BASE, 404, 'nf', {}, io.BytesIO(b'')
+        )
+        self.gateway.delete_subscription('sub_gone')
+        self.gateway.cancel_payment('pay_gone')
+
+    def test_find_customer_by_reference(self):
+        self.urlopen.return_value = respond({'data': [{'id': 'cus_9'}]})
+        self.assertEqual(
+            self.gateway.find_customer('crewforge-subscription-7'), 'cus_9'
+        )
+        request, _ = self.sent()
+        self.assertIn('externalReference=crewforge-subscription-7', request.full_url)
+        self.urlopen.return_value = respond({'data': []})
+        self.assertEqual(self.gateway.find_customer('crewforge-subscription-8'), '')
+
     def test_missing_payment_returns_none(self):
         self.urlopen.side_effect = urllib.error.HTTPError(
             BASE, 404, 'nf', {}, io.BytesIO(b'')

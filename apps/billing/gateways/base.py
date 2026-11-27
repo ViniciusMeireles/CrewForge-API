@@ -48,6 +48,8 @@ class GatewayWebhook:
 class PaymentGateway(Protocol):
     name: str
 
+    def find_customer(self, external_reference: str) -> str: ...
+
     def upsert_customer(self, data: CustomerData, customer_id: str = '') -> str: ...
 
     def create_subscription(
