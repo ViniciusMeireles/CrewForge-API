@@ -106,6 +106,14 @@ limits, the Audit flag and its retention. Every Organization has exactly one **S
 Organization starts a 14-day trial of the default Plan (or the free Plan when its Owner already owns a trialing one),
 and existing Organizations got a complimentary one (`courtesy`). Limits refuse new creations and never remove data.
 
+### Payments: Invoice / Billing Profile / Gateway Event
+
+Paid Plans are charged through a payment gateway (Asaas) behind an interface (`apps/billing/gateways/`, ADR-014). The
+Owner fills the **Billing Profile** (legal name, CPF/CNPJ, billing email, address) before the first charge. Each
+gateway charge is mirrored as an **Invoice** (`recurring` or `proration`). A paid change from Free or a trial is a
+**pending change** until its Invoice is paid; a downgrade or cancellation is a **scheduled change** applied at the
+period end. Webhooks are stored once as **Gateway Events** and processed by re-reading the payment from the gateway.
+
 ### OrganizationProfile / OrganizationImage
 
 Extended metadata for an organization. Profile holds website/description.

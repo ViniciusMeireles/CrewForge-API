@@ -59,3 +59,62 @@ def session_subscription(member: Member | None) -> Subscription | None:
         return member.organization.subscription
     except Subscription.DoesNotExist:
         return None
+
+
+def _plan_summary(plan) -> dict:
+    return {'code': plan.code, 'name': plan.name}
+
+
+def subscription_detail(subscription: Subscription, *, can_manage: bool) -> dict:
+    from apps.billing import pricing
+    from apps.billing.models.billing_profile import BillingProfile
+    from apps.billing.models.invoice import Invoice
+
+    organization = subscription.organization
+    next_charge = None
+    if subscription.is_paid and not subscription.cancel_at_period_end:
+        plan = subscription.scheduled_plan or subscription.plan
+        cycle = subscription.scheduled_cycle or subscription.paid_cycle()
+        next_charge = {
+            'amount': pricing.price(plan, cycle),
+            'date': subscription.paid_period_end().date(),
+        }
+    scheduled_change = None
+    if subscription.scheduled_plan_id is not None:
+        scheduled_change = {
+            'plan': _plan_summary(subscription.scheduled_plan),
+            'cycle': subscription.scheduled_cycle,
+            'effective_at': subscription.current_period_end,
+        }
+    pending_change = None
+    if subscription.pending_plan_id is not None:
+        invoice = (
+            Invoice.objects.open()
+            .filter(subscription=subscription, plan_id=subscription.pending_plan_id)
+            .order_by('-issued_at')
+            .first()
+        )
+        pending_change = {
+            'plan': _plan_summary(subscription.pending_plan),
+            'cycle': subscription.pending_cycle,
+            'amount': invoice.amount if invoice else None,
+            'invoice': invoice.pk if invoice else None,
+            'payment_url': invoice.payment_url
+            if invoice and can_manage and invoice.payment_url
+            else None,
+        }
+    profile = BillingProfile.objects.filter(organization=organization).first()
+    return {
+        'plan': subscription.plan,
+        'status': subscription.status,
+        'cycle': subscription.cycle,
+        'trial_ends_at': subscription.trial_ends_at,
+        'is_complimentary': subscription.is_complimentary,
+        'usage': usage(organization),
+        'current_period_end': subscription.current_period_end,
+        'next_charge': next_charge,
+        'cancel_at_period_end': subscription.cancel_at_period_end,
+        'scheduled_change': scheduled_change,
+        'pending_change': pending_change,
+        'billing_profile_complete': bool(profile and profile.is_complete),
+    }

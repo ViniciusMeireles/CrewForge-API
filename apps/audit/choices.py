@@ -116,6 +116,37 @@ class AuditActionChoices(models.TextChoices):
         'billing.subscription.trial_started',
         _('Trial started'),
     )
+    BILLING_SUBSCRIPTION_ACTIVATED = (
+        'billing.subscription.activated',
+        _('Subscription activated'),
+    )
+    BILLING_SUBSCRIPTION_PLAN_CHANGED = (
+        'billing.subscription.plan_changed',
+        _('Plan changed'),
+    )
+    BILLING_SUBSCRIPTION_CHANGE_SCHEDULED = (
+        'billing.subscription.change_scheduled',
+        _('Change scheduled'),
+    )
+    BILLING_SUBSCRIPTION_CHANGE_CANCELED = (
+        'billing.subscription.change_canceled',
+        _('Scheduled change canceled'),
+    )
+    BILLING_SUBSCRIPTION_CANCEL_SCHEDULED = (
+        'billing.subscription.cancel_scheduled',
+        _('Cancellation scheduled'),
+    )
+    BILLING_SUBSCRIPTION_RESUMED = (
+        'billing.subscription.resumed',
+        _('Subscription resumed'),
+    )
+    BILLING_SUBSCRIPTION_CANCELED = (
+        'billing.subscription.canceled',
+        _('Subscription canceled'),
+    )
+    BILLING_INVOICE_PAID = ('billing.invoice.paid', _('Invoice paid'))
+    BILLING_INVOICE_REFUNDED = ('billing.invoice.refunded', _('Invoice refunded'))
+    BILLING_PROFILE_UPDATED = ('billing.profile.updated', _('Billing details updated'))
     PLATFORM_SUBSCRIPTION_PLAN_CHANGED = (
         'platform.subscription.plan_changed',
         _('Plan changed by the platform'),
@@ -137,4 +168,5 @@ CHANGE_FIELD_LABELS = {
     'plan': _('Plan'),
     'subscription_status': _('Subscription status'),
     'courtesy': _('Courtesy'),
+    'cycle': _('Cycle'),
 }

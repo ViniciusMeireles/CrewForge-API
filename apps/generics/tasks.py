@@ -11,7 +11,7 @@ from apps.generics.mails.bases import EmailBase
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_EMAIL_MODULES = ('apps.accounts.emails.',)
+ALLOWED_EMAIL_MODULES = ('apps.accounts.emails.', 'apps.billing.emails.')
 
 
 @shared_task(

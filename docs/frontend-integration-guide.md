@@ -266,6 +266,7 @@ Returns the same shape as the login response (user, organizations, organization,
 | `organization_settings` | Organization settings screen | Members with OWNER role |
 | `audit` | Audit screen | Members with OWNER or ADMIN role, when the Plan includes `audit` |
 | `billing` | Plan and billing screen | Members with OWNER or ADMIN role |
+| `billing_manage` | Billing actions (change plan, cancel, resume, billing details, payment links) | Members with OWNER role |
 
 Keys follow the Member's Role, and the Plan for `audit` ([19.2](#192-session-and-access)): `is_superuser` grants nothing inside an Organization (ADR-009). `access` is computed on every request (never cached server-side), so re-read the session after a `403` or after a role change to get fresh values. Action-level checks inside a screen (e.g., showing an "Invite" button) still use `member.permissions`.
 
@@ -774,6 +775,8 @@ request in the API logs.
 | `READ_ONLY_IMPERSONATION` | 403 | `null` — a write while viewing as another user; message "Read-only while viewing as another user" |
 | `PLAN_LIMIT_REACHED` | 403 | `{"limit": "max_members" \| "max_teams" \| "storage_bytes", "current": n, "max": n}` — the creation exceeds the Plan ([19.3](#193-limits)) |
 | `PLAN_FEATURE_UNAVAILABLE` | 403 | `null` — the Role allows the area but the Plan does not include it (Audit) |
+| `BILLING_PROFILE_REQUIRED` | 400 | `{"non_field_errors": [message]}` — a paid change before the Billing Profile is complete ([19.4](#194-payments)) |
+| `GATEWAY_UNAVAILABLE` | 502 | `null` — the payment service did not answer; nothing changed, try again later |
 | `IMPERSONATION_ENDED` | 403 | `{"reason": "expired" \| "user_blocked" \| "exit" \| "signed_out", "user": <target id>}` — the viewing session ended (time, blocked user); drop it and go back to `/platform/users/{user}` |
 | `THROTTLED` | 429 | `null`, or `{"retry_after_seconds": n}` for a per-object cooldown (platform resend verification) |
 | `INTERNAL_ERROR` | 500 | `null` |
@@ -1341,7 +1344,7 @@ While viewing:
   viewing carry `impersonator`.
 ## 19. Billing and Plans
 
-Increment 1 of billing: Plans and limits, with no payment (`specs/billing-and-plans/` in the root repository,
+Billing: Plans and limits (increment 1) and payments (increment 2, [19.4](#194-payments)) (`specs/billing-and-plans/` in the root repository,
 [ADR-013](../../docs/adr/013-plans-and-entitlements.md)). Every Organization has one Subscription to a Plan. A Plan
 values a fixed catalog of Entitlements: `max_members`, `max_teams`, storage, the `audit` flag and
 `audit_retention_days` (`null` = unlimited or kept forever).
@@ -1351,7 +1354,7 @@ values a fixed catalog of Entitlements: `max_members`, `max_teams`, storage, the
 | Endpoint | Who | Response |
 |---|---|---|
 | `GET /api/billing/plans/` | any authenticated User; no Organization context needed (also the platform modal) | Active, public Plans: `id, code, name, description, monthly_price, annual_price` (strings with 2 decimals or `null`), `currency` (`BRL`), `trial_days, is_free, is_default, entitlements{max_members, max_teams, storage_bytes, audit, audit_retention_days}` |
-| `GET /api/billing/subscription/` | OWNER and ADMIN of the session Organization (`member.access.billing`); others `403 PERMISSION_DENIED` | `plan` (as above), `status` (`trialing` \| `active`), `cycle` (`null` in increment 1), `trial_ends_at`, `is_complimentary`, `usage{members, teams, storage}` with `{current, max}` (`max: null` = unlimited) |
+| `GET /api/billing/subscription/` | OWNER and ADMIN of the session Organization (`member.access.billing`); others `403 PERMISSION_DENIED` | `plan` (as above), `status` (`trialing` \| `active`), `cycle` (`monthly` \| `annual` on a paid Subscription, else `null`), `trial_ends_at`, `is_complimentary`, `usage{members, teams, storage}` with `{current, max}` (`max: null` = unlimited) |
 | `POST /api/platform/organizations/{id}/subscription/plan/` | platform admin | Body `{plan, reason}` (active Plan id, reason 1–500). `200` the Organization detail. `400` on `plan` ("The organization is already on this plan.", inactive Plan) or `reason`; `409` deleted Organization |
 
 Storage values (`storage_bytes`, `usage.storage`, limit details) are always **bytes**.
@@ -1382,6 +1385,41 @@ may not create gets `PERMISSION_DENIED` and an invalid payload gets `VALIDATION_
 | StoredFile and organization image create, file replace | `storage_bytes` | bytes of the Organization's active StoredFiles; a replacement counts the size difference |
 
 Limits never remove data: an Organization above a limit keeps everything and only cannot create more of it.
+
+### 19.4. Payments
+
+Increment 2 ([ADR-014](../../docs/adr/014-payment-gateway.md)): paid Plans are charged through Asaas. CrewForge never
+sees card data; every charge is paid on the Asaas invoice page (Pix, boleto or card), whose URL the API returns as
+`payment_url`. Writes are OWNER only (`member.access.billing_manage`); ADMIN reads everything without payment links and
+with a masked tax id.
+
+| Endpoint | Who | Request | Response |
+|---|---|---|---|
+| `GET /api/billing/subscription/` | OWNER, ADMIN | — | Increment 1 fields plus `current_period_end`, `next_charge {amount, date}` (`null` without a cycle or with a cancellation scheduled), `cancel_at_period_end`, `scheduled_change {plan{code, name}, cycle, effective_at}`, `pending_change {plan, cycle, amount, invoice, payment_url}` (`payment_url` `null` for ADMIN), `billing_profile_complete` |
+| `GET /api/billing/subscription/preview/?plan=<code>&cycle=<monthly\|annual>` | OWNER | — | `{kind: new\|upgrade\|downgrade, charged_now, recurring_amount, recurring_from, effective_at, requires_billing_profile}`; `400` for the current Plan and cycle, the free Plan (use cancel), an unpriced cycle or a non-public Plan |
+| `POST /api/billing/subscription/change/` | OWNER | `{plan: <code>, cycle}` | `{subscription, payment_url}`; `400 BILLING_PROFILE_REQUIRED`, `409 INVALID_STATE` while a change waits for payment, `502 GATEWAY_UNAVAILABLE` |
+| `POST /api/billing/subscription/cancel/` | OWNER | — | `SubscriptionDetail`; `400` without a paid cycle or when already scheduled |
+| `POST /api/billing/subscription/resume/` | OWNER | — | `SubscriptionDetail`; undoes a scheduled cancellation or downgrade; `400` when nothing is scheduled |
+| `POST /api/billing/subscription/discard-change/` | OWNER | — | `SubscriptionDetail`; cancels the change waiting for payment; `400` when none |
+| `GET /api/billing/profile/` | OWNER, ADMIN | — | `{legal_name, tax_id (OWNER only, else null), tax_id_masked, tax_id_kind, email, postal_code, street, number, complement, district, city, state, updated_at}`; `404 NOT_FOUND` before the first save |
+| `PUT /api/billing/profile/` | OWNER | same fields (`tax_id` and `postal_code` with or without punctuation) | the profile; `400` field errors ("Enter a valid CPF or CNPJ.", "Enter a valid email address.", "Enter an 8-digit postal code.") |
+| `GET /api/billing/invoices/` | OWNER, ADMIN | `page` | paginated `{id, kind, description, amount, issued_at, due_date, paid_at, status, payment_url}` newest first (10 per page); `payment_url` `null` for ADMIN |
+
+Flow of a change:
+
+- **new** (from Free, a trial or a courtesy Subscription): the Plan does not change yet. The response carries
+  `payment_url` and the Subscription shows `pending_change` until the payment is confirmed. Send the Owner to
+  `payment_url` in the same tab.
+- **upgrade** (higher price, or monthly → annual): applies at once and charges the prorated difference
+  (`payment_url`, or `null` when it is below R$ 5.00). Monthly → annual starts a new annual period.
+- **downgrade** (lower price, or annual → monthly): `scheduled_change` until the period end, then it applies.
+
+After paying, Asaas sends the Owner back to `/management/billing?payment=return` (when the return URL is configured).
+Poll `GET /api/billing/subscription/` until `pending_change` is `null`: webhooks confirm the payment asynchronously,
+and an hourly reconciliation repairs lost ones.
+
+The webhook `POST /api/billing/webhooks/asaas/` is for Asaas only (header `asaas-access-token`); it is not part of
+the schema.
 
 ---
 

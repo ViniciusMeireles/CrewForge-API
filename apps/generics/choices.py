@@ -19,4 +19,6 @@ class ErrorCode(models.TextChoices):
     IMPERSONATION_ENDED = 'IMPERSONATION_ENDED', _('Impersonation ended')
     PLAN_LIMIT_REACHED = 'PLAN_LIMIT_REACHED', _('Plan limit reached')
     PLAN_FEATURE_UNAVAILABLE = 'PLAN_FEATURE_UNAVAILABLE', _('Plan feature unavailable')
+    BILLING_PROFILE_REQUIRED = 'BILLING_PROFILE_REQUIRED', _('Billing profile required')
+    GATEWAY_UNAVAILABLE = 'GATEWAY_UNAVAILABLE', _('Payment service unavailable')
     INTERNAL_ERROR = 'INTERNAL_ERROR', _('Internal error')

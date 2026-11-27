@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CrewForge API\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 00:25+0000\n"
+"POT-Creation-Date: 2026-11-27 18:51+0000\n"
 "PO-Revision-Date: 2026-10-08 22:30+0000\n"
 "Last-Translator: CrewForge Dev <dev@crewforge.local>\n"
 "Language-Team: Portuguese (Brazil)\n"
@@ -30,7 +30,7 @@ msgstr "Sua sessão terminou. Entre novamente."
 
 #: apps/accounts/choices.py:12 apps/accounts/choices.py:63
 #: apps/accounts/models/files.py:92 apps/accounts/tests/test_i18n.py:63
-#: apps/accounts/tests/test_i18n.py:71 apps/audit/choices.py:134
+#: apps/accounts/tests/test_i18n.py:71 apps/audit/choices.py:165
 #: apps/teams/choices.py:6
 msgid "Owner"
 msgstr "Proprietário"
@@ -118,7 +118,7 @@ msgstr "Membros da Organização"
 msgid "Public"
 msgstr "Público"
 
-#: apps/accounts/choices.py:192
+#: apps/accounts/choices.py:192 apps/billing/choices.py:25
 msgid "Pending"
 msgstr "Pendente"
 
@@ -331,7 +331,8 @@ msgstr "Esta organização está suspensa. Fale com o suporte."
 #: apps/accounts/models/files.py:103 apps/accounts/models/invitation.py:66
 #: apps/accounts/models/member.py:33 apps/accounts/models/organization.py:67
 #: apps/accounts/models/organization.py:104 apps/audit/models/audit_event.py:23
-#: apps/billing/models/subscription.py:19 apps/platform/filters.py:137
+#: apps/billing/models/billing_profile.py:26
+#: apps/billing/models/subscription.py:21 apps/platform/filters.py:137
 #: apps/platform/filters.py:145 apps/teams/models/team.py:25
 msgid "Organization"
 msgstr "Organização"
@@ -430,8 +431,8 @@ msgid "Email of the user to invite"
 msgstr "E-mail do usuário a convidar"
 
 #: apps/accounts/models/invitation.py:34
-#: apps/accounts/models/organization.py:38
-#: apps/billing/models/subscription.py:31
+#: apps/accounts/models/organization.py:38 apps/billing/models/invoice.py:50
+#: apps/billing/models/subscription.py:33
 msgid "Status"
 msgstr "Status"
 
@@ -489,7 +490,7 @@ msgid "Member associated with the invitation"
 msgstr "Membro associado ao convite"
 
 #: apps/accounts/models/invitation.py:89 apps/accounts/models/member.py:26
-#: apps/audit/choices.py:126 apps/platform/filters.py:139
+#: apps/audit/choices.py:157 apps/platform/filters.py:139
 msgid "User"
 msgstr "Usuário"
 
@@ -1550,37 +1551,82 @@ msgid "Trial started"
 msgstr "Teste iniciado"
 
 #: apps/audit/choices.py:121
+msgid "Subscription activated"
+msgstr "Assinatura ativada"
+
+#: apps/audit/choices.py:125
+msgid "Plan changed"
+msgstr "Plano alterado"
+
+#: apps/audit/choices.py:129
+msgid "Change scheduled"
+msgstr "Mudança agendada"
+
+#: apps/audit/choices.py:133
+msgid "Scheduled change canceled"
+msgstr "Mudança agendada cancelada"
+
+#: apps/audit/choices.py:137
+msgid "Cancellation scheduled"
+msgstr "Cancelamento agendado"
+
+#: apps/audit/choices.py:141
+msgid "Subscription resumed"
+msgstr "Assinatura retomada"
+
+#: apps/audit/choices.py:145
+msgid "Subscription canceled"
+msgstr "Assinatura cancelada"
+
+#: apps/audit/choices.py:147
+msgid "Invoice paid"
+msgstr "Fatura paga"
+
+#: apps/audit/choices.py:148
+msgid "Invoice refunded"
+msgstr "Fatura estornada"
+
+#: apps/audit/choices.py:149
+msgid "Billing details updated"
+msgstr "Dados de cobrança atualizados"
+
+#: apps/audit/choices.py:152
 msgid "Plan changed by the platform"
 msgstr "Plano alterado pela plataforma"
 
-#: apps/audit/choices.py:127 apps/platform/apps.py:10 apps/platform/views.py:65
+#: apps/audit/choices.py:158 apps/platform/apps.py:10 apps/platform/views.py:65
 msgid "Platform"
 msgstr "Plataforma"
 
-#: apps/audit/choices.py:128 templates/drf_spectacular/swagger_ui.html:133
+#: apps/audit/choices.py:159 templates/drf_spectacular/swagger_ui.html:133
 msgid "System"
 msgstr "Sistema"
 
-#: apps/audit/choices.py:135
+#: apps/audit/choices.py:166
 msgid "Previous owner role"
 msgstr "Função anterior do dono"
 
-#: apps/audit/choices.py:136
+#: apps/audit/choices.py:167
 msgid "New owner role"
 msgstr "Função do novo dono"
 
-#: apps/audit/choices.py:137 apps/billing/models/plan.py:83
-#: apps/billing/models/subscription.py:25
+#: apps/audit/choices.py:168 apps/billing/models/invoice.py:35
+#: apps/billing/models/plan.py:83 apps/billing/models/subscription.py:27
 msgid "Plan"
 msgstr "Plano"
 
-#: apps/audit/choices.py:138
+#: apps/audit/choices.py:169
 msgid "Subscription status"
 msgstr "Status da assinatura"
 
-#: apps/audit/choices.py:139 apps/billing/models/subscription.py:48
+#: apps/audit/choices.py:170 apps/billing/models/subscription.py:50
 msgid "Courtesy"
 msgstr "Cortesia"
+
+#: apps/audit/choices.py:171 apps/billing/models/invoice.py:38
+#: apps/billing/models/subscription.py:40
+msgid "Cycle"
+msgstr "Ciclo"
 
 #: apps/audit/filters/audit_event.py:20
 msgid "Actor"
@@ -1730,9 +1776,13 @@ msgstr "Evento de auditoria"
 msgid "Audit Events"
 msgstr "Eventos de auditoria"
 
-#: apps/billing/apps.py:21 apps/billing/views.py:18
+#: apps/billing/apps.py:21 apps/billing/views.py:40
 msgid "Billing"
 msgstr "Cobrança"
+
+#: apps/billing/authentication.py:28
+msgid "Invalid webhook token."
+msgstr "Token de webhook inválido."
 
 #: apps/billing/choices.py:6
 msgid "Trial"
@@ -1758,6 +1808,114 @@ msgstr "Definida pela plataforma"
 msgid "Brazilian real"
 msgstr "Real brasileiro"
 
+#: apps/billing/choices.py:26
+msgid "Paid"
+msgstr "Paga"
+
+#: apps/billing/choices.py:27
+msgid "Overdue"
+msgstr "Vencida"
+
+#: apps/billing/choices.py:28
+msgid "Refunded"
+msgstr "Estornada"
+
+#: apps/billing/choices.py:29
+msgid "Canceled"
+msgstr "Cancelada"
+
+#: apps/billing/choices.py:33
+msgid "Recurring"
+msgstr "Recorrente"
+
+#: apps/billing/choices.py:34
+msgid "Proration"
+msgstr "Proporcional"
+
+#: apps/billing/choices.py:38
+msgid "Asaas"
+msgstr "Asaas"
+
+#: apps/billing/choices.py:39
+msgid "Fake"
+msgstr "Simulado"
+
+#: apps/billing/choices.py:78
+msgid "New subscription"
+msgstr "Nova assinatura"
+
+#: apps/billing/choices.py:79
+msgid "Upgrade"
+msgstr "Upgrade"
+
+#: apps/billing/choices.py:80
+msgid "Downgrade"
+msgstr "Downgrade"
+
+#: apps/billing/emails.py:42
+msgid "Open plan and billing"
+msgstr "Abrir plano e cobrança"
+
+#: apps/billing/emails.py:89
+#, python-brace-format
+msgid "The trial of {organization} ends on {date}"
+msgstr "O teste de {organization} termina em {date}"
+
+#: apps/billing/emails.py:91
+#, python-brace-format
+msgid ""
+"The {plan} trial of {organization} ends on {date}. Choose a paid plan to "
+"keep its limits and features; otherwise it moves to the Free plan. Your data "
+"is kept."
+msgstr "O teste do {plan} de {organization} termina em {date}. Escolha um plano pago para manter os limites e recursos; caso contrário, a organização passa para o plano Free. Seus dados são mantidos."
+
+#: apps/billing/emails.py:98
+#, python-brace-format
+msgid "Payment confirmed for {organization}"
+msgstr "Pagamento confirmado para {organization}"
+
+#: apps/billing/emails.py:100
+#, python-brace-format
+msgid ""
+"We received the payment of {amount} for {organization}. Its {plan} plan is "
+"active."
+msgstr "Recebemos o pagamento de {amount} para {organization}. O plano {plan} está ativo."
+
+#: apps/billing/emails.py:106
+#, python-brace-format
+msgid "The plan of {organization} changed"
+msgstr "O plano de {organization} mudou"
+
+#: apps/billing/emails.py:107
+#, python-brace-format
+msgid "{organization} is now on the {plan} plan."
+msgstr "{organization} agora está no plano {plan}."
+
+#: apps/billing/emails.py:111
+#, python-brace-format
+msgid "The subscription of {organization} will end"
+msgstr "A assinatura de {organization} vai terminar"
+
+#: apps/billing/emails.py:113
+#, python-brace-format
+msgid ""
+"The {plan} subscription of {organization} ends on {date}. Then it moves to "
+"the Free plan and its limits. Your data is kept. You can resume the "
+"subscription until then."
+msgstr "A assinatura {plan} de {organization} termina em {date}. Depois, a organização passa para o plano Free e seus limites. Seus dados são mantidos. Você pode retomar a assinatura até lá."
+
+#: apps/billing/emails.py:120
+#, python-brace-format
+msgid "The subscription of {organization} ended"
+msgstr "A assinatura de {organization} terminou"
+
+#: apps/billing/emails.py:122
+#, python-brace-format
+msgid ""
+"{organization} moved to the Free plan. Your data is kept. You can choose a "
+"paid plan again at any time."
+msgstr "{organization} passou para o plano Free. Seus dados são mantidos. Você pode escolher um plano pago novamente a qualquer momento."
+
 #: apps/billing/entitlements.py:60
 msgid "Entitlements must be an object."
 msgstr "Os benefícios devem ser um objeto."
@@ -1774,28 +1932,192 @@ msgstr "Informe verdadeiro ou falso."
 msgid "Enter a non-negative integer or null."
 msgstr "Informe um número inteiro não negativo ou nulo."
 
-#: apps/billing/exceptions.py:24
+#: apps/billing/exceptions.py:25
 #, python-format
 msgid "Your plan allows up to %(max)s member."
 msgid_plural "Your plan allows up to %(max)s members."
 msgstr[0] "Seu plano permite até %(max)s membro."
 msgstr[1] "Seu plano permite até %(max)s membros."
 
-#: apps/billing/exceptions.py:30
+#: apps/billing/exceptions.py:31
 #, python-format
 msgid "Your plan allows up to %(max)s team."
 msgid_plural "Your plan allows up to %(max)s teams."
 msgstr[0] "Seu plano permite até %(max)s equipe."
 msgstr[1] "Seu plano permite até %(max)s equipes."
 
-#: apps/billing/exceptions.py:34
+#: apps/billing/exceptions.py:35
 #, python-format
 msgid "Your plan allows up to %(max)s of storage."
 msgstr "Seu plano permite até %(max)s de armazenamento."
 
-#: apps/billing/exceptions.py:63
+#: apps/billing/exceptions.py:64
 msgid "This feature is not included in your plan."
 msgstr "Este recurso não está incluído no seu plano."
+
+#: apps/billing/exceptions.py:70
+msgid "Fill in your billing details before choosing a paid plan."
+msgstr "Preencha seus dados de cobrança antes de escolher um plano pago."
+
+#: apps/billing/exceptions.py:78
+msgid "The payment service is unavailable. Try again in a few minutes."
+msgstr "O serviço de pagamento está indisponível. Tente novamente em alguns minutos."
+
+#: apps/billing/models/billing_profile.py:28
+msgid "Legal name"
+msgstr "Razão social ou nome"
+
+#: apps/billing/models/billing_profile.py:30
+msgid "CPF or CNPJ"
+msgstr "CPF ou CNPJ"
+
+#: apps/billing/models/billing_profile.py:32
+msgid "Billing email"
+msgstr "E-mail de cobrança"
+
+#: apps/billing/models/billing_profile.py:34
+msgid "Postal code"
+msgstr "CEP"
+
+#: apps/billing/models/billing_profile.py:36
+msgid "Street"
+msgstr "Rua"
+
+#: apps/billing/models/billing_profile.py:37
+msgid "Number"
+msgstr "Número"
+
+#: apps/billing/models/billing_profile.py:39
+msgid "Complement"
+msgstr "Complemento"
+
+#: apps/billing/models/billing_profile.py:41
+msgid "District"
+msgstr "Bairro"
+
+#: apps/billing/models/billing_profile.py:42
+msgid "City"
+msgstr "Cidade"
+
+#: apps/billing/models/billing_profile.py:44
+msgid "State"
+msgstr "Estado"
+
+#: apps/billing/models/billing_profile.py:48
+msgid "Billing profile"
+msgstr "Dados de cobrança"
+
+#: apps/billing/models/billing_profile.py:49
+msgid "Billing profiles"
+msgstr "Dados de cobrança"
+
+#: apps/billing/models/gateway_event.py:10 apps/billing/models/invoice.py:25
+msgid "Gateway"
+msgstr "Gateway"
+
+#: apps/billing/models/gateway_event.py:12
+msgid "Event id"
+msgstr "Id do evento"
+
+#: apps/billing/models/gateway_event.py:13
+msgid "Event type"
+msgstr "Tipo do evento"
+
+#: apps/billing/models/gateway_event.py:14
+msgid "Payload"
+msgstr "Conteúdo"
+
+#: apps/billing/models/gateway_event.py:15
+msgid "Received at"
+msgstr "Recebido em"
+
+#: apps/billing/models/gateway_event.py:17
+msgid "Processed at"
+msgstr "Processado em"
+
+#: apps/billing/models/gateway_event.py:19
+msgid "Attempts"
+msgstr "Tentativas"
+
+#: apps/billing/models/gateway_event.py:20
+msgid "Error"
+msgstr "Erro"
+
+#: apps/billing/models/gateway_event.py:26
+msgid "Gateway event"
+msgstr "Evento do gateway"
+
+#: apps/billing/models/gateway_event.py:27
+msgid "Gateway events"
+msgstr "Eventos do gateway"
+
+#: apps/billing/models/invoice.py:22 apps/billing/models/subscription.py:108
+msgid "Subscription"
+msgstr "Assinatura"
+
+#: apps/billing/models/invoice.py:27
+msgid "Gateway id"
+msgstr "Id no gateway"
+
+#: apps/billing/models/invoice.py:29
+msgid "Kind"
+msgstr "Tipo"
+
+#: apps/billing/models/invoice.py:41
+msgid "Amount"
+msgstr "Valor"
+
+#: apps/billing/models/invoice.py:43
+msgid "Issued at"
+msgstr "Emitida em"
+
+#: apps/billing/models/invoice.py:44
+msgid "Due date"
+msgstr "Vencimento"
+
+#: apps/billing/models/invoice.py:45
+msgid "Paid at"
+msgstr "Paga em"
+
+#: apps/billing/models/invoice.py:53
+msgid "Payment URL"
+msgstr "URL de pagamento"
+
+#: apps/billing/models/invoice.py:56
+msgid "Period start"
+msgstr "Início do período"
+
+#: apps/billing/models/invoice.py:59
+msgid "Period end"
+msgstr "Fim do período"
+
+#: apps/billing/models/invoice.py:62
+msgid "NFS-e number"
+msgstr "Número da NFS-e"
+
+#: apps/billing/models/invoice.py:65
+msgid "NFS-e URL"
+msgstr "URL da NFS-e"
+
+#: apps/billing/models/invoice.py:72
+msgid "Invoice"
+msgstr "Fatura"
+
+#: apps/billing/models/invoice.py:73
+msgid "Invoices"
+msgstr "Faturas"
+
+#: apps/billing/models/invoice.py:96 apps/billing/payments.py:390
+msgid "Plan change adjustment"
+msgstr "Ajuste da troca de plano"
+
+#: apps/billing/models/invoice.py:98
+msgid "Annual subscription"
+msgstr "Assinatura anual"
+
+#: apps/billing/models/invoice.py:99
+msgid "Monthly subscription"
+msgstr "Assinatura mensal"
 
 #: apps/billing/models/plan.py:19
 msgid "Code"
@@ -1865,35 +2187,111 @@ msgstr "Ordem"
 msgid "Plans"
 msgstr "Planos"
 
-#: apps/billing/models/subscription.py:38
-msgid "Cycle"
-msgstr "Ciclo"
-
-#: apps/billing/models/subscription.py:41
+#: apps/billing/models/subscription.py:43
 msgid "Trial ends at"
 msgstr "Fim do teste"
 
 #: apps/billing/models/subscription.py:54
-msgid "Subscription"
-msgstr "Assinatura"
+msgid "Current period start"
+msgstr "Início do período atual"
 
-#: apps/billing/models/subscription.py:55
+#: apps/billing/models/subscription.py:57
+msgid "Current period end"
+msgstr "Fim do período atual"
+
+#: apps/billing/models/subscription.py:60
+msgid "Cancel at period end"
+msgstr "Cancelar no fim do período"
+
+#: apps/billing/models/subscription.py:68
+msgid "Scheduled plan"
+msgstr "Plano agendado"
+
+#: apps/billing/models/subscription.py:75
+msgid "Scheduled cycle"
+msgstr "Ciclo agendado"
+
+#: apps/billing/models/subscription.py:83
+msgid "Pending plan"
+msgstr "Plano pendente"
+
+#: apps/billing/models/subscription.py:90
+msgid "Pending cycle"
+msgstr "Ciclo pendente"
+
+#: apps/billing/models/subscription.py:93
+msgid "Gateway customer id"
+msgstr "Id do cliente no gateway"
+
+#: apps/billing/models/subscription.py:99
+msgid "Gateway subscription id"
+msgstr "Id da assinatura no gateway"
+
+#: apps/billing/models/subscription.py:102
+msgid "Trial reminder sent"
+msgstr "Lembrete de teste enviado"
+
+#: apps/billing/models/subscription.py:109
 msgid "Subscriptions"
 msgstr "Assinaturas"
 
-#: apps/billing/views.py:23
+#: apps/billing/payments.py:83 apps/billing/views.py:91
+msgid "This organization has no subscription."
+msgstr "Esta organização não tem assinatura."
+
+#: apps/billing/payments.py:472
+msgid "A plan change is waiting for payment."
+msgstr "Uma troca de plano está aguardando pagamento."
+
+#: apps/billing/payments.py:509
+msgid "There is no paid subscription to cancel."
+msgstr "Não há assinatura paga para cancelar."
+
+#: apps/billing/payments.py:511
+msgid "The cancellation is already scheduled."
+msgstr "O cancelamento já está agendado."
+
+#: apps/billing/payments.py:586
+msgid "Nothing is scheduled."
+msgstr "Nada está agendado."
+
+#: apps/billing/payments.py:595
+msgid "No plan change is waiting for payment."
+msgstr "Nenhuma troca de plano está aguardando pagamento."
+
+#: apps/billing/pricing.py:28 apps/billing/pricing.py:55
+msgid "This plan is not offered in this cycle."
+msgstr "Este plano não é oferecido neste ciclo."
+
+#: apps/billing/pricing.py:52
+msgid "To move to the free plan, cancel your subscription."
+msgstr "Para passar para o plano gratuito, cancele sua assinatura."
+
+#: apps/billing/pricing.py:59
+msgid "This is already your plan and cycle."
+msgstr "Este já é o seu plano e ciclo."
+
+#: apps/billing/validators.py:53
+msgid "Enter a valid CPF or CNPJ."
+msgstr "Informe um CPF ou CNPJ válido."
+
+#: apps/billing/validators.py:59
+msgid "Enter an 8-digit postal code."
+msgstr "Informe um CEP com 8 dígitos."
+
+#: apps/billing/views.py:45
 msgid "List plans"
 msgstr "Listar planos"
 
-#: apps/billing/views.py:24
+#: apps/billing/views.py:46
 msgid "The active plans offered for self-service, with their limits."
 msgstr "Os planos ativos oferecidos para contratação direta, com seus limites."
 
-#: apps/billing/views.py:37
+#: apps/billing/views.py:59
 msgid "Get subscription"
 msgstr "Obter assinatura"
 
-#: apps/billing/views.py:39
+#: apps/billing/views.py:61
 msgid ""
 "The current organization's plan, status, trial end and usage against its "
 "limits. Owner and Admin only."
@@ -1901,9 +2299,69 @@ msgstr ""
 "O plano, o status, o fim do teste e o uso dos limites da organização atual. "
 "Somente Owner e Admin."
 
-#: apps/billing/views.py:55
-msgid "This organization has no subscription."
-msgstr "Esta organização não tem assinatura."
+#: apps/billing/views.py:97
+msgid "Preview a plan change"
+msgstr "Prévia da troca de plano"
+
+#: apps/billing/views.py:99
+msgid ""
+"What a change to the given plan and cycle charges now and from when. Owner "
+"only."
+msgstr "O que a troca para o plano e ciclo informados cobra agora e a partir de quando. Somente o proprietário."
+
+#: apps/billing/views.py:124
+msgid "Change the plan"
+msgstr "Trocar o plano"
+
+#: apps/billing/views.py:126
+msgid ""
+"Changes the plan or cycle. Returns the payment page when something is due "
+"now. Owner only."
+msgstr "Troca o plano ou o ciclo. Retorna a página de pagamento quando há valor a pagar agora. Somente o proprietário."
+
+#: apps/billing/views.py:166
+msgid "Cancel the subscription"
+msgstr "Cancelar a assinatura"
+
+#: apps/billing/views.py:167
+msgid "Schedules the cancellation for the end of the paid period."
+msgstr "Agenda o cancelamento para o fim do período pago."
+
+#: apps/billing/views.py:177
+msgid "Resume the subscription"
+msgstr "Retomar a assinatura"
+
+#: apps/billing/views.py:178
+msgid "Undoes a scheduled cancellation or downgrade."
+msgstr "Desfaz um cancelamento ou downgrade agendado."
+
+#: apps/billing/views.py:188
+msgid "Discard the pending change"
+msgstr "Desistir da troca pendente"
+
+#: apps/billing/views.py:189
+msgid "Cancels a plan change that waits for its payment."
+msgstr "Cancela uma troca de plano que aguarda pagamento."
+
+#: apps/billing/views.py:208
+msgid "Get billing details"
+msgstr "Obter dados de cobrança"
+
+#: apps/billing/views.py:214
+msgid "No billing details yet."
+msgstr "Nenhum dado de cobrança ainda."
+
+#: apps/billing/views.py:219
+msgid "Save billing details"
+msgstr "Salvar dados de cobrança"
+
+#: apps/billing/views.py:237
+msgid "List invoices"
+msgstr "Listar faturas"
+
+#: apps/billing/views.py:238
+msgid "The organization invoices, newest first. Owner and Admin."
+msgstr "As faturas da organização, das mais recentes para as mais antigas. Proprietário e administrador."
 
 #: apps/dashboard/apps.py:8 apps/dashboard/views/overview.py:15
 msgid "Dashboard"
@@ -1974,6 +2432,14 @@ msgid "Plan feature unavailable"
 msgstr "Recurso indisponível no plano"
 
 #: apps/generics/choices.py:22
+msgid "Billing profile required"
+msgstr "Dados de cobrança obrigatórios"
+
+#: apps/generics/choices.py:23
+msgid "Payment service unavailable"
+msgstr "Serviço de pagamento indisponível"
+
+#: apps/generics/choices.py:24
 msgid "Internal error"
 msgstr "Erro interno"
 
@@ -2400,6 +2866,10 @@ msgstr "Aguarde {seconds} segundos para enviar novamente."
 msgid "This organization is deleted."
 msgstr "Esta organização foi excluída."
 
+#: apps/platform/services.py:337
+msgid "This organization has a paid subscription."
+msgstr "Esta organização tem uma assinatura paga."
+
 #: apps/platform/views.py:76
 msgid "Get platform overview"
 msgstr "Obter visão geral da plataforma"
@@ -2714,11 +3184,11 @@ msgstr ""
 "chamador pode atribuir nela e `member` oculta membros já presentes nela. Sem "
 "uma equipe válida, apenas gerentes da organização recebem funções."
 
-#: config/settings/base.py:322
+#: config/settings/base.py:337
 msgid "CrewForge API"
 msgstr "CrewForge API"
 
-#: config/settings/base.py:324
+#: config/settings/base.py:339
 msgid ""
 "API service for managing accounts, teams, and permissions with "
 "comprehensive\n"
@@ -2739,7 +3209,7 @@ msgstr ""
 "corporativo.\n"
 "    "
 
-#: config/settings/base.py:473
+#: config/settings/base.py:504
 msgid "CrewForge"
 msgstr "CrewForge"
 

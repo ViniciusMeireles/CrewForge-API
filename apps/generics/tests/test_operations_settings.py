@@ -22,6 +22,9 @@ PRODUCTION_ENV = {
     'MEDIA_ROOT': '/srv/media',
     'ENVIRONMENT': 'production',
     'DATABASE_URL': 'postgres://u:p@localhost:5432/db',
+    'BILLING_GATEWAY': 'asaas',
+    'ASAAS_API_KEY': 'test-placeholder',
+    'ASAAS_WEBHOOK_TOKEN': 'test-placeholder',
 }
 
 
@@ -53,6 +56,23 @@ class EntrypointDefaultsTestCase(SimpleTestCase):
             self.assertRaisesMessage(ImproperlyConfigured, 'MEDIA_ROOT'),
         ):
             import config.settings.production  # noqa: F401
+
+    def test_production_refuses_the_fake_gateway(self):
+        with (
+            fresh_settings(**{**PRODUCTION_ENV, 'BILLING_GATEWAY': 'fake'}),
+            self.assertRaisesMessage(ImproperlyConfigured, 'BILLING_GATEWAY'),
+        ):
+            import config.settings.production  # noqa: F401
+
+    def test_production_requires_the_asaas_secrets(self):
+        for name in ('ASAAS_API_KEY', 'ASAAS_WEBHOOK_TOKEN'):
+            env = {k: v for k, v in PRODUCTION_ENV.items() if k != name}
+            with (
+                self.subTest(name=name),
+                fresh_settings(unset=(name,), **env),
+                self.assertRaisesMessage(ImproperlyConfigured, name),
+            ):
+                import config.settings.production  # noqa: F401
 
     def test_production_loads_with_required_env(self):
         with fresh_settings(**PRODUCTION_ENV):

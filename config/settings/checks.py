@@ -44,3 +44,13 @@ def normalize_admin_url(value: str) -> str:
     if not path:
         raise ImproperlyConfigured('ADMIN_URL must not be empty.')
     return f'{path}/'
+
+
+def require_billing_gateway(gateway: str, api_key: str, webhook_token: str) -> str:
+    if gateway != 'asaas':
+        raise ImproperlyConfigured('BILLING_GATEWAY must be "asaas" in production.')
+    if not api_key:
+        raise ImproperlyConfigured('ASAAS_API_KEY must be set.')
+    if not webhook_token:
+        raise ImproperlyConfigured('ASAAS_WEBHOOK_TOKEN must be set.')
+    return gateway

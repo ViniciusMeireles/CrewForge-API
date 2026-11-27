@@ -268,6 +268,20 @@ read-only for Organization endpoints, and the internal suspension reason is neve
 Role → payload validation → Plan limit, so a Role without the permission never learns the usage. A missing
 Subscription fails closed to the free Plan. Platform endpoints ignore Plans.
 
+### Payments
+
+- **No card data** reaches CrewForge: every charge is paid on the Asaas invoice page
+  ([ADR-014](../../docs/adr/014-payment-gateway.md)).
+- **Webhook** `/api/billing/webhooks/asaas/` is the one endpoint outside JWT and the Organization context besides the
+  platform: `AsaasWebhookAuthentication` compares the `asaas-access-token` header with `ASAAS_WEBHOOK_TOKEN` in
+  constant time (401 otherwise; an unset token refuses everything). It only stores the event; processing re-reads the
+  payment from Asaas with our key, so a forged event changes nothing.
+- **Owner-only writes:** `Action.BILLING_MANAGE` (OWNER). ADMIN reads without payment links and with a masked tax id.
+- **Personal data:** the Billing Profile holds CPF/CNPJ, email and address. They are never logged; the
+  `billing.profile.updated` audit event carries field names only; the Django admin shows the masked tax id.
+- **Secrets:** `ASAAS_API_KEY` and `ASAAS_WEBHOOK_TOKEN` live only in the environment; production refuses the fake
+  gateway and missing secrets at startup.
+
 ### Cross-Org Isolation
 
 Accessing another organization's resources returns **404** (not 403) because

@@ -333,6 +333,8 @@ def change_plan(request, organization: Organization, plan: Plan, reason: str):
         subscription = Subscription(
             organization=organization, status=SubscriptionStatusChoices.ACTIVE
         )
+    elif subscription.cycle is not None:
+        raise InvalidState(_('This organization has a paid subscription.'))
     courtesy = '' if plan.is_free else SubscriptionCourtesyChoices.PLATFORM
     changes = _subscription_changes(subscription, plan, courtesy)
     created = subscription.pk is None

@@ -20,6 +20,7 @@ EXPECTED_ACCESS = {
         'organization_settings': True,
         'audit': True,
         'billing': True,
+        'billing_manage': True,
     },
     MemberRoleChoices.ADMIN: {
         'members': True,
@@ -28,6 +29,7 @@ EXPECTED_ACCESS = {
         'organization_settings': False,
         'audit': True,
         'billing': True,
+        'billing_manage': False,
     },
     MemberRoleChoices.MANAGER: {
         'members': True,
@@ -36,6 +38,7 @@ EXPECTED_ACCESS = {
         'organization_settings': False,
         'audit': False,
         'billing': False,
+        'billing_manage': False,
     },
     MemberRoleChoices.MEMBER: {
         'members': True,
@@ -44,6 +47,7 @@ EXPECTED_ACCESS = {
         'organization_settings': False,
         'audit': False,
         'billing': False,
+        'billing_manage': False,
     },
 }
 

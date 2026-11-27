@@ -86,6 +86,9 @@ jobs:
         ENVIRONMENT: production
         MEDIA_ROOT: /tmp/media
         NUM_PROXIES: '1'
+        BILLING_GATEWAY: asaas
+        ASAAS_API_KEY: ci-placeholder
+        ASAAS_WEBHOOK_TOKEN: ci-placeholder
       run: |
         DJANGO_SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(64))") \
           uv run python manage.py check --deploy --fail-level WARNING

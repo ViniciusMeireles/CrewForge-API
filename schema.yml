@@ -2735,6 +2735,16 @@ paths:
           - auth.password_reset.failed
           - auth.password_reset.requested
           - auth.signup
+          - billing.invoice.paid
+          - billing.invoice.refunded
+          - billing.profile.updated
+          - billing.subscription.activated
+          - billing.subscription.cancel_scheduled
+          - billing.subscription.canceled
+          - billing.subscription.change_canceled
+          - billing.subscription.change_scheduled
+          - billing.subscription.plan_changed
+          - billing.subscription.resumed
           - billing.subscription.trial_started
           - invitation.accepted
           - invitation.created
@@ -2834,6 +2844,16 @@ paths:
           * `user.impersonation_ended` - Viewing session ended
           * `user.impersonation_expired` - Viewing session expired
           * `billing.subscription.trial_started` - Trial started
+          * `billing.subscription.activated` - Subscription activated
+          * `billing.subscription.plan_changed` - Plan changed
+          * `billing.subscription.change_scheduled` - Change scheduled
+          * `billing.subscription.change_canceled` - Scheduled change canceled
+          * `billing.subscription.cancel_scheduled` - Cancellation scheduled
+          * `billing.subscription.resumed` - Subscription resumed
+          * `billing.subscription.canceled` - Subscription canceled
+          * `billing.invoice.paid` - Invoice paid
+          * `billing.invoice.refunded` - Invoice refunded
+          * `billing.profile.updated` - Billing details updated
           * `platform.subscription.plan_changed` - Plan changed by the platform
       - in: query
         name: action__in
@@ -3194,6 +3214,36 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/billing/invoices/:
+    get:
+      operationId: billing_invoices_list
+      description: The organization invoices, newest first. Owner and Admin.
+      summary: List invoices
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoiceList'
+          description: ''
   /api/billing/plans/:
     get:
       operationId: billing_plans_list
@@ -3213,12 +3263,182 @@ paths:
                 items:
                   $ref: '#/components/schemas/Plan'
           description: ''
+  /api/billing/profile/:
+    get:
+      operationId: billing_profile_retrieve
+      description: |-
+        Mixin for views to add user, member, and organization properties.
+
+        Requests made while the session's Organization is suspended are refused with
+        ``ORGANIZATION_SUSPENDED`` (and the context is dropped) before the permission
+        checks, except for the user-level actions listed in
+        ``organization_context_exempt_actions``.
+      summary: Get billing details
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingProfile'
+          description: ''
+    put:
+      operationId: billing_profile_update
+      description: |-
+        Mixin for views to add user, member, and organization properties.
+
+        Requests made while the session's Organization is suspended are refused with
+        ``ORGANIZATION_SUSPENDED`` (and the context is dropped) before the permission
+        checks, except for the user-level actions listed in
+        ``organization_context_exempt_actions``.
+      summary: Save billing details
+      tags:
+      - Billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillingProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BillingProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BillingProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingProfile'
+          description: ''
   /api/billing/subscription/:
     get:
       operationId: billing_subscription_retrieve
       description: The current organization's plan, status, trial end and usage against
         its limits. Owner and Admin only.
       summary: Get subscription
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDetail'
+          description: ''
+  /api/billing/subscription/cancel/:
+    post:
+      operationId: billing_subscription_cancel_create
+      description: Schedules the cancellation for the end of the paid period.
+      summary: Cancel the subscription
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDetail'
+          description: ''
+  /api/billing/subscription/change/:
+    post:
+      operationId: billing_subscription_change_create
+      description: Changes the plan or cycle. Returns the payment page when something
+        is due now. Owner only.
+      summary: Change the plan
+      tags:
+      - Billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangeRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangeRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeResult'
+          description: ''
+  /api/billing/subscription/discard-change/:
+    post:
+      operationId: billing_subscription_discard_change_create
+      description: Cancels a plan change that waits for its payment.
+      summary: Discard the pending change
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDetail'
+          description: ''
+  /api/billing/subscription/preview/:
+    get:
+      operationId: billing_subscription_preview_retrieve
+      description: What a change to the given plan and cycle charges now and from
+        when. Owner only.
+      summary: Preview a plan change
+      parameters:
+      - in: query
+        name: cycle
+        schema:
+          type: string
+          enum:
+          - annual
+          - monthly
+        required: true
+      - in: query
+        name: plan
+        schema:
+          type: string
+        required: true
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+        jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePreview'
+          description: ''
+  /api/billing/subscription/resume/:
+    post:
+      operationId: billing_subscription_resume_create
+      description: Undoes a scheduled cancellation or downgrade.
+      summary: Resume the subscription
       tags:
       - Billing
       security:
@@ -3272,6 +3492,16 @@ paths:
           - auth.password_reset.failed
           - auth.password_reset.requested
           - auth.signup
+          - billing.invoice.paid
+          - billing.invoice.refunded
+          - billing.profile.updated
+          - billing.subscription.activated
+          - billing.subscription.cancel_scheduled
+          - billing.subscription.canceled
+          - billing.subscription.change_canceled
+          - billing.subscription.change_scheduled
+          - billing.subscription.plan_changed
+          - billing.subscription.resumed
           - billing.subscription.trial_started
           - invitation.accepted
           - invitation.created
@@ -3371,6 +3601,16 @@ paths:
           * `user.impersonation_ended` - Viewing session ended
           * `user.impersonation_expired` - Viewing session expired
           * `billing.subscription.trial_started` - Trial started
+          * `billing.subscription.activated` - Subscription activated
+          * `billing.subscription.plan_changed` - Plan changed
+          * `billing.subscription.change_scheduled` - Change scheduled
+          * `billing.subscription.change_canceled` - Scheduled change canceled
+          * `billing.subscription.cancel_scheduled` - Cancellation scheduled
+          * `billing.subscription.resumed` - Subscription resumed
+          * `billing.subscription.canceled` - Subscription canceled
+          * `billing.invoice.paid` - Invoice paid
+          * `billing.invoice.refunded` - Invoice refunded
+          * `billing.profile.updated` - Billing details updated
           * `platform.subscription.plan_changed` - Plan changed by the platform
       - in: query
         name: action__in
@@ -5183,6 +5423,16 @@ components:
       - user.impersonation_ended
       - user.impersonation_expired
       - billing.subscription.trial_started
+      - billing.subscription.activated
+      - billing.subscription.plan_changed
+      - billing.subscription.change_scheduled
+      - billing.subscription.change_canceled
+      - billing.subscription.cancel_scheduled
+      - billing.subscription.resumed
+      - billing.subscription.canceled
+      - billing.invoice.paid
+      - billing.invoice.refunded
+      - billing.profile.updated
       - platform.subscription.plan_changed
       type: string
       description: |-
@@ -5239,6 +5489,16 @@ components:
         * `user.impersonation_ended` - Viewing session ended
         * `user.impersonation_expired` - Viewing session expired
         * `billing.subscription.trial_started` - Trial started
+        * `billing.subscription.activated` - Subscription activated
+        * `billing.subscription.plan_changed` - Plan changed
+        * `billing.subscription.change_scheduled` - Change scheduled
+        * `billing.subscription.change_canceled` - Scheduled change canceled
+        * `billing.subscription.cancel_scheduled` - Cancellation scheduled
+        * `billing.subscription.resumed` - Subscription resumed
+        * `billing.subscription.canceled` - Subscription canceled
+        * `billing.invoice.paid` - Invoice paid
+        * `billing.invoice.refunded` - Invoice refunded
+        * `billing.profile.updated` - Billing details updated
         * `platform.subscription.plan_changed` - Plan changed by the platform
     ActorTypeEnum:
       enum:
@@ -5336,6 +5596,16 @@ components:
             * `user.impersonation_ended` - Viewing session ended
             * `user.impersonation_expired` - Viewing session expired
             * `billing.subscription.trial_started` - Trial started
+            * `billing.subscription.activated` - Subscription activated
+            * `billing.subscription.plan_changed` - Plan changed
+            * `billing.subscription.change_scheduled` - Change scheduled
+            * `billing.subscription.change_canceled` - Scheduled change canceled
+            * `billing.subscription.cancel_scheduled` - Cancellation scheduled
+            * `billing.subscription.resumed` - Subscription resumed
+            * `billing.subscription.canceled` - Subscription canceled
+            * `billing.invoice.paid` - Invoice paid
+            * `billing.invoice.refunded` - Invoice refunded
+            * `billing.profile.updated` - Billing details updated
             * `platform.subscription.plan_changed` - Plan changed by the platform
         action_display:
           type: string
@@ -5442,6 +5712,120 @@ components:
       required:
       - label
       - user_id
+    BillingProfile:
+      type: object
+      properties:
+        legal_name:
+          type: string
+          maxLength: 200
+        tax_id:
+          type: string
+          nullable: true
+          maxLength: 18
+        tax_id_masked:
+          type: string
+          readOnly: true
+        tax_id_kind:
+          allOf:
+          - $ref: '#/components/schemas/TaxIdKindEnum'
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Billing email
+          maxLength: 254
+        postal_code:
+          type: string
+          maxLength: 9
+        street:
+          type: string
+          maxLength: 200
+        number:
+          type: string
+          maxLength: 20
+        complement:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          maxLength: 100
+        city:
+          type: string
+          maxLength: 100
+        state:
+          $ref: '#/components/schemas/StateEnum'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the record was last updated
+      required:
+      - city
+      - complement
+      - district
+      - email
+      - legal_name
+      - number
+      - postal_code
+      - state
+      - street
+      - tax_id
+      - tax_id_kind
+      - tax_id_masked
+      - updated_at
+    BillingProfileRequest:
+      type: object
+      properties:
+        legal_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        tax_id:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 18
+        email:
+          type: string
+          format: email
+          minLength: 1
+          title: Billing email
+          maxLength: 254
+        postal_code:
+          type: string
+          minLength: 1
+          maxLength: 9
+        street:
+          type: string
+          minLength: 1
+          maxLength: 200
+        number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        complement:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          minLength: 1
+          maxLength: 100
+        city:
+          type: string
+          minLength: 1
+          maxLength: 100
+        state:
+          $ref: '#/components/schemas/StateEnum'
+      required:
+      - city
+      - district
+      - email
+      - legal_name
+      - number
+      - postal_code
+      - state
+      - street
+      - tax_id
     ByKeyNotFound:
       type: object
       properties:
@@ -5475,6 +5859,78 @@ components:
       required:
       - plan
       - reason
+    ChangePreview:
+      type: object
+      properties:
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/ChangePreviewKindEnum'
+          readOnly: true
+        charged_now:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        recurring_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        recurring_from:
+          type: string
+          format: date
+          readOnly: true
+        effective_at:
+          type: string
+          format: date-time
+          readOnly: true
+        requires_billing_profile:
+          type: boolean
+          readOnly: true
+      required:
+      - charged_now
+      - effective_at
+      - kind
+      - recurring_amount
+      - recurring_from
+      - requires_billing_profile
+    ChangePreviewKindEnum:
+      enum:
+      - new
+      - upgrade
+      - downgrade
+      type: string
+      description: |-
+        * `new` - New subscription
+        * `upgrade` - Upgrade
+        * `downgrade` - Downgrade
+    ChangeRequestRequest:
+      type: object
+      properties:
+        plan:
+          type: string
+          minLength: 1
+          description: Unique, stable identifier of the plan
+        cycle:
+          $ref: '#/components/schemas/CycleEnum'
+      required:
+      - cycle
+      - plan
+    ChangeResult:
+      type: object
+      properties:
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionDetail'
+          readOnly: true
+        payment_url:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+      required:
+      - payment_url
+      - subscription
     ChoiceOptionStr:
       type: object
       description: Value/label option.
@@ -6085,6 +6541,77 @@ components:
       required:
       - expiring_soon
       - pending
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceKindEnum'
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        issued_at:
+          type: string
+          format: date-time
+          readOnly: true
+        due_date:
+          type: string
+          format: date
+          readOnly: true
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceStatusEnum'
+          readOnly: true
+        payment_url:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - amount
+      - description
+      - due_date
+      - id
+      - issued_at
+      - kind
+      - paid_at
+      - payment_url
+      - status
+    InvoiceKindEnum:
+      enum:
+      - recurring
+      - proration
+      type: string
+      description: |-
+        * `recurring` - Recurring
+        * `proration` - Proration
+    InvoiceStatusEnum:
+      enum:
+      - pending
+      - paid
+      - overdue
+      - refunded
+      - canceled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `paid` - Paid
+        * `overdue` - Overdue
+        * `refunded` - Refunded
+        * `canceled` - Canceled
     LoginNotFoundResponse:
       type: object
       properties:
@@ -6133,9 +6660,13 @@ components:
         billing:
           type: boolean
           readOnly: true
+        billing_manage:
+          type: boolean
+          readOnly: true
       required:
       - audit
       - billing
+      - billing_manage
       - invitations
       - members
       - organization_settings
@@ -6553,6 +7084,21 @@ components:
       - role
       - role_label
       - slug
+    NextCharge:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        date:
+          type: string
+          format: date
+          readOnly: true
+      required:
+      - amount
+      - date
     NullEnum:
       enum:
       - null
@@ -7383,6 +7929,31 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InvitationReceived'
+    PaginatedInvoiceList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
     PaginatedMemberModelList:
       type: object
       required:
@@ -7889,6 +8460,38 @@ components:
 
             * `en` - English
             * `pt-br` - Português (Brasil)
+    PendingChange:
+      type: object
+      properties:
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/PlanSummary'
+          readOnly: true
+        cycle:
+          allOf:
+          - $ref: '#/components/schemas/CycleEnum'
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        invoice:
+          type: integer
+          readOnly: true
+          nullable: true
+        payment_url:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+      required:
+      - amount
+      - cycle
+      - invoice
+      - payment_url
+      - plan
     Plan:
       type: object
       properties:
@@ -7949,6 +8552,18 @@ components:
       - monthly_price
       - name
       - trial_days
+    PlanSummary:
+      type: object
+      properties:
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+      required:
+      - code
+      - name
     PlatformAuditEvent:
       type: object
       properties:
@@ -8020,6 +8635,16 @@ components:
             * `user.impersonation_ended` - Viewing session ended
             * `user.impersonation_expired` - Viewing session expired
             * `billing.subscription.trial_started` - Trial started
+            * `billing.subscription.activated` - Subscription activated
+            * `billing.subscription.plan_changed` - Plan changed
+            * `billing.subscription.change_scheduled` - Change scheduled
+            * `billing.subscription.change_canceled` - Scheduled change canceled
+            * `billing.subscription.cancel_scheduled` - Cancellation scheduled
+            * `billing.subscription.resumed` - Subscription resumed
+            * `billing.subscription.canceled` - Subscription canceled
+            * `billing.invoice.paid` - Invoice paid
+            * `billing.invoice.refunded` - Invoice refunded
+            * `billing.profile.updated` - Billing details updated
             * `platform.subscription.plan_changed` - Plan changed by the platform
         action_display:
           type: string
@@ -8851,6 +9476,25 @@ components:
         * `admin` - Admin
         * `manager` - Manager
         * `member` - Member
+    ScheduledChange:
+      type: object
+      properties:
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/PlanSummary'
+          readOnly: true
+        cycle:
+          allOf:
+          - $ref: '#/components/schemas/CycleEnum'
+          readOnly: true
+        effective_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cycle
+      - effective_at
+      - plan
     SendInviteEmailBadRequest:
       type: object
       properties:
@@ -9143,6 +9787,64 @@ components:
       required:
       - organization
       - user
+    StateEnum:
+      enum:
+      - AC
+      - AL
+      - AP
+      - AM
+      - BA
+      - CE
+      - DF
+      - ES
+      - GO
+      - MA
+      - MT
+      - MS
+      - MG
+      - PA
+      - PB
+      - PR
+      - PE
+      - PI
+      - RJ
+      - RN
+      - RS
+      - RO
+      - RR
+      - SC
+      - SP
+      - SE
+      - TO
+      type: string
+      description: |-
+        * `AC` - AC
+        * `AL` - AL
+        * `AP` - AP
+        * `AM` - AM
+        * `BA` - BA
+        * `CE` - CE
+        * `DF` - DF
+        * `ES` - ES
+        * `GO` - GO
+        * `MA` - MA
+        * `MT` - MT
+        * `MS` - MS
+        * `MG` - MG
+        * `PA` - PA
+        * `PB` - PB
+        * `PR` - PR
+        * `PE` - PE
+        * `PI` - PI
+        * `RJ` - RJ
+        * `RN` - RN
+        * `RS` - RS
+        * `RO` - RO
+        * `RR` - RR
+        * `SC` - SC
+        * `SP` - SP
+        * `SE` - SE
+        * `TO` - TO
     StoredFileAccess:
       enum:
       - owners_organization
@@ -9463,10 +10165,42 @@ components:
           allOf:
           - $ref: '#/components/schemas/SubscriptionUsage'
           readOnly: true
+        current_period_end:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        next_charge:
+          allOf:
+          - $ref: '#/components/schemas/NextCharge'
+          readOnly: true
+          nullable: true
+        cancel_at_period_end:
+          type: boolean
+          readOnly: true
+        scheduled_change:
+          allOf:
+          - $ref: '#/components/schemas/ScheduledChange'
+          readOnly: true
+          nullable: true
+        pending_change:
+          allOf:
+          - $ref: '#/components/schemas/PendingChange'
+          readOnly: true
+          nullable: true
+        billing_profile_complete:
+          type: boolean
+          readOnly: true
       required:
+      - billing_profile_complete
+      - cancel_at_period_end
+      - current_period_end
       - cycle
       - is_complimentary
+      - next_charge
+      - pending_change
       - plan
+      - scheduled_change
       - status
       - trial_ends_at
       - usage
@@ -9497,6 +10231,14 @@ components:
       - members
       - storage
       - teams
+    TaxIdKindEnum:
+      enum:
+      - cpf
+      - cnpj
+      type: string
+      description: |-
+        * `cpf` - CPF
+        * `cnpj` - CNPJ
     Team:
       type: object
       description: Mixin for ModelSerializer to add user, member, and organization
